@@ -1,0 +1,24 @@
+{
+	"$schema": "./test-manifest.schema.json",
+	"version": 1,
+	"tests": [
+		{
+			"name": "peterlemon-cpu-test",
+			"system": "genesis",
+			"rom": "genesis/peterlemon-md/CPUTest/CPUTest.md",
+			"strategy": "lua-script",
+			"luaScript": "genesis/genesis-test.lua",
+			"maxFrames": 18000,
+			"tags": ["cpu", "m68000"]
+		},
+		{
+			"name": "peterlemon-vdp-test",
+			"system": "genesis",
+			"rom": "genesis/peterlemon-md/VDPTest/VDPTest.md",
+			"strategy": "lua-script",
+			"luaScript": "genesis/genesis-test.lua",
+			"maxFrames": 18000,
+			"tags": ["vdp", "graphics"]
+		}
+	]
+}

@@ -1,15 +1,13 @@
-﻿using Mesen.Debugger.ViewModels;
-using Mesen.Interop;
 using System;
 using System.Collections.Generic;
-using static Mesen.Debugger.ViewModels.RegEntry;
+using Nexen.Debugger.ViewModels;
+using Nexen.Interop;
+using static Nexen.Debugger.ViewModels.RegEntry;
 
-namespace Mesen.Debugger.RegisterViewer;
+namespace Nexen.Debugger.RegisterViewer;
 
-public class SnesRegisterViewer
-{
-	public static List<RegisterViewerTab> GetTabs(ref SnesState snesState, HashSet<CpuType> cpuTypes, byte snesReg4210, byte snesReg4211, byte snesReg4212)
-	{
+public sealed class SnesRegisterViewer {
+	public static List<RegisterViewerTab> GetTabs(ref SnesState snesState, HashSet<CpuType> cpuTypes, byte snesReg4210, byte snesReg4211, byte snesReg4212) {
 		List<RegisterViewerTab> tabs = new() {
 			GetSnesCpuTab(ref snesState, snesReg4210, snesReg4211, snesReg4212),
 			GetSnesPpuTab(ref snesState),
@@ -18,25 +16,24 @@ public class SnesRegisterViewer
 			GetSnesDspTab(ref snesState)
 		};
 
-		if(cpuTypes.Contains(CpuType.Sa1)) {
+		if (cpuTypes.Contains(CpuType.Sa1)) {
 			tabs.Add(GetSnesSa1Tab(ref snesState));
-		} else if(cpuTypes.Contains(CpuType.Gameboy)) {
+		} else if (cpuTypes.Contains(CpuType.Gameboy)) {
 			GbState gbState = DebugApi.GetConsoleState<GbState>(ConsoleType.Gameboy);
 			string tabPrefix = "GB - ";
 			tabs.Add(GbRegisterViewer.GetGbLcdTab(ref gbState, tabPrefix));
 			tabs.Add(GbRegisterViewer.GetGbApuTab(ref gbState, tabPrefix));
 			tabs.Add(GbRegisterViewer.GetGbMiscTab(ref gbState, tabPrefix));
-		} else if(cpuTypes.Contains(CpuType.Gsu)) {
+		} else if (cpuTypes.Contains(CpuType.Gsu)) {
 			tabs.Add(GetSnesGsuTab(ref snesState.Gsu));
-		} else if(cpuTypes.Contains(CpuType.St018)) {
+		} else if (cpuTypes.Contains(CpuType.St018)) {
 			tabs.Add(GetSnesSt018Tab(ref snesState.St018));
 		}
 
 		return tabs;
 	}
 
-	private static RegisterViewerTab GetSnesGsuTab(ref GsuState gsu)
-	{
+	private static RegisterViewerTab GetSnesGsuTab(ref GsuState gsu) {
 		List<RegEntry> entries = new List<RegEntry>() {
 			//new RegEntry("$3033.0", "Backup RAM Enabled", gsu.BackupRamEnabled),
 			new RegEntry("", "Registers"),
@@ -66,8 +63,7 @@ public class SnesRegisterViewer
 		return new RegisterViewerTab("GSU", entries);
 	}
 
-	private static RegisterViewerTab GetSnesSt018Tab(ref St018State state)
-	{
+	private static RegisterViewerTab GetSnesSt018Tab(ref St018State state) {
 		List<RegEntry> entries = new List<RegEntry>() {
 			new RegEntry("", "SNES Registers"),
 			new RegEntry("$3800", "ARM -> SNES Data", state.DataSnes),
@@ -87,8 +83,7 @@ public class SnesRegisterViewer
 		return new RegisterViewerTab("ST018", entries);
 	}
 
-	private static RegisterViewerTab GetSnesSa1Tab(ref SnesState state)
-	{
+	private static RegisterViewerTab GetSnesSa1Tab(ref SnesState state) {
 		Sa1State sa1 = state.Sa1;
 
 		List<RegEntry> entries = new List<RegEntry>() {
@@ -174,10 +169,11 @@ public class SnesRegisterViewer
 		};
 
 		entries.Add(new RegEntry("", "Bitmap Register File"));
-		for(int i = 0; i < 8; i++) {
+		for (int i = 0; i < 8; i++) {
 			entries.Add(new RegEntry("$224" + i, "BRF #" + i, sa1.BitmapRegister1[i]));
 		}
-		for(int i = 0; i < 8; i++) {
+
+		for (int i = 0; i < 8; i++) {
 			entries.Add(new RegEntry("$224" + (8 + i).ToString("X"), "BRF #" + (i + 8), sa1.BitmapRegister2[i]));
 		}
 
@@ -216,12 +212,10 @@ public class SnesRegisterViewer
 		return new RegisterViewerTab("SA-1", entries);
 	}
 
-	private static RegisterViewerTab GetSnesPpuTab(ref SnesState state)
-	{
+	private static RegisterViewerTab GetSnesPpuTab(ref SnesState state) {
 		SnesPpuState ppu = state.Ppu;
 
-		string GetLayerSize(LayerConfig layer)
-		{
+		string GetLayerSize(LayerConfig layer) {
 			return (layer.DoubleWidth ? "64" : "32") + "x" + (layer.DoubleHeight ? "64" : "32");
 		}
 
@@ -418,13 +412,11 @@ public class SnesRegisterViewer
 		return new RegisterViewerTab("PPU", entries, CpuType.Snes, MemoryType.SnesRegister);
 	}
 
-	private static RegisterViewerTab GetSnesDspTab(ref SnesState state)
-	{
+	private static RegisterViewerTab GetSnesDspTab(ref SnesState state) {
 		DspState dsp = state.Dsp;
-		List<RegEntry> entries = new List<RegEntry>();
+		List<RegEntry> entries = [];
 
-		void AddReg(int i, string name, bool signed = false)
-		{
+		void AddReg(int i, string name, bool signed = false) {
 			entries.Add(new RegEntry("$" + i.ToString("X2"), name, signed ? (sbyte)dsp.Regs[i] : dsp.Regs[i], Format.X8));
 		}
 
@@ -452,11 +444,11 @@ public class SnesRegisterViewer
 		entries.Add(new RegEntry("$6C.7", "Reset", (dsp.Regs[0x6C] & 0x80) != 0));
 
 		entries.Add(new RegEntry("$xF", "Coefficients"));
-		for(int i = 0; i < 8; i++) {
+		for (int i = 0; i < 8; i++) {
 			AddReg((i << 4) | 0x0F, "Coefficient " + i);
 		}
 
-		for(int i = 0; i < 8; i++) {
+		for (int i = 0; i < 8; i++) {
 			entries.Add(new RegEntry("Voice #" + i.ToString(), ""));
 
 			int voice = i << 4;
@@ -474,10 +466,8 @@ public class SnesRegisterViewer
 		return new RegisterViewerTab("DSP", entries);
 	}
 
-	private static RegisterViewerTab GetSnesSpcTab(ref SnesState state)
-	{
-		string GetTimerFrequency(double baseFreq, int divider)
-		{
+	private static RegisterViewerTab GetSnesSpcTab(ref SnesState state) {
+		string GetTimerFrequency(double baseFreq, int divider) {
 			return (divider == 0 ? (baseFreq / 256) : (baseFreq / divider)).ToString(".00") + " Hz";
 		}
 
@@ -538,11 +528,10 @@ public class SnesRegisterViewer
 		return new RegisterViewerTab("SPC", entries, CpuType.Spc, MemoryType.SpcMemory);
 	}
 
-	private static RegisterViewerTab GetSnesDmaTab(ref SnesState state)
-	{
-		List<RegEntry> entries = new List<RegEntry>();
+	private static RegisterViewerTab GetSnesDmaTab(ref SnesState state) {
+		List<RegEntry> entries = [];
 
-		for(int i = 0; i < 8; i++) {
+		for (int i = 0; i < 8; i++) {
 			DmaChannelConfig ch = state.Dma.Channels[i];
 			entries.Add(new RegEntry("DMA Channel " + i.ToString(), ""));
 			entries.Add(new RegEntry("$420B." + i.ToString(), "Channel Enabled", ch.DmaActive));
@@ -568,8 +557,7 @@ public class SnesRegisterViewer
 		return new RegisterViewerTab("DMA", entries, CpuType.Snes, MemoryType.SnesRegister);
 	}
 
-	private static RegisterViewerTab GetSnesCpuTab(ref SnesState state, byte snesReg4210, byte snesReg4211, byte snesReg4212)
-	{
+	private static RegisterViewerTab GetSnesCpuTab(ref SnesState state, byte snesReg4210, byte snesReg4211, byte snesReg4212) {
 		InternalRegisterState regs = state.InternalRegs;
 		AluState alu = state.Alu;
 

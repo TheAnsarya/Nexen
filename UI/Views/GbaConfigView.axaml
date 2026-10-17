@@ -1,25 +1,25 @@
-<UserControl
+﻿<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:v="using:Mesen.Views"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:v="using:Nexen.Views"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="250"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:GbaConfigViewModel"
-	x:Class="Mesen.Views.GbaConfigView"
+	x:Class="Nexen.Views.GbaConfigView"
 >
 	<Design.DataContext>
 		<vm:GbaConfigViewModel />
 	</Design.DataContext>
-	
-	<TabControl TabStripPlacement="Top" SelectedIndex="{Binding SelectedTab}">
+
+	<TabControl TabStripPlacement="Top" SelectedIndex="{ReflectionBinding SelectedTab}">
 		<TabItem Header="{l:Translate tpgGeneral}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
@@ -33,7 +33,7 @@
 					<c:GroupBox Header="{l:Translate grpVolume}" HorizontalAlignment="Left">
 						<StackPanel Orientation="Horizontal" Height="150">
 							<StackPanel.Styles>
-								<Style Selector="c|MesenSlider">
+								<Style Selector="c|NexenSlider">
 									<Setter Property="Minimum" Value="0" />
 									<Setter Property="Maximum" Value="100" />
 									<Setter Property="Orientation" Value="Vertical" />
@@ -41,12 +41,12 @@
 								</Style>
 							</StackPanel.Styles>
 
-							<c:MesenSlider Text="{l:Translate lblChannelA}" Value="{Binding Config.ChannelAVol}" />
-							<c:MesenSlider Text="{l:Translate lblChannelB}" Value="{Binding Config.ChannelBVol}" />
-							<c:MesenSlider Text="{l:Translate lblSquare1}" Value="{Binding Config.Square1Vol}" />
-							<c:MesenSlider Text="{l:Translate lblSquare2}" Value="{Binding Config.Square2Vol}" />
-							<c:MesenSlider Text="{l:Translate lblWave}" Value="{Binding Config.WaveVol}" />
-							<c:MesenSlider Text="{l:Translate lblNoise}" Value="{Binding Config.NoiseVol}" />
+							<c:NexenSlider Text="{l:Translate lblChannelA}" Value="{Binding Config.ChannelAVol}" />
+							<c:NexenSlider Text="{l:Translate lblChannelB}" Value="{Binding Config.ChannelBVol}" />
+							<c:NexenSlider Text="{l:Translate lblSquare1}" Value="{Binding Config.Square1Vol}" />
+							<c:NexenSlider Text="{l:Translate lblSquare2}" Value="{Binding Config.Square2Vol}" />
+							<c:NexenSlider Text="{l:Translate lblWave}" Value="{Binding Config.WaveVol}" />
+							<c:NexenSlider Text="{l:Translate lblNoise}" Value="{Binding Config.NoiseVol}" />
 						</StackPanel>
 					</c:GroupBox>
 				</StackPanel>
@@ -70,14 +70,14 @@
 					<c:OptionSection Header="{l:Translate grpOverclocking}">
 						<Border BorderThickness="1" BorderBrush="Gray" Padding="3" Width="370" HorizontalAlignment="Left">
 							<Panel>
-								<Image Source="/Assets/Help.png" Margin="0" Width="16" Height="16" HorizontalAlignment="Left" />
+								<Image Source="{SvgImage /Assets/Help.svg}" Margin="0" Width="16" Height="16" HorizontalAlignment="Left" />
 								<TextBlock Text="{l:Translate lblOverclockHint}" TextWrapping="Wrap" Margin="25 0 0 0" />
 							</Panel>
 						</Border>
 
 						<Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto" Margin="0 10">
 							<TextBlock Grid.Column="0" Grid.Row="0" Text="{l:Translate lblOverclockScanlineCount}" />
-							<c:MesenNumericUpDown Grid.Column="1" Grid.Row="0" Value="{Binding Config.OverclockScanlineCount}" Minimum="0" Maximum="1000" />
+							<c:NexenNumericUpDown Grid.Column="1" Grid.Row="0" Value="{Binding Config.OverclockScanlineCount}" Minimum="0" Maximum="1000" />
 						</Grid>
 					</c:OptionSection>
 				</StackPanel>
@@ -107,7 +107,7 @@
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
 					<v:VideoConfigOverrideView DataContext="{Binding Config.ConfigOverrides}" />
-					
+
 					<c:OptionSection Header="{l:Translate lblLcdSettings}">
 						<CheckBox IsChecked="{Binding Config.GbaAdjustColors}" Content="{l:Translate chkGbaAdjustColors}"/>
 						<CheckBox IsChecked="{Binding Config.BlendFrames}" Content="{l:Translate chkGbBlendFrames}" />

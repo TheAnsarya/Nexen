@@ -1,25 +1,30 @@
-﻿using Avalonia.Controls;
-using Mesen.Config;
-using Mesen.Utilities;
-using ReactiveUI.Fody.Helpers;
+using Avalonia.Controls;
+using Nexen.Config;
+using Nexen.Utilities;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.ViewModels
-{
-	public class InputConfigViewModel : DisposableViewModel
-	{
-		[Reactive] public InputConfig Config { get; set; }
-		[Reactive] public InputConfig OriginalConfig { get; set; }
+namespace Nexen.ViewModels;
+/// <summary>
+/// ViewModel for the input configuration tab.
+/// </summary>
+public sealed partial class InputConfigViewModel : DisposableViewModel {
+	/// <summary>Gets or sets the current input configuration.</summary>
+	[Reactive] public partial InputConfig Config { get; set; }
 
-		public InputConfigViewModel()
-		{
-			Config = ConfigManager.Config.Input;
-			OriginalConfig = Config.Clone();
+	/// <summary>Gets or sets the original input configuration for revert.</summary>
+	[Reactive] public partial InputConfig OriginalConfig { get; set; }
 
-			if(Design.IsDesignMode) {
-				return;
-			}
+	/// <summary>
+	/// Initializes a new instance of the <see cref="InputConfigViewModel"/> class.
+	/// </summary>
+	public InputConfigViewModel() {
+		Config = ConfigManager.Config.Input;
+		OriginalConfig = Config.Clone();
 
-			AddDisposable(ReactiveHelper.RegisterRecursiveObserver(Config, (s, e) => { Config.ApplyConfig(); }));
+		if (Design.IsDesignMode) {
+			return;
 		}
+
+		AddDisposable(ReactiveHelper.RegisterRecursiveObserver(Config, (s, e) => Config.ApplyConfig()));
 	}
 }

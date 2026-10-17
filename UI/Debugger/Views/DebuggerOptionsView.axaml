@@ -3,21 +3,21 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:dv="using:Mesen.Debugger.Views"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:dv="using:Nexen.Debugger.Views"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="610"
 	VerticalAlignment="Stretch"
 	x:DataType="dvm:DebuggerOptionsViewModel"
-	x:Class="Mesen.Debugger.Views.DebuggerOptionsView"
+	x:Class="Nexen.Debugger.Views.DebuggerOptionsView"
 >
 	<Design.DataContext>
 		<dvm:DebuggerOptionsViewModel />
 	</Design.DataContext>
-	
+
 	<UserControl.Styles>
 		<Style Selector="WrapPanel > CheckBox">
 			<Setter Property="Margin" Value="0 0 7 0" />
@@ -36,7 +36,7 @@
 					Width="105"
 					SelectedItem="{Binding Config.VerifiedDataDisplay}"
 				/>
-				
+
 				<TextBlock Grid.Row="1" VerticalAlignment="Center" Text="{l:Translate lblUnidentifiedBlock}" />
 				<c:EnumComboBox
 					Grid.Row="1" Grid.Column="1"
@@ -52,7 +52,7 @@
 				/>
 				<DockPanel Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsGba}">
 					<Image
-						Source="/Assets/Help.png"
+						Source="{SvgImage /Assets/Help.svg}"
 						Stretch="None"
 						Margin="4 4"
 						DockPanel.Dock="Right"
@@ -69,13 +69,13 @@
 						SelectedItem="{Binding Config.Gba.DisassemblyMode}"
 					/>
 				</DockPanel>
-				
+
 				<DockPanel Grid.Row="3" Grid.ColumnSpan="2">
 					<TextBlock VerticalAlignment="Center" Text="{l:Translate lblAddressDisplay}" />
 					<c:EnumComboBox SelectedItem="{Binding Config.AddressDisplayType}" />
 				</DockPanel>
 			</Grid>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.ShowByteCode}"
 				Content="{l:Translate chkShowByteCode}"
@@ -158,7 +158,7 @@
 					IsChecked="{Binding Config.Gameboy.GbBreakOnNopLoad}"
 					Content="{l:Translate chkGbBreakOnNopLoad}"
 				/>
-				
+
 				<!-- not implemented -->
 				<CheckBox
 					IsVisible="False"
@@ -254,6 +254,18 @@
 					Content="{l:Translate chkBreakOnUndefinedOpCode}"
 				/>
 			</StackPanel>
+			<StackPanel IsVisible="{Binding IsLynx}">
+				<CheckBox
+					IsChecked="{Binding Config.Lynx.BreakOnBrk}"
+					Content="{l:Translate chkBreakOnBrk}"
+				/>
+			</StackPanel>
+			<StackPanel IsVisible="{Binding IsAtari2600}">
+				<CheckBox
+					IsChecked="{Binding Config.Atari2600.BreakOnBrk}"
+					Content="{l:Translate chkBreakOnBrk}"
+				/>
+			</StackPanel>
 			<Rectangle  IsVisible="{Binding HasSpecificBreakOptions}" Stroke="#AAA" Height="1" StrokeThickness="1" HorizontalAlignment="Stretch" Margin="0 2" />
 			<CheckBox
 				IsChecked="{Binding Config.BreakOnUninitRead}"
@@ -284,32 +296,32 @@
 					</MultiBinding>
 				</CheckBox.IsVisible>
 			</CheckBox>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.BringToFrontOnBreak}"
 				Content="{l:Translate chkBringToFrontOnBreak}"
 			/>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.BringToFrontOnPause}"
 				Content="{l:Translate chkBringToFrontOnPause}"
 			/>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.FocusGameOnResume}"
 				Content="{l:Translate chkFocusGameOnResume}"
 			/>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.RefreshWhileRunning}"
 				Content="{l:Translate chkRefreshWhileRunning}"
 			/>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.DrawPartialFrame}"
 				Content="{l:Translate chkDrawPartialFrame}"
 			/>
-			
+
 			<CheckBox
 				IsChecked="{Binding Config.UsePredictiveBreakpoints}"
 				Content="{l:Translate chkUsePredictiveBreakpoints}"

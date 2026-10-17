@@ -2,28 +2,24 @@
 #include "pch.h"
 #include "Netplay/NetMessage.h"
 
-class SelectControllerMessage : public NetMessage
-{
+class SelectControllerMessage : public NetMessage {
 private:
 	NetplayControllerInfo _controller = {};
 
 protected:
-	void Serialize(Serializer &s) override
-	{
+	void Serialize(Serializer& s) override {
 		SV(_controller.Port);
 		SV(_controller.SubPort);
 	}
 
 public:
-	SelectControllerMessage(void* buffer, uint32_t length) : NetMessage(buffer, length) { }
+	SelectControllerMessage(void* buffer, uint32_t length) : NetMessage(buffer, length) {}
 
-	SelectControllerMessage(NetplayControllerInfo controller) : NetMessage(MessageType::SelectController)
-	{
+	SelectControllerMessage(NetplayControllerInfo controller) : NetMessage(MessageType::SelectController) {
 		_controller = controller;
 	}
 
-	NetplayControllerInfo GetController()
-	{
+	NetplayControllerInfo GetController() {
 		return _controller;
 	}
 };

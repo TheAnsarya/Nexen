@@ -1,0 +1,87 @@
+{
+	"$schema": "./test-manifest.schema.json",
+	"version": 1,
+	"tests": [
+		{
+			"name": "gba-jsmolka-arm",
+			"system": "gba",
+			"rom": "gba/jsmolka/arm.gba",
+			"strategy": "lua-script",
+			"script": "gba/jsmolka-test.lua",
+			"maxFrames": 18000,
+			"tags": ["cpu", "arm", "critical", "jsmolka"]
+		},
+		{
+			"name": "gba-jsmolka-thumb",
+			"system": "gba",
+			"rom": "gba/jsmolka/thumb.gba",
+			"strategy": "lua-script",
+			"script": "gba/jsmolka-test.lua",
+			"maxFrames": 18000,
+			"tags": ["cpu", "thumb", "critical", "jsmolka"]
+		},
+		{
+			"name": "gba-jsmolka-memory",
+			"system": "gba",
+			"rom": "gba/jsmolka/memory.gba",
+			"strategy": "lua-script",
+			"script": "gba/jsmolka-test.lua",
+			"maxFrames": 18000,
+			"tags": ["memory", "jsmolka"]
+		},
+		{
+			"name": "gba-jsmolka-ppu",
+			"system": "gba",
+			"rom": "gba/jsmolka/ppu.gba",
+			"strategy": "lua-script",
+			"script": "gba/jsmolka-test.lua",
+			"maxFrames": 36000,
+			"tags": ["ppu", "jsmolka"]
+		},
+		{
+			"name": "gba-jsmolka-bios",
+			"system": "gba",
+			"rom": "gba/jsmolka/bios.gba",
+			"strategy": "lua-script",
+			"script": "gba/jsmolka-test.lua",
+			"maxFrames": 18000,
+			"tags": ["bios", "jsmolka"]
+		},
+		{
+			"name": "gba-jsmolka-save",
+			"system": "gba",
+			"rom": "gba/jsmolka/save.gba",
+			"strategy": "lua-script",
+			"script": "gba/jsmolka-test.lua",
+			"maxFrames": 18000,
+			"tags": ["save", "jsmolka"]
+		},
+		{
+			"name": "gba-mgba-suite-memory",
+			"system": "gba",
+			"rom": "gba/mgba-suite/memory.gba",
+			"strategy": "lua-script",
+			"script": "gba/mgba-suite-test.lua",
+			"maxFrames": 36000,
+			"tags": ["memory", "mgba-suite"]
+		},
+		{
+			"name": "gba-mgba-suite-timer",
+			"system": "gba",
+			"rom": "gba/mgba-suite/timer.gba",
+			"strategy": "lua-script",
+			"script": "gba/mgba-suite-test.lua",
+			"maxFrames": 36000,
+			"tags": ["timer", "mgba-suite"]
+		},
+		{
+			"name": "gba-mgba-suite-dma",
+			"system": "gba",
+			"rom": "gba/mgba-suite/dma.gba",
+			"strategy": "lua-script",
+			"script": "gba/mgba-suite-test.lua",
+			"maxFrames": 36000,
+			"tags": ["dma", "mgba-suite"]
+		}
+	]
+}

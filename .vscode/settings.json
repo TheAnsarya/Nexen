@@ -1,0 +1,38 @@
+{
+    "cSpell.words": [
+        "Basketbrawl",
+        "Battlezone",
+        "Blader",
+        "Cyberball",
+        "Dinolympics",
+        "Drivin",
+        "Eeprom",
+        "EEPROM",
+        "Electrocop",
+        "Gaiden",
+        "Gordo",
+        "Ishido",
+        "Klax",
+        "Krazy",
+        "Nexen",
+        "NMOS",
+        "Robotron",
+        "Rygar",
+        "Skweek",
+        "Toki",
+        "Warbirds",
+        "Xybots",
+        "Ynxa",
+        "Zarlor",
+        "Zendocon"
+    ],
+    "[pasm]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": false,
+        "editor.detectIndentation": false
+    },
+    "files.associations": {
+        "*.pasm": "pasm",
+        "*.src": "pasm"
+    }
+}

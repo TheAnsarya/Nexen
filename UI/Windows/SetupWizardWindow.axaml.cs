@@ -1,81 +1,75 @@
+﻿using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform;
-using Mesen.ViewModels;
-using System;
+using Nexen.Config;
+using Nexen.ViewModels;
 
-namespace Mesen.Windows
-{
-	public class SetupWizardWindow : MesenWindow
-	{
-		private SetupWizardViewModel _model;
+namespace Nexen.Windows;
+public partial class SetupWizardWindow : NexenWindow {
+	private SetupWizardViewModel _model;
+	private bool _setupCompleted;
 
-		public SetupWizardWindow()
-		{
-			_model = new SetupWizardViewModel();
-			DataContext = _model;
-			InitializeComponent();
+	public SetupWizardWindow() {
+		_model = new SetupWizardViewModel();
+		DataContext = _model;
+		InitializeComponent();
 
 #if DEBUG
-			this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
+	}
+
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
+	}
+
+	protected override void OnOpened(EventArgs e) {
+		base.OnOpened(e);
+		SetupWizardMetricsStore.RecordLaunch(_model.HasResumedDraft);
+
+		//Manually center the window (Avalonia on Linux doesn't seem to
+		//work with "CenterScreen" as startup location
+		Screen? screen = Screens.ScreenFromVisual(this);
+		if (screen != null) {
+			PixelPoint pos = new PixelPoint(
+				(int)((screen.Bounds.Width - Bounds.Width) / 2),
+				(int)((screen.Bounds.Height - Bounds.Height) / 2)
+			);
+			Position = pos;
 		}
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
-
-		protected override void OnOpened(EventArgs e)
-		{
-			base.OnOpened(e);
-
-			//Manually center the window (Avalonia on Linux doesn't seem to
-			//work with "CenterScreen" as startup location
-			Screen? screen = Screens.ScreenFromVisual(this);
-			if(screen != null) {
-				PixelPoint pos = new PixelPoint(
-					(int)((screen.Bounds.Width - Bounds.Width) / 2),
-					(int)((screen.Bounds.Height - Bounds.Height) / 2)
-				);
-				Position = pos;
-			}
-		}
-
-		private void btnOk_OnClick(object? sender, RoutedEventArgs e)
-		{
-			if(_model.Confirm(this)) {
-				Close();
-			}
-		}
-
-		private void lblCancel_Tapped(object? sender, TappedEventArgs e)
-		{
+	private void btnOk_OnClick(object? sender, RoutedEventArgs e) {
+		if (_model.Confirm(this)) {
+			SetupWizardMetricsStore.RecordCompletion(_model.GetBacktrackCount());
+			_setupCompleted = true;
 			Close();
 		}
+	}
 
-		private void XboxIcon_Tapped(object? sender, TappedEventArgs e)
-		{
-			_model.EnableXboxMappings = !_model.EnableXboxMappings;
+	private void Cancel_OnClick(object? sender, RoutedEventArgs e) {
+		Close();
+	}
+
+	protected override void OnClosing(WindowClosingEventArgs e) {
+		if (!_setupCompleted) {
+			SetupWizardMetricsStore.RecordCancel(_model.GetBacktrackCount());
+			_model.SaveResumeState();
 		}
 
-		private void PsIcon_Tapped(object? sender, TappedEventArgs e)
-		{
-			_model.EnablePsMappings = !_model.EnablePsMappings;
-		}
+		base.OnClosing(e);
+	}
 
-		private void WasdIcon_Tapped(object? sender, TappedEventArgs e)
-		{
-			_model.EnableWasdMappings = !_model.EnableWasdMappings;
-		}
+	private void ResetStorageToRecommended_OnClick(object? sender, RoutedEventArgs e) {
+		_model.ResetStorageToRecommended();
+	}
 
-		private void ArrowIcon_Tapped(object? sender, TappedEventArgs e)
-		{
-			_model.EnableArrowMappings = !_model.EnableArrowMappings;
-		}
+	private void StartFresh_OnClick(object? sender, RoutedEventArgs e) {
+		SetupWizardMetricsStore.RecordStartFresh();
+		_model.DiscardResumeStateAndReset();
 	}
 }

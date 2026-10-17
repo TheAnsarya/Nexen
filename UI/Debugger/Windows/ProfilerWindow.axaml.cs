@@ -1,100 +1,100 @@
+using System;
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using DataBoxControl;
-using Mesen.Debugger.Controls;
-using Mesen.Debugger.Utilities;
-using Mesen.Debugger.ViewModels;
-using Mesen.Interop;
-using System;
-using System.ComponentModel;
+using Nexen.Controls.DataGridExtensions;
+using Nexen.Debugger.Controls;
+using Nexen.Debugger.Utilities;
+using Nexen.Debugger.ViewModels;
+using Nexen.Interop;
 
-namespace Mesen.Debugger.Windows
-{
-	public class ProfilerWindow : MesenWindow, INotificationHandler
-	{
-		private ProfilerWindowViewModel _model;
+namespace Nexen.Debugger.Windows;
+public partial class ProfilerWindow : NexenWindow, INotificationHandler {
+	private ProfilerWindowViewModel _model;
 
-		public ProfilerWindow()
-		{
-			InitializeComponent();
+	public ProfilerWindow() {
+		InitializeComponent();
 #if DEBUG
-			this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
-			_model = new ProfilerWindowViewModel(this);
-			DataContext = _model;
-			
-			if(Design.IsDesignMode) {
-				return;
-			}
+		// Subscribe to DataGrid CellDoubleClick routed event (bubbles from DataTemplate)
+		this.AddHandler(DataGridCellClickBehavior.CellDoubleClickEvent, OnCellDoubleClick);
 
-			_model.Config.LoadWindowSettings(this);
+		_model = new ProfilerWindowViewModel(this);
+		DataContext = _model;
+
+		if (Design.IsDesignMode) {
+			return;
 		}
 
-		protected override void OnClosing(WindowClosingEventArgs e)
-		{
-			base.OnClosing(e);
-			_model.Config.SaveWindowSettings(this);
+		_model.Config.LoadWindowSettings(this);
+	}
+
+	protected override void OnClosing(WindowClosingEventArgs e) {
+		base.OnClosing(e);
+		_model.Config.SaveWindowSettings(this);
+	}
+
+	public void ProcessNotification(NotificationEventArgs e) {
+		if (_model.Disposed) {
+			return;
 		}
 
-		public void ProcessNotification(NotificationEventArgs e)
-		{
-			switch(e.NotificationType) {
-				case ConsoleNotificationType.GameLoaded:
-					Dispatcher.UIThread.Post(() => {
-						_model.UpdateAvailableTabs();
-					});
-					break;
+		switch (e.NotificationType) {
+			case ConsoleNotificationType.GameLoaded:
+				Dispatcher.UIThread.Post(() => {
+					if (_model.Disposed) return;
+					_model.UpdateAvailableTabs();
+				});
+				break;
 
-				case ConsoleNotificationType.CodeBreak:
-					if(_model.Config.RefreshOnBreakPause) {
-						_model.RefreshData();
-					}
-					break;
+			case ConsoleNotificationType.CodeBreak:
+				if (_model.Config.RefreshOnBreakPause) {
+					_model.RefreshData();
+				}
 
-				case ConsoleNotificationType.PpuFrameDone:
-					if(_model.Config.AutoRefresh && !ToolRefreshHelper.LimitFps(this, 10)) {
-						_model.RefreshData();
-					}
-					break;
-			}
+				break;
+
+			case ConsoleNotificationType.PpuFrameDone:
+				if (_model.Config.AutoRefresh && !ToolRefreshHelper.LimitFps(this, 10)) {
+					_model.RefreshData();
+				}
+
+				break;
+		}
+	}
+
+	private void OnCellDoubleClick(object? sender, DataGridCellClickRoutedEventArgs e) {
+		if (_model.SelectedTab == null) {
+			return;
 		}
 
-		private void OnCellDoubleClick(DataBoxCell cell)
-		{
-			if(_model.SelectedTab == null) {
-				return;
-			}
-
-			int index = _model.SelectedTab.Selection.SelectedIndex;
-			if(index >= 0) {
-				ProfiledFunction? funcData = _model.SelectedTab.GetRawData(index);
-				if(funcData != null) {
-					AddressInfo relAddr = DebugApi.GetRelativeAddress(funcData.Value.Address, _model.SelectedTab.CpuType);
-					if(relAddr.Address >= 0) {
-						DebuggerWindow.OpenWindowAtAddress(_model.SelectedTab.CpuType, relAddr.Address);
-					}
+		int index = _model.SelectedTab.Selection.SelectedIndex;
+		if (index >= 0) {
+			ProfiledFunction? funcData = _model.SelectedTab.GetRawData(index);
+			if (funcData != null) {
+				AddressInfo relAddr = DebugApi.GetRelativeAddress(funcData.Value.Address, _model.SelectedTab.CpuType);
+				if (relAddr.Address >= 0) {
+					DebuggerWindow.OpenWindowAtAddress(_model.SelectedTab.CpuType, relAddr.Address);
 				}
 			}
 		}
+	}
 
-		private void OnResetClick(object sender, RoutedEventArgs e)
-		{
-			_model.SelectedTab?.ResetData();
-		}
+	private void OnResetClick(object sender, RoutedEventArgs e) {
+		_model.SelectedTab?.ResetData();
+	}
 
-		private void OnRefreshClick(object sender, RoutedEventArgs e)
-		{
-			_model.RefreshData();
-		}
+	private void OnRefreshClick(object sender, RoutedEventArgs e) {
+		_model.RefreshData();
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
 	}
 }

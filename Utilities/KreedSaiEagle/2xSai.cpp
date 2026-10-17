@@ -24,126 +24,109 @@
 
 #define twoxsai_result(A, B, C, D) (((A) != (C) || (A) != (D)) - ((B) != (C) || (B) != (D)));
 
-#define twoxsai_declare_variables(typename_t, in) \
-         typename_t product, product1, product2; \
-         typename_t colorI = *(in - prevline - prevcolumn); \
-         typename_t colorE = *(in - prevline + 0); \
-         typename_t colorF = *(in - prevline + nextcolumn); \
-         typename_t colorJ = *(in - prevline + nextcolumn2); \
-         typename_t colorG = *(in - prevcolumn); \
-         typename_t colorA = *(in + 0); \
-         typename_t colorB = *(in + nextcolumn); \
-         typename_t colorK = *(in + nextcolumn2); \
-         typename_t colorH = *(in + nextline - prevcolumn); \
-         typename_t colorC = *(in + nextline + 0); \
-         typename_t colorD = *(in + nextline + nextcolumn); \
-         typename_t colorL = *(in + nextline + nextcolumn2); \
-         typename_t colorM = *(in + nextline2 - prevcolumn); \
-         typename_t colorN = *(in + nextline2 + 0); \
-         typename_t colorO = *(in + nextline2 + nextcolumn); \
+#define twoxsai_declare_variables(typename_t, in)       \
+	typename_t product, product1, product2;             \
+	typename_t colorI = *(in - prevline - prevcolumn);  \
+	typename_t colorE = *(in - prevline + 0);           \
+	typename_t colorF = *(in - prevline + nextcolumn);  \
+	typename_t colorJ = *(in - prevline + nextcolumn2); \
+	typename_t colorG = *(in - prevcolumn);             \
+	typename_t colorA = *(in + 0);                      \
+	typename_t colorB = *(in + nextcolumn);             \
+	typename_t colorK = *(in + nextcolumn2);            \
+	typename_t colorH = *(in + nextline - prevcolumn);  \
+	typename_t colorC = *(in + nextline + 0);           \
+	typename_t colorD = *(in + nextline + nextcolumn);  \
+	typename_t colorL = *(in + nextline + nextcolumn2); \
+	typename_t colorM = *(in + nextline2 - prevcolumn); \
+	typename_t colorN = *(in + nextline2 + 0);          \
+	typename_t colorO = *(in + nextline2 + nextcolumn);
 
 #ifndef twoxsai_function
-#define twoxsai_function(result_cb, interpolate_cb, interpolate2_cb) \
-         if (colorA == colorD && colorB != colorC) \
-         { \
-            if ((colorA == colorE && colorB == colorL) || (colorA == colorC && colorA == colorF && colorB != colorE && colorB == colorJ)) \
-               product = colorA; \
-            else \
-            { \
-               product = interpolate_cb(colorA, colorB); \
-            } \
-            if ((colorA == colorG && colorC == colorO) || (colorA == colorB && colorA == colorH && colorG != colorC && colorC == colorM)) \
-               product1 = colorA; \
-            else \
-            { \
-               product1 = interpolate_cb(colorA, colorC); \
-            } \
-            product2 = colorA; \
-         } else if (colorB == colorC && colorA != colorD) \
-         { \
-            if ((colorB == colorF && colorA == colorH) || (colorB == colorE && colorB == colorD && colorA != colorF && colorA == colorI)) \
-               product = colorB; \
-            else \
-            { \
-               product = interpolate_cb(colorA, colorB); \
-            } \
-            if ((colorC == colorH && colorA == colorF) || (colorC == colorG && colorC == colorD && colorA != colorH && colorA == colorI)) \
-               product1 = colorC; \
-            else \
-            { \
-               product1 = interpolate_cb(colorA, colorC); \
-            } \
-            product2 = colorB; \
-         } \
-         else if (colorA == colorD && colorB == colorC) \
-         { \
-            if (colorA == colorB) \
-            { \
-               product  = colorA; \
-               product1 = colorA; \
-               product2 = colorA; \
-            } \
-            else \
-            { \
-               int r = 0; \
-               product1 = interpolate_cb(colorA, colorC); \
-               product  = interpolate_cb(colorA, colorB); \
-               r += result_cb(colorA, colorB, colorG, colorE); \
-               r += result_cb(colorB, colorA, colorK, colorF); \
-               r += result_cb(colorB, colorA, colorH, colorN); \
-               r += result_cb(colorA, colorB, colorL, colorO); \
-               if (r > 0) \
-                  product2 = colorA; \
-               else if (r < 0) \
-                  product2 = colorB; \
-               else \
-               { \
-                  product2 = interpolate2_cb(colorA, colorB, colorC, colorD); \
-               } \
-            } \
-         } \
-         else \
-         { \
-            product2 = interpolate2_cb(colorA, colorB, colorC, colorD); \
-            if (colorA == colorC && colorA == colorF && colorB != colorE && colorB == colorJ) \
-               product = colorA; \
-            else if (colorB == colorE && colorB == colorD && colorA != colorF && colorA == colorI) \
-               product = colorB; \
-            else \
-            { \
-               product = interpolate_cb(colorA, colorB); \
-            } \
-            if (colorA == colorB && colorA == colorH && colorG != colorC && colorC == colorM) \
-               product1 = colorA; \
-            else if (colorC == colorG && colorC == colorD && colorA != colorH && colorA == colorI) \
-               product1 = colorC; \
-            else \
-            { \
-               product1 = interpolate_cb(colorA, colorC); \
-            } \
-         } \
-         out[0] = colorA; \
-         out[1] = product; \
-         out[dst_stride] = product1; \
-         out[dst_stride + 1] = product2; \
-         ++in; \
-         out += 2
+#define twoxsai_function(result_cb, interpolate_cb, interpolate2_cb)                                                                  \
+	if (colorA == colorD && colorB != colorC) {                                                                                       \
+		if ((colorA == colorE && colorB == colorL) || (colorA == colorC && colorA == colorF && colorB != colorE && colorB == colorJ)) \
+			product = colorA;                                                                                                         \
+		else {                                                                                                                        \
+			product = interpolate_cb(colorA, colorB);                                                                                 \
+		}                                                                                                                             \
+		if ((colorA == colorG && colorC == colorO) || (colorA == colorB && colorA == colorH && colorG != colorC && colorC == colorM)) \
+			product1 = colorA;                                                                                                        \
+		else {                                                                                                                        \
+			product1 = interpolate_cb(colorA, colorC);                                                                                \
+		}                                                                                                                             \
+		product2 = colorA;                                                                                                            \
+	} else if (colorB == colorC && colorA != colorD) {                                                                                \
+		if ((colorB == colorF && colorA == colorH) || (colorB == colorE && colorB == colorD && colorA != colorF && colorA == colorI)) \
+			product = colorB;                                                                                                         \
+		else {                                                                                                                        \
+			product = interpolate_cb(colorA, colorB);                                                                                 \
+		}                                                                                                                             \
+		if ((colorC == colorH && colorA == colorF) || (colorC == colorG && colorC == colorD && colorA != colorH && colorA == colorI)) \
+			product1 = colorC;                                                                                                        \
+		else {                                                                                                                        \
+			product1 = interpolate_cb(colorA, colorC);                                                                                \
+		}                                                                                                                             \
+		product2 = colorB;                                                                                                            \
+	} else if (colorA == colorD && colorB == colorC) {                                                                                \
+		if (colorA == colorB) {                                                                                                       \
+			product = colorA;                                                                                                         \
+			product1 = colorA;                                                                                                        \
+			product2 = colorA;                                                                                                        \
+		} else {                                                                                                                      \
+			int r = 0;                                                                                                                \
+			product1 = interpolate_cb(colorA, colorC);                                                                                \
+			product = interpolate_cb(colorA, colorB);                                                                                 \
+			r += result_cb(colorA, colorB, colorG, colorE);                                                                           \
+			r += result_cb(colorB, colorA, colorK, colorF);                                                                           \
+			r += result_cb(colorB, colorA, colorH, colorN);                                                                           \
+			r += result_cb(colorA, colorB, colorL, colorO);                                                                           \
+			if (r > 0)                                                                                                                \
+				product2 = colorA;                                                                                                    \
+			else if (r < 0)                                                                                                           \
+				product2 = colorB;                                                                                                    \
+			else {                                                                                                                    \
+				product2 = interpolate2_cb(colorA, colorB, colorC, colorD);                                                           \
+			}                                                                                                                         \
+		}                                                                                                                             \
+	} else {                                                                                                                          \
+		product2 = interpolate2_cb(colorA, colorB, colorC, colorD);                                                                   \
+		if (colorA == colorC && colorA == colorF && colorB != colorE && colorB == colorJ)                                             \
+			product = colorA;                                                                                                         \
+		else if (colorB == colorE && colorB == colorD && colorA != colorF && colorA == colorI)                                        \
+			product = colorB;                                                                                                         \
+		else {                                                                                                                        \
+			product = interpolate_cb(colorA, colorB);                                                                                 \
+		}                                                                                                                             \
+		if (colorA == colorB && colorA == colorH && colorG != colorC && colorC == colorM)                                             \
+			product1 = colorA;                                                                                                        \
+		else if (colorC == colorG && colorC == colorD && colorA != colorH && colorA == colorI)                                        \
+			product1 = colorC;                                                                                                        \
+		else {                                                                                                                        \
+			product1 = interpolate_cb(colorA, colorC);                                                                                \
+		}                                                                                                                             \
+	}                                                                                                                                 \
+	out[0] = colorA;                                                                                                                  \
+	out[1] = product;                                                                                                                 \
+	out[dst_stride] = product1;                                                                                                       \
+	out[dst_stride + 1] = product2;                                                                                                   \
+	++in;                                                                                                                             \
+	out += 2
 #endif
 
-void twoxsai_generic_xrgb8888(unsigned width, unsigned height, uint32_t *src, unsigned src_stride, uint32_t *dst, unsigned dst_stride)
-{
-   unsigned finish;
+void twoxsai_generic_xrgb8888(unsigned width, unsigned height, uint32_t* src, unsigned src_stride, uint32_t* dst, unsigned dst_stride) {
+	unsigned finish;
 	int y = 0;
 	int x = 0;
-	for(; height; height--) {
-		uint32_t *in = (uint32_t*)src;
-		uint32_t *out = (uint32_t*)dst;
+	for (; height; height--) {
+		uint32_t* in = (uint32_t*)src;
+		uint32_t* out = (uint32_t*)dst;
 
 		int prevline = (y > 0 ? src_stride : 0);
 		int nextline = (height > 1 ? src_stride : 0);
 		int nextline2 = (height > 2 ? src_stride * 2 : nextline);
 
-		for(finish = width; finish; finish -= 1) {
+		for (finish = width; finish; finish -= 1) {
 			int prevcolumn = (x > 0 ? 1 : 0);
 			int nextcolumn = (finish > 1 ? 1 : 0);
 			int nextcolumn2 = (finish > 2 ? 2 : nextcolumn);

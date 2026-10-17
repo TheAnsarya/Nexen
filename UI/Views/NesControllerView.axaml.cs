@@ -1,26 +1,20 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace Mesen.Views
-{
-	public class NesControllerView : UserControl
-	{
-		public bool ShowMicrophoneButton { get; }
+namespace Nexen.Views; 
+public partial class NesControllerView : UserControl {
+	public bool ShowMicrophoneButton { get; }
 
-		public NesControllerView() : this(false)
-		{
-		}
+	public NesControllerView() : this(false) {
+	}
 
-		public NesControllerView(bool showMicrophoneButton)
-		{
-			ShowMicrophoneButton = showMicrophoneButton;
+	public NesControllerView(bool showMicrophoneButton) {
+		ShowMicrophoneButton = showMicrophoneButton;
 
-			InitializeComponent();
-		}
+		InitializeComponent();
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
 	}
 }

@@ -9,28 +9,25 @@
 #include "Shared/KeyManager.h"
 #include "Utilities/Serializer.h"
 
-class SmsLightPhaser : public BaseControlDevice
-{
+class SmsLightPhaser : public BaseControlDevice {
 private:
 	SmsConsole* _console;
 
 protected:
 	bool HasCoordinates() override { return true; }
 
-	string GetKeyNames() override
-	{
+	string GetKeyNames() override {
 		return "F";
 	}
 
 	enum Buttons { Fire };
 
-	void InternalSetStateFromInput() override
-	{
+	void InternalSetStateFromInput() override {
 		MousePosition pos = KeyManager::GetMousePosition();
 
-		for(KeyMapping& keyMapping : _keyMappings) {
+		for (KeyMapping& keyMapping : _keyMappings) {
 			SetPressedState(Buttons::Fire, KeyManager::IsKeyPressed(keyMapping.CustomKeys[0]));
-			if(KeyManager::IsKeyPressed(keyMapping.CustomKeys[1])) {
+			if (KeyManager::IsKeyPressed(keyMapping.CustomKeys[1])) {
 				pos.X = -1;
 				pos.Y = -1;
 			}
@@ -39,8 +36,7 @@ protected:
 		SetCoordinates(pos);
 	}
 
-	bool IsLightFound(MousePosition pos, bool ignoreVdpPos)
-	{
+	bool IsLightFound(MousePosition pos, bool ignoreVdpPos) {
 		SmsVdp* vdp = _console->GetVdp();
 
 		int32_t scanline = vdp->GetScanline();
@@ -49,19 +45,17 @@ protected:
 
 		pos.Y -= vdp->GetViewportYOffset();
 
-		if(pos.X >= 0 && pos.Y >= 0) {
-			for(int yOffset = -radius; yOffset <= radius; yOffset++) {
+		if (pos.X >= 0 && pos.Y >= 0) {
+			for (int yOffset = -radius; yOffset <= radius; yOffset++) {
 				int yPos = pos.Y + yOffset;
-				if(yPos >= 0 && yPos < 240) {
-					for(int xOffset = -(radius + 1) * 5; xOffset <= (radius + 1) * 5; xOffset++) {
+				if (yPos >= 0 && yPos < 240) {
+					for (int xOffset = -(radius + 1) * 5; xOffset <= (radius + 1) * 5; xOffset++) {
 						int xPos = pos.X + xOffset;
-						if(xPos >= 0 && xPos < 256) {
-							bool inRange = (
-								yPos <= scanline && yPos >= scanline - 5 &&
-								xPos <= cycle && xPos >= cycle - 50
-							);
-							if((ignoreVdpPos || inRange) && vdp->GetPixelBrightness(xPos, yPos) >= 85) {
-								//Light cannot be detected if the Y/X position is further ahead than the PPU, or if the PPU drew a dark color
+						if (xPos >= 0 && xPos < 256) {
+							bool inRange = (yPos <= scanline && yPos >= scanline - 5 &&
+							                xPos <= cycle && xPos >= cycle - 50);
+							if ((ignoreVdpPos || inRange) && vdp->GetPixelBrightness(xPos, yPos) >= 85) {
+								// Light cannot be detected if the Y/X position is further ahead than the PPU, or if the PPU drew a dark color
 								return true;
 							}
 						}
@@ -74,20 +68,18 @@ protected:
 	}
 
 public:
-	SmsLightPhaser(SmsConsole* console, uint8_t port, KeyMappingSet keyMappings) : BaseControlDevice(console->GetEmulator(), ControllerType::SmsLightPhaser, port, keyMappings)
-	{
+	SmsLightPhaser(SmsConsole* console, uint8_t port, KeyMappingSet keyMappings) : BaseControlDevice(console->GetEmulator(), ControllerType::SmsLightPhaser, port, keyMappings) {
 		_console = console;
 	}
 
-	uint8_t ReadRam(uint16_t addr) override
-	{
+	uint8_t ReadRam(uint16_t addr) override {
 		uint8_t value = 0xFF;
-		if(addr == 0) {
-			if(_port == 0) {
+		if (addr == 0) {
+			if (_port == 0) {
 				value ^= IsPressed(Buttons::Fire) ? 0x10 : 0;
 			}
 		} else {
-			if(_port == 0) {
+			if (_port == 0) {
 				value ^= IsLightFound(GetCoordinates(), false) ? 0x40 : 0;
 			} else {
 				value ^= IsLightFound(GetCoordinates(), false) ? 0x80 : 0;
@@ -97,22 +89,19 @@ public:
 		return value;
 	}
 
-	void WriteRam(uint16_t addr, uint8_t value) override
-	{
+	void WriteRam(uint16_t addr, uint8_t value) override {
 	}
 
-	void OnAfterSetState() override
-	{
+	void OnAfterSetState() override {
 		MousePosition pos = GetCoordinates();
 
-		//Make the VDP latch the H counter at the mouse's position
-		if(pos.X >= 0 && pos.Y >= 0 && IsLightFound(pos, true)) {
-			_console->GetVdp()->SetLocationLatchRequest(pos.X+38);
+		// Make the VDP latch the H counter at the mouse's position
+		if (pos.X >= 0 && pos.Y >= 0 && IsLightFound(pos, true)) {
+			_console->GetVdp()->SetLocationLatchRequest(pos.X + 38);
 		}
 	}
 
-	void InternalDrawController(InputHud& hud) override
-	{
+	void InternalDrawController(InputHud& hud) override {
 		hud.DrawOutline(11, 14);
 		hud.DrawButton(2, 1, 7, 5, IsPressed(Buttons::Fire));
 		hud.DrawNumber(hud.GetControllerIndex() + 1, 4, 7);
@@ -120,12 +109,11 @@ public:
 		hud.DrawMousePosition(GetCoordinates());
 	}
 
-	vector<DeviceButtonName> GetKeyNameAssociations() override
-	{
+	vector<DeviceButtonName> GetKeyNameAssociations() override {
 		return {
-			{ "x", BaseControlDevice::DeviceXCoordButtonId, true },
-			{ "y", BaseControlDevice::DeviceYCoordButtonId, true },
-			{ "trigger", Buttons::Fire },
+		    {"x", BaseControlDevice::DeviceXCoordButtonId, true},
+		    {"y", BaseControlDevice::DeviceYCoordButtonId, true},
+		    {"trigger", Buttons::Fire},
 		};
 	}
 };

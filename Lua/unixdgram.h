@@ -19,7 +19,7 @@
 #pragma GCC visibility push(hidden)
 #endif
 
-int unixdgram_open(lua_State *L);
+int unixdgram_open(lua_State* L);
 
 #ifndef _WIN32
 #pragma GCC visibility pop

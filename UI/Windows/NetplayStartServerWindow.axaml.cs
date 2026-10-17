@@ -1,42 +1,35 @@
+using System.Collections.Generic;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Mesen.Config;
-using Mesen.Interop;
-using Mesen.ViewModels;
-using System.Collections.Generic;
+using Nexen.Config;
+using Nexen.Interop;
+using Nexen.ViewModels;
 
-namespace Mesen.Windows
-{
-	public class NetplayStartServerWindow : MesenWindow
-	{
-		public NetplayStartServerWindow()
-		{
-			InitializeComponent();
+namespace Nexen.Windows; 
+public partial class NetplayStartServerWindow : NexenWindow {
+	public NetplayStartServerWindow() {
+		InitializeComponent();
 #if DEBUG
-			this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
-		}
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
+	}
 
-		private void Ok_OnClick(object sender, RoutedEventArgs e)
-		{
-			NetplayConfig cfg = (NetplayConfig)DataContext!;
-			ConfigManager.Config.Netplay = cfg.Clone();
+	private void Ok_OnClick(object sender, RoutedEventArgs e) {
+		NetplayConfig cfg = (NetplayConfig)DataContext!;
+		ConfigManager.Config.Netplay = cfg.Clone();
 
-			Close(true);
+		Close(true);
 
-			NetplayApi.StartServer(cfg.ServerPort, cfg.ServerPassword);
-		}
+		NetplayApi.StartServer(cfg.ServerPort, cfg.ServerPassword);
+	}
 
-		private void Cancel_OnClick(object sender, RoutedEventArgs e)
-		{
-			Close(false);
-		}
+	private void Cancel_OnClick(object sender, RoutedEventArgs e) {
+		Close(false);
 	}
 }

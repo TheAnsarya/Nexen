@@ -2,14 +2,14 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:v="using:Mesen.Views"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:v="using:Nexen.Views"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
-	x:Class="Mesen.Debugger.Windows.DebugLogWindow"
+	x:Class="Nexen.Debugger.Windows.DebugLogWindow"
 	Width="400" Height="400"
 	Icon="/Assets/LogWindow.png"
 	Title="{l:Translate wndTitle}"
@@ -21,13 +21,13 @@
 		</StackPanel>
 
 		<Border BorderThickness="1" BorderBrush="Gray">
-			<dc:MesenTextEditor
+			<dc:NexenTextEditor
 				Name="txtLog"
 				Height="NaN"
 				IsReadOnly="True"
 				Padding="3"
-				FontFamily="{DynamicResource MesenFont}"
-				FontSize="{DynamicResource MesenFontSize}"
+				FontFamily="{DynamicResource NexenFont}"
+				FontSize="{DynamicResource NexenFontSize}"
 				TextBinding="{Binding LogContent, ElementName=root}"
 			/>
 		</Border>

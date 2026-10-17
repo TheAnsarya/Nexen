@@ -1,0 +1,42 @@
+{
+	"$schema": "./test-manifest.schema.json",
+	"version": 1,
+	"tests": [
+		{
+			"name": "a2600-stella-test-suit",
+			"system": "atari2600",
+			"rom": "atari2600/test-roms/stella-test-suite.a26",
+			"strategy": "memory-read",
+			"address": "0x80",
+			"memType": "Atari2600Memory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 18000,
+			"tags": ["cpu", "6507", "critical"]
+		},
+		{
+			"name": "a2600-hmove-test",
+			"system": "atari2600",
+			"rom": "atari2600/test-roms/hmove_test.a26",
+			"strategy": "memory-read",
+			"address": "0x80",
+			"memType": "Atari2600Memory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 18000,
+			"tags": ["tia", "sprite"]
+		},
+		{
+			"name": "a2600-playfield-test",
+			"system": "atari2600",
+			"rom": "atari2600/test-roms/playfield_test.a26",
+			"strategy": "memory-read",
+			"address": "0x80",
+			"memType": "Atari2600Memory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 18000,
+			"tags": ["tia", "playfield"]
+		}
+	]
+}

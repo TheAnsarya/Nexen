@@ -3,14 +3,14 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:du="using:Mesen.Debugger.Utilities"
-	xmlns:vm="using:Mesen.Debugger.StatusViews"
-	xmlns:c="using:Mesen.Controls"
+	xmlns:du="using:Nexen.Debugger.Utilities"
+	xmlns:vm="using:Nexen.Debugger.StatusViews"
+	xmlns:c="using:Nexen.Controls"
 	mc:Ignorable="d" d:DesignWidth="350"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:GbStatusViewModel"
-	x:Class="Mesen.Debugger.StatusViews.GbStatusView"
+	x:Class="Nexen.Debugger.StatusViews.GbStatusView"
 >
 	<Design.DataContext>
 		<vm:GbStatusViewModel />
@@ -26,7 +26,7 @@
 				<StackPanel DockPanel.Dock="Right">
 					<StackPanel Orientation="Horizontal" IsEnabled="{Binding EditAllowed}" VerticalAlignment="Top">
 						<TextBlock Margin="0">SP:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RegSP}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding RegSP}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<TextBox
 						VerticalAlignment="Top"
@@ -53,56 +53,56 @@
 
 						<StackPanel Orientation="Horizontal">
 							<TextBlock>A:</TextBlock>
-							<c:MesenNumericTextBox Value="{Binding RegA}" Hex="True" Max="0xFF" />
+							<c:NexenNumericTextBox Value="{Binding RegA}" Hex="True" Max="0xFF" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock>F:</TextBlock>
-							<c:MesenNumericTextBox Value="{Binding RegFlags}" Hex="True" Max="0xFF" />
+							<c:NexenNumericTextBox Value="{Binding RegFlags}" Hex="True" Max="0xFF" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock>B:</TextBlock>
-							<c:MesenNumericTextBox Value="{Binding RegB}" Hex="True" Max="0xFF" />
+							<c:NexenNumericTextBox Value="{Binding RegB}" Hex="True" Max="0xFF" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock>C:</TextBlock>
-							<c:MesenNumericTextBox Value="{Binding RegC}" Hex="True" Max="0xFF" />
+							<c:NexenNumericTextBox Value="{Binding RegC}" Hex="True" Max="0xFF" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock>D:</TextBlock>
-							<c:MesenNumericTextBox Value="{Binding RegD}" Hex="True" Max="0xFF" />
+							<c:NexenNumericTextBox Value="{Binding RegD}" Hex="True" Max="0xFF" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock>E:</TextBlock>
-							<c:MesenNumericTextBox Value="{Binding RegE}" Hex="True" Max="0xFF" />
+							<c:NexenNumericTextBox Value="{Binding RegE}" Hex="True" Max="0xFF" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock>H:</TextBlock>
-							<c:MesenNumericTextBox Value="{Binding RegH}" Hex="True" Max="0xFF" />
+							<c:NexenNumericTextBox Value="{Binding RegH}" Hex="True" Max="0xFF" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock>L:</TextBlock>
-							<c:MesenNumericTextBox Value="{Binding RegL}" Hex="True" Max="0xFF" />
+							<c:NexenNumericTextBox Value="{Binding RegL}" Hex="True" Max="0xFF" />
 						</StackPanel>
 					</WrapPanel>
 
 					<StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock>PC:</TextBlock>
-							<c:MesenNumericTextBox Value="{Binding RegPC}" Hex="True" Max="0xFFFF" IsEnabled="{Binding EditAllowed}" />
+							<c:NexenNumericTextBox Value="{Binding RegPC}" Hex="True" Max="0xFFFF" IsEnabled="{Binding EditAllowed}" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal">
 							<TextBlock>Cycle:</TextBlock>
-							<c:MesenNumericTextBox Value="{Binding CycleCount}" IsEnabled="False" Width="70" />
+							<c:NexenNumericTextBox Value="{Binding CycleCount}" IsEnabled="False" Width="70" />
 						</StackPanel>
 					</StackPanel>
 				</WrapPanel>
 			</DockPanel>
-			<Rectangle Stroke="{StaticResource MesenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" DockPanel.Dock="Top" />
+			<Rectangle Stroke="{StaticResource NexenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" DockPanel.Dock="Top" />
 
 			<WrapPanel Margin="0 2 0 0" DockPanel.Dock="Top" IsEnabled="{Binding EditAllowed}">
 				<StackPanel Orientation="Horizontal">
 					<TextBlock>F:</TextBlock>
-					<c:MesenNumericTextBox Value="{Binding RegFlags}" Hex="True" Max="0xFF" />
+					<c:NexenNumericTextBox Value="{Binding RegFlags}" Hex="True" Max="0xFF" />
 				</StackPanel>
 				
 				<WrapPanel>
@@ -121,7 +121,7 @@
 				</WrapPanel>
 			</WrapPanel>
 
-			<Rectangle Stroke="{StaticResource MesenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" DockPanel.Dock="Top" />
+			<Rectangle Stroke="{StaticResource NexenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" DockPanel.Dock="Top" />
 
 			<WrapPanel Margin="0 2 0 0" DockPanel.Dock="Top" IsEnabled="False">
 				<WrapPanel.Styles>
@@ -132,12 +132,12 @@
 				
 				<StackPanel Orientation="Horizontal">
 					<TextBlock>Scanline:</TextBlock>
-					<c:MesenNumericTextBox Value="{Binding Scanline}" />
+					<c:NexenNumericTextBox Value="{Binding Scanline}" />
 				</StackPanel>
 				
 				<StackPanel Orientation="Horizontal">
 					<TextBlock>Cycle:</TextBlock>
-					<c:MesenNumericTextBox Value="{Binding Cycle}" />
+					<c:NexenNumericTextBox Value="{Binding Cycle}" />
 				</StackPanel>
 			</WrapPanel>
 		</StackPanel>

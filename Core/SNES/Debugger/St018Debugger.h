@@ -18,8 +18,7 @@ class DummyArmV3Cpu;
 
 enum class MemoryOperationType;
 
-class St018Debugger final : public IDebugger
-{
+class St018Debugger final : public IDebugger {
 	Debugger* _debugger;
 	Emulator* _emu;
 	St018* _st018;
@@ -39,7 +38,8 @@ class St018Debugger final : public IDebugger
 	uint8_t _prevFlags = 0;
 
 	__forceinline void ProcessCallStackUpdates(AddressInfo& destAddr, uint32_t destPc);
-	template<uint8_t accessWidth> void ProcessInstruction();
+	template <uint8_t accessWidth>
+	void ProcessInstruction();
 
 public:
 	St018Debugger(Debugger* debugger);
@@ -48,8 +48,10 @@ public:
 	void Reset() override;
 
 	void ProcessInstruction();
-	template<uint8_t accessWidth> void ProcessRead(uint32_t addr, uint32_t value, MemoryOperationType type);
-	template<uint8_t accessWidth> void ProcessWrite(uint32_t addr, uint32_t value, MemoryOperationType type);
+	template <uint8_t accessWidth>
+	void ProcessRead(uint32_t addr, uint32_t value, MemoryOperationType type);
+	template <uint8_t accessWidth>
+	void ProcessWrite(uint32_t addr, uint32_t value, MemoryOperationType type);
 
 	void ProcessInterrupt(uint32_t originalPc, uint32_t currentPc, bool forNmi) override;
 

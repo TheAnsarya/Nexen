@@ -4,10 +4,10 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-	xmlns:v="using:Mesen.Debugger.Views"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels.DebuggerDock"
-	x:Class="Mesen.Debugger.Views.DebuggerDock.ToolContainerView"
+	xmlns:v="using:Nexen.Debugger.Views"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels.DebuggerDock"
+	x:Class="Nexen.Debugger.Views.DebuggerDock.ToolContainerView"
 >
 	<ContentControl Content="{ReflectionBinding Model}" />
 </UserControl>

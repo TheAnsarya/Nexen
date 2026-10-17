@@ -2,8 +2,7 @@
 #include "pch.h"
 #include "Utilities/Serializer.h"
 
-class Vrc6Pulse: public ISerializable
-{
+class Vrc6Pulse : public ISerializable {
 private:
 	uint8_t _volume = 0;
 	uint8_t _dutyCycle = 0;
@@ -15,15 +14,20 @@ private:
 	uint8_t _step = 0;
 	uint8_t _frequencyShift = 0;
 
-	void Serialize(Serializer& s) override
-	{
-		SV(_volume); SV(_dutyCycle); SV(_ignoreDuty); SV(_frequency); SV(_enabled); SV(_timer); SV(_step); SV(_frequencyShift);
+	void Serialize(Serializer& s) override {
+		SV(_volume);
+		SV(_dutyCycle);
+		SV(_ignoreDuty);
+		SV(_frequency);
+		SV(_enabled);
+		SV(_timer);
+		SV(_step);
+		SV(_frequencyShift);
 	}
 
 public:
-	void WriteReg(uint16_t addr, uint8_t value)
-	{
-		switch(addr & 0x03) {
+	void WriteReg(uint16_t addr, uint8_t value) {
+		switch (addr & 0x03) {
 			case 0:
 				_volume = value & 0x0F;
 				_dutyCycle = (value & 0x70) >> 4;
@@ -37,34 +41,31 @@ public:
 			case 2:
 				_frequency = (_frequency & 0xFF) | ((value & 0x0F) << 8);
 				_enabled = (value & 0x80) == 0x80;
-				if(!_enabled) {
+				if (!_enabled) {
 					_step = 0;
 				}
 				break;
 		}
 	}
 
-	void SetFrequencyShift(uint8_t shift)
-	{
+	void SetFrequencyShift(uint8_t shift) {
 		_frequencyShift = shift;
 	}
 
-	void Clock()
-	{
-		if(_enabled) {
+	void Clock() {
+		if (_enabled) {
 			_timer--;
-			if(_timer == 0) {
+			if (_timer == 0) {
 				_step = (_step + 1) & 0x0F;
 				_timer = (_frequency >> _frequencyShift) + 1;
 			}
 		}
 	}
 
-	uint8_t GetVolume()
-	{
-		if(!_enabled) {
+	uint8_t GetVolume() {
+		if (!_enabled) {
 			return 0;
-		} else if(_ignoreDuty) {
+		} else if (_ignoreDuty) {
 			return _volume;
 		} else {
 			return _step <= _dutyCycle ? _volume : 0;

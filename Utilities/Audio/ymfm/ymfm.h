@@ -34,7 +34,7 @@
 #pragma once
 
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
- #define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #endif
 
 #include <cassert>
@@ -47,15 +47,13 @@
 #include <string>
 #include <vector>
 
-namespace ymfm
-{
+namespace ymfm {
 
 //*********************************************************
 //  DEBUGGING
 //*********************************************************
 
-class debug
-{
+class debug {
 public:
 	// masks to help isolate specific channels
 	static constexpr uint32_t GLOBAL_FM_CHANNEL_MASK = 0xffffffff;
@@ -69,15 +67,26 @@ public:
 	static constexpr bool LOG_UNEXPECTED_READ_WRITES = false;
 
 	// helpers to write based on the log type
-	template<typename... Params> static void log_fm_write(Params &&... args) { if (LOG_FM_WRITES) log(args...); }
-	template<typename... Params> static void log_keyon(Params &&... args) { if (LOG_KEYON_EVENTS) log(args...); }
-	template<typename... Params> static void log_unexpected_read_write(Params &&... args) { if  (LOG_UNEXPECTED_READ_WRITES) log(args...); }
+	template <typename... Params>
+	static void log_fm_write(Params&&... args) {
+		if (LOG_FM_WRITES)
+			log(args...);
+	}
+	template <typename... Params>
+	static void log_keyon(Params&&... args) {
+		if (LOG_KEYON_EVENTS)
+			log(args...);
+	}
+	template <typename... Params>
+	static void log_unexpected_read_write(Params&&... args) {
+		if (LOG_UNEXPECTED_READ_WRITES)
+			log(args...);
+	}
 
 	// downstream helper to output log data; defaults to printf
-	template<typename... Params> static void log(Params &&... args) { printf(args...); }
+	template <typename... Params>
+	static void log(Params&&... args) { printf(args...); }
 };
-
-
 
 //*********************************************************
 //  GLOBAL HELPERS
@@ -89,26 +98,22 @@ public:
 //  'length' bits
 //-------------------------------------------------
 
-inline uint32_t bitfield(uint32_t value, int start, int length = 1)
-{
+inline uint32_t bitfield(uint32_t value, int start, int length = 1) {
 	return (value >> start) & ((1 << length) - 1);
 }
-
 
 //-------------------------------------------------
 //  clamp - clamp between the minimum and maximum
 //  values provided
 //-------------------------------------------------
 
-inline int32_t clamp(int32_t value, int32_t minval, int32_t maxval)
-{
+inline int32_t clamp(int32_t value, int32_t minval, int32_t maxval) {
 	if (value < minval)
 		return minval;
 	if (value > maxval)
 		return maxval;
 	return value;
 }
-
 
 //-------------------------------------------------
 //  count_leading_zeros - return the number of
@@ -119,8 +124,7 @@ inline int32_t clamp(int32_t value, int32_t minval, int32_t maxval)
 
 #if defined(__GNUC__)
 
-inline uint8_t count_leading_zeros(uint32_t value)
-{
+inline uint8_t count_leading_zeros(uint32_t value) {
 	if (value == 0)
 		return 32;
 	return __builtin_clz(value);
@@ -128,16 +132,14 @@ inline uint8_t count_leading_zeros(uint32_t value)
 
 #elif defined(_MSC_VER)
 
-inline uint8_t count_leading_zeros(uint32_t value)
-{
+inline uint8_t count_leading_zeros(uint32_t value) {
 	unsigned long index;
 	return _BitScanReverse(&index, value) ? uint8_t(31U - index) : 32U;
 }
 
 #else
 
-inline uint8_t count_leading_zeros(uint32_t value)
-{
+inline uint8_t count_leading_zeros(uint32_t value) {
 	if (value == 0)
 		return 32;
 	uint8_t count;
@@ -147,7 +149,6 @@ inline uint8_t count_leading_zeros(uint32_t value)
 }
 
 #endif
-
 
 // Many of the Yamaha FM chips emit a floating-point value, which is sent to
 // a DAC for processing. The exact format of this floating-point value is
@@ -178,8 +179,7 @@ inline uint8_t count_leading_zeros(uint32_t value)
 //  value
 //-------------------------------------------------
 
-inline int16_t encode_fp(int32_t value)
-{
+inline int16_t encode_fp(int32_t value) {
 	// handle overflows first
 	if (value < -32768)
 		return (7 << 10) | 0x000;
@@ -203,14 +203,12 @@ inline int16_t encode_fp(int32_t value)
 	return ((exponent << 10) | (mantissa & 0x3ff)) ^ 0x200;
 }
 
-
 //-------------------------------------------------
 //  decode_fp - given a 3.10 floating-point value,
 //  convert it to a signed 16-bit value
 //-------------------------------------------------
 
-inline int16_t decode_fp(int16_t value)
-{
+inline int16_t decode_fp(int16_t value) {
 	// invert the sign and the exponent
 	value ^= 0x1e00;
 
@@ -218,14 +216,12 @@ inline int16_t decode_fp(int16_t value)
 	return int16_t(value << 6) >> bitfield(value, 10, 3);
 }
 
-
 //-------------------------------------------------
 //  roundtrip_fp - compute the result of a round
 //  trip through the encode/decode process above
 //-------------------------------------------------
 
-inline int16_t roundtrip_fp(int32_t value)
-{
+inline int16_t roundtrip_fp(int32_t value) {
 	// handle overflows first
 	if (value < -32768)
 		return -32768;
@@ -244,39 +240,33 @@ inline int16_t roundtrip_fp(int32_t value)
 
 	// apply the shift back and forth to zero out bits that are lost
 	exponent -= 1;
-    int32_t mask = (1 << exponent) - 1;
+	int32_t mask = (1 << exponent) - 1;
 	return value & ~mask;
 }
-
-
 
 //*********************************************************
 //  HELPER CLASSES
 //*********************************************************
 
 // various envelope states
-enum envelope_state : uint32_t
-{
-	EG_DEPRESS = 0,		// OPLL only; set EG_HAS_DEPRESS to enable
+enum envelope_state : uint32_t {
+	EG_DEPRESS = 0, // OPLL only; set EG_HAS_DEPRESS to enable
 	EG_ATTACK = 1,
 	EG_DECAY = 2,
 	EG_SUSTAIN = 3,
 	EG_RELEASE = 4,
-	EG_REVERB = 5,		// OPQ/OPZ only; set EG_HAS_REVERB to enable
+	EG_REVERB = 5, // OPQ/OPZ only; set EG_HAS_REVERB to enable
 	EG_STATES = 6
 };
 
 // external I/O access classes
-enum access_class : uint32_t
-{
+enum access_class : uint32_t {
 	ACCESS_IO = 0,
 	ACCESS_ADPCM_A,
 	ACCESS_ADPCM_B,
 	ACCESS_PCM,
 	ACCESS_CLASSES
 };
-
-
 
 //*********************************************************
 //  HELPER CLASSES
@@ -285,28 +275,24 @@ enum access_class : uint32_t
 // ======================> ymfm_output
 
 // struct containing an array of output values
-template<int NumOutputs>
-struct ymfm_output
-{
+template <int NumOutputs>
+struct ymfm_output {
 	// clear all outputs to 0
-	ymfm_output &clear()
-	{
+	ymfm_output& clear() {
 		for (uint32_t index = 0; index < NumOutputs; index++)
 			data[index] = 0;
 		return *this;
 	}
 
 	// clamp all outputs to a 16-bit signed value
-	ymfm_output &clamp16()
-	{
+	ymfm_output& clamp16() {
 		for (uint32_t index = 0; index < NumOutputs; index++)
 			data[index] = clamp(data[index], -32768, 32767);
 		return *this;
 	}
 
 	// run each output value through the floating-point processor
-	ymfm_output &roundtrip_fp()
-	{
+	ymfm_output& roundtrip_fp() {
 		for (uint32_t index = 0; index < NumOutputs; index++)
 			data[index] = ymfm::roundtrip_fp(data[index]);
 		return *this;
@@ -316,49 +302,49 @@ struct ymfm_output
 	int32_t data[NumOutputs];
 };
 
-
 // ======================> ymfm_wavfile
 
 // this class is a debugging helper that accumulates data and writes it to wav files
-template<int Channels>
-class ymfm_wavfile
-{
+template <int Channels>
+class ymfm_wavfile {
 public:
 	// construction
-	ymfm_wavfile(uint32_t samplerate = 44100) :
-		m_samplerate(samplerate)
-	{
+	ymfm_wavfile(uint32_t samplerate = 44100) : m_samplerate(samplerate) {
 	}
 
 	// configuration
-	ymfm_wavfile &set_index(uint32_t index) { m_index = index; return *this; }
-	ymfm_wavfile &set_samplerate(uint32_t samplerate) { m_samplerate = samplerate; return *this; }
+	ymfm_wavfile& set_index(uint32_t index) {
+		m_index = index;
+		return *this;
+	}
+	ymfm_wavfile& set_samplerate(uint32_t samplerate) {
+		m_samplerate = samplerate;
+		return *this;
+	}
 
 	// destruction
-	~ymfm_wavfile()
-	{
-		if (!m_buffer.empty())
-		{
+	~ymfm_wavfile() {
+		if (!m_buffer.empty()) {
 			// create file
 			char name[20];
 			snprintf(&name[0], sizeof(name), "wavlog-%02d.wav", m_index);
-			FILE *out = fopen(name, "wb");
+			FILE* out = fopen(name, "wb");
 
 			// make the wav file header
 			uint8_t header[44];
 			memcpy(&header[0], "RIFF", 4);
-			*(uint32_t *)&header[4] = m_buffer.size() * 2 + 44 - 8;
+			*(uint32_t*)&header[4] = m_buffer.size() * 2 + 44 - 8;
 			memcpy(&header[8], "WAVE", 4);
 			memcpy(&header[12], "fmt ", 4);
-			*(uint32_t *)&header[16] = 16;
-			*(uint16_t *)&header[20] = 1;
-			*(uint16_t *)&header[22] = Channels;
-			*(uint32_t *)&header[24] = m_samplerate;
-			*(uint32_t *)&header[28] = m_samplerate * 2 * Channels;
-			*(uint16_t *)&header[32] = 2 * Channels;
-			*(uint16_t *)&header[34] = 16;
+			*(uint32_t*)&header[16] = 16;
+			*(uint16_t*)&header[20] = 1;
+			*(uint16_t*)&header[22] = Channels;
+			*(uint32_t*)&header[24] = m_samplerate;
+			*(uint32_t*)&header[28] = m_samplerate * 2 * Channels;
+			*(uint16_t*)&header[32] = 2 * Channels;
+			*(uint16_t*)&header[34] = 16;
 			memcpy(&header[36], "data", 4);
-			*(uint32_t *)&header[40] = m_buffer.size() * 2 + 44 - 44;
+			*(uint32_t*)&header[40] = m_buffer.size() * 2 + 44 - 44;
 
 			// write header then data
 			fwrite(&header[0], 1, sizeof(header), out);
@@ -368,10 +354,9 @@ public:
 	}
 
 	// add data to the file
-	template<int Outputs>
-	void add(ymfm_output<Outputs> output)
-	{
-		int16_t sum[Channels] = { 0 };
+	template <int Outputs>
+	void add(ymfm_output<Outputs> output) {
+		int16_t sum[Channels] = {0};
 		for (int index = 0; index < Outputs; index++)
 			sum[index % Channels] += output.data[index];
 		for (int index = 0; index < Channels; index++)
@@ -379,10 +364,9 @@ public:
 	}
 
 	// add data to the file, using a reference
-	template<int Outputs>
-	void add(ymfm_output<Outputs> output, ymfm_output<Outputs> const &ref)
-	{
-		int16_t sum[Channels] = { 0 };
+	template <int Outputs>
+	void add(ymfm_output<Outputs> output, ymfm_output<Outputs> const& ref) {
+		int16_t sum[Channels] = {0};
 		for (int index = 0; index < Outputs; index++)
 			sum[index % Channels] += output.data[index] - ref.data[index];
 		for (int index = 0; index < Channels; index++)
@@ -396,19 +380,15 @@ private:
 	std::vector<int16_t> m_buffer;
 };
 
-
 // ======================> ymfm_saved_state
 
 // this class contains a managed vector of bytes that is used to save and
 // restore state
-class ymfm_saved_state
-{
+class ymfm_saved_state {
 public:
 	// construction
-	ymfm_saved_state(std::vector<uint8_t> &buffer, bool saving) :
-		m_buffer(buffer),
-		m_offset(saving ? -1 : 0)
-	{
+	ymfm_saved_state(std::vector<uint8_t>& buffer, bool saving) : m_buffer(buffer),
+	                                                              m_offset(saving ? -1 : 0) {
 		if (saving)
 			buffer.resize(0);
 	}
@@ -417,9 +397,8 @@ public:
 	bool saving() const { return (m_offset < 0); }
 
 	// generic save/restore
-	template<typename DataType>
-	void save_restore(DataType &data)
-	{
+	template <typename DataType>
+	void save_restore(DataType& data) {
 		if (saving())
 			save(data);
 		else
@@ -428,39 +407,62 @@ public:
 
 public:
 	// save data to the buffer
-	void save(bool &data) { write(data ? 1 : 0); }
-	void save(int8_t &data) { write(data); }
-	void save(uint8_t &data) { write(data); }
-	void save(int16_t &data) { write(uint8_t(data)).write(data >> 8); }
-	void save(uint16_t &data) { write(uint8_t(data)).write(data >> 8); }
-	void save(int32_t &data) { write(data).write(data >> 8).write(data >> 16).write(data >> 24); }
-	void save(uint32_t &data) { write(data).write(data >> 8).write(data >> 16).write(data >> 24); }
-	void save(envelope_state &data) { write(uint8_t(data)); }
-	template<typename DataType, int Count>
-	void save(DataType (&data)[Count]) { for (uint32_t index = 0; index < Count; index++) save(data[index]); }
+	void save(bool& data) { write(data ? 1 : 0); }
+	void save(int8_t& data) { write(data); }
+	void save(uint8_t& data) { write(data); }
+	void save(int16_t& data) { write(uint8_t(data)).write(data >> 8); }
+	void save(uint16_t& data) { write(uint8_t(data)).write(data >> 8); }
+	void save(int32_t& data) { write(data).write(data >> 8).write(data >> 16).write(data >> 24); }
+	void save(uint32_t& data) { write(data).write(data >> 8).write(data >> 16).write(data >> 24); }
+	void save(envelope_state& data) { write(uint8_t(data)); }
+	template <typename DataType, int Count>
+	void save(DataType (&data)[Count]) {
+		for (uint32_t index = 0; index < Count; index++)
+			save(data[index]);
+	}
 
 	// restore data from the buffer
-	void restore(bool &data) { data = read() ? true : false; }
-	void restore(int8_t &data) { data = read(); }
-	void restore(uint8_t &data) { data = read(); }
-	void restore(int16_t &data) { data = read(); data |= read() << 8; }
-	void restore(uint16_t &data) { data = read(); data |= read() << 8; }
-	void restore(int32_t &data) { data = read(); data |= read() << 8; data |= read() << 16; data |= read() << 24; }
-	void restore(uint32_t &data) { data = read(); data |= read() << 8; data |= read() << 16; data |= read() << 24; }
-	void restore(envelope_state &data) { data = envelope_state(read()); }
-	template<typename DataType, int Count>
-	void restore(DataType (&data)[Count]) { for (uint32_t index = 0; index < Count; index++) restore(data[index]); }
+	void restore(bool& data) { data = read() ? true : false; }
+	void restore(int8_t& data) { data = read(); }
+	void restore(uint8_t& data) { data = read(); }
+	void restore(int16_t& data) {
+		data = read();
+		data |= read() << 8;
+	}
+	void restore(uint16_t& data) {
+		data = read();
+		data |= read() << 8;
+	}
+	void restore(int32_t& data) {
+		data = read();
+		data |= read() << 8;
+		data |= read() << 16;
+		data |= read() << 24;
+	}
+	void restore(uint32_t& data) {
+		data = read();
+		data |= read() << 8;
+		data |= read() << 16;
+		data |= read() << 24;
+	}
+	void restore(envelope_state& data) { data = envelope_state(read()); }
+	template <typename DataType, int Count>
+	void restore(DataType (&data)[Count]) {
+		for (uint32_t index = 0; index < Count; index++)
+			restore(data[index]);
+	}
 
 	// internal helper
-	ymfm_saved_state &write(uint8_t data) { m_buffer.push_back(data); return *this; }
+	ymfm_saved_state& write(uint8_t data) {
+		m_buffer.push_back(data);
+		return *this;
+	}
 	uint8_t read() { return (m_offset < int32_t(m_buffer.size())) ? m_buffer[m_offset++] : 0; }
 
 	// internal state
-	std::vector<uint8_t> &m_buffer;
+	std::vector<uint8_t>& m_buffer;
 	int32_t m_offset;
 };
-
-
 
 //*********************************************************
 //  INTERFACE CLASSES
@@ -471,8 +473,7 @@ public:
 // this class represents functions in the engine that the ymfm_interface
 // needs to be able to call; it is represented here as a separate interface
 // that is independent of the actual engine implementation
-class ymfm_engine_callbacks
-{
+class ymfm_engine_callbacks {
 public:
 	virtual ~ymfm_engine_callbacks() = default;
 
@@ -486,15 +487,14 @@ public:
 	virtual void engine_mode_write(uint8_t data) = 0;
 };
 
-
 // ======================> ymfm_interface
 
 // this class represents the interface between the fm_engine and the outside
 // world; it provides hooks for timers, synchronization, and I/O
-class ymfm_interface
-{
+class ymfm_interface {
 	// the engine is our friend
-	template<typename RegisterType> friend class fm_engine_base;
+	template <typename RegisterType>
+	friend class fm_engine_base;
 
 public:
 	virtual ~ymfm_interface() = default;
@@ -524,13 +524,13 @@ public:
 	// has changed state; our responsibility is to arrange to call the engine's
 	// engine_timer_expired() method after the provided number of clocks; if
 	// duration_in_clocks is negative, we should cancel any outstanding timers
-	virtual void ymfm_set_timer(uint32_t tnum, int32_t duration_in_clocks) { }
+	virtual void ymfm_set_timer(uint32_t tnum, int32_t duration_in_clocks) {}
 
 	// the chip implementation calls this to indicate that the chip should be
 	// considered in a busy state until the given number of clocks has passed;
 	// our responsibility is to compute and remember the ending time based on
 	// the chip's clock for later checking
-	virtual void ymfm_set_busy_end(uint32_t clocks) { }
+	virtual void ymfm_set_busy_end(uint32_t clocks) {}
 
 	// the chip implementation calls this to see if the chip is still currently
 	// is a busy state, as specified by a previous call to ymfm_set_busy_end();
@@ -545,7 +545,7 @@ public:
 	// the chip implementation calls this when the state of the IRQ signal has
 	// changed due to a status change; our responsibility is to respond as
 	// needed to the change in IRQ state, signaling any consumers
-	virtual void ymfm_update_irq(bool asserted) { }
+	virtual void ymfm_update_irq(bool asserted) {}
 
 	// the chip implementation calls this whenever data is read from outside
 	// of the chip; our responsibility is to provide the data requested
@@ -553,7 +553,7 @@ public:
 
 	// the chip implementation calls this whenever data is written outside
 	// of the chip; our responsibility is to pass the written data on to any consumers
-	virtual void ymfm_external_write(access_class type, uint32_t address, uint8_t data) { }
+	virtual void ymfm_external_write(access_class type, uint32_t address, uint8_t data) {}
 
 protected:
 	// pointer to engine callbacks -- this is set directly by the engine at
@@ -561,6 +561,6 @@ protected:
 	ymfm_engine_callbacks* m_engine = nullptr;
 };
 
-}
+} // namespace ymfm
 
 #endif // YMFM_H

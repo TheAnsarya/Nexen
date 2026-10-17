@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "SNES/AluMulDiv.h"
 #include "SNES/SnesCpu.h"
@@ -11,8 +11,40 @@ class SnesConsole;
 class SnesMemoryManager;
 class SnesControlManager;
 
-class InternalRegisters final : public ISerializable
-{
+/// <summary>
+/// SNES internal registers ($4200-$421F, $4300-$437F).
+/// Handles CPU control, interrupts, multiplication/division, and joypad auto-read.
+/// </summary>
+/// <remarks>
+/// **Register Categories:**
+///
+/// **NMI/IRQ Control ($4200-$4211):**
+/// - $4200: NMITIMEN - NMI/IRQ/Joypad enable
+/// - $4201: WRIO - Programmable I/O port write
+/// - $4202-$4206: WRMPYA/WRMPYB/WRDIVL/WRDIVH/WRDIVB - Mul/Div operands
+/// - $4207-$420A: HTIMEL/H/VTIMEL/H - H/V timer target values
+/// - $420B-$420C: MDMAEN/HDMAEN - DMA/HDMA channel enable
+/// - $420D: MEMSEL - FastROM select
+/// - $4210: RDNMI - NMI flag read (clears NMI)
+/// - $4211: TIMEUP - IRQ flag read (clears IRQ)
+/// - $4212: HVBJOY - H/V blank and joypad status
+/// - $4214-$4217: RDDIVL/H/RDMPYL/H - Mul/Div results
+/// - $4218-$421F: JOY1/2/3/4 - Controller data
+///
+/// **Joypad Auto-Read:**
+/// - Triggered during V-blank
+/// - Reads all 4 controller ports automatically
+/// - Results available at $4218-$421F
+///
+/// **H/V Timer IRQ:**
+/// - Can trigger IRQ at specific H/V positions
+/// - Used for raster effects
+///
+/// **Multiplication/Division:**
+/// - 8×8 unsigned multiplication (16-bit result)
+/// - 16÷8 unsigned division (16-bit quotient, 16-bit remainder)
+/// </remarks>
+class InternalRegisters final : public ISerializable {
 private:
 	Emulator* _emu = nullptr;
 	SnesConsole* _console = nullptr;
@@ -41,7 +73,7 @@ private:
 	uint8_t _autoReadPort2Value = 0;
 
 	void SetIrqFlag(bool irqFlag);
-	
+
 	uint8_t ReadControllerData(uint8_t port, bool getMsb);
 
 	__forceinline void UpdateIrqLevel();
@@ -60,14 +92,14 @@ public:
 	uint8_t GetIoPortOutput();
 	void SetNmiFlag(bool nmiFlag);
 
-	bool IsVerticalIrqEnabled() { return _state.EnableVerticalIrq; }
-	bool IsHorizontalIrqEnabled() { return _state.EnableHorizontalIrq; }
-	bool IsNmiEnabled() { return _state.EnableNmi; }
-	bool IsAutoReadActive() { return _autoReadActive; }
-	bool IsFastRomEnabled() { return _state.EnableFastRom; }
-	uint16_t GetHorizontalTimer() { return _state.HorizontalTimer; }
-	uint16_t GetVerticalTimer() { return _state.VerticalTimer; }
-	
+	[[nodiscard]] bool IsVerticalIrqEnabled() { return _state.EnableVerticalIrq; }
+	[[nodiscard]] bool IsHorizontalIrqEnabled() { return _state.EnableHorizontalIrq; }
+	[[nodiscard]] bool IsNmiEnabled() { return _state.EnableNmi; }
+	[[nodiscard]] bool IsAutoReadActive() { return _autoReadActive; }
+	[[nodiscard]] bool IsFastRomEnabled() { return _state.EnableFastRom; }
+	[[nodiscard]] uint16_t GetHorizontalTimer() { return _state.HorizontalTimer; }
+	[[nodiscard]] uint16_t GetVerticalTimer() { return _state.VerticalTimer; }
+
 	uint8_t Peek(uint16_t addr);
 	uint8_t Read(uint16_t addr);
 	void Write(uint16_t addr, uint8_t value);
@@ -75,23 +107,20 @@ public:
 	InternalRegisterState GetState();
 	AluState GetAluState();
 
-	void Serialize(Serializer &s) override;
+	void Serialize(Serializer& s) override;
 };
 
-void InternalRegisters::UpdateIrqLevel()
-{
-	if(!_irqEnabled) {
+void InternalRegisters::UpdateIrqLevel() {
+	if (!_irqEnabled) {
 		_irqLevel = false;
 		return;
 	}
 
-	bool irqLevel = (
-		(!_state.EnableHorizontalIrq || _state.HorizontalTimer == _hCounter) &&
-		(!_state.EnableVerticalIrq || _state.VerticalTimer == _vCounter)
-	);
+	bool irqLevel = ((!_state.EnableHorizontalIrq || _state.HorizontalTimer == _hCounter) &&
+	                 (!_state.EnableVerticalIrq || _state.VerticalTimer == _vCounter));
 
-	if(!_irqLevel && irqLevel) {
-		if(_state.EnableHorizontalIrq && _memoryManager->GetHClock() == 6) {
+	if (!_irqLevel && irqLevel) {
+		if (_state.EnableHorizontalIrq && _memoryManager->GetHClock() == 6) {
 			_needIrq = 3;
 		} else {
 			_needIrq = 2;
@@ -101,31 +130,30 @@ void InternalRegisters::UpdateIrqLevel()
 	_irqLevel = irqLevel;
 }
 
-void InternalRegisters::ProcessIrqCounters()
-{
-	//This circuit runs at MasterClock/4, and the signal is inverted. This means it ticks at hclock 2, 6, etc. on every scanline.
-	//VBLANK is cleared by the PPU at H=0, and which will be picked up on H=2
-	//HBLANK however is cleared by the PPU at H=4, and this will only be picked up at H=6, which causes IRQs that depend on the value of H
-	//to be delayed by an extra 4 cycles compared to IRQs that trigger only based on V.
-	//Once VBLANK is cleared, a 4-cycle reset signal is triggered (from H=2 to H=6) and the V counter is reset to 0 (at H=2)
-	//Once HBLANK is cleared (every scanline), a 4-cycle reset signal is triggered and the H counter is reset to 0 (at H=6) and then starts
-	//counting again start from H=14+.
-	//HBLANK getting cleared also triggers a V counter increment (at H=6).
-	//When the H/V counters match the values in $4207-420A (+ the correct IRQ enable flags are turned on), an IRQ is triggered 2 ticks (8 master clocks) later.
-	//Some not-quite-figured out edge cases remain:
-	// -IRQs for H=0 (i.e when 4207/8 == 0) seem to be delayed by an extra tick (4 master clocks)?
-	// -What's causing the 2 ticks/8 master clock delay for the IRQ signal after it was detected?
-	// -What's causing the 1 tick/4 master clock delay for the NMI signal after it was detected? (e.g why does the CPU behave like it was set on H=6 instead of H=2?)
-	//Notes:
-	// -IRQs can't trigger on V=261 H=339 (reg values), because V gets reset to 0 at H=2 at the same time as H increments to 339. This might mean that an IRQ at
-	//  V=0 and H=339 triggers both on scanline 0 and scanline 1 (at H=2)? (unverified)
-	//See CPU schematics here: https://github.com/rgalland/SNES_S-CPU_Schematics/
-	if(_needIrq > 0) {
+void InternalRegisters::ProcessIrqCounters() {
+	// This circuit runs at MasterClock/4, and the signal is inverted. This means it ticks at hclock 2, 6, etc. on every scanline.
+	// VBLANK is cleared by the PPU at H=0, and which will be picked up on H=2
+	// HBLANK however is cleared by the PPU at H=4, and this will only be picked up at H=6, which causes IRQs that depend on the value of H
+	// to be delayed by an extra 4 cycles compared to IRQs that trigger only based on V.
+	// Once VBLANK is cleared, a 4-cycle reset signal is triggered (from H=2 to H=6) and the V counter is reset to 0 (at H=2)
+	// Once HBLANK is cleared (every scanline), a 4-cycle reset signal is triggered and the H counter is reset to 0 (at H=6) and then starts
+	// counting again start from H=14+.
+	// HBLANK getting cleared also triggers a V counter increment (at H=6).
+	// When the H/V counters match the values in $4207-420A (+ the correct IRQ enable flags are turned on), an IRQ is triggered 2 ticks (8 master clocks) later.
+	// Some not-quite-figured out edge cases remain:
+	//  -IRQs for H=0 (i.e when 4207/8 == 0) seem to be delayed by an extra tick (4 master clocks)?
+	//  -What's causing the 2 ticks/8 master clock delay for the IRQ signal after it was detected?
+	//  -What's causing the 1 tick/4 master clock delay for the NMI signal after it was detected? (e.g why does the CPU behave like it was set on H=6 instead of H=2?)
+	// Notes:
+	//  -IRQs can't trigger on V=261 H=339 (reg values), because V gets reset to 0 at H=2 at the same time as H increments to 339. This might mean that an IRQ at
+	//   V=0 and H=339 triggers both on scanline 0 and scanline 1 (at H=2)? (unverified)
+	// See CPU schematics here: https://github.com/rgalland/SNES_S-CPU_Schematics/
+	if (_needIrq > 0) [[unlikely]] {
 		_needIrq--;
-		if(_needIrq == 1) {
+		if (_needIrq == 1) {
 			SetIrqFlag(true);
-		} else if(_needIrq == 0) {
-			if(_irqFlag) {
+		} else if (_needIrq == 0) {
+			if (_irqFlag) {
 				_cpu->SetIrqSource(SnesIrqSource::Ppu);
 			} else {
 				_cpu->ClearIrqSource(SnesIrqSource::Ppu);
@@ -135,24 +163,30 @@ void InternalRegisters::ProcessIrqCounters()
 
 	uint16_t hClock = _memoryManager->GetHClock();
 
-	if(hClock > 10) {
+	// Fast path: hClock > 10 is the overwhelmingly common case (~97% of calls).
+	// Only hClock values 2, 6, 10 trigger special behavior (once per scanline each).
+	if (hClock > 10) [[likely]] {
 		_hCounter++;
-	} else if(hClock == 10) {
+		UpdateIrqLevel();
+		return;
+	}
+
+	if (hClock == 10) {
 		_hCounter = 0;
-	} else if(hClock == 6) {
+	} else if (hClock == 6) {
 		_hCounter = 0;
-		if(_ppu->GetScanline() > 0 && !_ppu->IsInOverclockedScanline()) {
+		if (_ppu->GetScanline() > 0 && !_ppu->IsInOverclockedScanline()) {
 			_vCounter++;
 		}
 
-		if(_state.EnableNmi && _ppu->GetScanline() == _ppu->GetNmiScanline()) {
+		if (_state.EnableNmi && _ppu->GetScanline() == _ppu->GetNmiScanline()) {
 			_cpu->SetNmiFlag(1);
 		}
-	} else if(hClock == 2) {
+	} else if (hClock == 2) {
 		_hCounter++;
-		if(_ppu->GetScanline() == _ppu->GetNmiScanline()) {
+		if (_ppu->GetScanline() == _ppu->GetNmiScanline()) {
 			_nmiFlag = true;
-		} else if(_ppu->GetScanline() == 0) {
+		} else if (_ppu->GetScanline() == 0) {
 			_nmiFlag = false;
 			_vCounter = 0;
 		}

@@ -1,8 +1,8 @@
-<Styles
+﻿<Styles
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:sys="clr-namespace:System;assembly=netstandard"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels.DebuggerDock"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels.DebuggerDock"
 	xmlns:converters="using:Dock.Avalonia.Converters"
 	xmlns:controls="using:Dock.Model.Controls"
 	xmlns:core="using:Dock.Model.Core"
@@ -21,21 +21,21 @@
 	</Style>
 	<Style Selector="ToolControl /template/ ToolTabStrip#PART_TabStrip">
 		<Setter Property="Margin" Value="0 -1 0 0" />
-		<Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
+		<Setter Property="Background" Value="{DynamicResource NexenDockTabStripBackgroundBrush}" />
 	</Style>
 	<Style Selector="ToolControl /template/ ToolTabStrip#PART_TabStrip ToolTabStripItem:pointerover">
-		<Setter Property="Background" Value="{DynamicResource MesenDockTabPointerOverBrush}" />
+		<Setter Property="Background" Value="{DynamicResource NexenDockTabPointerOverBrush}" />
 	</Style>
 	<Style Selector="ToolControl /template/ ToolTabStrip#PART_TabStrip ToolTabStripItem:selected:pointerover">
-		<Setter Property="Background" Value="{DynamicResource DockThemeBackgroundBrush}" />
-		<Setter Property="BorderBrush" Value="{DynamicResource DockThemeBorderLowBrush}" />
+		<Setter Property="Background" Value="{DynamicResource NexenDockTabActiveBackgroundBrush}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource NexenDockTabActiveBorderBrush}" />
 	</Style>
 
 	<Style Selector="PinnedDockControl">
 		<!-- prevent error in binding -->
 		<Setter Property="PinnedDockAlignment" Value="Unset" />
 	</Style>
-	
+
 	<Style Selector="ToolChromeControl">
 		<!-- prevent error in binding -->
 		<Setter Property="IsMaximized" Value="False" />
@@ -141,9 +141,9 @@
 						and causes exceptions when trying to bind the values (including in tooltips
 						attached to a control in the dock control)
 					-->
-					<ItemsControl ItemsSource="{ReflectionBinding VisibleDockables}" Name="DockItemsControl">
+					<ItemsControl ItemsSource="{ReflectionBinding VisibleDockables}" Name="PART_ItemsControl">
 						<ItemsControl.Styles>
-							<Style Selector="ItemsControl#DockItemsControl > ContentPresenter">
+							<Style Selector="ItemsControl#PART_ItemsControl > ContentPresenter">
 								<Setter x:DataType="core:IDock" Property="(ProportionalStackPanel.Proportion)" Value="{Binding Proportion}" />
 
 								<!-- prevent error in binding -->

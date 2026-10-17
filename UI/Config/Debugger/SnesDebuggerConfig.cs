@@ -1,21 +1,18 @@
-﻿using ReactiveUI.Fody.Helpers;
-using Mesen.ViewModels;
+using Nexen.ViewModels;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.Config
-{
-	public class SnesDebuggerConfig : ViewModelBase
-	{
-		[Reactive] public bool BreakOnBrk { get; set; } = false;
-		[Reactive] public bool BreakOnCop { get; set; } = false;
-		[Reactive] public bool BreakOnWdm { get; set; } = false;
-		[Reactive] public bool BreakOnStp { get; set; } = false;
-		[Reactive] public bool BreakOnInvalidPpuAccess { get; set; } = false;
-		[Reactive] public bool BreakOnReadDuringAutoJoy { get; set; } = false;
+namespace Nexen.Config; 
+public sealed partial class SnesDebuggerConfig : ViewModelBase {
+	[Reactive] public partial bool BreakOnBrk { get; set; } = false;
+	[Reactive] public partial bool BreakOnCop { get; set; } = false;
+	[Reactive] public partial bool BreakOnWdm { get; set; } = false;
+	[Reactive] public partial bool BreakOnStp { get; set; } = false;
+	[Reactive] public partial bool BreakOnInvalidPpuAccess { get; set; } = false;
+	[Reactive] public partial bool BreakOnReadDuringAutoJoy { get; set; } = false;
 
-		[Reactive] public bool SpcBreakOnBrk { get; set; } = false;
-		[Reactive] public bool SpcBreakOnStpSleep { get; set; } = false;
-		
-		[Reactive] public bool UseAltSpcOpNames { get; set; } = false;
-		[Reactive] public bool IgnoreDspReadWrites { get; set; } = true;
-	}
+	[Reactive] public partial bool SpcBreakOnBrk { get; set; } = false;
+	[Reactive] public partial bool SpcBreakOnStpSleep { get; set; } = false;
+
+	[Reactive] public partial bool UseAltSpcOpNames { get; set; } = false;
+	[Reactive] public partial bool IgnoreDspReadWrites { get; set; } = true;
 }

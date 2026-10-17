@@ -1,22 +1,22 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "Utilities/VirtualFile.h"
 #include "Utilities/Audio/HermiteResampler.h"
 
 struct stb_vorbis;
 
-class OggReader
-{
+class OggReader {
 private:
 	stb_vorbis* _vorbis = nullptr;
-	int16_t* _outputBuffer = nullptr;
-	int16_t* _oggBuffer = nullptr;
+	std::unique_ptr<int16_t[]> _outputBuffer;
+	std::unique_ptr<int16_t[]> _oggBuffer;
 
 	HermiteResampler _resampler;
 
 	bool _loop = false;
 	bool _done = false;
-	
+
 	uint32_t _loopPosition = 0;
 
 	int _sampleRate = 0;
@@ -28,7 +28,7 @@ public:
 	OggReader();
 	~OggReader();
 
-	bool Init(string filename, bool loop, uint32_t sampleRate, uint32_t startOffset = 0, uint32_t loopPosition = 0);
+	bool Init(const string& filename, bool loop, uint32_t sampleRate, uint32_t startOffset = 0, uint32_t loopPosition = 0);
 	bool IsPlaybackOver();
 	void SetSampleRate(int sampleRate);
 	void SetLoopFlag(bool loop);

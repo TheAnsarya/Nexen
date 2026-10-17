@@ -1,27 +1,56 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Media;
-using Avalonia.Threading;
-using Mesen.Utilities;
-using Mesen.ViewModels;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Nexen.Utilities;
+using Nexen.ViewModels;
+using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.Debugger.ViewModels;
+namespace Nexen.Debugger.ViewModels;
 
-public class QuickSearchViewModel : ViewModelBase
-{
-	[Reactive] public bool IsSearchBoxVisible { get; set; }
-	[Reactive] public string SearchString { get; set; } = "";
-	[Reactive] public bool IsErrorVisible { get; set; } = false;
+/// <summary>
+/// ViewModel for the quick search overlay in debugger windows.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Provides incremental search functionality with:
+/// <list type="bullet">
+///   <item><description>Real-time search as the user types</description></item>
+///   <item><description>Find next/previous navigation</description></item>
+///   <item><description>Error indication when no match is found</description></item>
+///   <item><description>Optimized search skipping when previous search had no results</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// Search is performed asynchronously to avoid blocking the UI during large searches.
+/// </para>
+/// </remarks>
+public sealed partial class QuickSearchViewModel : ViewModelBase {
+	/// <summary>Gets or sets whether the search box is visible.</summary>
+	[Reactive] public partial bool IsSearchBoxVisible { get; set; }
 
+	/// <summary>Gets or sets the current search string.</summary>
+	[Reactive] public partial string SearchString { get; set; } = "";
+
+	/// <summary>Gets or sets whether the error indicator is visible (no match found).</summary>
+	[Reactive] public partial bool IsErrorVisible { get; set; } = false;
+
+	/// <summary>
+	/// Event handler delegate for find operations.
+	/// </summary>
+	/// <param name="e">The search event arguments.</param>
 	public delegate void OnFindEventHandler(OnFindEventArgs e);
+
+	/// <summary>
+	/// Raised when a find operation should be performed by the parent view.
+	/// </summary>
 	public event OnFindEventHandler? OnFind;
 
 	private string _noMatchSearch = "";
@@ -30,11 +59,17 @@ public class QuickSearchViewModel : ViewModelBase
 
 	private TextBox? _txtSearch = null;
 
-	public QuickSearchViewModel()
-	{
+	/// <summary>
+	/// Initializes a new instance of the <see cref="QuickSearchViewModel"/> class.
+	/// </summary>
+	/// <remarks>
+	/// Sets up reactive subscription to trigger search when search string changes.
+	/// </remarks>
+	public QuickSearchViewModel() {
 		this.WhenAnyValue(x => x.SearchString).Subscribe(x => {
-			if(!string.IsNullOrWhiteSpace(x)) {
-				if(!string.IsNullOrEmpty(_noMatchSearch) && x.StartsWith(_noMatchSearch)) {
+			if (!string.IsNullOrWhiteSpace(x)) {
+				// Optimization: skip search if current string starts with a previous no-match string
+				if (!string.IsNullOrEmpty(_noMatchSearch) && x.StartsWith(_noMatchSearch)) {
 					//Previous search gave no result, current search starts with the same string, so can't give results either, don't search
 					return;
 				}
@@ -44,54 +79,81 @@ public class QuickSearchViewModel : ViewModelBase
 		});
 	}
 
-	public void Open()
-	{
+	/// <summary>
+	/// Opens the search box and focuses the search input.
+	/// </summary>
+	public void Open() {
 		IsSearchBoxVisible = true;
 		_txtSearch?.FocusAndSelectAll();
 	}
 
-	public void Close(object? param = null)
-	{
+	/// <summary>
+	/// Closes the search box and clears the search string.
+	/// </summary>
+	/// <param name="param">Unused parameter (for command binding compatibility).</param>
+	public void Close(object? param = null) {
 		IsSearchBoxVisible = false;
 		SearchString = "";
 	}
 
-	public void FindPrev(object? param = null)
-	{
+	/// <summary>
+	/// Finds the previous occurrence of the search string.
+	/// </summary>
+	/// <param name="param">Unused parameter (for command binding compatibility).</param>
+	public void FindPrev(object? param = null) {
 		Find(SearchDirection.Backward, false);
 	}
 
-	public void FindNext(object? param = null)
-	{
+	/// <summary>
+	/// Finds the next occurrence of the search string.
+	/// </summary>
+	/// <param name="param">Unused parameter (for command binding compatibility).</param>
+	public void FindNext(object? param = null) {
 		Find(SearchDirection.Forward, true);
 	}
 
-	public void Find(SearchDirection dir, bool skipCurrent)
-	{
-		if(string.IsNullOrWhiteSpace(SearchString)) {
+	/// <summary>
+	/// Performs a find operation in the specified direction.
+	/// </summary>
+	/// <param name="dir">The search direction (Forward or Backward).</param>
+	/// <param name="skipCurrent">Whether to skip the current match and find the next one.</param>
+	/// <remarks>
+	/// <para>
+	/// If the search string is empty, opens the search box instead.
+	/// Search is performed asynchronously on a background thread.
+	/// </para>
+	/// <para>
+	/// Uses Interlocked.Exchange to coalesce rapid search requests,
+	/// ensuring only the most recent search is processed.
+	/// </para>
+	/// </remarks>
+	public void Find(SearchDirection dir, bool skipCurrent) {
+		if (string.IsNullOrWhiteSpace(SearchString)) {
 			Open();
 			return;
 		}
 
 		_searchArgs = new OnFindEventArgs() { SearchString = SearchString, Direction = dir, SkipCurrent = skipCurrent };
-		if(_searchInProgress) {
+		if (_searchInProgress) {
 			return;
 		}
-		
+
 		_searchInProgress = true;
 
 		Task.Run(() => {
 			OnFindEventArgs? args;
 			OnFindEventArgs? lastArgs = null;
-			while((args = Interlocked.Exchange(ref _searchArgs, null)) != null) {
+			// Process search requests until the queue is empty
+			while ((args = Interlocked.Exchange(ref _searchArgs, null)) != null) {
 				//Keep searching until the most recent search is processed
 				OnFind?.Invoke(args);
 				lastArgs = args;
 			}
 
+			// Update UI on dispatcher thread
 			Dispatcher.UIThread.Post(() => {
-				if(lastArgs != null) {
-					if(lastArgs.Success) {
+				if (lastArgs is not null) {
+					if (lastArgs.Success) {
 						IsErrorVisible = false;
 						_noMatchSearch = "";
 					} else {
@@ -104,16 +166,28 @@ public class QuickSearchViewModel : ViewModelBase
 		});
 	}
 
-	public void SetSearchBox(TextBox txtSearch)
-	{
+	/// <summary>
+	/// Sets the search text box reference for focus management.
+	/// </summary>
+	/// <param name="txtSearch">The search TextBox control.</param>
+	public void SetSearchBox(TextBox txtSearch) {
 		_txtSearch = txtSearch;
 	}
 }
 
-public class OnFindEventArgs : EventArgs
-{
+/// <summary>
+/// Event arguments for find operations in quick search.
+/// </summary>
+public sealed partial class OnFindEventArgs : EventArgs {
+	/// <summary>Gets the search string to find.</summary>
 	public string SearchString { get; init; } = "";
+
+	/// <summary>Gets the search direction.</summary>
 	public SearchDirection Direction { get; init; }
+
+	/// <summary>Gets whether to skip the current match.</summary>
 	public bool SkipCurrent { get; init; }
+
+	/// <summary>Gets or sets whether the search found a match.</summary>
 	public bool Success { get; set; } = true;
 }

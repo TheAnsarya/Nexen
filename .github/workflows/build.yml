@@ -1,60 +1,322 @@
-name: Build Mesen
+﻿name: Build Nexen
 
-on: [push]
+on:
+  workflow_dispatch:
+    inputs:
+      windows_only:
+        description: 'Run only Windows job (skip Linux/AppImage/macOS)'
+        required: true
+        default: true
+        type: boolean
+      run_release:
+        description: 'Create/update GitHub release after build'
+        required: true
+        default: false
+        type: boolean
+      release_tag:
+        description: 'Release tag (required when run_release=true), e.g. v1.5.0'
+        required: false
+        type: string
+
+concurrency:
+  group: build-nexen-single
+  cancel-in-progress: true
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # Calibrated from warning-delta artifacts across successful runs:
+  # 23720620324, 23720623170, 23720627204, 23721111328, 23721114532
+  # 24030184964 (v1.4.19): gcc x64 reported 4078, gcc arm64 similar
+  WARNING_BASELINE_WINDOWS: 9
+  WARNING_BASELINE_LINUX: 4078
+  WARNING_BASELINE_APPIMAGE: 145
 
 jobs:
   windows:
     strategy:
       matrix:
         platform: [
-          {netversion: 6.x, targetframework: net6.0, aot: false, singleFile: true, aotString: ""},
-          {netversion: 8.x, targetframework: net8.0, aot: false, singleFile: true, aotString: ""},
-          {netversion: 8.x, targetframework: net8.0, aot: true, singleFile: false, aotString: " - AoT"}
+          {aot: false, singleFile: true, aotString: ""},
+          {aot: true, singleFile: false, aotString: " - AoT"}
         ]
       fail-fast: false
-    runs-on: windows-latest
+    runs-on: windows-2025-vs2026
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
+      - name: Audit third-party source policy
+        shell: pwsh
+        run: |
+          ./scripts/audit-third-party-source.ps1 -Enforce -ReportPath docs/THIRD-PARTY-SOURCE-INVENTORY.md
+
+      - name: Guard removed archive vendor-path references
+        shell: pwsh
+        run: |
+          $guardFiles = @(
+            "makefile",
+            "Nexen.sln",
+            "Utilities/Utilities.vcxproj",
+            "Utilities/Utilities.vcxproj.filters"
+          )
+
+          $forbiddenPattern = 'SEVENZIPSRC|SEVENZIPOBJ|SZReader\.h|SZReader\.cpp|SevenZip\.vcxproj|\bSevenZip/'
+          $matches = Select-String -Path $guardFiles -Pattern $forbiddenPattern -CaseSensitive
+
+          if ($matches) {
+            Write-Host "Found forbidden removed archive vendor-path references in active build metadata:"
+            $matches | ForEach-Object { Write-Host ("  {0}:{1}: {2}" -f $_.Path, $_.LineNumber, $_.Line.Trim()) }
+            throw "Archive vendor-path guard failed."
+          }
+
+          Write-Host "Archive vendor-path guard passed."
+
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: ${{ matrix.platform.netversion }}
+          global-json-file: global.json
+          dotnet-version: 10.x
 
       - name: Setup MSBuild.exe
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@v3
         with:
           msbuild-architecture: x64
+          vs-prerelease: true
+
+      - name: Setup vcpkg dependencies (Windows)
+        shell: pwsh
+        run: |
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git vcpkg
+
+          $bootstrapOk = $false
+          for ($attempt = 1; $attempt -le 5; $attempt++) {
+            & .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+            if ($LASTEXITCODE -eq 0) {
+              $bootstrapOk = $true
+              break
+            }
+
+            Write-Host "bootstrap-vcpkg failed (attempt $attempt/5)."
+          }
+
+          if (-not $bootstrapOk) {
+            throw "bootstrap-vcpkg failed after 5 attempts."
+          }
+
+          $installOk = $false
+          for ($attempt = 1; $attempt -le 5; $attempt++) {
+            & .\vcpkg\vcpkg.exe install --triplet x64-windows --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}\vcpkg_installed" --clean-after-build
+            if ($LASTEXITCODE -eq 0) {
+              $installOk = $true
+              break
+            }
+
+            Write-Host "vcpkg install failed (attempt $attempt/5)."
+          }
+
+          if (-not $installOk) {
+            throw "vcpkg install failed after 5 attempts."
+          }
+
+          "VCPKG_ROOT=${{ github.workspace }}\vcpkg" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "VCPKG_TRIPLET=x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "VCPKG_INSTALLED_DIR=${{ github.workspace }}\vcpkg_installed" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Restore packages
-        run: dotnet restore -p:TargetFramework="${{ matrix.platform.targetframework }}" -r win-x64 -p:PublishAot="${{ matrix.platform.aot }}" -p:BuildWithNetFrameworkHostedCompiler=true
+        run: dotnet restore -r win-x64 -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained=true -p:BuildWithNetFrameworkHostedCompiler=true
 
       - name: Write commit SHA1 to file
         uses: ./.github/actions/build-sha1-action
 
-      - name: Build Mesen
-        run: msbuild -nologo -v:d -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -t:Clean,UI -p:TargetFramework="${{ matrix.platform.targetframework }}"
+      - name: Build C++ core (InteropDLL)
+        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=false -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg_installed" -p:VcpkgTriplet=x64-windows -t:InteropDLL Nexen.sln
 
-      - name: Publish Mesen
-        run: dotnet publish --no-restore -c Release -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained="${{ matrix.platform.aot }}" -p:PublishSingleFile="${{ matrix.platform.singleFile }}" -p:OptimizeUi="true" -p:Platform="Any CPU" -p:TargetFramework="${{ matrix.platform.targetframework }}" -r win-x64 Mesen.sln /p:PublishProfile=UI\Properties\PublishProfiles\Release.pubxml
+      - name: Copy native libs from NuGet cache
+        shell: pwsh
+        run: |
+          $outDir = "bin\win-x64\Release"
+          New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 
-      - name: Upload Mesen
-        uses: actions/upload-artifact@v4
+          # SkiaSharp and HarfBuzzSharp native DLLs are NuGet packages with platform-specific
+          # native binaries. After 'dotnet restore', they live in the NuGet package cache.
+          # We need them in the output dir BEFORE package-dependencies.ps1 creates Dependencies.zip.
+          $nugetCache = Join-Path $env:USERPROFILE ".nuget\packages"
+
+          $libs = @(
+            @{ Name = "libSkiaSharp.dll";     Pattern = "skiasharp.nativeassets.win32\*\runtimes\win-x64\native\libSkiaSharp.dll" },
+            @{ Name = "libHarfBuzzSharp.dll"; Pattern = "harfbuzzsharp.nativeassets.win32\*\runtimes\win-x64\native\libHarfBuzzSharp.dll" }
+          )
+
+          $allFound = $true
+          foreach ($lib in $libs) {
+            $found = Get-ChildItem -Path (Join-Path $nugetCache $lib.Pattern) -ErrorAction SilentlyContinue | Select-Object -Last 1
+            if ($found) {
+              Copy-Item $found.FullName -Destination $outDir -Force
+              Write-Host "OK: $($lib.Name) copied from $($found.FullName)"
+            } else {
+              Write-Host "::warning::$($lib.Name) not found in NuGet cache (dotnet publish will still include it)"
+              $allFound = $false
+            }
+          }
+
+          if ($allFound) {
+            Write-Host "All native libs staged successfully."
+          }
+
+      - name: Package Dependencies.zip
+        run: ./scripts/package-dependencies.ps1 -Configuration Release
+        shell: pwsh
+
+      - name: Build UI
+        run: msbuild -nologo -v:m -clp:ForceConsoleColor -m -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v145 -p:VcpkgEnableManifest=true -p:VcpkgRoot="${{ github.workspace }}\vcpkg" -p:VcpkgInstalledDir="${{ github.workspace }}\vcpkg_installed" -p:VcpkgTriplet=x64-windows -t:UI Nexen.sln
+
+      - name: Publish Nexen
+        run: dotnet publish --no-restore -c Release -p:PublishAot="${{ matrix.platform.aot }}" -p:SelfContained=true -p:PublishSingleFile="${{ matrix.platform.singleFile }}" -p:IncludeNativeLibrariesForSelfExtract="${{ matrix.platform.singleFile }}" -p:OptimizeUi="true" -r win-x64 -o build/publish UI/UI.csproj
+
+      - name: Capture runtime dependency report (Windows publish)
+        if: always()
+        shell: pwsh
+        run: |
+          $publishExe = "build\publish\Nexen.exe"
+          $depsOut = "runtime-deps-windows.txt"
+          $filesOut = "runtime-files-windows.txt"
+
+          if (Test-Path $publishExe) {
+            $dumpbinCmd = (Get-Command dumpbin.exe -ErrorAction SilentlyContinue)
+            if ($dumpbinCmd) {
+              & $dumpbinCmd.Source /dependents $publishExe | Out-File -FilePath $depsOut -Encoding utf8
+            } else {
+              "dumpbin.exe not found; dependency tree unavailable." | Out-File -FilePath $depsOut -Encoding utf8
+            }
+
+            Get-ChildItem "build\publish" -File | Select-Object Name, Length | Format-Table -AutoSize | Out-String | Out-File -FilePath $filesOut -Encoding utf8
+          } else {
+            "Publish binary missing: $publishExe" | Out-File -FilePath $depsOut -Encoding utf8
+            "Publish binary missing: $publishExe" | Out-File -FilePath $filesOut -Encoding utf8
+          }
+
+      - name: Validate required runtime assets (Windows publish)
+        shell: pwsh
+        run: |
+          # When IncludeNativeLibrariesForSelfExtract is true (standard single-file build),
+          # native DLLs are bundled inside Nexen.exe and won't exist as separate files.
+          # Only require the exe itself; native libs are separate only in AoT builds.
+          $required = @("build\publish\Nexen.exe")
+
+          if ("${{ matrix.platform.aot }}" -eq "true") {
+            $required += "build\publish\libSkiaSharp.dll"
+            $required += "build\publish\libHarfBuzzSharp.dll"
+          }
+
+          $missing = @()
+          foreach ($path in $required) {
+            if (!(Test-Path $path)) {
+              $missing += $path
+            }
+          }
+
+          if ($missing.Count -gt 0) {
+            Write-Error "Missing required Windows runtime assets:`n$($missing -join "`n")"
+            exit 1
+          }
+
+          Write-Host "Windows runtime asset validation passed."
+
+      - name: Upload runtime dependency report (Windows publish)
+        if: always()
+        uses: actions/upload-artifact@v7
         with:
-          name: Mesen (Windows - ${{ matrix.platform.targetframework }}${{ matrix.platform.aotString }})
+          name: Runtime Dependencies (Windows${{ matrix.platform.aotString }})
           path: |
-            build/TmpReleaseBuild/Mesen.exe
+            runtime-deps-windows.txt
+            runtime-files-windows.txt
+
+      - name: Generate warning report (Windows)
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          $warningLog = "build-warning-report.txt"
+          $firstPartyWarningLog = "build-warning-report-firstparty.txt"
+          "Report placeholder (step started)." | Out-File -FilePath $warningLog -Encoding utf8
+          "First-party report placeholder (step started)." | Out-File -FilePath $firstPartyWarningLog -Encoding utf8
+          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /m /nologo /clp:WarningsOnly 2>&1 | Tee-Object -FilePath $warningLog
+          $msbuildExitCode = $LASTEXITCODE
+          if (!(Test-Path $warningLog) -or (Get-Item $warningLog).Length -eq 0) {
+            "No warnings detected (WarningsOnly output was empty)." | Out-File -FilePath $warningLog -Encoding utf8
+          }
+
+          # Keep the full warning report for diagnostics, but generate a first-party
+          # warning view used by regression gating to avoid vendor-noise churn.
+          $vendorPathRegex = "\\vcpkg_installed\\|\\Utilities\\Audio\\stb_vorbis\.cpp|\\Utilities\\Audio\\ymfm\\|\\Utilities\\NTSC\\|\\Utilities\\spng\.c|\\Utilities\\xBRZ\\xbrz\.cpp"
+
+          $firstPartyWarnings = Get-Content $warningLog | Where-Object {
+            $_ -match "\bwarning\b" -and
+            $_ -notmatch "^No warnings detected" -and
+            $_ -notmatch $vendorPathRegex
+          }
+
+          if ($firstPartyWarnings.Count -eq 0) {
+            "No first-party warnings detected after vendor filtering." | Out-File -FilePath $firstPartyWarningLog -Encoding utf8
+          } else {
+            $firstPartyWarnings | Out-File -FilePath $firstPartyWarningLog -Encoding utf8
+          }
+
+          if ($msbuildExitCode -gt 1) {
+            Write-Error "WarningsOnly msbuild failed with exit code $msbuildExitCode"
+            exit $msbuildExitCode
+          }
+
+      - name: Upload warning report (Windows)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Warning Report (Windows${{ matrix.platform.aotString }})
+          if-no-files-found: warn
+          path: |
+            build-warning-report.txt
+            build-warning-report-firstparty.txt
+
+      - name: Generate warning delta summary (Windows)
+        if: always()
+        shell: pwsh
+        run: |
+          $baseline = [int]$env:WARNING_BASELINE_WINDOWS
+          $count = 0
+          if (Test-Path "build-warning-report-firstparty.txt") {
+            $count = (Get-Content "build-warning-report-firstparty.txt" | Where-Object { $_ -match "\bwarning\b" -and $_ -notmatch "^No first-party warnings detected" }).Count
+          }
+
+          $delta = $count - $baseline
+          @(
+            "job=windows${{ matrix.platform.aotString }}"
+            "baseline=$baseline"
+            "count=$count"
+            "delta=$delta"
+          ) | Out-File -FilePath "build-warning-delta-windows.txt" -Encoding utf8
+
+      - name: Upload warning delta summary (Windows)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Warning Delta (Windows${{ matrix.platform.aotString }})
+          path: build-warning-delta-windows.txt
+
+      - name: Upload Nexen
+        uses: actions/upload-artifact@v7
+        with:
+          name: Nexen (Windows${{ matrix.platform.aotString }})
+          path: |
+            build/publish/Nexen.exe
 
 
   linux:
+    if: ${{ !inputs.windows_only }}
     strategy:
       matrix:
         compiler: [gcc, clang, clang_aot]
@@ -74,43 +336,274 @@ jobs:
           - compiler: clang_aot
             make_flags: "USE_AOT=true"
       fail-fast: false
-    runs-on: ${{ matrix.platform.os }}
+    runs-on: ${{ matrix.compiler == 'gcc' && (matrix.platform.path == 'x64' && 'ubuntu-24.04' || 'ubuntu-24.04-arm') || matrix.platform.os }}
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 8.x
+          global-json-file: global.json
+          dotnet-version: 10.x
 
       - name: Install dependencies
         run: |
           sudo apt-get update -qy
-          sudo apt-get install -qy libsdl2-dev ccache # The compilers are already installed on GitHub's runners.
+          sudo apt-get install -qy libsdl2-dev ccache xvfb # The compilers are already installed on GitHub's runners.
+
+      - name: Setup vcpkg dependencies (Linux)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git vcpkg
+
+          bootstrap_ok=0
+          for attempt in 1 2 3 4 5; do
+            if ./vcpkg/bootstrap-vcpkg.sh -disableMetrics; then
+              bootstrap_ok=1
+              break
+            fi
+            echo "bootstrap-vcpkg failed (attempt ${attempt}/5)."
+          done
+
+          if [ "$bootstrap_ok" -ne 1 ]; then
+            echo "bootstrap-vcpkg failed after 5 attempts."
+            exit 1
+          fi
+
+          if [ "${{ matrix.platform.path }}" = "x64" ]; then
+            triplet="x64-linux"
+          else
+            triplet="arm64-linux"
+          fi
+
+          install_ok=0
+          for attempt in 1 2 3 4 5; do
+            if ./vcpkg/vcpkg install --triplet "$triplet" --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build; then
+              install_ok=1
+              break
+            fi
+            echo "vcpkg install failed (attempt ${attempt}/5)."
+          done
+
+          if [ "$install_ok" -ne 1 ]; then
+            echo "vcpkg install failed after 5 attempts."
+            exit 1
+          fi
+
+          echo "VCPKG_TRIPLET=$triplet" >> "$GITHUB_ENV"
+          echo "VCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg_installed" >> "$GITHUB_ENV"
+
+      # Resolve a GCC toolchain with C++23 <format> support without Launchpad PPA dependencies.
+      - name: Resolve GCC toolchain (>=13)
+        if: matrix.compiler == 'gcc'
+        run: |
+          set -euo pipefail
+
+          pick_compiler_pair() {
+            local cc="$1"
+            local cxx="$2"
+            if command -v "$cc" >/dev/null 2>&1 && command -v "$cxx" >/dev/null 2>&1; then
+              echo "$cc;$cxx"
+              return 0
+            fi
+            return 1
+          }
+
+          selected=""
+          for pair in "gcc-14;g++-14" "gcc-13;g++-13"; do
+            cc="${pair%%;*}"
+            cxx="${pair##*;}"
+            if resolved=$(pick_compiler_pair "$cc" "$cxx"); then
+              selected="$resolved"
+              break
+            fi
+          done
+
+          if [ -z "$selected" ]; then
+            echo "No suitable GCC 13+ toolchain preinstalled. Attempting apt fallback..."
+            sudo apt-get update -qy
+            sudo apt-get install -qy g++-14 gcc-14 || sudo apt-get install -qy g++-13 gcc-13
+
+            for pair in "gcc-14;g++-14" "gcc-13;g++-13"; do
+              cc="${pair%%;*}"
+              cxx="${pair##*;}"
+              if resolved=$(pick_compiler_pair "$cc" "$cxx"); then
+                selected="$resolved"
+                break
+              fi
+            done
+          fi
+
+          if [ -z "$selected" ]; then
+            echo "Failed to resolve a usable GCC 13+ toolchain."
+            exit 1
+          fi
+
+          CC_BIN="${selected%%;*}"
+          CXX_BIN="${selected##*;}"
+
+          echo "Using GCC toolchain: $CC_BIN / $CXX_BIN"
+          "$CC_BIN" --version
+          "$CXX_BIN" --version
+
+          echo "CC=$CC_BIN" >> "$GITHUB_ENV"
+          echo "CXX=$CXX_BIN" >> "$GITHUB_ENV"
+
+      # Install LLVM 18 for C++23 support (default clang on ubuntu-22.04 doesn't support c++23)
+      # Also install libc++ since the system libstdc++ doesn't have <format>
+      - name: Install LLVM 18
+        if: matrix.compiler != 'gcc'
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 18
+          sudo apt-get install -y libc++-18-dev libc++abi-18-dev
 
       - name: Setup CCache
         uses: ./.github/actions/setup-ccache-action
-       
+
       - name: Write commit SHA1 to file
         uses: ./.github/actions/build-sha1-action
-        
+
       # stderr is not detected as a TTY, so diagnostics are by default printed without colours;
       # forcing colours makes the log a little nicer to read.
-      - name: Build Mesen
+      # Pass CC/CXX explicitly since makefile ignores environment variables
+      # For clang, also use libc++ for C++23 <format> support
+      - name: Build Nexen
         run: |
-          make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false
+          set -o pipefail
 
-      - name: Upload Mesen
-        uses: actions/upload-artifact@v4
+          VCPKG_INCLUDE="-I${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/include"
+          VCPKG_LINK="-L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lspng_static -lminiz -lz"
+
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            CC_BIN="${CC:-gcc-14}"
+            CXX_BIN="${CXX:-g++-14}"
+            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC="$CC_BIN" CXX="$CXX_BIN" EXTRA_CXXFLAGS="$VCPKG_INCLUDE" EXTRA_LDFLAGS="$VCPKG_LINK" 2>&1 | tee build-linux.log
+          else
+            make -j$(nproc) -O ${{ matrix.make_flags }} LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++ $VCPKG_INCLUDE" EXTRA_LDFLAGS="$VCPKG_LINK" 2>&1 | tee build-linux.log
+          fi
+
+      - name: Capture Linux runtime dependency report
+        if: always()
+        run: |
+          publish_dir="bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish"
+          if [ -f "$publish_dir/Nexen" ]; then
+            ldd "$publish_dir/Nexen" > runtime-deps-linux.txt || true
+            readelf -d "$publish_dir/Nexen" > runtime-readelf-linux.txt || true
+          else
+            echo "Publish binary missing: $publish_dir/Nexen" > runtime-deps-linux.txt
+            echo "Publish binary missing: $publish_dir/Nexen" > runtime-readelf-linux.txt
+          fi
+
+      - name: Upload runtime dependency report (Linux)
+        if: always()
+        uses: actions/upload-artifact@v7
         with:
-          name: Mesen (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
-          path: bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish/Mesen
+          name: Runtime Dependencies (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: |
+            runtime-deps-linux.txt
+            runtime-readelf-linux.txt
+
+      - name: Generate warning report (Linux)
+        if: always()
+        run: |
+          if [ -f build-linux.log ]; then
+            grep -Ei "warning" build-linux.log > build-warning-report-linux.txt || true
+          fi
+
+          if [ ! -f build-warning-report-linux.txt ] || [ ! -s build-warning-report-linux.txt ]; then
+            echo "No warnings detected in Linux build log." > build-warning-report-linux.txt
+          fi
+
+      - name: Upload warning report (Linux)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Warning Report (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: build-warning-report-linux.txt
+
+      - name: Generate warning delta summary (Linux)
+        if: always()
+        run: |
+          baseline="${WARNING_BASELINE_LINUX}"
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            baseline="4192"
+          fi
+          count=0
+          if [ -f build-warning-report-linux.txt ]; then
+            count=$(grep -Ei "\\bwarning\\b" build-warning-report-linux.txt | grep -Eiv "^No warnings detected|/vcpkg_installed/|\\\\vcpkg_installed\\\\" | wc -l || true)
+          fi
+          delta=$((count - baseline))
+          {
+            echo "job=linux-${{ matrix.platform.os }}-${{ matrix.compiler }}"
+            echo "baseline=$baseline"
+            echo "count=$count"
+            echo "delta=$delta"
+          } > build-warning-delta-linux.txt
+
+      - name: Upload warning delta summary (Linux)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Warning Delta (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: build-warning-delta-linux.txt
+
+      - name: Linux publish smoke launch
+        if: always()
+        continue-on-error: true
+        run: |
+          publish_dir="bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish"
+          app="$publish_dir/Nexen"
+
+          if [ ! -f "$app" ]; then
+            echo "::warning::Missing published binary for Linux smoke launch: $app"
+            exit 0
+          fi
+
+          chmod +x "$app"
+          set +e
+          timeout 20s xvfb-run -a "$app" /DoNotSaveSettings > smoke-linux.log 2>&1
+          code=$?
+          set -e
+
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
+            if grep -Eiq "segmentation fault|sigsegv|core dumped|abort|fatal" smoke-linux.log; then
+              echo "::warning::Crash signature detected during Linux smoke launch."
+            fi
+            cat smoke-linux.log
+            exit 0
+          fi
+
+          if grep -Eiq "segmentation fault|sigsegv|core dumped|abort|fatal" smoke-linux.log; then
+            echo "::warning::Crash signature detected in Linux smoke log."
+            cat smoke-linux.log
+            exit 0
+          fi
+
+          echo "Linux smoke launch passed (exit code $code)."
+
+      - name: Upload Linux smoke log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Linux Smoke Log (${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: smoke-linux.log
+
+      - name: Upload Nexen
+        uses: actions/upload-artifact@v7
+        with:
+          name: Nexen (Linux - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: |
+            bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish/Nexen
+            bin/linux-${{ matrix.platform.path }}/Release/linux-${{ matrix.platform.path }}/publish/*.so*
 
   appimage:
+    if: ${{ !inputs.windows_only }}
     strategy:
       matrix:
         compiler: [clang_appimage]
@@ -118,97 +611,315 @@ jobs:
           {os: ubuntu-22.04, name: x64, script: Linux/appimage/appimage.sh},
           {os: ubuntu-22.04-arm, name: ARM64, script: Linux/appimage/appimage-arm64.sh}
         ]
-    runs-on: ${{ matrix.platform.os }}
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install .NET Core
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.x
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update -qy
-          sudo apt-get install -qy libsdl2-dev libfuse2 ccache # The compilers are already installed on GitHub's runners.
-
-      - name: Setup CCache
-        uses: ./.github/actions/setup-ccache-action
-
-      - name: Write commit SHA1 to file
-        uses: ./.github/actions/build-sha1-action
-
-      - name: Build Mesen (AppImage)
-        run: |
-          ${{ matrix.platform.script }}
-      - name: Upload Mesen (AppImage)
-        uses: actions/upload-artifact@v4
-        with:
-          name: Mesen (Linux ${{ matrix.platform.name }} - AppImage)
-          path: Mesen.AppImage
-
-
-  macos:
-    strategy:
-      matrix:
-        compiler: [clang, clang_aot]
-        platform: [
-          {os: macos-13, arch: x64},
-          {os: macos-14, arch: arm64}
-        ]
-        include:
-          - compiler: clang
-            make_flags: ""
-          - compiler: clang_aot
-            make_flags: "USE_AOT=true"
       fail-fast: false
     runs-on: ${{ matrix.platform.os }}
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 8.x
+          global-json-file: global.json
+          dotnet-version: 10.x
 
       - name: Install dependencies
         run: |
-          brew install sdl2 ccache
+          sudo apt-get update -qy
+          sudo apt-get install -qy libsdl2-dev libfuse2 ccache xvfb # The compilers are already installed on GitHub's runners.
 
-      - name: Get brew prefix
+      - name: Setup vcpkg dependencies (AppImage)
         run: |
-          echo "brewPrefix=$(brew --prefix)" >> "$GITHUB_ENV"
+          set -euo pipefail
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git vcpkg
+
+          bootstrap_ok=0
+          for attempt in 1 2 3 4 5; do
+            if ./vcpkg/bootstrap-vcpkg.sh -disableMetrics; then
+              bootstrap_ok=1
+              break
+            fi
+            echo "bootstrap-vcpkg failed (attempt ${attempt}/5)."
+          done
+
+          if [ "$bootstrap_ok" -ne 1 ]; then
+            echo "bootstrap-vcpkg failed after 5 attempts."
+            exit 1
+          fi
+
+          if [ "${{ matrix.platform.name }}" = "x64" ]; then
+            triplet="x64-linux"
+          else
+            triplet="arm64-linux"
+          fi
+
+          install_ok=0
+          for attempt in 1 2 3 4 5; do
+            if ./vcpkg/vcpkg install --triplet "$triplet" --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build; then
+              install_ok=1
+              break
+            fi
+            echo "vcpkg install failed (attempt ${attempt}/5)."
+          done
+
+          if [ "$install_ok" -ne 1 ]; then
+            echo "vcpkg install failed after 5 attempts."
+            exit 1
+          fi
+
+          echo "VCPKG_TRIPLET=$triplet" >> "$GITHUB_ENV"
+          echo "VCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg_installed" >> "$GITHUB_ENV"
+
+      # Install LLVM 18 for C++23 support (ubuntu-22.04 default clang doesn't support c++23)
+      # Also install libc++ since the system libstdc++ doesn't have <format>
+      - name: Install LLVM 18
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 18
+          sudo apt-get install -y libc++-18-dev libc++abi-18-dev
 
       - name: Setup CCache
         uses: ./.github/actions/setup-ccache-action
-        with:
-          ccache-path: '${{ env.brewPrefix }}/opt/ccache/libexec'
 
       - name: Write commit SHA1 to file
         uses: ./.github/actions/build-sha1-action
 
-      # stderr is not detected as a TTY, so diagnostics are by default printed without colours;
-      # forcing colours makes the log a little nicer to read.
-      - name: Build Mesen
+      - name: Build Nexen (AppImage)
         run: |
-          ${{ matrix.make_flags }} make -j$(sysctl -n hw.logicalcpu)
+          set -o pipefail
+          export NEXEN_EXTRA_CXXFLAGS="-I${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/include"
+          export NEXEN_EXTRA_LDFLAGS="-L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lspng_static -lminiz -lz"
+          bash "${{ matrix.platform.script }}" 2>&1 | tee build-appimage.log
+
+      - name: Capture runtime dependency report (AppImage publish)
+        if: always()
+        run: |
+          if [ "${{ matrix.platform.name }}" = "x64" ]; then
+            arch_path="x64"
+          else
+            arch_path="arm64"
+          fi
+
+          publish_dir="bin/linux-${arch_path}/Release/linux-${arch_path}/publish"
+          if [ -f "$publish_dir/Nexen" ]; then
+            ldd "$publish_dir/Nexen" > runtime-deps-appimage.txt || true
+            readelf -d "$publish_dir/Nexen" > runtime-readelf-appimage.txt || true
+          else
+            echo "Publish binary missing: $publish_dir/Nexen" > runtime-deps-appimage.txt
+            echo "Publish binary missing: $publish_dir/Nexen" > runtime-readelf-appimage.txt
+          fi
+
+      - name: Upload runtime dependency report (AppImage publish)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Runtime Dependencies (AppImage - ${{ matrix.platform.name }})
+          path: |
+            runtime-deps-appimage.txt
+            runtime-readelf-appimage.txt
+
+      - name: Generate warning report (AppImage)
+        if: always()
+        run: |
+          if [ -f build-appimage.log ]; then
+            grep -Ei "warning" build-appimage.log > build-warning-report-appimage.txt || true
+          fi
+
+          if [ ! -f build-warning-report-appimage.txt ] || [ ! -s build-warning-report-appimage.txt ]; then
+            echo "No warnings detected in AppImage build log." > build-warning-report-appimage.txt
+          fi
+
+      - name: Upload warning report (AppImage)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Warning Report (AppImage - ${{ matrix.platform.name }})
+          path: build-warning-report-appimage.txt
+
+      - name: Generate warning delta summary (AppImage)
+        if: always()
+        run: |
+          baseline="${WARNING_BASELINE_APPIMAGE}"
+          count=0
+          if [ -f build-warning-report-appimage.txt ]; then
+            count=$(grep -Ei "\\bwarning\\b" build-warning-report-appimage.txt | grep -Eiv "^No warnings detected|/vcpkg_installed/|\\\\vcpkg_installed\\\\" | wc -l || true)
+          fi
+          delta=$((count - baseline))
+          {
+            echo "job=appimage-${{ matrix.platform.name }}"
+            echo "baseline=$baseline"
+            echo "count=$count"
+            echo "delta=$delta"
+          } > build-warning-delta-appimage.txt
+
+      - name: Upload warning delta summary (AppImage)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Warning Delta (AppImage - ${{ matrix.platform.name }})
+          path: build-warning-delta-appimage.txt
+
+      - name: AppImage smoke launch
+        if: always()
+        continue-on-error: true
+        run: |
+          if [ ! -f Nexen.AppImage ]; then
+            echo "::warning::Missing AppImage binary for smoke launch."
+            exit 0
+          fi
+
+          chmod +x Nexen.AppImage
+          set +e
+          timeout 20s xvfb-run -a ./Nexen.AppImage /DoNotSaveSettings > smoke-appimage.log 2>&1
+          code=$?
+          set -e
+
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
+            if grep -Eiq "segmentation fault|sigsegv|core dumped|abort|fatal" smoke-appimage.log; then
+              echo "::warning::Crash signature detected during AppImage smoke launch."
+            fi
+            cat smoke-appimage.log
+            exit 0
+          fi
+
+          if grep -Eiq "segmentation fault|sigsegv|core dumped|abort|fatal" smoke-appimage.log; then
+            echo "::warning::Crash signature detected in AppImage smoke log."
+            cat smoke-appimage.log
+            exit 0
+          fi
+
+          echo "AppImage smoke launch passed (exit code $code)."
+
+      - name: Upload AppImage smoke log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: AppImage Smoke Log (${{ matrix.platform.name }})
+          path: smoke-appimage.log
+
+      - name: Upload Nexen (AppImage)
+        uses: actions/upload-artifact@v7
+        with:
+          name: Nexen (Linux ${{ matrix.platform.name }} - AppImage)
+          path: Nexen.AppImage
+
+
+  macos:
+    if: ${{ !inputs.windows_only }}
+    strategy:
+      matrix:
+        # NOTE: clang_aot temporarily disabled - .NET 10 ILC crashes on macOS ARM64
+        # See issue #238 for details. Re-enable when .NET fixes ILC segfault.
+        compiler: [clang]
+        platform: [
+          {os: macos-14, arch: arm64}
+        ]
+        include:
+          - compiler: clang
+            make_flags: ""
+      fail-fast: false
+    runs-on: ${{ matrix.platform.os }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+          dotnet-version: 10.x
+
+      - name: Install dependencies
+        run: |
+          brew install sdl2 ccache llvm
+
+      - name: Setup vcpkg dependencies (macOS)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/microsoft/vcpkg.git vcpkg
+
+          bootstrap_ok=0
+          for attempt in 1 2 3 4 5; do
+            if ./vcpkg/bootstrap-vcpkg.sh -disableMetrics; then
+              bootstrap_ok=1
+              break
+            fi
+            echo "bootstrap-vcpkg failed (attempt ${attempt}/5)."
+          done
+
+          if [ "$bootstrap_ok" -ne 1 ]; then
+            echo "bootstrap-vcpkg failed after 5 attempts."
+            exit 1
+          fi
+
+          if [ "${{ matrix.platform.arch }}" = "arm64" ]; then
+            triplet="arm64-osx"
+          else
+            triplet="x64-osx"
+          fi
+
+          install_ok=0
+          for attempt in 1 2 3 4 5; do
+            if ./vcpkg/vcpkg install --triplet "$triplet" --x-manifest-root="${{ github.workspace }}" --x-install-root="${{ github.workspace }}/vcpkg_installed" --clean-after-build; then
+              install_ok=1
+              break
+            fi
+            echo "vcpkg install failed (attempt ${attempt}/5)."
+          done
+
+          if [ "$install_ok" -ne 1 ]; then
+            echo "vcpkg install failed after 5 attempts."
+            exit 1
+          fi
+
+          echo "VCPKG_TRIPLET=$triplet" >> "$GITHUB_ENV"
+          echo "VCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg_installed" >> "$GITHUB_ENV"
+
+      - name: Setup CCache
+        uses: ./.github/actions/setup-ccache-action
+        with:
+          # macos-14 arm64 runner uses Homebrew under /opt/homebrew
+          ccache-path: '/opt/homebrew/opt/ccache/libexec'
+
+      - name: Write commit SHA1 to file
+        uses: ./.github/actions/build-sha1-action
+
+      # Use Homebrew's LLVM clang which supports C++23, instead of Apple clang
+      - name: Build Nexen
+        run: |
+          LLVM_PREFIX="$(brew --prefix llvm)"
+          export PATH="${LLVM_PREFIX}/bin:$PATH"
+          export CC="${LLVM_PREFIX}/bin/clang"
+          export CXX="${LLVM_PREFIX}/bin/clang++"
+          # Pass linker flags to use Homebrew's libc++ instead of system libc++
+          # EXTRA_CXXFLAGS is appended to CXXFLAGS/CFLAGS alongside NEXENFLAGS in the makefile
+          LIBCXX_FLAGS="-stdlib=libc++ -nostdinc++ -isystem ${LLVM_PREFIX}/include/c++/v1"
+          LINK_FLAGS="-L${LLVM_PREFIX}/lib/c++ -Wl,-rpath,${LLVM_PREFIX}/lib/c++ -lc++ -lc++abi"
+          VCPKG_INCLUDE="-I${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/include"
+          VCPKG_LINK="-L${VCPKG_INSTALLED_DIR}/${VCPKG_TRIPLET}/lib -lspng_static -lminiz -lz"
+          make CC="$CC" CXX="$CXX" EXTRA_CXXFLAGS="${LIBCXX_FLAGS} ${VCPKG_INCLUDE}" EXTRA_LDFLAGS="${LINK_FLAGS} ${VCPKG_LINK}" ${{ matrix.make_flags }} -j$(sysctl -n hw.logicalcpu)
 
       - name: Sign binary
         env:
-          APP_NAME: bin/osx-${{ matrix.platform.arch }}/Release/osx-${{ matrix.platform.arch }}/publish/Mesen.app
+          APP_NAME: bin/osx-${{ matrix.platform.arch }}/Release/osx-${{ matrix.platform.arch }}/publish/Nexen.app
           CERT_DATA: ${{ secrets.MACOS_CERTIFICATE }}
           CERT_PASS: ${{ secrets.MACOS_CERTIFICATE_PWD }}
-          ENTITLEMENTS: UI/Mesen.entitlements
-          SIGNING_IDENTITY: Mesen
+          ENTITLEMENTS: UI/Nexen.entitlements
+          SIGNING_IDENTITY: Nexen
         run: |
+          # Skip signing if certificate not configured
+          if [ -z "$CERT_DATA" ]; then
+            echo "Skipping code signing - MACOS_CERTIFICATE secret not configured"
+            exit 0
+          fi
+
           # Export certs
           echo "$CERT_DATA" | base64 --decode > /tmp/certs.p12
           # Create keychain
@@ -226,12 +937,182 @@ jobs:
           echo "[INFO] Signing app file"
           codesign --force --deep --timestamp --keychain macos-build.keychain --options=runtime --entitlements "$ENTITLEMENTS" --sign "$SIGNING_IDENTITY" "$APP_NAME"
 
-      - name: Zip Mesen.app
+      - name: Zip Nexen.app
         run: |
-          ditto -c -k --sequesterRsrc --keepParent bin/osx-${{ matrix.platform.arch }}/Release/osx-${{ matrix.platform.arch }}/publish/Mesen.app bin/osx-${{ matrix.platform.arch }}/Release/Mesen.app.zip
+          ditto -c -k --sequesterRsrc --keepParent bin/osx-${{ matrix.platform.arch }}/Release/osx-${{ matrix.platform.arch }}/publish/Nexen.app bin/osx-${{ matrix.platform.arch }}/Release/Nexen.app.zip
 
-      - name: Upload Mesen
-        uses: actions/upload-artifact@v4
+      - name: Capture runtime dependency report (macOS publish)
+        if: always()
+        run: |
+          app_dir="bin/osx-${{ matrix.platform.arch }}/Release/osx-${{ matrix.platform.arch }}/publish/Nexen.app"
+          app_bin="$app_dir/Contents/MacOS/Nexen"
+
+          if [ -f "$app_bin" ]; then
+            otool -L "$app_bin" > runtime-deps-macos.txt || true
+            find "$app_dir" -type f | sort > runtime-files-macos.txt || true
+          else
+            echo "Publish app binary missing: $app_bin" > runtime-deps-macos.txt
+            echo "Publish app binary missing: $app_bin" > runtime-files-macos.txt
+          fi
+
+      - name: Validate required runtime assets (macOS publish)
+        run: |
+          app_dir="bin/osx-${{ matrix.platform.arch }}/Release/osx-${{ matrix.platform.arch }}/publish/Nexen.app"
+          app_bin="$app_dir/Contents/MacOS/Nexen"
+
+          test -f "$app_bin" || { echo "Missing app binary: $app_bin"; exit 1; }
+
+          skia_count=$(find "$app_dir" -type f -name "libSkiaSharp*.dylib" | wc -l | tr -d ' ')
+          harfbuzz_count=$(find "$app_dir" -type f -name "libHarfBuzzSharp*.dylib" | wc -l | tr -d ' ')
+
+          if [ "$skia_count" -eq 0 ] || [ "$harfbuzz_count" -eq 0 ]; then
+            echo "Missing required macOS runtime assets in app bundle."
+            echo "libSkiaSharp*.dylib count: $skia_count"
+            echo "libHarfBuzzSharp*.dylib count: $harfbuzz_count"
+            exit 1
+          fi
+
+          echo "macOS runtime asset validation passed."
+
+      - name: Upload runtime dependency report (macOS publish)
+        if: always()
+        uses: actions/upload-artifact@v7
         with:
-          name: Mesen (macOS - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
-          path: bin/osx-${{ matrix.platform.arch }}/Release/Mesen.app.zip
+          name: Runtime Dependencies (macOS - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: |
+            runtime-deps-macos.txt
+            runtime-files-macos.txt
+
+      - name: Upload Nexen
+        uses: actions/upload-artifact@v7
+        with:
+          name: Nexen (macOS - ${{ matrix.platform.os }} - ${{ matrix.compiler }})
+          path: bin/osx-${{ matrix.platform.arch }}/Release/Nexen.app.zip
+
+
+  # Create GitHub Release only when explicitly requested via workflow_dispatch input.
+  # Use always() so release can still run if some platform jobs fail and partial assets exist.
+  release:
+    if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.run_release }}
+    needs: [windows, linux, appimage, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout (for release notes body_path)
+        uses: actions/checkout@v6
+
+      - name: Validate release input
+        run: |
+          VERSION="${{ inputs.release_tag }}"
+
+          if [ -z "$VERSION" ]; then
+            echo "release_tag input is required when run_release=true"
+            exit 1
+          fi
+
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "release_tag must match vX.Y.Z (got: $VERSION)"
+            exit 1
+          fi
+
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v7
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          mkdir -p tarball-staging
+
+          # Use explicit manual release tag input (e.g., v1.1.4)
+          VERSION="${VERSION}"
+
+          # Windows builds
+          cp "artifacts/Nexen (Windows)/Nexen.exe" "release-assets/Nexen-Windows-x64-${VERSION}.exe" || true
+          cp "artifacts/Nexen (Windows - AoT)/Nexen.exe" "release-assets/Nexen-Windows-x64-AoT-${VERSION}.exe" || true
+
+          # Helper function to create Linux tarball
+          create_linux_tarball() {
+            local artifact_path="$1"
+            local tarball_name="$2"
+            if [ -f "$artifact_path" ]; then
+              local artifact_dir="$(dirname "$artifact_path")"
+              local staging_dir="tarball-staging/${tarball_name%.tar.gz}"
+              mkdir -p "$staging_dir"
+              cp "$artifact_path" "$staging_dir/Nexen"
+              chmod +x "$staging_dir/Nexen"
+              # Copy bundled native libraries (.so) alongside the binary
+              cp "$artifact_dir"/*.so* "$staging_dir/" 2>/dev/null || true
+              # Include launcher script that sets LD_LIBRARY_PATH
+              cp Linux/Nexen.sh "$staging_dir/" || true
+              chmod +x "$staging_dir/Nexen.sh" 2>/dev/null || true
+              cp LICENSE "$staging_dir/" || true
+              tar -czvf "release-assets/${tarball_name}" -C tarball-staging "$(basename "$staging_dir")"
+              rm -rf "$staging_dir"
+            fi
+          }
+
+          # Linux builds (gcc) - as tarballs
+          create_linux_tarball "artifacts/Nexen (Linux - ubuntu-22.04 - gcc)/Nexen" "Nexen-Linux-x64-gcc-${VERSION}.tar.gz"
+          create_linux_tarball "artifacts/Nexen (Linux - ubuntu-22.04-arm - gcc)/Nexen" "Nexen-Linux-ARM64-gcc-${VERSION}.tar.gz"
+
+          # Linux builds (clang) - as tarballs
+          create_linux_tarball "artifacts/Nexen (Linux - ubuntu-22.04 - clang)/Nexen" "Nexen-Linux-x64-${VERSION}.tar.gz"
+          create_linux_tarball "artifacts/Nexen (Linux - ubuntu-22.04-arm - clang)/Nexen" "Nexen-Linux-ARM64-${VERSION}.tar.gz"
+
+          # Linux AOT builds - as tarballs
+          create_linux_tarball "artifacts/Nexen (Linux - ubuntu-22.04 - clang_aot)/Nexen" "Nexen-Linux-x64-AoT-${VERSION}.tar.gz"
+
+          # Linux AppImage builds (self-contained, no tarball needed)
+          cp "artifacts/Nexen (Linux x64 - AppImage)/Nexen.AppImage" "release-assets/Nexen-Linux-x64-${VERSION}.AppImage" || true
+          chmod +x "release-assets/Nexen-Linux-x64-${VERSION}.AppImage" || true
+          cp "artifacts/Nexen (Linux ARM64 - AppImage)/Nexen.AppImage" "release-assets/Nexen-Linux-ARM64-${VERSION}.AppImage" || true
+          chmod +x "release-assets/Nexen-Linux-ARM64-${VERSION}.AppImage" || true
+
+          # macOS builds (ARM64 only - Intel x64 deprecated on GitHub Actions)
+          cp "artifacts/Nexen (macOS - macos-14 - clang)/Nexen.app.zip" "release-assets/Nexen-macOS-ARM64-${VERSION}.zip" || true
+          # NOTE: macOS AOT disabled - .NET 10 ILC crashes. Re-enable when fixed.
+          # cp "artifacts/Nexen (macOS - macos-14 - clang_aot)/Nexen.app.zip" "release-assets/Nexen-macOS-ARM64-AoT-${VERSION}.zip" || true
+
+          # Cleanup
+          rm -rf tarball-staging
+
+          ls -la release-assets/
+
+      - name: Create or update release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          VERSION="${VERSION}"
+          RELEASE_TITLE="Nexen ${VERSION}"
+          RELEASE_TAG="${VERSION}"
+
+          if gh release view "${RELEASE_TAG}" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh release edit "${RELEASE_TAG}" \
+              --repo "${{ github.repository }}" \
+              --title "${RELEASE_TITLE}" \
+              --notes-file .github/release-notes/latest.md \
+              --target "${{ github.sha }}"
+          else
+            gh release create "${RELEASE_TAG}" \
+              --repo "${{ github.repository }}" \
+              --title "${RELEASE_TITLE}" \
+              --notes-file .github/release-notes/latest.md \
+              --target "${{ github.sha }}"
+          fi
+
+          if compgen -G "release-assets/*" > /dev/null; then
+            gh release upload "${RELEASE_TAG}" release-assets/* \
+              --repo "${{ github.repository }}" \
+              --clobber
+          else
+            echo "No release assets found; skipping upload"
+          fi

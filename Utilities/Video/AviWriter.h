@@ -1,4 +1,4 @@
-// This file is a part of Mesen
+// This file is a part of Nexen
 // It is a heavily modified version of the hardware.h/cpp file found in DOSBox's code.
 
 #pragma once
@@ -6,16 +6,14 @@
 #include "Utilities/SimpleLock.h"
 #include "Utilities/Video/BaseCodec.h"
 
-enum class VideoCodec
-{
+enum class VideoCodec {
 	None = 0,
 	ZMBV = 1,
 	CSCD = 2,
 	GIF = 3
 };
 
-class AviWriter
-{
+class AviWriter {
 private:
 	static constexpr int WaveBufferSize = 16 * 1024;
 	static constexpr int AviHeaderSize = 500;
@@ -40,17 +38,17 @@ private:
 	uint8_t* _frameBuffer = nullptr;
 
 	vector<uint8_t> _aviIndex;
-	
+
 	SimpleLock _audioLock;
 
 private:
 	void host_writew(uint8_t* buffer, uint16_t value);
 	void host_writed(uint8_t* buffer, uint32_t value);
-	void WriteAviChunk(const char * tag, uint32_t size, void * data, uint32_t flags);
+	void WriteAviChunk(const char* tag, uint32_t size, void* data, uint32_t flags);
 
 public:
 	void AddFrame(uint8_t* frameData);
-	void AddSound(int16_t * data, uint32_t sampleCount);
+	void AddSound(int16_t* data, uint32_t sampleCount);
 
 	bool StartWrite(string filename, VideoCodec codec, uint32_t width, uint32_t height, uint32_t bpp, uint32_t fps, uint32_t audioSampleRate, uint32_t compressionLevel);
 	void EndWrite();

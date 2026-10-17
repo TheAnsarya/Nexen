@@ -3,17 +3,18 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:c="using:Mesen.Debugger.Controls"
-	xmlns:v="using:Mesen.Debugger.Views"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
-	xmlns:md="using:Mesen.Debugger"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:c="using:Nexen.Debugger.Controls"
+	xmlns:v="using:Nexen.Debugger.Views"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
+	xmlns:md="using:Nexen.Debugger"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:ext="using:Nexen.Controls.DataGridExtensions"
 	mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="110"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	Focusable="True"
 	x:DataType="vm:WatchListViewModel"
-	x:Class="Mesen.Debugger.Views.WatchListView"
+	x:Class="Nexen.Debugger.Views.WatchListView"
 >
 	<Design.DataContext>
 		<vm:WatchListViewModel />
@@ -29,39 +30,41 @@
 			<Setter Property="VerticalAlignment" Value="Center" />
 			<Setter Property="Background" Value="Transparent" />
 		</Style>
-		<Style Selector="DataBoxRow TextBox:pointerover Border#PART_BorderElement">
+		<Style Selector="DataGridRow TextBox:pointerover Border#PART_BorderElement">
 			<Setter Property="Background" Value="Transparent" />
 		</Style>
-		<Style Selector="DataBoxRow TextBox:pointerover:focus Border#PART_BorderElement">
+		<Style Selector="DataGridRow TextBox:pointerover:focus Border#PART_BorderElement">
 			<Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
 		</Style>
-		<Style Selector="DataBoxRow:selected TextBox">
+		<Style Selector="DataGridRow:selected TextBox">
 			<Setter Property="Foreground" Value="White" />
 		</Style>
-		<Style Selector="DataBoxRow:selected TextBox:focus">
+		<Style Selector="DataGridRow:selected TextBox:focus">
 			<Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}" />
 			<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
 		</Style>
 		<Style Selector="TextBlock.changed">
 			<Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
 		</Style>
-		<Style Selector="DataBoxRow:selected TextBlock.changed">
+		<Style Selector="DataGridRow:selected TextBlock.changed">
 			<Setter Property="Foreground" Value="White" />
 		</Style>
 	</UserControl.Styles>
 
-	<Border BorderThickness="0 1 0 0" BorderBrush="{StaticResource MesenGrayBorderColor}">
-		<DataBox
+	<Border BorderThickness="0 1 0 0" BorderBrush="{StaticResource NexenGrayBorderColor}">
+		<DataGrid
 			Name="WatchList"
-			Items="{Binding WatchEntries}"
-			Selection="{Binding Selection}"
-			SelectionMode="Multiple"
+			ItemsSource="{Binding WatchEntries}"
+			SelectedItem="{Binding Selection.SelectedItem}"
+			SelectionMode="Extended"
+			IsReadOnly="True"
+			CanUserReorderColumns="False"
+			HeadersVisibility="Column"
 			GridLinesVisibility="All"
-			ColumnWidths="{Binding ColumnWidths}"
-			DisableSearch="True"
+			ext:DataGridColumnWidthBehavior.ColumnWidths="{Binding ColumnWidths}"
 		>
-			<DataBox.Columns>
-				<DataBoxTemplateColumn Header="{l:Translate colName}" CanUserResize="True" InitialWidth="200">
+			<DataGrid.Columns>
+				<DataGridTemplateColumn Header="{l:Translate colName}" CanUserResize="True" Width="200">
 					<DataTemplate>
 						<v:WatchListTextBox
 							Classes="PreventShortcuts"
@@ -71,11 +74,11 @@
 							Text="{Binding Expression, DataType={x:Type md:WatchValueInfo}}"
 							LostFocus="OnEntryLostFocus"
 							KeyDown="OnEntryKeyDown"
-							Watermark="Click to add..."
+							PlaceholderText="Click to add..."
 						/>
 					</DataTemplate>
-				</DataBoxTemplateColumn>
-				<DataBoxTemplateColumn Header="{l:Translate colValue}" CanUserResize="True" InitialWidth="100">
+				</DataGridTemplateColumn>
+				<DataGridTemplateColumn Header="{l:Translate colValue}" CanUserResize="True" Width="100">
 					<DataTemplate>
 						<TextBlock
 							Padding="3 0 0 0"
@@ -85,8 +88,8 @@
 							Classes.changed="{Binding IsChanged}"
 						/>
 					</DataTemplate>
-				</DataBoxTemplateColumn>
-			</DataBox.Columns>
-		</DataBox>
+				</DataGridTemplateColumn>
+			</DataGrid.Columns>
+		</DataGrid>
 	</Border>
 </UserControl>

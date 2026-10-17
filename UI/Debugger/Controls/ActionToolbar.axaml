@@ -1,24 +1,27 @@
-<UserControl 
+﻿<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:du="using:Mesen.Debugger.Utilities"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:du="using:Nexen.Debugger.Utilities"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	mc:Ignorable="d" d:DesignWidth="280" d:DesignHeight="200"
-	x:Class="Mesen.Debugger.Controls.ActionToolbar"
+	x:Class="Nexen.Debugger.Controls.ActionToolbar"
 	x:Name="root"
+	x:DataType="dc:ActionToolbar"
 >
 	<UserControl.Resources>
 		<Color x:Key="ButtonBackground">Transparent</Color>
 		<Color x:Key="ButtonBorderBrush">Transparent</Color>
 	</UserControl.Resources>
-	
+
 	<UserControl.Styles>
 		<Style Selector="Button">
 			<Setter Property="BorderBrush" Value="Transparent" />
 			<Setter Property="MinWidth" Value="0" />
-			<Setter Property="Padding" Value="1" />
+			<Setter Property="MinHeight" Value="32" />
+			<Setter Property="Padding" Value="6 4" />
 		</Style>
 		<Style Selector="Button:pointerover">
 			<Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrushPointerOver}" />
@@ -34,7 +37,7 @@
 			<Setter Property="Stretch" Value="None" />
 		</Style>
 	</UserControl.Styles>
-	
+
 	<ItemsControl DataContext="{Binding ElementName=root}" ItemsSource="{Binding Items}">
 		<ItemsControl.ItemsPanel>
 			<ItemsPanelTemplate>
@@ -43,16 +46,16 @@
 		</ItemsControl.ItemsPanel>
 		<ItemsControl.DataTemplates>
 			<DataTemplate DataType="{x:Type du:ContextMenuSeparator}">
-				<StackPanel Width="2" Height="16" Margin="2 0" IsVisible="{Binding Visible}">
+				<StackPanel Width="2" Height="24" Margin="2 0" IsVisible="{Binding Visible}">
 					<Rectangle
-						Stroke="{StaticResource MesenGrayBorderColor}"
+						Stroke="{StaticResource NexenGrayBorderColor}"
 						StrokeThickness="1"
-						Height="16"
+						Height="24"
 						Width="1"
 					/>
 				</StackPanel>
 			</DataTemplate>
-			
+
 			<DataTemplate DataType="{x:Type du:ContextMenuAction}">
 				<Button
 					ToolTip.Tip="{Binding TooltipText}"
@@ -65,7 +68,7 @@
 					<StackPanel Orientation="Horizontal">
 						<ContentPresenter Content="{Binding ActionIcon}" />
 						<TextBlock
-							Padding="3 0"
+							Padding="6 2"
 							Text="{Binding ActionName}"
 						>
 							<TextBlock.IsVisible>

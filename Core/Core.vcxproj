@@ -602,6 +602,7 @@
     <ClInclude Include="SNES\Debugger\TraceLogger\SnesCpuTraceLogger.h" />
     <ClInclude Include="SNES\DmaControllerTypes.h" />
     <ClInclude Include="Shared\Emulator.h" />
+    <ClInclude Include="Shared\LightweightCdlRecorder.h" />
     <ClInclude Include="Gameboy\Gameboy.h" />
     <ClInclude Include="Gameboy\Debugger\GameboyDisUtils.h" />
     <ClInclude Include="Gameboy\GameboyHeader.h" />
@@ -673,13 +674,14 @@
     <ClInclude Include="Debugger\LabelManager.h" />
     <ClInclude Include="Debugger\LuaApi.h" />
     <ClInclude Include="Debugger\LuaCallHelper.h" />
+    <ClInclude Include="Debugger\LuaInterop.h" />
     <ClInclude Include="Debugger\MemoryAccessCounter.h" />
     <ClInclude Include="Netplay\MessageType.h" />
     <ClInclude Include="Netplay\MovieDataMessage.h" />
     <ClInclude Include="Shared\Movies\MovieTypes.h" />
     <ClInclude Include="SNES\Coprocessors\MSU1\Msu1.h" />
     <ClInclude Include="SNES\Input\Multitap.h" />
-    <ClInclude Include="Shared\Movies\MesenMovie.h" />
+    <ClInclude Include="Shared\Movies\NexenMovie.h" />
     <ClInclude Include="Shared\Movies\MovieManager.h" />
     <ClInclude Include="Shared\Movies\MovieRecorder.h" />
     <ClInclude Include="SNES\Coprocessors\DSP\NecDsp.h" />
@@ -781,6 +783,7 @@
     <ClInclude Include="WS\APU\WsApuCh4.h" />
     <ClInclude Include="WS\APU\WsHyperVoice.h" />
     <ClInclude Include="WS\Carts\WsCart.h" />
+    <ClInclude Include="WS\WsRtc.h" />
     <ClInclude Include="WS\Debugger\DummyWsCpu.h" />
     <ClInclude Include="WS\Debugger\WsAssembler.h" />
     <ClInclude Include="WS\Debugger\WsDebugger.h" />
@@ -802,8 +805,77 @@
     <ClInclude Include="WS\WsSerial.h" />
     <ClInclude Include="WS\WsTimer.h" />
     <ClInclude Include="WS\WsTypes.h" />
+    <ClInclude Include="Lynx\AtariLynxFormat.h" />
+    <ClInclude Include="Lynx\ComLynxCable.h" />
+    <ClInclude Include="Lynx\LynxCart.h" />
+    <ClInclude Include="Lynx\LynxConsole.h" />
+    <ClInclude Include="Lynx\LynxController.h" />
+    <ClInclude Include="Lynx\LynxControlManager.h" />
+    <ClInclude Include="Lynx\LynxCpu.h" />
+    <ClInclude Include="Lynx\LynxEeprom.h" />
+    <ClInclude Include="Lynx\LynxGameDatabase.h" />
+    <ClInclude Include="Lynx\LynxApu.h" />
+    <ClInclude Include="Lynx\LynxDefaultVideoFilter.h" />
+    <ClInclude Include="Lynx\LynxMemoryManager.h" />
+    <ClInclude Include="Lynx\LynxMikey.h" />
+    <ClInclude Include="Lynx\LynxDecrypt.h" />
+    <ClInclude Include="Lynx\LynxSuzy.h" />
+    <ClInclude Include="Lynx\LynxTypes.h" />
+    <ClInclude Include="Genesis\GenesisM68kBoundaryScaffold.h" />
+    <ClInclude Include="Genesis\GenesisTypes.h" />
+    <ClInclude Include="Genesis\GenesisConsole.h" />
+    <ClInclude Include="Genesis\GenesisM68k.h" />
+    <ClInclude Include="Genesis\GenesisVdp.h" />
+    <ClInclude Include="Genesis\GenesisMemoryManager.h" />
+    <ClInclude Include="Genesis\GenesisPsg.h" />
+    <ClInclude Include="Genesis\GenesisControlManager.h" />
+    <ClInclude Include="Genesis\GenesisDefaultVideoFilter.h" />
+    <ClInclude Include="Genesis\Input\GenesisController.h" />
+    <ClInclude Include="Genesis\Debugger\GenesisDebugger.h" />
+    <ClInclude Include="Genesis\Debugger\GenesisTraceLogger.h" />
+    <ClInclude Include="Genesis\Debugger\GenesisVdpTools.h" />
+    <ClInclude Include="Lynx\Debugger\LynxDisUtils.h" />
+    <ClInclude Include="Lynx\Debugger\LynxDebugger.h" />
+    <ClInclude Include="Lynx\Debugger\LynxAssembler.h" />
+    <ClInclude Include="Lynx\Debugger\LynxPpuTools.h" />
+    <ClInclude Include="Lynx\Debugger\LynxTraceLogger.h" />
+    <ClInclude Include="Lynx\Debugger\LynxEventManager.h" />
+    <ClInclude Include="Lynx\Debugger\DummyLynxCpu.h" />
+    <ClInclude Include="Atari2600\Atari2600Console.h" />
+    <ClInclude Include="ChannelF\ChannelFBiosDatabase.h" />
+    <ClInclude Include="ChannelF\ChannelFConsole.h" />
+    <ClInclude Include="ChannelF\ChannelFConsolePanel.h" />
+    <ClInclude Include="ChannelF\ChannelFControlManager.h" />
+    <ClInclude Include="ChannelF\ChannelFController.h" />
+    <ClInclude Include="ChannelF\ChannelFCoreScaffold.h" />
+    <ClInclude Include="ChannelF\ChannelFCpu.h" />
+    <ClInclude Include="ChannelF\ChannelFDefaultVideoFilter.h" />
+    <ClInclude Include="ChannelF\ChannelFMemoryManager.h" />
+    <ClInclude Include="ChannelF\ChannelFOpcodeTable.h" />
+    <ClInclude Include="ChannelF\ChannelFTypes.h" />
+    <ClInclude Include="ChannelF\Debugger\ChannelFDebugger.h" />
+    <ClInclude Include="ChannelF\Debugger\ChannelFDisUtils.h" />
+    <ClInclude Include="ChannelF\Debugger\ChannelFEventManager.h" />
+    <ClInclude Include="ChannelF\Debugger\ChannelFTraceLogger.h" />
+    <ClInclude Include="Atari2600\Atari2600Mapper.h" />
+    <ClInclude Include="Atari2600\Atari2600Riot.h" />
+    <ClInclude Include="Atari2600\Atari2600Tia.h" />
+    <ClInclude Include="Atari2600\Atari2600Bus.h" />
+    <ClInclude Include="Atari2600\Atari2600CpuAdapter.h" />
+    <ClInclude Include="Atari2600\Atari2600ControlManager.h" />
+    <ClInclude Include="Atari2600\Atari2600DefaultVideoFilter.h" />
+    <ClInclude Include="Atari2600\Atari2600SmokeHarness.h" />
+    <ClInclude Include="Atari2600\Atari2600Types.h" />
+    <ClInclude Include="Atari2600\Debugger\Atari2600DisUtils.h" />
+    <ClInclude Include="Atari2600\Debugger\Atari2600Debugger.h" />
+    <ClInclude Include="Atari2600\Debugger\Atari2600Assembler.h" />
+    <ClInclude Include="Atari2600\Debugger\Atari2600PpuTools.h" />
+    <ClInclude Include="Atari2600\Debugger\Atari2600TraceLogger.h" />
+    <ClInclude Include="Atari2600\Debugger\Atari2600EventManager.h" />
+    <ClInclude Include="Mcp\McpHookManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Mcp\McpHookManager.cpp" />
     <ClCompile Include="Debugger\Base6502Assembler.cpp" />
     <ClCompile Include="Debugger\BaseEventManager.cpp" />
     <ClCompile Include="Debugger\CdlManager.cpp" />
@@ -1003,6 +1075,7 @@
     <ClCompile Include="Debugger\DisassemblyInfo.cpp" />
     <ClCompile Include="SNES\SnesDmaController.cpp" />
     <ClCompile Include="Shared\Emulator.cpp" />
+    <ClCompile Include="Shared\LightweightCdlRecorder.cpp" />
     <ClCompile Include="Gameboy\Gameboy.cpp" />
     <ClCompile Include="Gameboy\Debugger\GameboyDisUtils.cpp" />
     <ClCompile Include="Gameboy\APU\GbApu.cpp" />
@@ -1040,7 +1113,7 @@
     <ClCompile Include="Debugger\MemoryDumper.cpp" />
     <ClCompile Include="SNES\SnesMemoryManager.cpp" />
     <ClCompile Include="SNES\MemoryMappings.cpp" />
-    <ClCompile Include="Shared\Movies\MesenMovie.cpp" />
+    <ClCompile Include="Shared\Movies\NexenMovie.cpp" />
     <ClCompile Include="Shared\MessageManager.cpp" />
     <ClCompile Include="Shared\Movies\MovieManager.cpp" />
     <ClCompile Include="Shared\Movies\MovieRecorder.cpp" />
@@ -1065,6 +1138,7 @@
     <ClCompile Include="Shared\SaveStateManager.cpp" />
     <ClCompile Include="Shared\Video\ScaleFilter.cpp" />
     <ClCompile Include="Debugger\ScriptHost.cpp" />
+    <ClCompile Include="Debugger\LuaWatchdogCompat.cpp" />
     <ClCompile Include="Debugger\ScriptingContext.cpp" />
     <ClCompile Include="Debugger\ScriptManager.cpp" />
     <ClCompile Include="SNES\Coprocessors\SDD1\Sdd1.cpp" />
@@ -1093,12 +1167,66 @@
     <ClCompile Include="Shared\Audio\WaveRecorder.cpp" />
     <ClCompile Include="WS\APU\WsApu.cpp" />
     <ClCompile Include="WS\Carts\WsCart.cpp" />
+    <ClCompile Include="WS\WsRtc.cpp" />
     <ClCompile Include="WS\Debugger\DummyWsCpu.cpp" />
     <ClCompile Include="WS\Debugger\WsDebugger.cpp" />
     <ClCompile Include="WS\Debugger\WsDisUtils.cpp" />
     <ClCompile Include="WS\Debugger\WsEventManager.cpp" />
     <ClCompile Include="WS\Debugger\WsPpuTools.cpp" />
     <ClCompile Include="WS\Debugger\WsTraceLogger.cpp" />
+    <ClCompile Include="Lynx\AtariLynxFormat.cpp" />
+    <ClCompile Include="Lynx\LynxCart.cpp" />
+    <ClCompile Include="Lynx\ComLynxCable.cpp" />
+    <ClCompile Include="Lynx\LynxConsole.cpp" />
+    <ClCompile Include="Lynx\LynxControlManager.cpp" />
+    <ClCompile Include="Lynx\LynxCpu.cpp" />
+    <ClCompile Include="Lynx\LynxEeprom.cpp" />
+    <ClCompile Include="Lynx\LynxGameDatabase.cpp" />
+    <ClCompile Include="Lynx\LynxApu.cpp" />
+    <ClCompile Include="Lynx\LynxDefaultVideoFilter.cpp" />
+    <ClCompile Include="Lynx\LynxMemoryManager.cpp" />
+    <ClCompile Include="Lynx\LynxMikey.cpp" />
+    <ClCompile Include="Lynx\LynxDecrypt.cpp" />
+    <ClCompile Include="Lynx\LynxSuzy.cpp" />
+    <ClCompile Include="Genesis\GenesisM68kBoundaryScaffold.cpp" />
+    <ClCompile Include="Genesis\GenesisSmokeHarness.cpp" />
+    <ClCompile Include="Genesis\GenesisConsole.cpp" />
+    <ClCompile Include="Genesis\GenesisM68k.cpp" />
+    <ClCompile Include="Genesis\GenesisVdp.cpp" />
+    <ClCompile Include="Genesis\GenesisMemoryManager.cpp" />
+    <ClCompile Include="Genesis\GenesisPsg.cpp" />
+    <ClCompile Include="Genesis\GenesisControlManager.cpp" />
+    <ClCompile Include="Genesis\Debugger\GenesisDebugger.cpp" />
+    <ClCompile Include="Genesis\Debugger\GenesisTraceLogger.cpp" />
+    <ClCompile Include="Genesis\Debugger\GenesisVdpTools.cpp" />
+    <ClCompile Include="Lynx\Debugger\LynxDisUtils.cpp" />
+    <ClCompile Include="Lynx\Debugger\LynxDebugger.cpp" />
+    <ClCompile Include="Lynx\Debugger\LynxAssembler.cpp" />
+    <ClCompile Include="Lynx\Debugger\LynxPpuTools.cpp" />
+    <ClCompile Include="Lynx\Debugger\LynxTraceLogger.cpp" />
+    <ClCompile Include="Lynx\Debugger\LynxEventManager.cpp" />
+    <ClCompile Include="Lynx\Debugger\DummyLynxCpu.cpp" />
+    <ClCompile Include="Atari2600\Atari2600Console.cpp" />
+    <ClCompile Include="ChannelF\ChannelFBiosDatabase.cpp" />
+    <ClCompile Include="ChannelF\ChannelFConsole.cpp" />
+    <ClCompile Include="ChannelF\ChannelFControlManager.cpp" />
+    <ClCompile Include="ChannelF\ChannelFCoreScaffold.cpp" />
+    <ClCompile Include="ChannelF\ChannelFCpu.cpp" />
+    <ClCompile Include="ChannelF\Debugger\ChannelFDebugger.cpp" />
+    <ClCompile Include="ChannelF\Debugger\ChannelFDisUtils.cpp" />
+    <ClCompile Include="ChannelF\Debugger\ChannelFEventManager.cpp" />
+    <ClCompile Include="ChannelF\Debugger\ChannelFTraceLogger.cpp" />
+    <ClCompile Include="ChannelF\ChannelFMemoryManager.cpp" />
+    <ClCompile Include="ChannelF\ChannelFOpcodeTable.cpp" />
+    <ClCompile Include="Atari2600\Atari2600Bus.cpp" />
+    <ClCompile Include="Atari2600\Atari2600ControlManager.cpp" />
+    <ClCompile Include="Atari2600\Atari2600SmokeHarness.cpp" />
+    <ClCompile Include="Atari2600\Debugger\Atari2600DisUtils.cpp" />
+    <ClCompile Include="Atari2600\Debugger\Atari2600Debugger.cpp" />
+    <ClCompile Include="Atari2600\Debugger\Atari2600Assembler.cpp" />
+    <ClCompile Include="Atari2600\Debugger\Atari2600PpuTools.cpp" />
+    <ClCompile Include="Atari2600\Debugger\Atari2600TraceLogger.cpp" />
+    <ClCompile Include="Atari2600\Debugger\Atari2600EventManager.cpp" />
     <ClCompile Include="WS\WsConsole.cpp" />
     <ClCompile Include="WS\WsControlManager.cpp" />
     <ClCompile Include="WS\WsCpu.cpp" />
@@ -1120,32 +1248,34 @@
     <RootNamespace>Core</RootNamespace>
     <ProjectName>Core</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <!-- Fallback for standalone builds (when SolutionDir is not set) -->
+    <SolutionDir Condition="'$(SolutionDir)'==''">$(MSBuildProjectDirectory)\..\</SolutionDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='PGO Profile|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='PGO Optimize|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -1164,6 +1294,15 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='PGO Optimize|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <PropertyGroup>
+    <NexenUsePackagedLua Condition="'$(NexenUsePackagedLua)'==''">false</NexenUsePackagedLua>
+    <NexenUsePackagedLuaDefine Condition="'$(NexenUsePackagedLua)'=='true'">1</NexenUsePackagedLuaDefine>
+    <NexenUsePackagedLuaDefine Condition="'$(NexenUsePackagedLua)'!='true'">0</NexenUsePackagedLuaDefine>
+    <NexenVcpkgTriplet Condition="'$(VcpkgTriplet)'!=''">$(VcpkgTriplet)</NexenVcpkgTriplet>
+    <NexenVcpkgTriplet Condition="'$(NexenVcpkgTriplet)'=='' and '$(Platform)'=='x64'">x64-windows</NexenVcpkgTriplet>
+    <NexenVcpkgInstalledRoot Condition="'$(VcpkgInstalledDir)'!=''">$([MSBuild]::EnsureTrailingSlash('$(VcpkgInstalledDir)'))</NexenVcpkgInstalledRoot>
+    <NexenVcpkgIncludeDir Condition="'$(NexenVcpkgInstalledRoot)'!=''">$(NexenVcpkgInstalledRoot)$(NexenVcpkgTriplet)\include</NexenVcpkgIncludeDir>
+  </PropertyGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -1201,17 +1340,16 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NEXEN_USE_PACKAGED_LUA=$(NexenUsePackagedLuaDefine);WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <InlineFunctionExpansion>
       </InlineFunctionExpansion>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <CallingConvention>Cdecl</CallingConvention>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;$(NexenVcpkgIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
@@ -1219,7 +1357,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <ShowIncludes>
       </ShowIncludes>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -1238,13 +1376,12 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NEXEN_USE_PACKAGED_LUA=$(NexenUsePackagedLuaDefine);WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;$(NexenVcpkgIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
@@ -1255,7 +1392,7 @@
       <ControlFlowGuard>false</ControlFlowGuard>
       <RuntimeTypeInfo>
       </RuntimeTypeInfo>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -1267,18 +1404,17 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='PGO Profile|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>MESENOPTIMIZE;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NEXEN_USE_PACKAGED_LUA=$(NexenUsePackagedLuaDefine);NexenOPTIMIZE;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;$(NexenVcpkgIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
@@ -1287,7 +1423,7 @@
       </ShowIncludes>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <ControlFlowGuard>false</ControlFlowGuard>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -1299,18 +1435,17 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='PGO Optimize|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>MESENOPTIMIZE;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NEXEN_USE_PACKAGED_LUA=$(NexenUsePackagedLuaDefine);NEXENOPTIMIZE;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;$(NexenVcpkgIncludeDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
@@ -1319,7 +1454,7 @@
       </ShowIncludes>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <ControlFlowGuard>false</ControlFlowGuard>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>

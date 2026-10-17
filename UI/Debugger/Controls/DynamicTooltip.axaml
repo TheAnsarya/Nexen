@@ -3,12 +3,12 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:dc="using:Mesen.Debugger.Controls"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="50"
 	x:Name="root"
 	HorizontalAlignment="Stretch"
-	x:Class="Mesen.Debugger.Controls.DynamicTooltip"
+	x:Class="Nexen.Debugger.Controls.DynamicTooltip"
 >
 	<UserControl.Styles>
 		<Style Selector="TextBox">
@@ -16,12 +16,12 @@
 			<Setter Property="VerticalAlignment" Value="Top" />
 		</Style>
 		<Style Selector="StackPanel.mono TextBox">
-			<Setter Property="FontFamily" Value="{DynamicResource MesenMonospaceFont}" />
-			<Setter Property="FontSize" Value="{DynamicResource MesenMonospaceFontSize}" />
+			<Setter Property="FontFamily" Value="{DynamicResource NexenMonospaceFont}" />
+			<Setter Property="FontSize" Value="{DynamicResource NexenMonospaceFontSize}" />
 		</Style>
 		<Style Selector="StackPanel.regular TextBox">
-			<Setter Property="FontFamily" Value="{DynamicResource MesenFont}" />
-			<Setter Property="FontSize" Value="{DynamicResource MesenFontSize}" />
+			<Setter Property="FontFamily" Value="{DynamicResource NexenFont}" />
+			<Setter Property="FontSize" Value="{DynamicResource NexenFontSize}" />
 		</Style>
 	</UserControl.Styles>
 
@@ -29,7 +29,7 @@
 		<DataTemplate DataType="dc:TooltipSeparator">
 			<Rectangle
 				Height="1"
-				Fill="{StaticResource MesenGrayBorderColor}"
+				Fill="{StaticResource NexenGrayBorderColor}"
 				Margin="5 3"
 				IsVisible="{Binding !Hidden}"
 			/>

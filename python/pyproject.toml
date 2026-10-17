@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mesen_mcp"
+version = "0.1.0"
+description = "Python client + stdio bridge for the Mesen 2 emulator's MCP debugger server"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "GPL-3.0-or-later" }
+authors = [
+    { name = "Chad Doebelin" },
+]
+keywords = ["mesen", "snes", "emulator", "debugger", "mcp"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Debuggers",
+    "Topic :: System :: Emulators",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = []  # stdlib-only
+
+[project.urls]
+Homepage    = "https://github.com/astrobleem/Mesen2"
+Source      = "https://github.com/astrobleem/Mesen2"
+Issues      = "https://github.com/astrobleem/Mesen2/issues"
+
+[project.scripts]
+mesen-mcp-bridge = "mesen_mcp.bridge:main"
+mesen-mcp-tools = "mesen_mcp.tools:main"
+
+[tool.setuptools]
+packages = ["mesen_mcp", "mesen_mcp.examples"]

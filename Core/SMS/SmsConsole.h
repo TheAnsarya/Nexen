@@ -16,8 +16,34 @@ class SmsCart;
 class SmsControlManager;
 class SmsMemoryManager;
 
-class SmsConsole final : public IConsole
-{
+/// <summary>
+/// Sega Master System / Game Gear / SG-1000 / ColecoVision console emulator.
+/// Multi-system emulator for Sega 8-bit consoles and compatible systems.
+/// </summary>
+/// <remarks>
+/// **Supported Systems:**
+/// - **Sega Master System (SMS)**: 8-bit console with Z80 @ 3.58 MHz
+/// - **Game Gear**: Portable SMS with higher color depth
+/// - **SG-1000**: Sega's first console (TMS9918A VDP)
+/// - **ColecoVision**: Compatible TMS9918A system
+///
+/// **Hardware Components:**
+/// - **CPU**: Zilog Z80 @ 3.58 MHz (NTSC) / 3.55 MHz (PAL)
+/// - **VDP**: TMS9918A derivative (SMS VDP / Game Gear VDP)
+/// - **PSG**: SN76489 compatible sound chip
+/// - **FM Audio**: YM2413 (optional, Japan SMS)
+///
+/// **Display:**
+/// - SMS: 256×192 (256×224/240 extended modes)
+/// - Game Gear: 160×144 (SMS resolution cropped)
+/// - SG-1000/ColecoVision: TMS9918A modes (256×192)
+///
+/// **Video Features:**
+/// - SMS VDP: Tile-based with scrolling, 32 colors from 64
+/// - Game Gear: 32 colors from 4096 palette
+/// - Hardware sprites: 64 total, 8 per scanline
+/// </remarks>
+class SmsConsole final : public IConsole {
 private:
 	Emulator* _emu = nullptr;
 	unique_ptr<SmsCpu> _cpu;
@@ -31,12 +57,12 @@ private:
 	SmsModel _model = SmsModel::Sms;
 	ConsoleRegion _region = ConsoleRegion::Ntsc;
 	string _filename;
-	
+
 	void UpdateRegion(bool forceUpdate);
 
 public:
-	static vector<string> GetSupportedExtensions() { return { ".sms", ".gg", ".sg", ".col" }; }
-	static vector<string> GetSupportedSignatures() { return { }; }
+	static vector<string> GetSupportedExtensions() { return {".sms", ".gg", ".sg", ".col"}; }
+	static vector<string> GetSupportedSignatures() { return {}; }
 
 	SmsConsole(Emulator* emu);
 	virtual ~SmsConsole();
@@ -83,8 +109,9 @@ public:
 
 	AddressInfo GetAbsoluteAddress(uint32_t relAddress);
 	AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) override;
+	AddressInfo GetPcAbsoluteAddress() override;
 	AddressInfo GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) override;
-	
+
 	SmsState GetState();
 	void GetConsoleState(BaseState& state, ConsoleType consoleType) override;
 

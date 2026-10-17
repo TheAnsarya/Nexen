@@ -2,8 +2,7 @@
 
 #include "pch.h"
 
-class ClientConnectionData
-{
+class ClientConnectionData {
 public:
 	string Host;
 	uint16_t Port = 0;
@@ -12,12 +11,9 @@ public:
 
 	ClientConnectionData() {}
 
-	ClientConnectionData(string host, uint16_t port, string password, bool spectator) :
-		Host(host), Port(port), Password(password), Spectator(spectator)
-	{
+	ClientConnectionData(const string& host, uint16_t port, const string& password, bool spectator) : Host(host), Port(port), Password(password), Spectator(spectator) {
 	}
 
-	~ClientConnectionData()
-	{
+	~ClientConnectionData() {
 	}
 };

@@ -2,20 +2,20 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:vm="using:Mesen.ViewModels"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:vm="using:Nexen.ViewModels"
 	xmlns:sys="using:System"
-	xmlns:v="using:Mesen.Views"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:i="using:Mesen.Interop"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:v="using:Nexen.Views"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:i="using:Nexen.Interop"
+	xmlns:l="using:Nexen.Localization"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:dv="using:Mesen.Debugger.Views"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:dv="using:Nexen.Debugger.Views"
 	mc:Ignorable="d"
   Width="760" Height="550"
-	x:Class="Mesen.Debugger.Windows.MemoryToolsWindow"
+	x:Class="Nexen.Debugger.Windows.MemoryToolsWindow"
 	x:DataType="dvm:MemoryToolsViewModel"
 	Icon="/Assets/CheatCode.png"
 	Title="{l:Translate wndTitle}"
@@ -31,11 +31,11 @@
 	</Window.Styles>
 
 	<DockPanel>
-		<c:MesenMenu DockPanel.Dock="Top" Name="ActionMenu">
+		<c:NexenMenu DockPanel.Dock="Top" Name="ActionMenu">
 			<MenuItem Header="{l:Translate mnuFile}" ItemsSource="{Binding FileMenuItems}" />
 			<MenuItem Header="{l:Translate mnuView}" ItemsSource="{Binding ViewMenuItems}" />
 			<MenuItem Header="{l:Translate mnuSearch}" ItemsSource="{Binding SearchMenuItems}" />
-		</c:MesenMenu>
+		</c:NexenMenu>
 		<DockPanel DockPanel.Dock="Top" Margin="3 2">
 			<StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
 				<TextBlock VerticalAlignment="Center" Text="{l:Translate lblMemoryType}" />
@@ -64,14 +64,14 @@
 				<Border
 					BorderThickness="1 0 0 0"
 					Margin="5 0 0 0"
-					BorderBrush="{DynamicResource MesenGrayBorderColor}"
+					BorderBrush="{DynamicResource NexenGrayBorderColor}"
 					IsVisible="{Binding LengthText.Length}"
 				>
 					<TextBlock Text="{Binding LengthText}" Margin="5 2 0 2" />
 				</Border>
 			</StackPanel>
 		</Panel>
-		<Border BorderBrush="{StaticResource MesenGrayBorderColor}" BorderThickness="1">
+		<Border BorderBrush="{StaticResource NexenGrayBorderColor}" BorderThickness="1">
 			<DockPanel>
 				<ScrollBar
 					DockPanel.Dock="Right"
@@ -90,8 +90,8 @@
 					SelectionStart="{Binding SelectionStart}"
 					SelectionLength="{Binding SelectionLength}"
 					TopRow="{Binding ScrollPosition}"
-					FontFamily="{DynamicResource MesenMemoryViewerFont}"
-					FontSize="{DynamicResource MesenMemoryViewerFontSize}"
+					FontFamily="{DynamicResource NexenMemoryViewerFont}"
+					FontSize="{DynamicResource NexenMemoryViewerFontSize}"
 					ShowStringView="{Binding Config.ShowCharacters}"
 				/>
 			</DockPanel>

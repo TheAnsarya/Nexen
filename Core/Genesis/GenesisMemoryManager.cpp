@@ -1,0 +1,5782 @@
+﻿#include "pch.h"
+#include "Genesis/GenesisMemoryManager.h"
+#include "Genesis/GenesisConsole.h"
+#include "Genesis/GenesisM68k.h"
+#include "Genesis/GenesisVdp.h"
+#include "Genesis/GenesisControlManager.h"
+#include "Genesis/GenesisPsg.h"
+#include "Shared/Emulator.h"
+#include "Shared/EmuSettings.h"
+#include "Shared/BatteryManager.h"
+#include "Shared/MessageManager.h"
+#include "Utilities/Serializer.h"
+#include <algorithm>
+#include <cctype>
+#include <cstdlib>
+#include <filesystem>
+
+namespace {
+	constexpr uint64_t YmBusyAlignCycles = 6;
+	constexpr uint64_t YmBusyWindowCycles = YmBusyAlignCycles * 32u;
+
+	__forceinline uint32_t ReadBe32(const vector<uint8_t>& data, size_t offset) {
+		size_t effectiveOffset = offset;
+		uint32_t byte0 = (uint32_t)data[effectiveOffset];
+		uint32_t byte1 = (uint32_t)data[effectiveOffset + 1];
+		uint32_t byte2 = (uint32_t)data[effectiveOffset + 2];
+		uint32_t byte3 = (uint32_t)data[effectiveOffset + 3];
+		uint32_t value = (byte0 << 24)
+			| (byte1 << 16)
+			| (byte2 << 8)
+			| byte3;
+		return value;
+	}
+
+	__forceinline bool IsZ80BusReqAddress(uint32_t addr) {
+		uint32_t effectiveAddr = addr;
+		bool isBusReqAddress = (effectiveAddr & 0xFFFF00) == 0xA11100;
+		return isBusReqAddress;
+	}
+
+	__forceinline bool IsZ80ResetAddress(uint32_t addr) {
+		uint32_t effectiveAddr = addr;
+		bool isResetAddress = (effectiveAddr & 0xFFFF00) == 0xA11200;
+		return isResetAddress;
+	}
+
+	__forceinline bool IsYm2612Address(uint32_t addr) {
+		uint32_t effectiveAddr = addr & 0xFFFFFF;
+		bool isYm2612Address = effectiveAddr >= 0xA04000 && effectiveAddr <= 0xA04003;
+		return isYm2612Address;
+	}
+
+	__forceinline uint8_t GetZ80BusAckStatusBit(bool busAck) {
+		// BUSACK bit is low when 68k currently owns the Z80 bus.
+		uint8_t ackStatus = busAck ? 0x00 : 0x01;
+		return ackStatus;
+	}
+
+	__forceinline bool IsTmssAddress(uint32_t addr) {
+		uint32_t effectiveAddr = addr;
+		bool isTmssAddress = effectiveAddr >= 0xA14000 && effectiveAddr <= 0xA14003;
+		return isTmssAddress;
+	}
+
+	__forceinline bool IsTmssCartAddress(uint32_t addr) {
+		uint32_t effectiveAddr = addr;
+		return effectiveAddr == 0xA14101;
+	}
+
+	__forceinline bool IsLegacyBridgePassThroughAddress(uint32_t addr) {
+		return (addr >= 0xA13000 && addr <= 0xA1301F)
+			|| (addr >= 0xA14000 && addr <= 0xA1401F);
+	}
+
+	__forceinline bool IsBridgeControlReadbackAddress(uint32_t addr) {
+		return (addr >= 0xA12002 && addr <= 0xA12005)
+			|| (addr >= 0xA12012 && addr <= 0xA12015)
+			|| addr == 0xA15012 || addr == 0xA15013 || addr == 0xA15014
+			|| addr == 0xA15016 || addr == 0xA15017
+			|| (addr >= 0xA15008 && addr <= 0xA1500B)
+			|| (addr >= 0xA16012 && addr <= 0xA16015)
+			|| (addr >= 0xA18008 && addr <= 0xA1800B);
+	}
+
+	__forceinline bool IsBridgeModeledWriteAddress(uint32_t addr) {
+		return addr == 0xA12000 || addr == 0xA12001
+			|| IsBridgeControlReadbackAddress(addr)
+			|| IsLegacyBridgePassThroughAddress(addr);
+	}
+
+	__forceinline uint8_t BuildVersionRegister(ConsoleRegion region) {
+		uint8_t versionByte = 0xA0; // Base hardware profile
+		if (region == ConsoleRegion::NtscJapan) {
+			versionByte &= (uint8_t)~0x80; // Domestic
+		} else {
+			versionByte |= 0x80; // Overseas
+		}
+
+		if (region == ConsoleRegion::Pal) {
+			versionByte |= 0x40;
+		} else {
+			versionByte &= (uint8_t)~0x40;
+		}
+		return versionByte;
+	}
+
+	static std::string sNexenWramTracePath = "reference/cpu_ram_trace.log";
+	static std::string sNexenStartupTracePath = "reference/genesis_startup_trace.log";
+	static FILE* sNexenWramTraceFile = nullptr;
+	static FILE* sNexenStartupTraceFile = nullptr;
+	static uint32_t sNexenWramTraceLines = 0;
+	static uint32_t sNexenStartupTraceLines = 0;
+	static bool sNexenWramTraceConfigLoaded = false;
+	static bool sNexenStartupTraceConfigLoaded = false;
+	static uint32_t sNexenWramTraceFrameStart = 0u;
+	static uint32_t sNexenWramTraceFrameEnd = 50u;
+	static uint32_t sNexenWramTraceAddrStart = 0xFFCC00u;
+	static uint32_t sNexenWramTraceAddrEnd = 0xFFCFFFu;
+	static uint32_t sNexenWramTraceMaxLines = 300000u;
+	static bool sNexenStartupTraceEnabled = true;
+	static uint32_t sNexenStartupTraceFrameEnd = 600u;
+	static uint32_t sNexenStartupTraceMaxLines = 50000u;
+	enum class StartupProfileKind : uint8_t {
+		LogoCompat = 0,
+		NexenRef = 1,
+		MesenCompat = 2,
+		Hybrid = 3,
+		Strict = 4,
+		SonicStartup = 5,
+	};
+
+	enum class StartupTitleClass : uint8_t {
+		Unknown = 0,
+		SonicGeneral = 1,
+		Sonic1 = 2,
+		Sonic2 = 3,
+		Sonic3 = 4,
+		SonicAndKnuckles = 5,
+		SonicSpinball = 6,
+	};
+
+	struct StartupProfileTuning {
+		StartupProfileKind Kind = StartupProfileKind::LogoCompat;
+		const char* Name = "logo-compat";
+		uint32_t StartupWindowFrames = 16u;
+		uint32_t StartupBootRelaxFrames = 2u;
+		uint32_t StartupLogoPhaseEndFrame = 90u;
+		uint32_t StartupStrictPhaseStartFrame = 240u;
+		uint32_t StartupCheckpointIntervalFrames = 1u;
+		uint32_t StartupCheckpointEndFrame = 600u;
+		uint16_t StartupTmssUnlockDelayMclk = 0u;
+		uint16_t EarlyBusReqAckDelayMclk = 7u;
+		uint16_t EarlyBusResumeDelayMclk = 7u;
+		uint16_t LateBusReqAckDelayMclk = 7u;
+		uint16_t LateBusResumeDelayMclk = 7u;
+		bool LatchOnlyHighByteWrites = true;
+		bool PreferNexenBusHandoff = true;
+		bool PreferMesenBusHandoff = false;
+		bool UseDynamicBusTiming = false;
+		bool MesenCompatMode = false;
+		bool HybridBusHandoff = false;
+		bool StrictTmssDuringLogo = false;
+		bool ForceTmssUntilUnlock = false;
+		bool TmssStrictMode = false;
+		bool PowerOnZ80ResetAsserted = true;
+	};
+
+	static bool sNexenGenesisTmssStrictMode = false;
+	static std::string sNexenGenesisStartupProfile = "logo-compat";
+	static uint32_t sNexenGenesisStartupWindowFrames = 16u;
+	static uint32_t sNexenGenesisStartupBootRelaxFrames = 2u;
+	static uint32_t sNexenGenesisStartupLogoPhaseEndFrame = 90u;
+	static uint32_t sNexenGenesisStartupStrictPhaseStartFrame = 240u;
+	static uint32_t sNexenGenesisStartupCheckpointIntervalFrames = 1u;
+	static uint32_t sNexenGenesisStartupCheckpointEndFrame = 600u;
+	static uint16_t sNexenGenesisTmssUnlockDelayMclk = 0u;
+	static uint16_t sNexenGenesisZ80BusReqAckDelayMclk = 7u;
+	static uint16_t sNexenGenesisZ80BusResumeDelayMclk = 7u;
+	static uint16_t sNexenGenesisZ80EarlyBusReqAckDelayMclk = 7u;
+	static uint16_t sNexenGenesisZ80EarlyBusResumeDelayMclk = 7u;
+	static uint16_t sNexenGenesisZ80LateBusReqAckDelayMclk = 7u;
+	static uint16_t sNexenGenesisZ80LateBusResumeDelayMclk = 7u;
+	static bool sNexenGenesisZ80LatchOnlyHighByteWrites = true;
+	static bool sNexenGenesisPreferNexenBusHandoff = true;
+	static bool sNexenGenesisPreferMesenBusHandoff = false;
+	static bool sNexenGenesisUseDynamicBusTiming = false;
+	static bool sNexenGenesisMesenCompatMode = false;
+	static bool sNexenGenesisHybridBusHandoff = false;
+	static bool sNexenGenesisStrictTmssDuringLogo = false;
+	static bool sNexenGenesisForceTmssUntilUnlock = false;
+	static bool sNexenGenesisPowerOnZ80ResetAsserted = true;
+	static bool sNexenGenesisStartupRomAutotune = true;
+	static bool sNexenGenesisStartupProfileExplicit = false;
+	static std::string sNexenGenesisStartupTitleHint;
+	static StartupProfileKind sNexenGenesisStartupProfileKind = StartupProfileKind::LogoCompat;
+
+	static StartupProfileKind ParseStartupProfileKind(const std::string& profileName) {
+		if (profileName == "strict" || profileName == "strict-startup") {
+			return StartupProfileKind::Strict;
+		}
+		if (profileName == "sonic" || profileName == "sonic-startup" || profileName == "sonic-boot") {
+			return StartupProfileKind::SonicStartup;
+		}
+		if (profileName == "nexen-ref" || profileName == "nexen-ref-startup") {
+			return StartupProfileKind::NexenRef;
+		}
+		if (profileName == "mesen-compat" || profileName == "mesen" || profileName == "mesen-startup") {
+			return StartupProfileKind::MesenCompat;
+		}
+		if (profileName == "hybrid" || profileName == "hybrid-startup") {
+			return StartupProfileKind::Hybrid;
+		}
+		return StartupProfileKind::LogoCompat;
+	}
+
+	static StartupProfileTuning BuildStartupProfileTuning(StartupProfileKind kind) {
+		StartupProfileTuning tuning = {};
+		tuning.Kind = kind;
+
+		switch (kind) {
+			case StartupProfileKind::Strict:
+				tuning.Name = "strict";
+				tuning.StartupWindowFrames = 0u;
+				tuning.StartupBootRelaxFrames = 0u;
+				tuning.StartupLogoPhaseEndFrame = 0u;
+				tuning.StartupStrictPhaseStartFrame = 0u;
+				tuning.StartupCheckpointIntervalFrames = 2u;
+				tuning.StartupCheckpointEndFrame = 120u;
+				tuning.StartupTmssUnlockDelayMclk = 45u;
+				tuning.EarlyBusReqAckDelayMclk = 45u;
+				tuning.EarlyBusResumeDelayMclk = 15u;
+				tuning.LateBusReqAckDelayMclk = 45u;
+				tuning.LateBusResumeDelayMclk = 15u;
+				tuning.LatchOnlyHighByteWrites = true;
+				tuning.PreferNexenBusHandoff = false;
+				tuning.PreferMesenBusHandoff = true;
+				tuning.UseDynamicBusTiming = false;
+				tuning.MesenCompatMode = true;
+				tuning.HybridBusHandoff = false;
+				tuning.StrictTmssDuringLogo = true;
+				tuning.ForceTmssUntilUnlock = true;
+				tuning.TmssStrictMode = true;
+				tuning.PowerOnZ80ResetAsserted = true;
+				break;
+			case StartupProfileKind::SonicStartup:
+				tuning.Name = "sonic-startup";
+				tuning.StartupWindowFrames = 24u;
+				tuning.StartupBootRelaxFrames = 6u;
+				tuning.StartupLogoPhaseEndFrame = 180u;
+				tuning.StartupStrictPhaseStartFrame = 420u;
+				tuning.StartupCheckpointIntervalFrames = 1u;
+				tuning.StartupCheckpointEndFrame = 900u;
+				tuning.StartupTmssUnlockDelayMclk = 45u;
+				tuning.EarlyBusReqAckDelayMclk = 45u;
+				tuning.EarlyBusResumeDelayMclk = 15u;
+				tuning.LateBusReqAckDelayMclk = 21u;
+				tuning.LateBusResumeDelayMclk = 9u;
+				tuning.LatchOnlyHighByteWrites = true;
+				tuning.PreferNexenBusHandoff = true;
+				tuning.PreferMesenBusHandoff = true;
+				tuning.UseDynamicBusTiming = true;
+				tuning.MesenCompatMode = true;
+				tuning.HybridBusHandoff = true;
+				tuning.StrictTmssDuringLogo = true;
+				tuning.ForceTmssUntilUnlock = true;
+				tuning.TmssStrictMode = true;
+				tuning.PowerOnZ80ResetAsserted = true;
+				break;
+			case StartupProfileKind::NexenRef:
+				tuning.Name = "nexen-ref";
+				tuning.StartupWindowFrames = 10u;
+				tuning.StartupBootRelaxFrames = 2u;
+				tuning.StartupLogoPhaseEndFrame = 90u;
+				tuning.StartupStrictPhaseStartFrame = 300u;
+				tuning.StartupCheckpointIntervalFrames = 1u;
+				tuning.StartupCheckpointEndFrame = 600u;
+				tuning.StartupTmssUnlockDelayMclk = 0u;
+				tuning.EarlyBusReqAckDelayMclk = 7u;
+				tuning.EarlyBusResumeDelayMclk = 7u;
+				tuning.LateBusReqAckDelayMclk = 7u;
+				tuning.LateBusResumeDelayMclk = 7u;
+				tuning.LatchOnlyHighByteWrites = true;
+				tuning.PreferNexenBusHandoff = true;
+				tuning.PreferMesenBusHandoff = false;
+				tuning.UseDynamicBusTiming = false;
+				tuning.MesenCompatMode = false;
+				tuning.HybridBusHandoff = false;
+				tuning.StrictTmssDuringLogo = false;
+				tuning.ForceTmssUntilUnlock = false;
+				tuning.TmssStrictMode = false;
+				tuning.PowerOnZ80ResetAsserted = true;
+				break;
+			case StartupProfileKind::MesenCompat:
+				tuning.Name = "mesen-compat";
+				tuning.StartupWindowFrames = 0u;
+				tuning.StartupBootRelaxFrames = 1u;
+				tuning.StartupLogoPhaseEndFrame = 75u;
+				tuning.StartupStrictPhaseStartFrame = 180u;
+				tuning.StartupCheckpointIntervalFrames = 1u;
+				tuning.StartupCheckpointEndFrame = 600u;
+				tuning.StartupTmssUnlockDelayMclk = 45u;
+				tuning.EarlyBusReqAckDelayMclk = 45u;
+				tuning.EarlyBusResumeDelayMclk = 15u;
+				tuning.LateBusReqAckDelayMclk = 45u;
+				tuning.LateBusResumeDelayMclk = 15u;
+				tuning.LatchOnlyHighByteWrites = true;
+				tuning.PreferNexenBusHandoff = false;
+				tuning.PreferMesenBusHandoff = true;
+				tuning.UseDynamicBusTiming = false;
+				tuning.MesenCompatMode = true;
+				tuning.HybridBusHandoff = false;
+				tuning.StrictTmssDuringLogo = true;
+				tuning.ForceTmssUntilUnlock = true;
+				tuning.TmssStrictMode = true;
+				tuning.PowerOnZ80ResetAsserted = true;
+				break;
+			case StartupProfileKind::Hybrid:
+				tuning.Name = "hybrid";
+				tuning.StartupWindowFrames = 6u;
+				tuning.StartupBootRelaxFrames = 2u;
+				tuning.StartupLogoPhaseEndFrame = 120u;
+				tuning.StartupStrictPhaseStartFrame = 280u;
+				tuning.StartupCheckpointIntervalFrames = 1u;
+				tuning.StartupCheckpointEndFrame = 600u;
+				tuning.StartupTmssUnlockDelayMclk = 15u;
+				tuning.EarlyBusReqAckDelayMclk = 45u;
+				tuning.EarlyBusResumeDelayMclk = 15u;
+				tuning.LateBusReqAckDelayMclk = 7u;
+				tuning.LateBusResumeDelayMclk = 7u;
+				tuning.LatchOnlyHighByteWrites = true;
+				tuning.PreferNexenBusHandoff = true;
+				tuning.PreferMesenBusHandoff = true;
+				tuning.UseDynamicBusTiming = true;
+				tuning.MesenCompatMode = false;
+				tuning.HybridBusHandoff = true;
+				tuning.StrictTmssDuringLogo = false;
+				tuning.ForceTmssUntilUnlock = true;
+				tuning.TmssStrictMode = false;
+				tuning.PowerOnZ80ResetAsserted = true;
+				break;
+			case StartupProfileKind::LogoCompat:
+			default:
+				tuning.Name = "logo-compat";
+				tuning.StartupWindowFrames = 16u;
+				tuning.StartupBootRelaxFrames = 2u;
+				tuning.StartupLogoPhaseEndFrame = 120u;
+				tuning.StartupStrictPhaseStartFrame = 300u;
+				tuning.StartupCheckpointIntervalFrames = 1u;
+				tuning.StartupCheckpointEndFrame = 600u;
+				tuning.StartupTmssUnlockDelayMclk = 0u;
+				tuning.EarlyBusReqAckDelayMclk = 7u;
+				tuning.EarlyBusResumeDelayMclk = 7u;
+				tuning.LateBusReqAckDelayMclk = 7u;
+				tuning.LateBusResumeDelayMclk = 7u;
+				tuning.LatchOnlyHighByteWrites = true;
+				tuning.PreferNexenBusHandoff = true;
+				tuning.PreferMesenBusHandoff = false;
+				tuning.UseDynamicBusTiming = false;
+				tuning.MesenCompatMode = false;
+				tuning.HybridBusHandoff = false;
+				tuning.StrictTmssDuringLogo = false;
+				tuning.ForceTmssUntilUnlock = false;
+				tuning.TmssStrictMode = false;
+				tuning.PowerOnZ80ResetAsserted = true;
+				break;
+		}
+
+		return tuning;
+	}
+
+	static bool TryGetNexenTracePathFromEnv(const char* name, std::string& outPath) {
+		const char* raw = std::getenv(name);
+		if (!raw || !*raw) {
+			return false;
+		}
+
+		outPath = raw;
+		return !outPath.empty();
+	}
+
+	static void EnsureNexenTraceDirectoryForPath(const std::string& tracePath) {
+		if (tracePath.empty()) {
+			return;
+		}
+
+		std::filesystem::path path = std::filesystem::path(tracePath);
+		std::filesystem::path parent = path.parent_path();
+		if (parent.empty()) {
+			return;
+		}
+
+		std::error_code fsError;
+		std::filesystem::create_directories(parent, fsError);
+	}
+
+	static bool TryParseNexenTraceEnvU32AutoBase(const char* name, uint32_t minValue, uint32_t maxValue, uint32_t& outValue) {
+		const char* raw = std::getenv(name);
+		if (!raw || !*raw) {
+			return false;
+		}
+
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(raw, &end, 0);
+		if (end == raw || *end != '\0' || parsed < minValue || parsed > maxValue) {
+			return false;
+		}
+
+		outValue = (uint32_t)parsed;
+		return true;
+	}
+
+	static bool TryParseNexenTraceEnvBool(const char* name, bool& outValue) {
+		uint32_t value = 0;
+		if (!TryParseNexenTraceEnvU32AutoBase(name, 0u, 1u, value)) {
+			return false;
+		}
+
+		outValue = value != 0;
+		return true;
+	}
+
+	static bool TryGetNexenTraceEnvLowerString(const char* name, std::string& outValue) {
+		const char* raw = std::getenv(name);
+		if (!raw || !*raw) {
+			return false;
+		}
+
+		outValue = raw;
+		std::transform(outValue.begin(), outValue.end(), outValue.begin(), [](unsigned char c) {
+			return (char)std::tolower(c);
+		});
+		return !outValue.empty();
+	}
+
+	static std::string TrimAsciiSpaces(const std::string& value) {
+		size_t start = 0;
+		while (start < value.size() && std::isspace((unsigned char)value[start])) {
+			start++;
+		}
+
+		size_t end = value.size();
+		while (end > start && std::isspace((unsigned char)value[end - 1])) {
+			end--;
+		}
+
+		return value.substr(start, end - start);
+	}
+
+	static std::string NormalizeStartupTitleToken(const std::string& input) {
+		std::string out;
+		out.reserve(input.size());
+		for (char c : input) {
+			unsigned char ch = (unsigned char)c;
+			if (std::isalnum(ch)) {
+				out.push_back((char)std::toupper(ch));
+			} else if (std::isspace(ch) || c == '-' || c == '_' || c == '/' || c == '&') {
+				if (out.empty() || out.back() != ' ') {
+					out.push_back(' ');
+				}
+			}
+		}
+
+		return TrimAsciiSpaces(out);
+	}
+
+	static StartupTitleClass ClassifyStartupTitle(const std::string& normalizedTitle, const std::string& normalizedProductCode) {
+		if (normalizedTitle.empty() && normalizedProductCode.empty()) {
+			return StartupTitleClass::Unknown;
+		}
+
+		bool hasSonic = normalizedTitle.find("SONIC") != std::string::npos;
+		if (!hasSonic && normalizedProductCode.find("SONIC") == std::string::npos) {
+			return StartupTitleClass::Unknown;
+		}
+
+		if (normalizedTitle.find("SPINBALL") != std::string::npos) {
+			return StartupTitleClass::SonicSpinball;
+		}
+		if (normalizedTitle.find("KNUCKLES") != std::string::npos) {
+			return StartupTitleClass::SonicAndKnuckles;
+		}
+		if (normalizedTitle.find("SONIC 3") != std::string::npos || normalizedTitle.find("SONIC3") != std::string::npos) {
+			return StartupTitleClass::Sonic3;
+		}
+		if (normalizedTitle.find("SONIC 2") != std::string::npos || normalizedTitle.find("SONIC2") != std::string::npos) {
+			return StartupTitleClass::Sonic2;
+		}
+		if (normalizedTitle.find("SONIC THE HEDGEHOG") != std::string::npos) {
+			return StartupTitleClass::Sonic1;
+		}
+
+		return StartupTitleClass::SonicGeneral;
+	}
+
+	static void LoadNexenWramTraceConfigFromEnv() {
+		if (sNexenWramTraceConfigLoaded) {
+			return;
+		}
+		sNexenWramTraceConfigLoaded = true;
+
+		uint32_t value = 0;
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_WRAM_FRAME_START", 0u, 0xFFFFFFFFu, value)) {
+			sNexenWramTraceFrameStart = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_WRAM_FRAME_END", 0u, 0xFFFFFFFFu, value)) {
+			sNexenWramTraceFrameEnd = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_WRAM_ADDR_START", 0u, 0xFFFFFFu, value)) {
+			sNexenWramTraceAddrStart = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_WRAM_ADDR_END", 0u, 0xFFFFFFu, value)) {
+			sNexenWramTraceAddrEnd = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_WRAM_MAX_LINES", 1u, 0xFFFFFFFFu, value)) {
+			sNexenWramTraceMaxLines = value;
+		}
+		std::string tracePath;
+		if (TryGetNexenTracePathFromEnv("NEXEN_WRAM_TRACE_PATH", tracePath)) {
+			sNexenWramTracePath = tracePath;
+		}
+
+		if (sNexenWramTraceFrameStart > sNexenWramTraceFrameEnd) {
+			std::swap(sNexenWramTraceFrameStart, sNexenWramTraceFrameEnd);
+		}
+		if (sNexenWramTraceAddrStart > sNexenWramTraceAddrEnd) {
+			std::swap(sNexenWramTraceAddrStart, sNexenWramTraceAddrEnd);
+		}
+	}
+
+	static void LoadNexenStartupTraceConfigFromEnv() {
+		if (sNexenStartupTraceConfigLoaded) {
+			return;
+		}
+		sNexenStartupTraceConfigLoaded = true;
+
+		// Profile defaults: favor broader Sonic-era startup compatibility while preserving deterministic traces.
+		sNexenGenesisStartupProfile = "sonic-startup";
+		sNexenGenesisStartupProfileExplicit = false;
+		sNexenGenesisStartupRomAutotune = true;
+		sNexenGenesisStartupTitleHint.clear();
+		sNexenGenesisStartupProfileKind = StartupProfileKind::SonicStartup;
+		StartupProfileTuning tuning = BuildStartupProfileTuning(sNexenGenesisStartupProfileKind);
+
+		uint32_t value = 0;
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_TRACE", 0u, 1u, value)) {
+			sNexenStartupTraceEnabled = value != 0;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_TRACE_FRAME_END", 0u, 0xFFFFFFFFu, value)) {
+			sNexenStartupTraceFrameEnd = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_TRACE_MAX_LINES", 1u, 0xFFFFFFFFu, value)) {
+			sNexenStartupTraceMaxLines = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_TMSS_STRICT", 0u, 1u, value)) {
+			sNexenGenesisTmssStrictMode = value != 0;
+		}
+
+		std::string startupProfile;
+		if (TryGetNexenTraceEnvLowerString("NEXEN_GENESIS_STARTUP_PROFILE", startupProfile)) {
+			sNexenGenesisStartupProfile = startupProfile;
+			sNexenGenesisStartupProfileExplicit = true;
+		}
+
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_STARTUP_ROM_AUTOTUNE", sNexenGenesisStartupRomAutotune);
+		TryGetNexenTraceEnvLowerString("NEXEN_GENESIS_STARTUP_TITLE_HINT", sNexenGenesisStartupTitleHint);
+
+		sNexenGenesisStartupProfileKind = ParseStartupProfileKind(sNexenGenesisStartupProfile);
+		tuning = BuildStartupProfileTuning(sNexenGenesisStartupProfileKind);
+		sNexenGenesisStartupProfile = tuning.Name;
+
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_WINDOW_FRAMES", 0u, 120u, value)) {
+			tuning.StartupWindowFrames = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_BOOT_RELAX_FRAMES", 0u, 120u, value)) {
+			tuning.StartupBootRelaxFrames = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_LOGO_PHASE_END_FRAME", 0u, 1800u, value)) {
+			tuning.StartupLogoPhaseEndFrame = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_STRICT_PHASE_START_FRAME", 0u, 1800u, value)) {
+			tuning.StartupStrictPhaseStartFrame = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_CHECKPOINT_INTERVAL_FRAMES", 1u, 120u, value)) {
+			tuning.StartupCheckpointIntervalFrames = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_STARTUP_CHECKPOINT_END_FRAME", 0u, 1800u, value)) {
+			tuning.StartupCheckpointEndFrame = value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_TMSS_UNLOCK_DELAY_MCLK", 0u, 255u, value)) {
+			tuning.StartupTmssUnlockDelayMclk = (uint16_t)value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_Z80_BUSREQ_ACK_DELAY_MCLK", 0u, 255u, value)) {
+			tuning.EarlyBusReqAckDelayMclk = (uint16_t)value;
+			tuning.LateBusReqAckDelayMclk = (uint16_t)value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_Z80_BUSRESUME_DELAY_MCLK", 0u, 255u, value)) {
+			tuning.EarlyBusResumeDelayMclk = (uint16_t)value;
+			tuning.LateBusResumeDelayMclk = (uint16_t)value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_Z80_EARLY_BUSREQ_ACK_DELAY_MCLK", 0u, 255u, value)) {
+			tuning.EarlyBusReqAckDelayMclk = (uint16_t)value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_Z80_EARLY_BUSRESUME_DELAY_MCLK", 0u, 255u, value)) {
+			tuning.EarlyBusResumeDelayMclk = (uint16_t)value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_Z80_LATE_BUSREQ_ACK_DELAY_MCLK", 0u, 255u, value)) {
+			tuning.LateBusReqAckDelayMclk = (uint16_t)value;
+		}
+		if (TryParseNexenTraceEnvU32AutoBase("NEXEN_GENESIS_Z80_LATE_BUSRESUME_DELAY_MCLK", 0u, 255u, value)) {
+			tuning.LateBusResumeDelayMclk = (uint16_t)value;
+		}
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_Z80_LATCH_HIGH_BYTE_ONLY", tuning.LatchOnlyHighByteWrites);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_PREFER_NEXENREF_BUS_HANDOFF", tuning.PreferNexenBusHandoff);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_PREFER_MESEN_BUS_HANDOFF", tuning.PreferMesenBusHandoff);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_USE_DYNAMIC_BUS_TIMING", tuning.UseDynamicBusTiming);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_TMSS_STRICT_DURING_LOGO", tuning.StrictTmssDuringLogo);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_TMSS_FORCE_UNTIL_UNLOCK", tuning.ForceTmssUntilUnlock);
+		TryParseNexenTraceEnvBool("NEXEN_GENESIS_POWERON_Z80_RESET_ASSERTED", tuning.PowerOnZ80ResetAsserted);
+
+		if (tuning.StartupStrictPhaseStartFrame < tuning.StartupLogoPhaseEndFrame) {
+			tuning.StartupStrictPhaseStartFrame = tuning.StartupLogoPhaseEndFrame;
+		}
+
+		sNexenGenesisStartupWindowFrames = tuning.StartupWindowFrames;
+		sNexenGenesisStartupBootRelaxFrames = tuning.StartupBootRelaxFrames;
+		sNexenGenesisStartupLogoPhaseEndFrame = tuning.StartupLogoPhaseEndFrame;
+		sNexenGenesisStartupStrictPhaseStartFrame = tuning.StartupStrictPhaseStartFrame;
+		sNexenGenesisStartupCheckpointIntervalFrames = tuning.StartupCheckpointIntervalFrames;
+		sNexenGenesisStartupCheckpointEndFrame = tuning.StartupCheckpointEndFrame;
+		sNexenGenesisTmssUnlockDelayMclk = tuning.StartupTmssUnlockDelayMclk;
+		sNexenGenesisZ80BusReqAckDelayMclk = tuning.EarlyBusReqAckDelayMclk;
+		sNexenGenesisZ80BusResumeDelayMclk = tuning.EarlyBusResumeDelayMclk;
+		sNexenGenesisZ80EarlyBusReqAckDelayMclk = tuning.EarlyBusReqAckDelayMclk;
+		sNexenGenesisZ80EarlyBusResumeDelayMclk = tuning.EarlyBusResumeDelayMclk;
+		sNexenGenesisZ80LateBusReqAckDelayMclk = tuning.LateBusReqAckDelayMclk;
+		sNexenGenesisZ80LateBusResumeDelayMclk = tuning.LateBusResumeDelayMclk;
+		sNexenGenesisZ80LatchOnlyHighByteWrites = tuning.LatchOnlyHighByteWrites;
+		sNexenGenesisPreferNexenBusHandoff = tuning.PreferNexenBusHandoff;
+		sNexenGenesisPreferMesenBusHandoff = tuning.PreferMesenBusHandoff;
+		sNexenGenesisUseDynamicBusTiming = tuning.UseDynamicBusTiming;
+		sNexenGenesisMesenCompatMode = tuning.MesenCompatMode;
+		sNexenGenesisHybridBusHandoff = tuning.HybridBusHandoff;
+		sNexenGenesisStrictTmssDuringLogo = tuning.StrictTmssDuringLogo;
+		sNexenGenesisForceTmssUntilUnlock = tuning.ForceTmssUntilUnlock;
+		sNexenGenesisPowerOnZ80ResetAsserted = tuning.PowerOnZ80ResetAsserted;
+		sNexenGenesisTmssStrictMode = tuning.TmssStrictMode || sNexenGenesisTmssStrictMode;
+
+		std::string tracePath;
+		if (TryGetNexenTracePathFromEnv("NEXEN_GENESIS_STARTUP_TRACE_PATH", tracePath)) {
+			sNexenStartupTracePath = tracePath;
+		}
+
+		if (sNexenStartupTraceFrameEnd < sNexenGenesisStartupCheckpointEndFrame) {
+			sNexenStartupTraceFrameEnd = sNexenGenesisStartupCheckpointEndFrame;
+		}
+	}
+
+	static void InvalidateNexenStartupTraceConfigCache() {
+		sNexenStartupTraceConfigLoaded = false;
+	}
+
+	static void EnsureNexenWramTraceOpen() {
+		if (sNexenWramTraceFile) {
+			return;
+		}
+
+		LoadNexenWramTraceConfigFromEnv();
+		EnsureNexenTraceDirectoryForPath(sNexenWramTracePath);
+		sNexenWramTraceFile = fopen(sNexenWramTracePath.c_str(), "w");
+		if (sNexenWramTraceFile) {
+			fprintf(sNexenWramTraceFile, "# CPU work-RAM write trace\n");
+			fprintf(sNexenWramTraceFile, "# tracePath=%s\n", sNexenWramTracePath.c_str());
+			fprintf(sNexenWramTraceFile, "# frameRange=%u-%u addrRange=%06X-%06X maxLines=%u\n",
+				sNexenWramTraceFrameStart,
+				sNexenWramTraceFrameEnd,
+				(unsigned)sNexenWramTraceAddrStart,
+				(unsigned)sNexenWramTraceAddrEnd,
+				sNexenWramTraceMaxLines);
+			fprintf(sNexenWramTraceFile, "F0000 L000 WRAM_BOOT addr=000000 data=00 pc=000000 mclk=0\n");
+			sNexenWramTraceLines++;
+			fflush(sNexenWramTraceFile);
+		}
+	}
+
+	static void EnsureNexenStartupTraceOpen() {
+		if (sNexenStartupTraceFile) {
+			return;
+		}
+
+		LoadNexenStartupTraceConfigFromEnv();
+		if (!sNexenStartupTraceEnabled) {
+			return;
+		}
+
+		EnsureNexenTraceDirectoryForPath(sNexenStartupTracePath);
+		sNexenStartupTraceFile = fopen(sNexenStartupTracePath.c_str(), "w");
+		if (sNexenStartupTraceFile) {
+			fprintf(sNexenStartupTraceFile, "# Genesis startup trace\n");
+			fprintf(sNexenStartupTraceFile, "# tracePath=%s\n", sNexenStartupTracePath.c_str());
+			fprintf(sNexenStartupTraceFile, "# frameEnd=%u maxLines=%u\n",
+				sNexenStartupTraceFrameEnd,
+				sNexenStartupTraceMaxLines);
+			fflush(sNexenStartupTraceFile);
+		}
+	}
+
+	static bool ShouldLogNexenWramTrace(uint32_t frame, uint32_t address) {
+		EnsureNexenWramTraceOpen();
+		if (!sNexenWramTraceFile) {
+			return false;
+		}
+		if (sNexenWramTraceLines >= sNexenWramTraceMaxLines) {
+			return false;
+		}
+		if (frame < sNexenWramTraceFrameStart || frame > sNexenWramTraceFrameEnd) {
+			return false;
+		}
+		if (address < sNexenWramTraceAddrStart || address > sNexenWramTraceAddrEnd) {
+			return false;
+		}
+		return true;
+	}
+
+	static void LogNexenWramTrace(uint32_t frame, uint16_t line, uint32_t address, uint8_t data, uint32_t programCounter, uint64_t masterClock) {
+		if (!sNexenWramTraceFile) {
+			return;
+		}
+
+		fprintf(sNexenWramTraceFile, "F%04u L%03u WRAM addr=%06X data=%02X pc=%06X mclk=%llu\n",
+			(unsigned)frame,
+			(unsigned)line,
+			(unsigned)address,
+			(unsigned)data,
+			(unsigned)programCounter,
+			(unsigned long long)masterClock);
+		sNexenWramTraceLines++;
+		if ((sNexenWramTraceLines & 0x3FFu) == 0u) {
+			fflush(sNexenWramTraceFile);
+		}
+	}
+
+	static bool ShouldLogNexenStartupTrace(uint32_t frame) {
+		LoadNexenStartupTraceConfigFromEnv();
+		if (!sNexenStartupTraceEnabled) {
+			return false;
+		}
+		if (frame > sNexenStartupTraceFrameEnd) {
+			return false;
+		}
+
+		EnsureNexenStartupTraceOpen();
+		if (!sNexenStartupTraceFile) {
+			return false;
+		}
+		if (sNexenStartupTraceLines >= sNexenStartupTraceMaxLines) {
+			return false;
+		}
+		return true;
+	}
+
+	static bool ShouldCaptureNexenStartupTrace(uint32_t frame) {
+		LoadNexenStartupTraceConfigFromEnv();
+		if (!sNexenStartupTraceEnabled) {
+			return false;
+		}
+
+		return frame <= sNexenStartupTraceFrameEnd;
+	}
+
+	static bool ShouldTraceStartupLoopPoll(uint32_t frame, uint32_t pc) {
+		if (pc < 0x071f80u || pc > 0x072040u) {
+			return false;
+		}
+
+		static uint32_t sLoopPollTraceFrame = 0xFFFFFFFFu;
+		static uint32_t sLoopPollTraceCount = 0u;
+		if (sLoopPollTraceFrame != frame) {
+			sLoopPollTraceFrame = frame;
+			sLoopPollTraceCount = 0u;
+		}
+
+		if (sLoopPollTraceCount >= 96u) {
+			return false;
+		}
+
+		sLoopPollTraceCount++;
+		return true;
+	}
+
+	static bool ShouldTraceStartupPreLoopBranch(uint32_t frame, uint32_t pc) {
+		if (pc < 0x071f80u || pc > 0x071fa0u) {
+			return false;
+		}
+
+		static uint32_t sPreLoopTraceFrame = 0xFFFFFFFFu;
+		static uint32_t sPreLoopTraceCount = 0u;
+		if (sPreLoopTraceFrame != frame) {
+			sPreLoopTraceFrame = frame;
+			sPreLoopTraceCount = 0u;
+		}
+
+		if (sPreLoopTraceCount >= 64u) {
+			return false;
+		}
+
+		sPreLoopTraceCount++;
+		return true;
+	}
+
+	static void LogNexenStartupTrace(uint32_t frame, uint16_t line, const char* tag, uint32_t address, uint16_t value, uint16_t auxValue, uint32_t pc, uint64_t mclk) {
+		if (!sNexenStartupTraceFile) {
+			return;
+		}
+
+		fprintf(sNexenStartupTraceFile, "F%04u L%03u %s addr=%06X data=%04X aux=%u pc=%06X mclk=%llu\n",
+			(unsigned)frame,
+			(unsigned)line,
+			tag,
+			(unsigned)(address & 0x00FFFFFFu),
+			(unsigned)value,
+			(unsigned)auxValue,
+			(unsigned)(pc & 0x00FFFFFFu),
+			(unsigned long long)mclk);
+		sNexenStartupTraceLines++;
+		// Flush every line so traces survive force-stop smoke runs.
+		fflush(sNexenStartupTraceFile);
+	}
+
+	static uint16_t ComputeStartupPaletteDigest(const uint16_t* cram) {
+		if (!cram) {
+			return 0;
+		}
+
+		uint16_t digest = 0x4d47;
+		for (uint32_t i = 0; i < 16; i++) {
+			digest = (uint16_t)((digest << 3) | (digest >> 13));
+			digest ^= cram[i];
+			digest = (uint16_t)(digest * 33u + (uint16_t)i);
+		}
+
+		return digest;
+	}
+
+	static bool StartupTagEquals(const char* tag, const char* literal) {
+		return std::strcmp(tag, literal) == 0;
+	}
+
+	static bool StartupTagStartsWith(const char* tag, const char* prefix) {
+		size_t prefixLen = std::strlen(prefix);
+		return std::strncmp(tag, prefix, prefixLen) == 0;
+	}
+
+	static bool ShouldEmitNexenProfileStartupTag(const char* tag) {
+		return StartupTagEquals(tag, "STARTUP_BOOT")
+			|| StartupTagEquals(tag, "STARTUP_CHECKPOINT")
+			|| StartupTagEquals(tag, "STARTUP_Z80")
+			|| StartupTagEquals(tag, "STARTUP_PAL")
+			|| StartupTagEquals(tag, "STARTUP_VDP")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_MARK")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_EDGE")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_34A")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_34A_MCLK")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_REG")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_REG2")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_BLOCK")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_ITER")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_ITER_REG")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_ITER_REG2")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_SUM")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_SUM2")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_264_D6")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_SETUP_240")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_SETUP_D6CHG")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_EARLY")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_D6LOW")
+			|| StartupTagEquals(tag, "CPU_MMU_D6SEED_WIN")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_MOVEM")
+			|| StartupTagEquals(tag, "CPU_MMU_PC_MOVEM_REG")
+			|| StartupTagEquals(tag, "VDP_DISP_TGL")
+			|| StartupTagEquals(tag, "Z80_RUN_TGL")
+				|| StartupTagEquals(tag, "CPU_MMU_PC_264_D6")
+				|| StartupTagEquals(tag, "CPU_MMU_PC_264_D6A1")
+			|| StartupTagEquals(tag, "Z80_RESET")
+			|| StartupTagEquals(tag, "VDP_REG_W")
+			|| StartupTagEquals(tag, "VDP_STAT_W")
+			|| StartupTagEquals(tag, "TMSS_UNLOCK");
+	}
+}
+
+GenesisMemoryManager::GenesisMemoryManager() {
+}
+
+GenesisMemoryManager::~GenesisMemoryManager() {
+}
+
+void GenesisMemoryManager::Init(Emulator* emu, GenesisConsole* console, vector<uint8_t>& romData, GenesisVdp* vdp, GenesisControlManager* controlManager, GenesisPsg* psg) {
+	_emu = emu;
+	_console = console;
+	_vdp = vdp;
+	_controlManager = controlManager;
+	_psg = psg;
+	EnsureNexenWramTraceOpen();
+	EnsureNexenStartupTraceOpen();
+	TraceStartupEvent("STARTUP_BOOT", 0x000000, 0, 0);
+
+	// Register and allocate ROM
+	_prgRomSize = (uint32_t)romData.size();
+	_prgRomUseWrapMask = _prgRomSize != 0 && (_prgRomSize & (_prgRomSize - 1)) == 0;
+	_prgRomWrapMask = _prgRomSize > 0 ? (_prgRomSize - 1) : 0;
+	_romBankCount = (_prgRomSize + MapperWindowSize - 1) / MapperWindowSize;
+	if (_romBankCount == 0) {
+		_romBankCount = 1;
+	}
+	_prgRom = new uint8_t[_prgRomSize];
+	memcpy(_prgRom, romData.data(), _prgRomSize);
+	DetectStartupTitleSignature();
+	_emu->RegisterMemory(MemoryType::GenesisPrgRom, _prgRom, _prgRomSize);
+
+	// Register and allocate work RAM
+	_workRam = new uint8_t[WorkRamSize];
+	memset(_workRam, 0, WorkRamSize);
+	_emu->RegisterMemory(MemoryType::GenesisWorkRam, _workRam, WorkRamSize);
+
+	// Register and allocate Z80 RAM
+	_z80Ram = new uint8_t[Z80RamSize];
+	memset(_z80Ram, 0, Z80RamSize);
+
+	// I/O defaults
+	memset(&_ioState, 0, sizeof(_ioState));
+	_ioState.CtrlPort[0] = 0;
+	_ioState.CtrlPort[1] = 0;
+	_ioState.CtrlPort[2] = 0;
+	if (_controlManager) {
+		_controlManager->ResetRuntimeState();
+		_controlManager->WriteControlPort(0, _ioState.CtrlPort[0]);
+		_controlManager->WriteControlPort(1, _ioState.CtrlPort[1]);
+		_controlManager->WriteDataPort(0, _ioState.DataPort[0]);
+		_controlManager->WriteDataPort(1, _ioState.DataPort[1]);
+	}
+	memset(_segaCdBridgeA120, 0, sizeof(_segaCdBridgeA120));
+	memset(_segaCdBridgeA130, 0, sizeof(_segaCdBridgeA130));
+	memset(_segaCdBridgeA140, 0, sizeof(_segaCdBridgeA140));
+	memset(_segaCdBridgeA150, 0, sizeof(_segaCdBridgeA150));
+	memset(_segaCdBridgeA160, 0, sizeof(_segaCdBridgeA160));
+	memset(_segaCdBridgeA180, 0, sizeof(_segaCdBridgeA180));
+
+	_z80BusRequest = false;
+	_z80Reset = sNexenGenesisPowerOnZ80ResetAsserted;
+	_z80BusAck = false;
+	_z80BusReqDelayMclk = 0;
+	_z80ResumeDelayMclk = 0;
+	_z80RuntimeRunning = false;
+	_z80RuntimeRunnableCycles = 0;
+	_z80RuntimeStalledCycles = 0;
+	_z80RuntimeTransitionCount = 0;
+	_z80RuntimeStateEpoch = 0;
+	_z80RuntimeLastTransitionClock = 0;
+	_z80BankReg = 0;
+	_ymAddressPort0 = 0;
+	_ymAddressPort1 = 0;
+	memset(_ymRegisters, 0, sizeof(_ymRegisters));
+	_ymStatusFlags = 0;
+	_ymKeyOnMask = 0;
+	_ymLastKeyOnValue = 0;
+	_ymBusyUntilMclk = 0;
+	_ymTimerAValue = 0;
+	_ymTimerBValue = 0;
+	_ymTimerARemaining = 0;
+	_ymTimerBRemaining = 0;
+	_ymTimerAAccumMclk = 0;
+	_ymTimerBAccumMclk = 0;
+	_ymTimerALoad = false;
+	_ymTimerBLoad = false;
+	_ymTimerAIrqEnable = false;
+	_ymTimerBIrqEnable = false;
+	InvalidateNexenStartupTraceConfigCache();
+	ApplyStartupEnvironmentProfile();
+	_z80Reset = sNexenGenesisPowerOnZ80ResetAsserted;
+	_startupLastDisplayEnabled = _vdp ? ((_vdp->GetState().Registers[VdpReg::ModeSet2] & 0x40) != 0) : false;
+	UpdateZ80RuntimeState(false, 0, 0, "init");
+	_tmssEnabled = _emu->GetSettings()->GetGenesisConfig().EnableTmss;
+	_tmssUnlocked = false;
+	_tmssVdpBlockLogged = false;
+	_ymAddressPort0 = 0;
+	_ymAddressPort1 = 0;
+	memset(_ymRegisters, 0, sizeof(_ymRegisters));
+	_ymStatusFlags = 0;
+	_ymKeyOnMask = 0;
+	_ymLastKeyOnValue = 0;
+	_ymBusyUntilMclk = _masterClock;
+	_ymTimerAValue = 0;
+	_ymTimerBValue = 0;
+	_ymTimerARemaining = 0;
+	_ymTimerBRemaining = 0;
+	_ymTimerAAccumMclk = 0;
+	_ymTimerBAccumMclk = 0;
+	_ymTimerALoad = false;
+	_ymTimerBLoad = false;
+	_ymTimerAIrqEnable = false;
+	_ymTimerBIrqEnable = false;
+	_segaCdSubCpuRunning = false;
+	_segaCdSubCpuBusRequest = false;
+	_segaCdSubCpuTransitionCount = 0;
+	_segaCdPcmLeft = 0;
+	_segaCdPcmRight = 0;
+	_segaCdCddaLeft = 0;
+	_segaCdCddaRight = 0;
+	_segaCdMixedLeft = 0;
+	_segaCdMixedRight = 0;
+	_segaCdAudioCheckpointCount = 0;
+	_segaCdToolingDebuggerSignal = 0;
+	_segaCdToolingTasSignal = 0;
+	_segaCdToolingSaveStateSignal = 0;
+	_segaCdToolingCheatSignal = 0;
+	_segaCdToolingEventCount = 0;
+	_segaCdToolingDigest = 0;
+	_m32xMasterSh2Running = false;
+	_m32xSlaveSh2Running = false;
+	_m32xSh2SyncPhase = 0;
+	_m32xSh2Milestone = 0;
+	_m32xSh2SyncEpoch = 0;
+	_m32xSh2Digest = 0;
+	_m32xCompositionBlend = 0;
+	_m32xFrameSyncMarker = 0;
+	_m32xFrameSyncEpoch = 0;
+	_m32xCompositionDigest = 0;
+	_m32xToolingDebuggerSignal = 0;
+	_m32xToolingTasSignal = 0;
+	_m32xToolingSaveStateSignal = 0;
+	_m32xToolingCheatSignal = 0;
+	_m32xToolingEventCount = 0;
+	_m32xToolingDigest = 0;
+	_m32xCoprocMasterSignal = 0;
+	_m32xCoprocSlaveSignal = 0;
+	_m32xCoprocPhaseSignal = 0;
+	_m32xCoprocFenceSignal = 0;
+	_m32xCoprocEventCount = 0;
+	_m32xCoprocDigest = 0;
+	_m32xCoprocEdgeCount = 0;
+	_m32xCoprocPhaseEpoch = 0;
+	_m32xCoprocFenceEpoch = 0;
+	_m32xCoprocArbiterLatch = 0;
+	_m32xHostDebuggerSignal = 0;
+	_m32xHostTasSignal = 0;
+	_m32xHostSaveStateSignal = 0;
+	_m32xHostCheatSignal = 0;
+	_m32xHostEventCount = 0;
+	_m32xHostDigest = 0;
+	_m32xHostEdgeCount = 0;
+	_m32xHostCommandNonce = 0;
+	_m32xHostAckToken = 0;
+	_m32xHostDeterminismLatch = 0;
+
+	_hasSram = false;
+	_sramStart = 0;
+	_sramEnd = 0;
+	_ioState.DebugTranscriptLaneCount = 0;
+	_ioState.DebugTranscriptLaneDigest = 0;
+	_ioState.RomReadHeartbeat = 0;
+	_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
+	_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
+	for (int i = 0; i < 4; i++) {
+		_ioState.DebugTranscriptEntryAddress[i] = 0;
+		_ioState.DebugTranscriptEntryValue[i] = 0;
+		_ioState.DebugTranscriptEntryFlags[i] = 0;
+	}
+	_sramEvenBytes = true;
+	_sramOddBytes = true;
+	_saveRam = nullptr;
+	_saveRamSize = 0;
+
+	if (romData.size() >= 0x1BC && romData[0x1B0] == 'R' && romData[0x1B1] == 'A') {
+		uint32_t start = ReadBe32(romData, 0x1B4) & 0xFFFFFF;
+		uint32_t end = ReadBe32(romData, 0x1B8) & 0xFFFFFF;
+		uint8_t type = romData[0x1B2];
+
+		if (end >= start) {
+			_sramStart = start;
+			_sramEnd = end;
+			_sramEvenBytes = true;
+			_sramOddBytes = true;
+
+			if (type == 0xB0) {
+				_sramOddBytes = false;
+			} else if (type == 0xB8) {
+				_sramEvenBytes = false;
+			}
+
+			if (!_sramEvenBytes && !_sramOddBytes) {
+				_sramEvenBytes = true;
+				_sramOddBytes = true;
+			}
+
+			if (_sramEvenBytes && _sramOddBytes) {
+				_saveRamSize = (_sramEnd - _sramStart) + 1;
+			} else {
+				_saveRamSize = ((_sramEnd - _sramStart) >> 1) + 1;
+			}
+
+			if (_saveRamSize > 0) {
+				_saveRam = new uint8_t[_saveRamSize];
+				memset(_saveRam, 0xFF, _saveRamSize);
+				_hasSram = true;
+			}
+		}
+	}
+
+	ResetRomBankMapper();
+}
+
+void GenesisMemoryManager::ResetRomBankMapper() {
+	_romBankMapperEnabled = _prgRomSize > MapperWindowSize;
+	for (uint32_t i = 0; i < MapperBankWindowCount; i++) {
+		_romBankRegisters[i] = (uint8_t)((i + 1) % _romBankCount);
+	}
+}
+
+void GenesisMemoryManager::UpdateExecutionHeartbeat(uint32_t instructionProgramCounter, uint64_t cycleCount) {
+	EnsureNexenWramTraceOpen();
+	EnsureNexenStartupTraceOpen();
+
+	_ioState.CpuProgramCounterHeartbeat = instructionProgramCounter & 0x00ffffff;
+	_ioState.CpuCycleHeartbeat = cycleCount;
+	_ioState.CpuInstructionHeartbeat++;
+	if (_cpu && _vdp) {
+		uint32_t frame = _vdp->GetFrameCount();
+		uint16_t line = _vdp->GetScanline();
+		uint32_t pc = instructionProgramCounter & 0x00ffffffu;
+		if (_startupProfilePreferNexenBusHandoff && frame <= 1u) {
+			if (!_startupHasNexenPcAnchor || pc < _startupNexenPcAnchor) {
+				_startupHasNexenPcAnchor = true;
+				_startupNexenPcAnchor = pc;
+			}
+		}
+		GenesisM68kState cpuState = _cpu->GetState();
+		if (ShouldTraceStartupPreLoopBranch(frame, pc)) {
+			uint16_t d0 = (uint16_t)(cpuState.D[0] & 0xFFFFu);
+			uint16_t sr = cpuState.SR;
+			TraceStartupEvent("CPU_PRELOOP", instructionProgramCounter, d0, sr);
+		}
+		if (ShouldTraceStartupLoopPoll(frame, pc)) {
+			uint16_t d0 = (uint16_t)(cpuState.D[0] & 0xFFFFu);
+			uint16_t d7 = (uint16_t)(cpuState.D[7] & 0xFFFFu);
+			TraceStartupEvent("CPU_LOOP", instructionProgramCounter, d0, d7);
+		}
+		if (frame == 4u && line >= 80u && line <= 110u && pc >= 0x000250u && pc <= 0x000270u) {
+			uint16_t d6 = (uint16_t)(cpuState.D[6] & 0xFFFFu);
+			uint16_t sr = cpuState.SR;
+			TraceStartupEvent("CPU_MMU_PC_264_D6", instructionProgramCounter, d6, sr);
+			uint16_t a5 = (uint16_t)(cpuState.A[5] & 0xFFFFu);
+			TraceStartupEvent("CPU_MMU_PC_264_D6A1", instructionProgramCounter, d6, a5);
+		}
+		if (frame <= 6u && pc >= 0x000230u && pc <= 0x000250u) {
+			uint16_t d5 = (uint16_t)(cpuState.D[5] & 0xFFFFu);
+			uint16_t d7 = (uint16_t)(cpuState.D[7] & 0xFFFFu);
+			uint16_t a5 = (uint16_t)(cpuState.A[5] & 0xFFFFu);
+			TraceStartupEvent("CPU_MMU_PC_SETUP_240", instructionProgramCounter, d5, (uint16_t)(((d7 & 0x00ffu) << 8) | (a5 & 0x00ffu)));
+		}
+		if (frame <= 10u && pc >= 0x000220u && pc <= 0x000260u) {
+			uint16_t d6 = (uint16_t)(cpuState.D[6] & 0xFFFFu);
+			if ((!_startupSetupHasLastD6 || d6 != _startupSetupLastD6) && _startupSetupD6ChangeEmitCount < 128u) {
+				_startupSetupHasLastD6 = true;
+				_startupSetupLastD6 = d6;
+				_startupSetupD6ChangeEmitCount++;
+				uint16_t d5 = (uint16_t)(cpuState.D[5] & 0xFFFFu);
+				uint16_t a6 = (uint16_t)(cpuState.A[6] & 0xFFFFu);
+				TraceStartupEvent("CPU_MMU_PC_SETUP_D6CHG", instructionProgramCounter, d6, (uint16_t)(((d5 & 0x00ffu) << 8) | (a6 & 0x00ffu)));
+			}
+		}
+		if (pc < 0x000300u) {
+			if (_startupEarlyPcEmitCount < 512u) {
+				_startupEarlyPcEmitCount++;
+				uint16_t d6 = (uint16_t)(cpuState.D[6] & 0xFFFFu);
+				uint16_t d7 = (uint16_t)(cpuState.D[7] & 0xFFFFu);
+				TraceStartupEvent("CPU_MMU_EARLY_PC", instructionProgramCounter, d6, d7);
+			}
+		}
+	}
+	if ((_ioState.CpuInstructionHeartbeat & 0xFFu) == 0u) {
+		TraceStartupEvent("CPU_HB", instructionProgramCounter, (uint16_t)(cycleCount & 0xFFFFu), (uint16_t)(_ioState.CpuInstructionHeartbeat & 0xFFFFu));
+	}
+	EmitRuntimeFlowSnapshot(instructionProgramCounter, cycleCount);
+}
+
+void GenesisMemoryManager::TraceCpuEarlyProbe(uint32_t instructionProgramCounter, const GenesisM68kState& cpuState) {
+	uint32_t pc = instructionProgramCounter & 0x00ffffffu;
+	uint16_t d6 = (uint16_t)(cpuState.D[6] & 0xFFFFu);
+	if (d6 >= 0x0100u && d6 <= 0x0120u) {
+		if (_startupD6SeedWindowEmitCount < 1024u) {
+			_startupD6SeedWindowEmitCount++;
+			uint16_t d5 = (uint16_t)(cpuState.D[5] & 0xFFFFu);
+			uint16_t a6 = (uint16_t)(cpuState.A[6] & 0xFFFFu);
+			TraceStartupEvent("CPU_MMU_D6SEED_WIN", pc, d6, (uint16_t)(((d5 & 0x00ffu) << 8) | (a6 & 0x00ffu)));
+		}
+	}
+
+	if (pc >= 0x000300u || _startupEarlyCpuProbeCount >= 70000u) {
+		return;
+	}
+
+	EnsureNexenStartupTraceOpen();
+	_startupEarlyCpuProbeCount++;
+	uint16_t d7 = (uint16_t)(cpuState.D[7] & 0xFFFFu);
+	TraceStartupEvent("CPU_MMU_PC_EARLY", pc, d6, d7);
+
+	if ((pc == 0x00021au || pc == 0x00021eu || pc == 0x000220u
+		|| pc == 0x00025cu || pc == 0x00025eu || pc == 0x000260u || pc == 0x000262u || pc == 0x000264u)
+		&& _startupEarlyCpuProbeCount <= 72000u) {
+		if (_startupMovemWindowEmitCount < 1024u) {
+			_startupMovemWindowEmitCount++;
+			uint16_t d5 = (uint16_t)(cpuState.D[5] & 0xFFFFu);
+			uint16_t a5 = (uint16_t)(cpuState.A[5] & 0xFFFFu);
+			uint16_t a6 = (uint16_t)(cpuState.A[6] & 0xFFFFu);
+			uint16_t movemAux = (uint16_t)(((d5 & 0x00ffu) << 8) | (d7 & 0x00ffu));
+			TraceStartupEvent("CPU_MMU_PC_MOVEM", pc, d6, movemAux);
+			TraceStartupEvent("CPU_MMU_PC_MOVEM_REG", a5, a6, d5);
+		}
+	}
+
+	if (d6 <= 0x0020u && pc >= 0x000220u && pc <= 0x000280u) {
+		if (_startupLowD6EmitCount < 1024u) {
+			_startupLowD6EmitCount++;
+			uint16_t d5 = (uint16_t)(cpuState.D[5] & 0xFFFFu);
+			uint16_t a6 = (uint16_t)(cpuState.A[6] & 0xFFFFu);
+			TraceStartupEvent("CPU_MMU_PC_D6LOW", pc, d6, (uint16_t)(((d5 & 0x00ffu) << 8) | (a6 & 0x00ffu)));
+		}
+	}
+}
+
+void GenesisMemoryManager::LoadRuntimeFlowTraceConfig() {
+	if (_runtimeFlowTraceConfigLoaded) {
+		return;
+	}
+
+	_runtimeFlowTraceConfigLoaded = true;
+	const char* enabledRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_FLOW");
+	if (enabledRaw && (*enabledRaw == '1' || *enabledRaw == 'y' || *enabledRaw == 'Y' || *enabledRaw == 't' || *enabledRaw == 'T')) {
+		_runtimeFlowTraceEnabled = true;
+	}
+
+	if (const char* limitRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_LIMIT")) {
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(limitRaw, &end, 0);
+		if (end != limitRaw && *end == '\0' && parsed >= 64 && parsed <= 5000000) {
+			_runtimeFlowTraceLimit = (uint32_t)parsed;
+		}
+	}
+
+	if (const char* strideRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_STRIDE")) {
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(strideRaw, &end, 0);
+		if (end != strideRaw && *end == '\0' && parsed >= 1 && parsed <= 1000000) {
+			_runtimeFlowTraceStride = (uint32_t)parsed;
+		}
+	}
+
+	if (const char* ringRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_RING")) {
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(ringRaw, &end, 0);
+		if (end != ringRaw && *end == '\0' && parsed >= 8 && parsed <= 1024) {
+			_recentRuntimeFlowTraceCapacity = (uint32_t)parsed;
+		}
+	}
+
+	_recentRuntimeFlowTraceLines.clear();
+	_recentRuntimeFlowTraceLines.reserve(_recentRuntimeFlowTraceCapacity);
+}
+
+void GenesisMemoryManager::EmitRuntimeFlowSnapshot(uint32_t instructionProgramCounter, uint64_t cycleCount) {
+	LoadRuntimeFlowTraceConfig();
+	if (!_runtimeFlowTraceEnabled) {
+		return;
+	}
+
+	uint32_t sequence = _runtimeFlowTraceCount;
+	if (sequence >= _runtimeFlowTraceLimit) {
+		_runtimeFlowTraceSkipped++;
+		return;
+	}
+
+	_runtimeFlowTraceCount++;
+	if ((sequence % _runtimeFlowTraceStride) != 0) {
+		_runtimeFlowTraceSkipped++;
+		return;
+	}
+
+	GenesisM68kState cpuState = _cpu ? _cpu->GetState() : GenesisM68kState{};
+	GenesisVdpState vdpState = _vdp ? _vdp->GetState() : GenesisVdpState{};
+	string line = std::format(
+		"[Genesis][MMU][FLOW] seq={} hbInstr={} pc=${:06x} cyc={} master={} z80Run={} z80Req={} z80Ack={} z80Reset={} z80Runnable={} z80Stalled={} tmssUnlocked={} frame={} vc={} hc={} vdpStatus=${:04x} sr=${:04x} d0=${:08x} a0=${:08x}",
+		sequence,
+		_ioState.CpuInstructionHeartbeat,
+		instructionProgramCounter & 0x00ffffffu,
+		cycleCount,
+		_masterClock,
+		_z80RuntimeRunning ? 1 : 0,
+		_z80BusRequest ? 1 : 0,
+		_z80BusAck ? 1 : 0,
+		_z80Reset ? 1 : 0,
+		_z80RuntimeRunnableCycles,
+		_z80RuntimeStalledCycles,
+		_tmssUnlocked ? 1 : 0,
+		vdpState.FrameCount,
+		vdpState.VCounter,
+		vdpState.HCounter,
+		vdpState.StatusRegister,
+		cpuState.SR,
+		cpuState.D[0],
+		cpuState.A[0]);
+
+	_lastRuntimeFlowTraceLine = line;
+	MessageManager::Log(line);
+	if (_recentRuntimeFlowTraceLines.size() >= _recentRuntimeFlowTraceCapacity && !_recentRuntimeFlowTraceLines.empty()) {
+		_recentRuntimeFlowTraceLines.erase(_recentRuntimeFlowTraceLines.begin());
+	}
+	_recentRuntimeFlowTraceLines.push_back(line);
+}
+
+string GenesisMemoryManager::BuildRuntimeFlowTraceSummary() const {
+	string lastLine = _lastRuntimeFlowTraceLine.empty() ? "none" : _lastRuntimeFlowTraceLine;
+	if (lastLine.size() > 240) {
+		lastLine = lastLine.substr(0, 240);
+	}
+
+	return std::format("enabled={} logged={} skipped={} stride={} limit={} ring={} last={}",
+		_runtimeFlowTraceEnabled ? 1 : 0,
+		_runtimeFlowTraceCount,
+		_runtimeFlowTraceSkipped,
+		_runtimeFlowTraceStride,
+		_runtimeFlowTraceLimit,
+		_recentRuntimeFlowTraceLines.size(),
+		lastLine);
+}
+
+void GenesisMemoryManager::LoadRuntimeOpTraceConfig() {
+	if (_runtimeOpTraceConfigLoaded) {
+		return;
+	}
+
+	_runtimeOpTraceConfigLoaded = true;
+	const char* enabledRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_OPS");
+	if (enabledRaw && (*enabledRaw == '1' || *enabledRaw == 'y' || *enabledRaw == 'Y' || *enabledRaw == 't' || *enabledRaw == 'T')) {
+		_runtimeOpTraceEnabled = true;
+	}
+
+	if (const char* limitRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_OPS_LIMIT")) {
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(limitRaw, &end, 0);
+		if (end != limitRaw && *end == '\0' && parsed >= 64 && parsed <= 5000000) {
+			_runtimeOpTraceLimit = (uint32_t)parsed;
+		}
+	}
+
+	if (const char* strideRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_OPS_STRIDE")) {
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(strideRaw, &end, 0);
+		if (end != strideRaw && *end == '\0' && parsed >= 1 && parsed <= 1000000) {
+			_runtimeOpTraceStride = (uint32_t)parsed;
+		}
+	}
+
+	if (const char* ringRaw = std::getenv("NEXEN_GENESIS_TRACE_MMU_OPS_RING")) {
+		char* end = nullptr;
+		unsigned long parsed = std::strtoul(ringRaw, &end, 0);
+		if (end != ringRaw && *end == '\0' && parsed >= 8 && parsed <= 2048) {
+			_recentRuntimeOpTraceCapacity = (uint32_t)parsed;
+		}
+	}
+
+	_recentRuntimeOpTraceLines.clear();
+	_recentRuntimeOpTraceLines.reserve(_recentRuntimeOpTraceCapacity);
+}
+
+void GenesisMemoryManager::MaybeRecordRuntimeOp(const char* operationTag, uint32_t addr, uint16_t value, bool isWord, bool isWrite) {
+	LoadRuntimeOpTraceConfig();
+	if (!_runtimeOpTraceEnabled) {
+		return;
+	}
+
+	uint32_t sequence = _runtimeOpTraceCount;
+	if (sequence >= _runtimeOpTraceLimit) {
+		_runtimeOpTraceSkipped++;
+		return;
+	}
+
+	_runtimeOpTraceCount++;
+	if ((sequence % _runtimeOpTraceStride) != 0) {
+		_runtimeOpTraceSkipped++;
+		return;
+	}
+
+	uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+	uint64_t cycles = _cpu ? _cpu->GetState().CycleCount : 0;
+	string line = std::format(
+		"seq={} op={} width={} rw={} addr=${:06x} value=${:04x} pc=${:06x} cyc={} hbInstr={} hbPc=${:06x} master={} z80Run={} z80Req={} z80Ack={} tmssUnlocked={}",
+		sequence,
+		operationTag ? operationTag : "mmu",
+		isWord ? 16 : 8,
+		isWrite ? 'w' : 'r',
+		addr & 0x00ffffffu,
+		isWord ? value : (value & 0x00ffu),
+		pc,
+		cycles,
+		_ioState.CpuInstructionHeartbeat,
+		_ioState.CpuProgramCounterHeartbeat,
+		_masterClock,
+		_z80RuntimeRunning ? 1 : 0,
+		_z80BusRequest ? 1 : 0,
+		_z80BusAck ? 1 : 0,
+		_tmssUnlocked ? 1 : 0);
+
+	_lastRuntimeOpTraceLine = line;
+	if (_recentRuntimeOpTraceLines.size() >= _recentRuntimeOpTraceCapacity && !_recentRuntimeOpTraceLines.empty()) {
+		_recentRuntimeOpTraceLines.erase(_recentRuntimeOpTraceLines.begin());
+	}
+	_recentRuntimeOpTraceLines.push_back(line);
+}
+
+string GenesisMemoryManager::BuildRuntimeOpTraceSummary() const {
+	string lastLine = _lastRuntimeOpTraceLine.empty() ? "none" : _lastRuntimeOpTraceLine;
+	if (lastLine.size() > 240) {
+		lastLine = lastLine.substr(0, 240);
+	}
+
+	return std::format("enabled={} logged={} skipped={} stride={} limit={} ring={} last={}",
+		_runtimeOpTraceEnabled ? 1 : 0,
+		_runtimeOpTraceCount,
+		_runtimeOpTraceSkipped,
+		_runtimeOpTraceStride,
+		_runtimeOpTraceLimit,
+		_recentRuntimeOpTraceLines.size(),
+		lastLine);
+}
+
+string GenesisMemoryManager::BuildRuntimeOpTraceWindow(uint32_t maxLines) const {
+	if (_recentRuntimeOpTraceLines.empty()) {
+		return "none";
+	}
+
+	uint32_t clampedLines = maxLines;
+	if (clampedLines == 0) {
+		clampedLines = 1;
+	}
+
+	uint32_t startIndex = 0;
+	if (_recentRuntimeOpTraceLines.size() > clampedLines) {
+		startIndex = (uint32_t)_recentRuntimeOpTraceLines.size() - clampedLines;
+	}
+
+	string window = {};
+	for (uint32_t i = startIndex; i < (uint32_t)_recentRuntimeOpTraceLines.size(); i++) {
+		if (!window.empty()) {
+			window += " || ";
+		}
+
+		string line = _recentRuntimeOpTraceLines[i];
+		if (line.size() > 180) {
+			line = line.substr(0, 180);
+		}
+		window += line;
+	}
+
+	return window;
+}
+
+void GenesisMemoryManager::ArmAggressiveTraceBurst(uint32_t flowLimit, uint32_t opLimit, uint32_t flowStride, uint32_t opStride, uint32_t flowRing, uint32_t opRing) {
+	LoadRuntimeFlowTraceConfig();
+	LoadRuntimeOpTraceConfig();
+
+	_runtimeFlowTraceEnabled = true;
+	_runtimeOpTraceEnabled = true;
+	_runtimeFlowTraceLimit = std::clamp<uint32_t>(flowLimit, 512u, 5000000u);
+	_runtimeOpTraceLimit = std::clamp<uint32_t>(opLimit, 1024u, 5000000u);
+	_runtimeFlowTraceStride = std::clamp<uint32_t>(flowStride, 1u, 1000000u);
+	_runtimeOpTraceStride = std::clamp<uint32_t>(opStride, 1u, 1000000u);
+	_recentRuntimeFlowTraceCapacity = std::clamp<uint32_t>(flowRing, 32u, 512u);
+	_recentRuntimeOpTraceCapacity = std::clamp<uint32_t>(opRing, 32u, 768u);
+
+	if (_recentRuntimeFlowTraceLines.capacity() < _recentRuntimeFlowTraceCapacity) {
+		_recentRuntimeFlowTraceLines.reserve(_recentRuntimeFlowTraceCapacity);
+	}
+	if (_recentRuntimeOpTraceLines.capacity() < _recentRuntimeOpTraceCapacity) {
+		_recentRuntimeOpTraceLines.reserve(_recentRuntimeOpTraceCapacity);
+	}
+}
+
+void GenesisMemoryManager::DetectStartupTitleSignature() {
+	_startupTitleClassValue = (uint8_t)StartupTitleClass::Unknown;
+	_startupTitleAutotuneApplied = false;
+	_startupTitleHintUsed = false;
+	memset(_startupDetectedTitle, 0, sizeof(_startupDetectedTitle));
+	memset(_startupDetectedProductCode, 0, sizeof(_startupDetectedProductCode));
+
+	auto copySanitizedRange = [](const uint8_t* src, size_t len, char* dst, size_t dstLen) {
+		if (!src || !dst || dstLen == 0) {
+			return;
+		}
+
+		size_t writeIndex = 0;
+		for (size_t i = 0; i < len && writeIndex + 1 < dstLen; i++) {
+			unsigned char c = src[i];
+			if (c >= 0x20 && c <= 0x7E) {
+				dst[writeIndex++] = (char)c;
+			} else {
+				dst[writeIndex++] = ' ';
+			}
+		}
+		dst[writeIndex] = '\0';
+	};
+
+	std::string title;
+	std::string productCode;
+	if (_prgRom && _prgRomSize >= 0x200) {
+		char domesticTitle[65] = {};
+		char overseasTitle[65] = {};
+		char product[17] = {};
+		copySanitizedRange(_prgRom + 0x120, 48, domesticTitle, sizeof(domesticTitle));
+		copySanitizedRange(_prgRom + 0x150, 48, overseasTitle, sizeof(overseasTitle));
+		copySanitizedRange(_prgRom + 0x180, 14, product, sizeof(product));
+
+		std::string domesticTrimmed = TrimAsciiSpaces(domesticTitle);
+		std::string overseasTrimmed = TrimAsciiSpaces(overseasTitle);
+		title = !overseasTrimmed.empty() ? overseasTrimmed : domesticTrimmed;
+		productCode = TrimAsciiSpaces(product);
+	}
+
+	if (!sNexenGenesisStartupTitleHint.empty()) {
+		title = sNexenGenesisStartupTitleHint;
+		_startupTitleHintUsed = true;
+	}
+
+	std::string normalizedTitle = NormalizeStartupTitleToken(title);
+	std::string normalizedProductCode = NormalizeStartupTitleToken(productCode);
+	StartupTitleClass titleClass = ClassifyStartupTitle(normalizedTitle, normalizedProductCode);
+	_startupTitleClassValue = (uint8_t)titleClass;
+
+	if (!normalizedTitle.empty()) {
+		size_t copyLen = std::min(normalizedTitle.size(), sizeof(_startupDetectedTitle) - 1);
+		memcpy(_startupDetectedTitle, normalizedTitle.c_str(), copyLen);
+		_startupDetectedTitle[copyLen] = '\0';
+	}
+	if (!normalizedProductCode.empty()) {
+		size_t copyLen = std::min(normalizedProductCode.size(), sizeof(_startupDetectedProductCode) - 1);
+		memcpy(_startupDetectedProductCode, normalizedProductCode.c_str(), copyLen);
+		_startupDetectedProductCode[copyLen] = '\0';
+	}
+}
+
+void GenesisMemoryManager::ApplyStartupTitleAutotune() {
+	_startupTitleAutotuneApplied = false;
+	if (!sNexenGenesisStartupRomAutotune) {
+		return;
+	}
+
+	if (_startupTitleClassValue == (uint8_t)StartupTitleClass::Unknown) {
+		return;
+	}
+
+	// Respect explicit profile choices from environment and preserve strict/manual workflows.
+	if (sNexenGenesisStartupProfileExplicit || _startupProfileKindValue == (uint8_t)StartupProfileKind::Strict) {
+		return;
+	}
+
+	if (_startupProfileKindValue == (uint8_t)StartupProfileKind::MesenCompat) {
+		return;
+	}
+
+	uint16_t earlyAck = 45u;
+	uint16_t earlyResume = 15u;
+	uint16_t lateAck = 21u;
+	uint16_t lateResume = 9u;
+	uint32_t logoPhaseEnd = 180u;
+	uint32_t strictPhaseStart = 420u;
+	uint32_t checkpointEnd = 900u;
+
+	switch ((StartupTitleClass)_startupTitleClassValue) {
+		case StartupTitleClass::SonicSpinball:
+			lateAck = 17u;
+			lateResume = 9u;
+			logoPhaseEnd = 210u;
+			strictPhaseStart = 480u;
+			checkpointEnd = 960u;
+			break;
+		case StartupTitleClass::SonicAndKnuckles:
+			lateAck = 19u;
+			lateResume = 9u;
+			logoPhaseEnd = 210u;
+			strictPhaseStart = 500u;
+			checkpointEnd = 1000u;
+			break;
+		case StartupTitleClass::Sonic3:
+			lateAck = 19u;
+			lateResume = 9u;
+			logoPhaseEnd = 200u;
+			strictPhaseStart = 480u;
+			checkpointEnd = 980u;
+			break;
+		case StartupTitleClass::Sonic2:
+			lateAck = 19u;
+			lateResume = 9u;
+			logoPhaseEnd = 190u;
+			strictPhaseStart = 450u;
+			checkpointEnd = 940u;
+			break;
+		case StartupTitleClass::Sonic1:
+		case StartupTitleClass::SonicGeneral:
+		default:
+			break;
+	}
+
+	_startupWindowFrames = std::max<uint32_t>(_startupWindowFrames, 24u);
+	_startupBootRelaxFrames = std::max<uint32_t>(_startupBootRelaxFrames, 6u);
+	_startupLogoPhaseEndFrame = std::max<uint32_t>(_startupLogoPhaseEndFrame, logoPhaseEnd);
+	_startupStrictPhaseStartFrame = std::max<uint32_t>(_startupStrictPhaseStartFrame, strictPhaseStart);
+	_startupCheckpointEndFrame = std::max<uint32_t>(_startupCheckpointEndFrame, checkpointEnd);
+	_startupCheckpointIntervalFrames = std::max<uint32_t>(_startupCheckpointIntervalFrames, 1u);
+
+	_startupUseDynamicBusTiming = true;
+	_startupMesenCompatMode = true;
+	_startupHybridBusHandoff = true;
+	_startupProfilePreferNexenBusHandoff = true;
+	_startupProfilePreferMesenBusHandoff = true;
+	_startupStrictTmssDuringLogo = true;
+	_startupForceTmssUntilUnlock = true;
+	_tmssStrictMode = true;
+	_tmssUnlockDelayMclkSetting = std::max<uint16_t>(_tmssUnlockDelayMclkSetting, 45u);
+
+	_startupEarlyBusReqAckDelayMclk = std::max<uint16_t>(_startupEarlyBusReqAckDelayMclk, earlyAck);
+	_startupEarlyBusResumeDelayMclk = std::max<uint16_t>(_startupEarlyBusResumeDelayMclk, earlyResume);
+	_startupLateBusReqAckDelayMclk = std::max<uint16_t>(_startupLateBusReqAckDelayMclk, lateAck);
+	_startupLateBusResumeDelayMclk = std::max<uint16_t>(_startupLateBusResumeDelayMclk, lateResume);
+	_z80BusReqAckDelayMclkSetting = _startupEarlyBusReqAckDelayMclk;
+	_z80BusResumeDelayMclkSetting = _startupEarlyBusResumeDelayMclk;
+
+	_startupTitleAutotuneApplied = true;
+	MessageManager::Log(std::format("[Genesis][MMU] startup autotune applied titleClass={} title='{}' product='{}' hint={} early={}/{} late={}/{}",
+		_startupTitleClassValue,
+		_startupDetectedTitle,
+		_startupDetectedProductCode,
+		_startupTitleHintUsed ? 1 : 0,
+		_startupEarlyBusReqAckDelayMclk,
+		_startupEarlyBusResumeDelayMclk,
+		_startupLateBusReqAckDelayMclk,
+		_startupLateBusResumeDelayMclk));
+}
+
+void GenesisMemoryManager::ApplyStartupEnvironmentProfile() {
+	LoadNexenStartupTraceConfigFromEnv();
+	DetectStartupTitleSignature();
+	_startupProfileKindValue = (uint8_t)sNexenGenesisStartupProfileKind;
+	_startupWindowFrames = sNexenGenesisStartupWindowFrames;
+	_startupBootRelaxFrames = sNexenGenesisStartupBootRelaxFrames;
+	_startupLogoPhaseEndFrame = sNexenGenesisStartupLogoPhaseEndFrame;
+	_startupStrictPhaseStartFrame = sNexenGenesisStartupStrictPhaseStartFrame;
+	_startupCheckpointIntervalFrames = std::max<uint32_t>(1u, sNexenGenesisStartupCheckpointIntervalFrames);
+	_startupCheckpointEndFrame = sNexenGenesisStartupCheckpointEndFrame;
+	_startupNextCheckpointFrame = 0;
+	_startupBusTimingRetuneCount = 0;
+	_startupLastBusTimingFrame = 0;
+	_startupEarlyBusReqAckDelayMclk = sNexenGenesisZ80EarlyBusReqAckDelayMclk;
+	_startupEarlyBusResumeDelayMclk = sNexenGenesisZ80EarlyBusResumeDelayMclk;
+	_startupLateBusReqAckDelayMclk = sNexenGenesisZ80LateBusReqAckDelayMclk;
+	_startupLateBusResumeDelayMclk = sNexenGenesisZ80LateBusResumeDelayMclk;
+	_startupUseDynamicBusTiming = sNexenGenesisUseDynamicBusTiming;
+	_startupMesenCompatMode = sNexenGenesisMesenCompatMode;
+	_startupHybridBusHandoff = sNexenGenesisHybridBusHandoff;
+	_startupStrictTmssDuringLogo = sNexenGenesisStrictTmssDuringLogo;
+	_startupForceTmssUntilUnlock = sNexenGenesisForceTmssUntilUnlock;
+	_startupHadTmssSignature = false;
+	_startupTmssUnlockLogged = false;
+	_startupArbitrationDigest = 0;
+	_startupArbitrationEpoch = 0;
+	_startupLastArbitrationMclk = 0;
+	_startupDisplayTransitionCount = 0;
+	_startupHasLastDisplayState = false;
+	_startupHasLastZ80RunState = false;
+	_startupLastZ80Running = false;
+	_startupHasLastZ80BusReqState = false;
+	_startupLastZ80BusReq = false;
+	_startupHasLastZ80ResetState = false;
+	_startupLastZ80Reset = false;
+	_startupHasLastVdpRegs = false;
+	memset(_startupLastVdpRegs, 0, sizeof(_startupLastVdpRegs));
+	_startupLastVdpStatus = 0;
+	_startupHasNexenClockAnchor = false;
+	_startupNexenClockAnchor = 0;
+	_startupHasNexenPcAnchor = false;
+	_startupNexenPcAnchor = 0;
+	_startupProfilePreferNexenBusHandoff = sNexenGenesisPreferNexenBusHandoff;
+	_startupProfilePreferMesenBusHandoff = sNexenGenesisPreferMesenBusHandoff;
+	_z80BusReqAckDelayMclkSetting = sNexenGenesisZ80BusReqAckDelayMclk;
+	_z80BusResumeDelayMclkSetting = sNexenGenesisZ80BusResumeDelayMclk;
+	_z80LatchOnlyHighByteWrites = sNexenGenesisZ80LatchOnlyHighByteWrites;
+	_tmssStrictMode = sNexenGenesisTmssStrictMode;
+	_tmssUnlockDelayMclkSetting = sNexenGenesisTmssUnlockDelayMclk;
+	ApplyStartupTitleAutotune();
+	RefreshStartupBusTiming(0u, false, 0, 0, "startup-profile");
+}
+
+uint32_t GenesisMemoryManager::GetStartupFrame() const {
+	return _vdp ? _vdp->GetFrameCount() : 0u;
+}
+
+bool GenesisMemoryManager::IsStartupLogoPhase(uint32_t frame) const {
+	return frame < _startupLogoPhaseEndFrame;
+}
+
+bool GenesisMemoryManager::IsStartupStrictPhase(uint32_t frame) const {
+	return frame >= _startupStrictPhaseStartFrame;
+}
+
+uint16_t GenesisMemoryManager::GetEffectiveZ80BusReqAckDelayMclk(uint32_t frame) const {
+	if (!_startupUseDynamicBusTiming) {
+		return _z80BusReqAckDelayMclkSetting;
+	}
+
+	if (IsStartupStrictPhase(frame)) {
+		return _startupLateBusReqAckDelayMclk;
+	}
+
+	if (IsStartupLogoPhase(frame)) {
+		return _startupEarlyBusReqAckDelayMclk;
+	}
+
+	if (_startupHybridBusHandoff) {
+		return BlendStartupDelay(_startupEarlyBusReqAckDelayMclk, _startupLateBusReqAckDelayMclk, frame);
+	}
+
+	return _startupEarlyBusReqAckDelayMclk;
+}
+
+uint16_t GenesisMemoryManager::GetEffectiveZ80BusResumeDelayMclk(uint32_t frame) const {
+	if (!_startupUseDynamicBusTiming) {
+		return _z80BusResumeDelayMclkSetting;
+	}
+
+	if (IsStartupStrictPhase(frame)) {
+		return _startupLateBusResumeDelayMclk;
+	}
+
+	if (IsStartupLogoPhase(frame)) {
+		return _startupEarlyBusResumeDelayMclk;
+	}
+
+	if (_startupHybridBusHandoff) {
+		return BlendStartupDelay(_startupEarlyBusResumeDelayMclk, _startupLateBusResumeDelayMclk, frame);
+	}
+
+	return _startupEarlyBusResumeDelayMclk;
+}
+
+uint16_t GenesisMemoryManager::BlendStartupDelay(uint16_t earlyDelay, uint16_t lateDelay, uint32_t frame) const {
+	// Hybrid mode ramps from early->late in the first seconds of execution.
+	uint32_t span = _startupStrictPhaseStartFrame > _startupLogoPhaseEndFrame
+		? (_startupStrictPhaseStartFrame - _startupLogoPhaseEndFrame)
+		: 1u;
+	uint32_t pos = frame > _startupLogoPhaseEndFrame ? (frame - _startupLogoPhaseEndFrame) : 0u;
+	if (pos > span) {
+		pos = span;
+	}
+
+	int32_t early = (int32_t)earlyDelay;
+	int32_t late = (int32_t)lateDelay;
+	int32_t delta = late - early;
+	int32_t blended = early + (int32_t)((delta * (int32_t)pos) / (int32_t)span);
+	if (blended < 0) {
+		blended = 0;
+	}
+	if (blended > 255) {
+		blended = 255;
+	}
+	return (uint16_t)blended;
+}
+
+void GenesisMemoryManager::RefreshStartupBusTiming(uint32_t frame, bool allowTrace, uint32_t addr, uint32_t pc, const char* sourceTag) {
+	uint16_t nextAck = GetEffectiveZ80BusReqAckDelayMclk(frame);
+	uint16_t nextResume = GetEffectiveZ80BusResumeDelayMclk(frame);
+	if (nextAck == _z80BusReqAckDelayMclkSetting && nextResume == _z80BusResumeDelayMclkSetting) {
+		return;
+	}
+
+	_z80BusReqAckDelayMclkSetting = nextAck;
+	_z80BusResumeDelayMclkSetting = nextResume;
+	_startupBusTimingRetuneCount++;
+	_startupLastBusTimingFrame = frame;
+	_startupArbitrationEpoch++;
+	_startupArbitrationDigest ^= (uint8_t)((nextAck & 0x0F) | ((nextResume & 0x0F) << 4));
+
+	if (allowTrace) {
+		TraceStartupEvent("Z80_TIMING", addr, nextAck, nextResume);
+		if (_startupBusTimingRetuneCount <= 64u || (_startupBusTimingRetuneCount % 512u) == 0u) {
+			MessageManager::Log(std::format("[Genesis][MMU] Z80 timing retune #{} src={} frame={} pc=${:06x} ackDelay={} resumeDelay={} profile={}",
+				_startupBusTimingRetuneCount,
+				sourceTag,
+				frame,
+				pc & 0x00ffffff,
+				nextAck,
+				nextResume,
+				_startupProfileKindValue));
+		}
+	}
+}
+
+bool GenesisMemoryManager::ShouldAllowTmssStartupBypassPort(uint32_t addr, bool isWrite) const {
+	if (!_vdp) {
+		return false;
+	}
+
+	uint32_t frame = _vdp->GetFrameCount();
+	if (frame >= _startupWindowFrames) {
+		return false;
+	}
+
+	if (_startupStrictTmssDuringLogo && IsStartupLogoPhase(frame)) {
+		return false;
+	}
+
+	uint32_t port = addr & 0x1Fu;
+	if (port >= 0x04u && port < 0x10u) {
+		return true;
+	}
+
+	if (isWrite) {
+		// During boot-relax frames we permit early data/control writes to avoid dead startup loops.
+		if (frame < _startupBootRelaxFrames) {
+			return true;
+		}
+		return _startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff;
+	}
+
+	if (frame < _startupBootRelaxFrames) {
+		return true;
+	}
+
+	return _startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff;
+}
+
+void GenesisMemoryManager::EmitStartupTransitionMarkers() {
+	if (!_vdp) {
+		return;
+	}
+
+	uint32_t frame = _vdp->GetFrameCount();
+	if (!ShouldCaptureNexenStartupTrace(frame)) {
+		return;
+	}
+
+	GenesisVdpState state = _vdp->GetState();
+	bool displayEnabled = (state.Registers[VdpReg::ModeSet2] & 0x40) != 0;
+	bool z80Running = _z80RuntimeRunning;
+	bool z80BusReq = _z80BusRequest;
+	bool z80Reset = _z80Reset;
+	bool reducedStartupTrace = _startupProfilePreferNexenBusHandoff && !_startupProfilePreferMesenBusHandoff;
+
+	if (!_startupHasLastDisplayState) {
+		_startupHasLastDisplayState = true;
+		_startupLastDisplayEnabled = displayEnabled;
+	} else if (displayEnabled != _startupLastDisplayEnabled) {
+		_startupLastDisplayEnabled = displayEnabled;
+		_startupDisplayTransitionCount++;
+		TraceStartupEvent("VDP_DISP_TGL", 0xC00004, (uint16_t)state.Registers[VdpReg::ModeSet2], (uint16_t)_startupDisplayTransitionCount);
+	}
+
+	if (!_startupHasLastZ80RunState) {
+		_startupHasLastZ80RunState = true;
+		_startupLastZ80Running = z80Running;
+	} else if (!reducedStartupTrace && z80Running != _startupLastZ80Running) {
+		_startupLastZ80Running = z80Running;
+		TraceStartupEvent("Z80_RUN_TGL", 0xA11100, z80Running ? 1u : 0u, (uint16_t)(_z80BusAck ? 1u : 0u));
+	} else {
+		_startupLastZ80Running = z80Running;
+	}
+
+	if (!_startupHasLastZ80BusReqState) {
+		_startupHasLastZ80BusReqState = true;
+		_startupLastZ80BusReq = z80BusReq;
+	} else if (!reducedStartupTrace && z80BusReq != _startupLastZ80BusReq) {
+		_startupLastZ80BusReq = z80BusReq;
+		TraceStartupEvent("Z80_BUSREQ", 0xA11100, z80BusReq ? 1u : 0u, (uint16_t)(_z80BusAck ? 1u : 0u));
+	} else {
+		_startupLastZ80BusReq = z80BusReq;
+	}
+
+	if (!_startupHasLastZ80ResetState) {
+		_startupHasLastZ80ResetState = true;
+		_startupLastZ80Reset = z80Reset;
+	} else if (!reducedStartupTrace && z80Reset != _startupLastZ80Reset) {
+		_startupLastZ80Reset = z80Reset;
+		TraceStartupEvent("Z80_RESET", 0xA11200, z80Reset ? 1u : 0u, (uint16_t)(z80BusReq ? 1u : 0u));
+	} else {
+		_startupLastZ80Reset = z80Reset;
+	}
+
+	if (!_startupHasLastVdpRegs) {
+		_startupHasLastVdpRegs = true;
+		memcpy(_startupLastVdpRegs, state.Registers, sizeof(_startupLastVdpRegs));
+		_startupLastVdpStatus = state.StatusRegister;
+	} else if (!reducedStartupTrace) {
+		for (uint32_t i = 0; i < (uint32_t)sizeof(_startupLastVdpRegs); i++) {
+			uint8_t currentValue = state.Registers[i];
+			if (_startupLastVdpRegs[i] != currentValue) {
+				uint16_t packed = (uint16_t)(((uint16_t)_startupLastVdpRegs[i] << 8) | currentValue);
+				TraceStartupEvent("VDP_REG_W", 0xC00004, packed, (uint16_t)i);
+				_startupLastVdpRegs[i] = currentValue;
+			}
+		}
+
+		if (_startupLastVdpStatus != state.StatusRegister) {
+			TraceStartupEvent("VDP_STAT_W", 0xC00004, state.StatusRegister, (uint16_t)(_startupLastVdpStatus ^ state.StatusRegister));
+			_startupLastVdpStatus = state.StatusRegister;
+		}
+	} else {
+		memcpy(_startupLastVdpRegs, state.Registers, sizeof(_startupLastVdpRegs));
+		_startupLastVdpStatus = state.StatusRegister;
+	}
+}
+
+void GenesisMemoryManager::EmitStartupCheckpointIfNeeded(const char* sourceTag) {
+	if (!_vdp) {
+		return;
+	}
+
+	uint32_t frame = _vdp->GetFrameCount();
+	if (frame == 0u && _startupNextCheckpointFrame == 0u) {
+		_startupNextCheckpointFrame = 1u;
+		return;
+	}
+
+	if (frame > _startupCheckpointEndFrame || frame < _startupNextCheckpointFrame) {
+		return;
+	}
+
+	// Keep legacy profile on end-of-frame checkpoints, but align NexenRef-profile checkpoints
+	// to scanline 0 so startup tags begin with frame-head chronology.
+	uint16_t totalLines = _vdp->GetTotalLines();
+	uint16_t scanline = _vdp->GetScanline();
+	if (_startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff) {
+		if (scanline != 0u) {
+			return;
+		}
+	} else {
+		if (totalLines > 0u && scanline < (uint16_t)(totalLines - 1u)) {
+			return;
+		}
+	}
+
+	GenesisVdpState state = _vdp->GetState();
+	bool displayEnabled = (state.Registers[VdpReg::ModeSet2] & 0x40) != 0;
+	if (frame == 0u && _startupNextCheckpointFrame == 0u) {
+		_startupLastDisplayEnabled = displayEnabled;
+	}
+
+	uint16_t startupFlags = 0;
+	startupFlags |= _tmssEnabled ? 0x0001 : 0x0000;
+	startupFlags |= _tmssUnlocked ? 0x0002 : 0x0000;
+	startupFlags |= _z80BusRequest ? 0x0004 : 0x0000;
+	startupFlags |= _z80Reset ? 0x0008 : 0x0000;
+	startupFlags |= _z80BusAck ? 0x0010 : 0x0000;
+	startupFlags |= _z80RuntimeRunning ? 0x0020 : 0x0000;
+	startupFlags |= displayEnabled ? 0x0040 : 0x0000;
+	startupFlags |= (_startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff) ? 0x0080 : 0x0000;
+
+	uint16_t paletteDigest = ComputeStartupPaletteDigest(_vdp->GetCramPointer());
+	uint16_t startupPalAux = (uint16_t)(state.Registers[VdpReg::ModeSet2]);
+	if (_startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff) {
+		startupPalAux &= 0x000Fu;
+	}
+	uint16_t startupVdpAux = (uint16_t)(state.Registers[VdpReg::ModeSet1] | ((uint16_t)state.Registers[VdpReg::ModeSet2] << 8));
+	uint16_t startupValue = (uint16_t)(((frame & 0x3FFu) << 6) | (state.VCounter & 0x003Fu));
+	if (_startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff) {
+		TraceStartupEvent("STARTUP_PAL", 0xC00000, paletteDigest, startupPalAux);
+		TraceStartupEvent("STARTUP_VDP", 0xC00004, state.StatusRegister, startupVdpAux);
+		TraceStartupEvent("STARTUP_CHECKPOINT", 0xC00004, startupValue, startupFlags);
+		TraceStartupEvent("STARTUP_Z80", 0xA11100, _z80BusReqDelayMclk, _z80ResumeDelayMclk);
+	} else {
+		TraceStartupEvent("STARTUP_CHECKPOINT", 0xC00004, startupValue, startupFlags);
+		TraceStartupEvent("STARTUP_Z80", 0xA11100, _z80BusReqDelayMclk, _z80ResumeDelayMclk);
+		TraceStartupEvent("STARTUP_PAL", 0xC00000, paletteDigest, startupPalAux);
+		TraceStartupEvent("STARTUP_VDP", 0xC00004, state.StatusRegister, startupVdpAux);
+	}
+
+	if (displayEnabled != _startupLastDisplayEnabled) {
+		_startupDisplayTransitionCount++;
+		TraceStartupEvent("VDP_DISP_TGL", 0xC00004, (uint16_t)state.Registers[VdpReg::ModeSet2], (uint16_t)_startupDisplayTransitionCount);
+		_startupLastDisplayEnabled = displayEnabled;
+	}
+
+	if (_startupCheckpointIntervalFrames == 0) {
+		_startupCheckpointIntervalFrames = 1;
+	}
+	_startupNextCheckpointFrame = frame + _startupCheckpointIntervalFrames;
+
+	if (_startupTraceSequence <= 16u || (_startupTraceSequence % 512u) == 0u) {
+		MessageManager::Log(std::format("[Genesis][MMU] startup checkpoint src={} frame={} v={} r1=${:02x} tmss={} unlocked={} z80Req={} z80Reset={} z80Ack={} running={} reqDelay={} resumeDelay={} displayTransitions={}",
+			sourceTag,
+			frame,
+			state.VCounter,
+			state.Registers[VdpReg::ModeSet2],
+			_tmssEnabled ? 1 : 0,
+			_tmssUnlocked ? 1 : 0,
+			_z80BusRequest ? 1 : 0,
+			_z80Reset ? 1 : 0,
+			_z80BusAck ? 1 : 0,
+			_z80RuntimeRunning ? 1 : 0,
+			_z80BusReqDelayMclk,
+			_z80ResumeDelayMclk,
+			_startupDisplayTransitionCount));
+	}
+}
+
+bool GenesisMemoryManager::IsTmssVdpLockEnforced() const {
+	return _tmssEnabled && _tmssStrictMode && !_tmssUnlocked;
+}
+
+bool GenesisMemoryManager::IsStartupWindowActive() const {
+	return _vdp && _vdp->GetFrameCount() < _startupWindowFrames;
+}
+
+bool GenesisMemoryManager::IsTmssLockedVdpReadAllowed(uint32_t addr) const {
+	if (!IsTmssVdpLockEnforced()) {
+		return true;
+	}
+
+	uint32_t frame = GetStartupFrame();
+
+	uint32_t port = addr & 0x1F;
+	if (port >= 0x04 && port < 0x10) {
+		// Allow status/HV polling while locked to stabilize startup loops.
+		return true;
+	}
+
+	if (ShouldAllowTmssStartupBypassPort(addr, false)) {
+		return true;
+	}
+
+	if (_startupForceTmssUntilUnlock && !_tmssUnlocked) {
+		// Strict startup path keeps TMSS fully locked until signature unlock.
+		return false;
+	}
+
+	if (_startupStrictTmssDuringLogo && IsStartupLogoPhase(frame) && port < 0x04) {
+		// In strict-logo mode, keep data/control read paths blocked for logo-phase frames.
+		return false;
+	}
+
+	if (_startupProfilePreferMesenBusHandoff && IsStartupLogoPhase(frame) && port < 0x04) {
+		// Mesen-compatible path keeps data-port reads blocked during logo phase while still
+		// allowing control/HV polling in the same interval.
+		return false;
+	}
+
+	if (IsStartupWindowActive()) {
+		// Compatibility fallback for profiles that still enable startup-window bypass.
+		return true;
+	}
+
+	return false;
+}
+
+bool GenesisMemoryManager::IsTmssLockedVdpWriteAllowed(uint32_t addr) const {
+	if (!IsTmssVdpLockEnforced()) {
+		return true;
+	}
+
+	uint32_t frame = GetStartupFrame();
+
+	uint32_t port = addr & 0x1F;
+	if (port >= 0x04 && port < 0x08) {
+		// Allow register/control setup while TMSS is still settling.
+		return true;
+	}
+
+	if (ShouldAllowTmssStartupBypassPort(addr, true)) {
+		return true;
+	}
+
+	if (_startupForceTmssUntilUnlock && !_tmssUnlocked) {
+		return false;
+	}
+
+	if (_startupStrictTmssDuringLogo && IsStartupLogoPhase(frame) && port < 0x04) {
+		// In strict-logo mode, keep data/control write paths blocked for logo-phase frames.
+		return false;
+	}
+
+	if (_startupProfilePreferMesenBusHandoff && IsStartupLogoPhase(frame) && port < 0x04) {
+		return false;
+	}
+
+	if (IsStartupWindowActive()) {
+		// Compatibility fallback for startup profiles with relaxed lock behavior.
+		return true;
+	}
+
+	return false;
+}
+
+void GenesisMemoryManager::TraceStartupEvent(const char* tag, uint32_t addr, uint16_t value, uint16_t auxValue) {
+	if (!_vdp) {
+		return;
+	}
+
+	uint32_t frame = _vdp->GetFrameCount();
+	if (!ShouldCaptureNexenStartupTrace(frame)) {
+		return;
+	}
+
+	if (_startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff) {
+		if (!ShouldEmitNexenProfileStartupTag(tag)) {
+			return;
+		}
+
+		// Keep frame-0 emission limited to bootstrap to better match NexenRef startup chronology.
+		if (frame == 0u
+			&& !StartupTagEquals(tag, "STARTUP_BOOT")
+			&& !StartupTagEquals(tag, "CPU_MMU_PC_EARLY")
+			&& !StartupTagEquals(tag, "CPU_MMU_PC_D6LOW")
+			&& !StartupTagEquals(tag, "CPU_MMU_PC_SETUP_240")
+			&& !StartupTagEquals(tag, "CPU_MMU_PC_SETUP_D6CHG")) {
+			return;
+		}
+	}
+
+	uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0x000000;
+	uint64_t traceClock = _masterClock;
+	bool isStartupTag = StartupTagStartsWith(tag, "STARTUP_");
+	if ((_startupProfilePreferNexenBusHandoff || _startupHybridBusHandoff) && isStartupTag) {
+		if (frame <= 1u && _startupHasNexenPcAnchor) {
+			pc = _startupNexenPcAnchor & 0x00ffffffu;
+		} else {
+			uint32_t heartbeatPc = _ioState.CpuProgramCounterHeartbeat & 0x00ffffffu;
+			if (heartbeatPc != 0u) {
+				pc = heartbeatPc;
+			}
+		}
+
+		if (!_startupHasNexenClockAnchor) {
+			_startupHasNexenClockAnchor = true;
+			_startupNexenClockAnchor = _masterClock;
+		}
+
+		traceClock = (_masterClock >= _startupNexenClockAnchor)
+			? (_masterClock - _startupNexenClockAnchor)
+			: 0;
+	}
+	for (const uint8_t* p = (const uint8_t*)tag; *p; p++) {
+		_startupTraceDigest ^= *p;
+		_startupTraceDigest *= 1099511628211ull;
+	}
+	_startupTraceDigest ^= addr;
+	_startupTraceDigest *= 1099511628211ull;
+	_startupTraceDigest ^= value;
+	_startupTraceDigest *= 1099511628211ull;
+	_startupTraceDigest ^= auxValue;
+	_startupTraceDigest *= 1099511628211ull;
+
+	uint16_t line = _vdp->GetScanline();
+	if (ShouldLogNexenStartupTrace(frame)) {
+		LogNexenStartupTrace(frame, line, tag, addr, value, auxValue, pc, traceClock);
+	}
+	_startupTraceSequence++;
+}
+
+void GenesisMemoryManager::TraceWramPcTransitionOrdering(uint32_t frame, uint16_t line, uint32_t address, uint8_t data, uint32_t programCounter) {
+	uint32_t pc = programCounter & 0x00ffffffu;
+	if (pc != 0x000264u && pc != 0x00034au) {
+		return;
+	}
+
+	if (_pcOrderTraceEventCount >= 4096u) {
+		return;
+	}
+
+	bool emitEvent = false;
+	const char* tag = "CPU_MMU_PC_MARK";
+	uint16_t aux = 0;
+
+	if (pc == 0x000264u && !_pcOrderTraceSaw000264) {
+		_pcOrderTraceSaw000264 = true;
+		_pcOrderTraceFirst264Frame = frame;
+		_pcOrderTraceFirst264Line = line;
+		_pcOrderTraceFirst264Seq = _pcOrderTraceEventCount;
+		_pcOrderTraceFirst264Mclk = _masterClock;
+		emitEvent = true;
+		aux |= 0x0001u;
+	}
+
+	if (pc == 0x00034au && !_pcOrderTraceSaw00034A) {
+		_pcOrderTraceSaw00034A = true;
+		_pcOrderTraceFirst34AFrame = frame;
+		_pcOrderTraceFirst34ALine = line;
+		_pcOrderTraceFirst34ASeq = _pcOrderTraceEventCount;
+		_pcOrderTraceFirst34AMclk = _masterClock;
+		emitEvent = true;
+		aux |= 0x0002u;
+	}
+
+	if (_pcOrderTraceHasLastWramPc && _pcOrderTraceLastWramPc != pc) {
+		tag = "CPU_MMU_PC_EDGE";
+		_pcOrderTraceEdgeCount++;
+		emitEvent = true;
+		if (_pcOrderTraceLastWramPc == 0x000264u && pc == 0x00034au) {
+			aux |= 0x0100u;
+		} else if (_pcOrderTraceLastWramPc == 0x00034au && pc == 0x000264u) {
+			aux |= 0x0200u;
+		} else {
+			aux |= 0x0400u;
+		}
+		aux |= (uint16_t)(_pcOrderTraceEdgeCount & 0x00ffu);
+	}
+
+	_pcOrderTraceHasLastWramPc = true;
+	_pcOrderTraceLastWramPc = pc;
+
+	if (_cpu
+		&& pc == 0x000264u
+		&& address >= 0x00ff0000u
+		&& address <= 0x00ff002fu
+		&& (address & 0x0000000fu) == 0u) {
+		GenesisM68kState& probeState = _cpu->GetState();
+		uint16_t d6Low = (uint16_t)(probeState.D[6] & 0xffffu);
+		uint16_t a0Low = (uint16_t)(probeState.A[0] & 0xffffu);
+		uint16_t blockIndex = (uint16_t)(((address - 0x00ff0000u) >> 4) & 0x00ffu);
+		uint16_t probeAux = (uint16_t)(((blockIndex & 0x00ffu) << 8) | (d6Low & 0x00ffu));
+		TraceStartupEvent("CPU_MMU_PC_264_BLOCK", address & 0x00ffffffu, a0Low, probeAux);
+	}
+
+	if (_cpu
+		&& pc == 0x000264u
+		&& address >= 0x00ff0000u
+		&& address <= 0x00ff002fu
+		&& (address & 0x00000003u) == 0u) {
+		GenesisM68kState& iterState = _cpu->GetState();
+		uint16_t d6Low = (uint16_t)(iterState.D[6] & 0xffffu);
+		uint16_t d7Low = (uint16_t)(iterState.D[7] & 0xffffu);
+		uint16_t srLow = (uint16_t)(iterState.SR & 0x00ffu);
+		uint16_t a0Low = (uint16_t)(iterState.A[0] & 0xffffu);
+		uint16_t a5Low = (uint16_t)(iterState.A[5] & 0xffffu);
+		uint16_t a6Low = (uint16_t)(iterState.A[6] & 0xffffu);
+		uint16_t iterAux = (uint16_t)((address & 0x00ffu) << 8) | (srLow & 0x00ffu);
+		if (!_pcOrderTrace264LoopSeen) {
+			_pcOrderTrace264LoopSeen = true;
+			_pcOrderTrace264FirstD6 = d6Low;
+		}
+		_pcOrderTrace264LastD6 = d6Low;
+		_pcOrderTrace264IterCount++;
+		TraceStartupEvent("CPU_MMU_PC_264_ITER", address & 0x00ffffffu, d6Low, iterAux);
+		TraceStartupEvent("CPU_MMU_PC_264_ITER_REG", address & 0x00ffffffu, a0Low, a5Low);
+		TraceStartupEvent("CPU_MMU_PC_264_ITER_REG2", address & 0x00ffffffu, a6Low, d7Low);
+	}
+
+	if (_cpu && !_pcOrderTrace264To34ASummaryEmitted && _pcOrderTrace264LoopSeen && _pcOrderTraceSaw00034A && pc == 0x00034au) {
+		_pcOrderTrace264To34ASummaryEmitted = true;
+		GenesisM68kState& summaryState = _cpu->GetState();
+		uint16_t d6At34A = (uint16_t)(summaryState.D[6] & 0xffffu);
+		TraceStartupEvent("CPU_MMU_PC_264_SUM", 0x000264u, _pcOrderTrace264FirstD6, _pcOrderTrace264LastD6);
+		TraceStartupEvent("CPU_MMU_PC_264_SUM2", (uint32_t)(_pcOrderTrace264IterCount & 0x00ffffffu), d6At34A, (uint16_t)(_pcOrderTrace264IterCount >> 16));
+	}
+
+	if (!emitEvent) {
+		return;
+	}
+
+	uint16_t packedValue = (uint16_t)(((address & 0x000000ffu) << 8) | data);
+	TraceStartupEvent(tag, address & 0x00ffffffu, packedValue, aux);
+	if (_cpu) {
+		GenesisM68kState& state = _cpu->GetState();
+		uint16_t d7Low = (uint16_t)(state.D[7] & 0xffffu);
+		uint16_t d6Low = (uint16_t)(state.D[6] & 0xffffu);
+		uint16_t sr = state.SR;
+		uint32_t a7 = state.A[7] & 0x00ffffffu;
+		uint32_t a6 = state.A[6] & 0x00ffffffu;
+		TraceStartupEvent("CPU_MMU_PC_REG", a7, d7Low, sr);
+		TraceStartupEvent("CPU_MMU_PC_REG2", a6, d6Low, d7Low);
+	}
+	_pcOrderTraceEventCount++;
+
+	if (!_pcOrderTraceTransitionSummaryEmitted && _pcOrderTraceSaw000264 && _pcOrderTraceSaw00034A) {
+		_pcOrderTraceTransitionSummaryEmitted = true;
+
+		uint16_t transitionAux = 0;
+		if (_pcOrderTraceFirst264Seq < _pcOrderTraceFirst34ASeq) {
+			transitionAux |= 0x0100u;
+		} else if (_pcOrderTraceFirst34ASeq < _pcOrderTraceFirst264Seq) {
+			transitionAux |= 0x0200u;
+		} else {
+			transitionAux |= 0x0300u;
+		}
+
+		uint32_t frameDelta = (_pcOrderTraceFirst264Frame >= _pcOrderTraceFirst34AFrame)
+			? (_pcOrderTraceFirst264Frame - _pcOrderTraceFirst34AFrame)
+			: (_pcOrderTraceFirst34AFrame - _pcOrderTraceFirst264Frame);
+		if (frameDelta > 0x00ffu) {
+			frameDelta = 0x00ffu;
+		}
+		transitionAux |= (uint16_t)frameDelta;
+
+		uint32_t packedFrames = ((_pcOrderTraceFirst264Frame & 0x0fffu) << 12) | (_pcOrderTraceFirst34AFrame & 0x0fffu);
+		uint16_t packedLines = (uint16_t)(((_pcOrderTraceFirst264Line & 0x00ffu) << 8) | (_pcOrderTraceFirst34ALine & 0x00ffu));
+		TraceStartupEvent("CPU_MMU_PC_264_34A", packedFrames, packedLines, transitionAux);
+
+		uint64_t firstMclk = _pcOrderTraceFirst264Mclk;
+		uint64_t secondMclk = _pcOrderTraceFirst34AMclk;
+		uint64_t mclkDelta = (firstMclk >= secondMclk) ? (firstMclk - secondMclk) : (secondMclk - firstMclk);
+		TraceStartupEvent(
+			"CPU_MMU_PC_264_34A_MCLK",
+			(uint32_t)(mclkDelta & 0x00ffffffu),
+			(uint16_t)(mclkDelta & 0xffffu),
+			(uint16_t)((mclkDelta >> 16) & 0xffffu));
+	}
+}
+
+void GenesisMemoryManager::EvaluateTmssUnlockState(bool allowLog, uint32_t addr, uint32_t value, bool isWrite) {
+	bool signatureMatch = _segaCdBridgeA140[0] == 'S'
+		&& _segaCdBridgeA140[1] == 'E'
+		&& _segaCdBridgeA140[2] == 'G'
+		&& _segaCdBridgeA140[3] == 'A';
+	_startupHadTmssSignature = signatureMatch;
+
+	if (!_tmssEnabled) {
+		_tmssUnlockPending = false;
+		_tmssUnlockDelayMclk = 0;
+		_tmssUnlocked = signatureMatch;
+		_tmssVdpBlockLogged = false;
+		_tmssStartupBypassLogged = false;
+		_ioState.TmssEnabled = 0;
+		_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
+		return;
+	}
+
+	if (signatureMatch) {
+		uint16_t unlockDelay = _tmssUnlockDelayMclkSetting;
+		if (unlockDelay > 0u && !_tmssUnlocked) {
+			_tmssUnlockPending = true;
+			_tmssUnlockDelayMclk = unlockDelay;
+		} else {
+			_tmssUnlockPending = false;
+			_tmssUnlockDelayMclk = 0;
+		}
+		if (!_tmssUnlocked) {
+			_tmssUnlocked = unlockDelay == 0u;
+			_tmssVdpBlockLogged = false;
+			_tmssStartupBypassLogged = false;
+			if (allowLog) {
+				MessageManager::Log(std::format("[Genesis][MMU] TMSS signature complete; unlock {} ({} ${:06x}=${:02x})",
+					unlockDelay == 0u ? "immediate" : std::format("delayed {} mclk", unlockDelay),
+					isWrite ? "write" : "read",
+					addr,
+					value & 0xFF));
+			}
+			if (!_tmssUnlockPending) {
+				TraceStartupEvent("TMSS_UNLOCK", addr, (uint16_t)(value & 0xFFFF), 0);
+			}
+		}
+	} else {
+		_tmssUnlocked = false;
+		_tmssUnlockPending = false;
+		_tmssUnlockDelayMclk = 0;
+		_tmssVdpBlockLogged = false;
+		_tmssStartupBypassLogged = false;
+	}
+
+	_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
+	_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
+	if (allowLog) {
+		MessageManager::Log(std::format("[Genesis][MMU] TMSS mode enable={} strictLocking={} unlockPending={} unlockDelay={} (strict toggled by NEXEN_GENESIS_TMSS_STRICT)",
+			_tmssEnabled ? 1 : 0,
+			_tmssStrictMode ? 1 : 0,
+			_tmssUnlockPending ? 1 : 0,
+			_tmssUnlockDelayMclk));
+	}
+}
+
+void GenesisMemoryManager::UpdateTmssUnlockWindow(uint32_t masterClocks) {
+	if (!IsTmssVdpLockEnforced() || !_tmssUnlockPending) {
+		return;
+	}
+
+	if (masterClocks >= _tmssUnlockDelayMclk) {
+		_tmssUnlockDelayMclk = 0;
+		_tmssUnlockPending = false;
+		_tmssUnlocked = true;
+		_tmssVdpBlockLogged = false;
+		_tmssStartupBypassLogged = false;
+		_ioState.TmssEnabled = _tmssEnabled ? 1 : 0;
+		_ioState.TmssUnlocked = _tmssUnlocked ? 1 : 0;
+		if (!_startupTmssUnlockLogged) {
+			_startupTmssUnlockLogged = true;
+			MessageManager::Log("[Genesis][MMU] TMSS unlock delay elapsed - VDP access enabled");
+		}
+		TraceStartupEvent("TMSS_UNLOCK", 0xA14000, 0x5345, 0x4741);
+	} else {
+		_tmssUnlockDelayMclk = (uint16_t)(_tmssUnlockDelayMclk - masterClocks);
+	}
+}
+
+bool GenesisMemoryManager::TryGetRomBankRegisterSlot(uint32_t addr, uint8_t& slot) const {
+	if ((addr & 0x01) == 0) {
+		return false;
+	}
+
+	if (addr < 0xA130F3 || addr > 0xA130FF) {
+		return false;
+	}
+
+	slot = (uint8_t)((addr - 0xA130F3) >> 1);
+	return slot < MapperBankWindowCount;
+}
+
+bool GenesisMemoryManager::IsRamControlRegister(uint32_t addr) const {
+	return (addr & 0xFFFFFF) == 0xA130F1;
+}
+
+uint8_t GenesisMemoryManager::GetRamControlRegisterValue() const {
+	return (uint8_t)((_ramEnable ? 0x01 : 0x00) | (_ramWritable ? 0x00 : 0x02));
+}
+
+void GenesisMemoryManager::WriteRamControlRegister(uint8_t value) {
+	_ramEnable = (value & 0x01) != 0;
+	_ramWritable = (value & 0x02) == 0;
+}
+
+bool GenesisMemoryManager::TryWriteRomBankRegister(uint32_t addr, uint8_t value) {
+	uint8_t slot = 0;
+	if (!TryGetRomBankRegisterSlot(addr, slot)) {
+		return false;
+	}
+
+	uint8_t effectiveValue = (uint8_t)(value & 0x3F);
+	_romBankRegisters[slot] = effectiveValue;
+	return true;
+}
+
+uint32_t GenesisMemoryManager::WrapRomAddress(uint32_t addr) const {
+	if (_prgRomUseWrapMask) {
+		return addr & _prgRomWrapMask;
+	}
+
+	return addr % _prgRomSize;
+}
+
+void GenesisMemoryManager::TranslateRomAddressPair(uint32_t addr, uint32_t& mappedAddrHi, uint32_t& mappedAddrLo) const {
+	mappedAddrHi = TranslateRomAddress(addr);
+
+	uint32_t effectiveAddr = addr & 0x3FFFFF;
+	if (!_romBankMapperEnabled) {
+		mappedAddrLo = WrapRomAddress(mappedAddrHi + 1);
+		return;
+	}
+
+	if (effectiveAddr < 0x080000 || effectiveAddr >= 0x3FFFFF) {
+		mappedAddrLo = TranslateRomAddress(addr + 1);
+		return;
+	}
+
+	uint32_t windowOffset = effectiveAddr - 0x080000;
+	uint32_t offsetInWindow = windowOffset % MapperWindowSize;
+	if (offsetInWindow != MapperWindowSize - 1) {
+		mappedAddrLo = WrapRomAddress(mappedAddrHi + 1);
+		return;
+	}
+
+	mappedAddrLo = TranslateRomAddress(addr + 1);
+}
+
+uint32_t GenesisMemoryManager::TranslateRomAddress(uint32_t addr) const {
+	if (_prgRomSize == 0) {
+		return 0;
+	}
+
+	uint32_t effectiveAddr = addr & 0x3FFFFF;
+
+	if (_romBankMapperEnabled && effectiveAddr >= 0x080000 && effectiveAddr < 0x400000) {
+		uint32_t windowOffset = effectiveAddr - 0x080000;
+		uint32_t slot = windowOffset / MapperWindowSize;
+		if (slot < MapperBankWindowCount) {
+			uint32_t bank = _romBankRegisters[slot] % _romBankCount;
+			uint32_t mappedAddress = bank * MapperWindowSize + (windowOffset % MapperWindowSize);
+			return WrapRomAddress(mappedAddress);
+		}
+	}
+
+	return WrapRomAddress(effectiveAddr);
+}
+
+bool GenesisMemoryManager::IsZ80BusGranted() const {
+	// 68k can access the Z80 window when BUSACK is asserted or when reset is held.
+	return _z80BusAck || _z80Reset;
+}
+
+uint8_t GenesisMemoryManager::GetZ80BusReqReadValue() const {
+	uint8_t ackStatus = GetZ80BusAckStatusBit(_z80BusAck);
+	return (uint8_t)(0xFE | ackStatus);
+}
+
+uint8_t GenesisMemoryManager::GetZ80ResetReadValue() const {
+	return _z80Reset ? 0x01 : 0x00;
+}
+
+void GenesisMemoryManager::AdvanceZ80BusArbitration(uint32_t masterClocks) {
+	if (masterClocks == 0) {
+		return;
+	}
+
+	if (_startupUseDynamicBusTiming) {
+		uint32_t frame = GetStartupFrame();
+		RefreshStartupBusTiming(frame, false, 0xA11100, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "arb");
+	}
+	_startupLastArbitrationMclk = (uint16_t)(masterClocks & 0xFFFFu);
+	_startupArbitrationDigest ^= (uint8_t)((masterClocks ^ _z80BusReqDelayMclk ^ _z80ResumeDelayMclk) & 0xFFu);
+
+	if (_z80Reset) {
+		_z80BusReqDelayMclk = 0;
+		_z80ResumeDelayMclk = 0;
+		_z80BusAck = _z80BusRequest;
+		return;
+	}
+
+	if (_z80BusRequest) {
+		_z80ResumeDelayMclk = 0;
+		if (!_z80BusAck && _z80BusReqDelayMclk > 0) {
+			if (masterClocks >= _z80BusReqDelayMclk) {
+				_z80BusReqDelayMclk = 0;
+				_z80BusAck = true;
+			} else {
+				_z80BusReqDelayMclk = (uint16_t)(_z80BusReqDelayMclk - masterClocks);
+			}
+		}
+	} else {
+		_z80BusReqDelayMclk = 0;
+		if (_z80ResumeDelayMclk > 0) {
+			if (masterClocks >= _z80ResumeDelayMclk) {
+				_z80ResumeDelayMclk = 0;
+			} else {
+				_z80ResumeDelayMclk = (uint16_t)(_z80ResumeDelayMclk - masterClocks);
+			}
+		}
+	}
+}
+
+void GenesisMemoryManager::SetZ80BusRequest(bool request, bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag) {
+	uint16_t effectiveReqDelay = _z80BusReqAckDelayMclkSetting;
+	uint16_t effectiveResumeDelay = _z80BusResumeDelayMclkSetting;
+	if (_startupUseDynamicBusTiming) {
+		uint32_t frame = GetStartupFrame();
+		RefreshStartupBusTiming(frame, allowTransitionLog, addr, pc, sourceTag);
+		effectiveReqDelay = GetEffectiveZ80BusReqAckDelayMclk(frame);
+		effectiveResumeDelay = GetEffectiveZ80BusResumeDelayMclk(frame);
+	}
+
+	bool oldBusReq = _z80BusRequest;
+	_z80BusRequest = request;
+	if (request) {
+		_z80ResumeDelayMclk = 0;
+		if (_z80Reset) {
+			_z80BusAck = true;
+			_z80BusReqDelayMclk = 0;
+		} else if (!_z80BusAck && _z80BusReqDelayMclk == 0) {
+			_z80BusReqDelayMclk = effectiveReqDelay;
+		}
+	} else {
+		_z80BusAck = false;
+		_z80BusReqDelayMclk = 0;
+		_z80ResumeDelayMclk = _z80Reset ? 0 : effectiveResumeDelay;
+	}
+
+	if (allowTransitionLog && oldBusReq != _z80BusRequest) {
+		MessageManager::Log(std::format("[Genesis][MMU] Z80 busreq latch src={} addr=${:06x} pc=${:06x} oldReq={} newReq={} reset={} ack={} reqDelay={} resumeDelay={}",
+			sourceTag,
+			addr & 0x00ffffff,
+			pc & 0x00ffffff,
+			oldBusReq ? 1 : 0,
+			_z80BusRequest ? 1 : 0,
+			_z80Reset ? 1 : 0,
+			_z80BusAck ? 1 : 0,
+			_z80BusReqDelayMclk,
+			_z80ResumeDelayMclk));
+		TraceStartupEvent("Z80_BUSREQ", addr, (uint16_t)((oldBusReq ? 0x100 : 0) | (_z80BusRequest ? 0x001 : 0)), (uint16_t)(_z80BusAck ? 1 : 0));
+	}
+
+	UpdateZ80RuntimeState(allowTransitionLog, addr, pc, sourceTag);
+}
+
+void GenesisMemoryManager::SetZ80Reset(bool resetAsserted, bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag) {
+	uint16_t effectiveReqDelay = _z80BusReqAckDelayMclkSetting;
+	if (_startupUseDynamicBusTiming) {
+		uint32_t frame = GetStartupFrame();
+		RefreshStartupBusTiming(frame, allowTransitionLog, addr, pc, sourceTag);
+		effectiveReqDelay = GetEffectiveZ80BusReqAckDelayMclk(frame);
+	}
+
+	bool oldReset = _z80Reset;
+	_z80Reset = resetAsserted;
+	if (resetAsserted) {
+		_z80BusReqDelayMclk = 0;
+		_z80ResumeDelayMclk = 0;
+		_z80BusAck = _z80BusRequest;
+	} else if (_z80BusRequest) {
+		_z80BusAck = false;
+		_z80BusReqDelayMclk = effectiveReqDelay;
+		_z80ResumeDelayMclk = 0;
+	} else {
+		_z80BusAck = false;
+		_z80BusReqDelayMclk = 0;
+		_z80ResumeDelayMclk = 0;
+	}
+
+	if (allowTransitionLog && oldReset != _z80Reset) {
+		MessageManager::Log(std::format("[Genesis][MMU] Z80 reset latch src={} addr=${:06x} pc=${:06x} oldReset={} newReset={} req={} ack={} reqDelay={} resumeDelay={}",
+			sourceTag,
+			addr & 0x00ffffff,
+			pc & 0x00ffffff,
+			oldReset ? 1 : 0,
+			_z80Reset ? 1 : 0,
+			_z80BusRequest ? 1 : 0,
+			_z80BusAck ? 1 : 0,
+			_z80BusReqDelayMclk,
+			_z80ResumeDelayMclk));
+		TraceStartupEvent("Z80_RESET", addr, (uint16_t)((oldReset ? 0x100 : 0) | (_z80Reset ? 0x001 : 0)), (uint16_t)(_z80BusRequest ? 1 : 0));
+	}
+
+	UpdateZ80RuntimeState(allowTransitionLog, addr, pc, sourceTag);
+}
+
+bool GenesisMemoryManager::ComputeZ80RuntimeRunning() const {
+	return !_z80Reset && !_z80BusAck && _z80ResumeDelayMclk == 0;
+}
+
+void GenesisMemoryManager::UpdateZ80RuntimeState(bool allowTransitionLog, uint32_t addr, uint32_t pc, const char* sourceTag) {
+	bool nextRunning = ComputeZ80RuntimeRunning();
+	if (_z80RuntimeRunning != nextRunning) {
+		_z80RuntimeTransitionCount++;
+		_z80RuntimeStateEpoch++;
+		_z80RuntimeLastTransitionClock = _masterClock;
+		TraceStartupEvent("Z80_RUN_TGL", 0xA11100, nextRunning ? 1 : 0, (uint16_t)(_z80RuntimeTransitionCount & 0xFFFFu));
+		if (allowTransitionLog) {
+			MessageManager::Log(std::format("[Genesis][MMU] Z80 runtime transition #{} epoch={} src={} addr=${:06x} pc=${:06x} oldRunning={} newRunning={} busReq={} reset={} runnableCycles={} stalledCycles={} masterClock={}",
+				_z80RuntimeTransitionCount,
+				_z80RuntimeStateEpoch,
+				sourceTag,
+				addr & 0x00ffffff,
+				pc & 0x00ffffff,
+				_z80RuntimeRunning ? 1 : 0,
+				nextRunning ? 1 : 0,
+				_z80BusRequest ? 1 : 0,
+				_z80Reset ? 1 : 0,
+				_z80RuntimeRunnableCycles,
+				_z80RuntimeStalledCycles,
+				_masterClock));
+		}
+	}
+	_z80RuntimeRunning = nextRunning;
+}
+
+bool GenesisMemoryManager::TryGetSegaCdBridgeSlot(uint32_t addr, uint8_t*& slot, uint32_t& slotIndex) {
+	if (addr >= 0xA12000 && addr <= 0xA1201F) {
+		slot = &_segaCdBridgeA120[0];
+		slotIndex = addr & 0x1F;
+		return true;
+	}
+
+	if (addr >= 0xA13000 && addr <= 0xA1301F) {
+		slot = &_segaCdBridgeA130[0];
+		slotIndex = addr & 0x1F;
+		return true;
+	}
+
+	if (addr >= 0xA14000 && addr <= 0xA1401F) {
+		slot = &_segaCdBridgeA140[0];
+		slotIndex = addr & 0x1F;
+		return true;
+	}
+
+	if (addr >= 0xA15000 && addr <= 0xA1501F) {
+		slot = &_segaCdBridgeA150[0];
+		slotIndex = addr & 0x1F;
+		return true;
+	}
+
+	if (addr >= 0xA16000 && addr <= 0xA1601F) {
+		slot = &_segaCdBridgeA160[0];
+		slotIndex = addr & 0x1F;
+		return true;
+	}
+
+	if (addr >= 0xA18000 && addr <= 0xA1801F) {
+		slot = &_segaCdBridgeA180[0];
+		slotIndex = addr & 0x1F;
+		return true;
+	}
+
+	return false;
+}
+
+bool GenesisMemoryManager::IsSegaCdSubCpuControlAddress(uint32_t addr) const {
+	return addr == 0xA12000 || addr == 0xA12001;
+}
+
+bool GenesisMemoryManager::IsSegaCdAudioDataAddress(uint32_t addr) const {
+	return addr >= 0xA12002 && addr <= 0xA12005;
+}
+
+bool GenesisMemoryManager::IsSegaCdAudioStatusAddress(uint32_t addr) const {
+	return addr == 0xA12010 || addr == 0xA12011;
+}
+
+bool GenesisMemoryManager::IsSegaCdToolingControlAddress(uint32_t addr) const {
+	return addr >= 0xA12012 && addr <= 0xA12015;
+}
+
+bool GenesisMemoryManager::IsSegaCdToolingStatusAddress(uint32_t addr) const {
+	return addr >= 0xA12016 && addr <= 0xA1201F;
+}
+
+bool GenesisMemoryManager::Is32xSh2ControlAddress(uint32_t addr) const {
+	return addr == 0xA15012 || addr == 0xA15013 || addr == 0xA15014;
+}
+
+bool GenesisMemoryManager::Is32xSh2StatusAddress(uint32_t addr) const {
+	return addr == 0xA1501A || addr == 0xA1501B;
+}
+
+bool GenesisMemoryManager::Is32xCompositionControlAddress(uint32_t addr) const {
+	return addr == 0xA15016 || addr == 0xA15017;
+}
+
+bool GenesisMemoryManager::Is32xCompositionStatusAddress(uint32_t addr) const {
+	return addr == 0xA1501C || addr == 0xA1501D;
+}
+
+bool GenesisMemoryManager::Is32xToolingControlAddress(uint32_t addr) const {
+	return addr >= 0xA15008 && addr <= 0xA1500B;
+}
+
+bool GenesisMemoryManager::Is32xToolingStatusAddress(uint32_t addr) const {
+	return addr >= 0xA15018 && addr <= 0xA1501F;
+}
+
+bool GenesisMemoryManager::Is32xCoprocControlAddress(uint32_t addr) const {
+	return addr >= 0xA16012 && addr <= 0xA16015;
+}
+
+bool GenesisMemoryManager::Is32xCoprocStatusAddress(uint32_t addr) const {
+	return addr >= 0xA1601A && addr <= 0xA1601F;
+}
+
+bool GenesisMemoryManager::Is32xHostToolingControlAddress(uint32_t addr) const {
+	return addr >= 0xA18008 && addr <= 0xA1800B;
+}
+
+bool GenesisMemoryManager::Is32xHostToolingStatusAddress(uint32_t addr) const {
+	return addr >= 0xA18018 && addr <= 0xA1801F;
+}
+
+uint8_t GenesisMemoryManager::Normalize32xCoprocControlValue(uint32_t addr, uint8_t value) const {
+	if (addr == 0xA16012 || addr == 0xA16013) {
+		return (uint8_t)(value & 0x01);
+	}
+	if (addr == 0xA16014) {
+		return (uint8_t)(value & 0x0F);
+	}
+	if (addr == 0xA16015) {
+		return (uint8_t)(value & 0x03);
+	}
+	return value;
+}
+
+uint8_t GenesisMemoryManager::Normalize32xHostControlValue(uint32_t addr, uint8_t value) const {
+	if (addr >= 0xA18008 && addr <= 0xA1800B) {
+		return (uint8_t)(value & 0x01);
+	}
+	return value;
+}
+
+void GenesisMemoryManager::Recompute32xCoprocDigest() {
+	uint8_t digest = _m32xToolingDigest;
+	digest ^= _m32xCoprocMasterSignal;
+	digest ^= (uint8_t)(_m32xCoprocSlaveSignal << 1);
+	digest ^= (uint8_t)(_m32xCoprocPhaseSignal << 2);
+	digest ^= (uint8_t)(_m32xCoprocFenceSignal << 5);
+	digest ^= (uint8_t)(_m32xCoprocEventCount & 0xFF);
+	digest ^= (uint8_t)(_m32xCoprocEdgeCount & 0xFF);
+	digest ^= (uint8_t)(_m32xCoprocPhaseEpoch & 0xFF);
+	digest ^= (uint8_t)(_m32xCoprocFenceEpoch << 4);
+	digest ^= _m32xCoprocArbiterLatch;
+	_m32xCoprocDigest = digest;
+}
+
+void GenesisMemoryManager::Recompute32xHostDigest() {
+	uint8_t digest = _m32xCoprocDigest;
+	digest ^= _m32xHostDebuggerSignal;
+	digest ^= (uint8_t)(_m32xHostTasSignal << 1);
+	digest ^= (uint8_t)(_m32xHostSaveStateSignal << 2);
+	digest ^= (uint8_t)(_m32xHostCheatSignal << 3);
+	digest ^= (uint8_t)(_m32xHostEventCount & 0xFF);
+	digest ^= (uint8_t)(_m32xHostEdgeCount & 0xFF);
+	digest ^= _m32xHostCommandNonce;
+	digest ^= _m32xHostAckToken;
+	digest ^= _m32xHostDeterminismLatch;
+	_m32xHostDigest = digest;
+}
+
+void GenesisMemoryManager::UpdateSegaCdSubCpuControl(uint8_t value) {
+	uint8_t effectiveValue = value;
+	bool nextRunning = (effectiveValue & 0x01) != 0;
+	bool nextBusRequest = (effectiveValue & 0x02) != 0;
+	if (nextRunning != _segaCdSubCpuRunning || nextBusRequest != _segaCdSubCpuBusRequest) {
+		_segaCdSubCpuTransitionCount++;
+	}
+	_segaCdSubCpuRunning = nextRunning;
+	_segaCdSubCpuBusRequest = nextBusRequest;
+}
+
+uint8_t GenesisMemoryManager::GetSegaCdSubCpuStatusByte() const {
+	uint8_t statusByte = 0;
+	if (_segaCdSubCpuRunning) {
+		statusByte |= 0x01;
+	}
+	if (_segaCdSubCpuBusRequest) {
+		statusByte |= 0x02;
+	}
+	statusByte |= (uint8_t)((_segaCdSubCpuTransitionCount & 0x0F) << 4);
+	return statusByte;
+}
+
+void GenesisMemoryManager::UpdateSegaCdAudioPath(uint32_t addr, uint8_t value) {
+	uint8_t effectiveValue = value;
+	if (addr == 0xA12002) {
+		_segaCdPcmLeft = effectiveValue;
+	} else if (addr == 0xA12003) {
+		_segaCdPcmRight = effectiveValue;
+	} else if (addr == 0xA12004) {
+		_segaCdCddaLeft = effectiveValue;
+	} else if (addr == 0xA12005) {
+		_segaCdCddaRight = effectiveValue;
+	} else {
+		return;
+	}
+
+	int16_t mixedLeft = (int16_t)(int8_t)_segaCdPcmLeft + (int16_t)(int8_t)_segaCdCddaLeft;
+	int16_t mixedRight = (int16_t)(int8_t)_segaCdPcmRight + (int16_t)(int8_t)_segaCdCddaRight;
+	mixedLeft = std::clamp<int16_t>(mixedLeft, -128, 127);
+	mixedRight = std::clamp<int16_t>(mixedRight, -128, 127);
+	_segaCdMixedLeft = (uint8_t)(int8_t)mixedLeft;
+	_segaCdMixedRight = (uint8_t)(int8_t)mixedRight;
+	_segaCdAudioCheckpointCount++;
+}
+
+uint8_t GenesisMemoryManager::GetSegaCdAudioStatusByte(uint32_t addr) const {
+	if (addr == 0xA12010) {
+		uint8_t statusByte = _segaCdMixedLeft;
+		return statusByte;
+	}
+	if (addr == 0xA12011) {
+		uint8_t statusByte = _segaCdMixedRight;
+		return statusByte;
+	}
+	uint8_t statusByte = 0;
+	return statusByte;
+}
+
+void GenesisMemoryManager::UpdateSegaCdToolingContract(uint32_t addr, uint8_t value) {
+	uint8_t* target = nullptr;
+	if (addr == 0xA12012) {
+		target = &_segaCdToolingDebuggerSignal;
+	} else if (addr == 0xA12013) {
+		target = &_segaCdToolingTasSignal;
+	} else if (addr == 0xA12014) {
+		target = &_segaCdToolingSaveStateSignal;
+	} else if (addr == 0xA12015) {
+		target = &_segaCdToolingCheatSignal;
+	}
+
+	if (!target) {
+		return;
+	}
+
+	uint8_t effectiveValue = value;
+	if (*target != effectiveValue) {
+		*target = effectiveValue;
+		_segaCdToolingEventCount++;
+	}
+
+	uint8_t digest = 0x0F;
+	digest ^= _segaCdToolingDebuggerSignal;
+	digest ^= (uint8_t)(_segaCdToolingTasSignal << 1);
+	digest ^= (uint8_t)(_segaCdToolingSaveStateSignal << 2);
+	digest ^= (uint8_t)(_segaCdToolingCheatSignal << 3);
+	digest ^= (uint8_t)(_segaCdToolingEventCount & 0xFF);
+	_segaCdToolingDigest = digest;
+}
+
+uint8_t GenesisMemoryManager::GetSegaCdToolingStatusByte(uint32_t addr) const {
+	if (addr == 0xA12016) {
+		return (uint8_t)(_segaCdToolingEventCount & 0xFF);
+	}
+	if (addr == 0xA12017) {
+		return (uint8_t)((_segaCdToolingEventCount >> 8) & 0xFF);
+	}
+	if (addr == 0xA12018) {
+		return (uint8_t)(_ioState.DebugTranscriptLaneCount & 0xFF);
+	}
+	if (addr == 0xA12019) {
+		return (uint8_t)(_ioState.DebugTranscriptLaneDigest & 0xFF);
+	}
+	if (addr == 0xA1201A) {
+		uint8_t statusByte = 0x0F;
+		return statusByte;
+	}
+	if (addr == 0xA1201B) {
+		uint8_t statusByte = _segaCdToolingDigest;
+		return statusByte;
+	}
+	if (addr == 0xA1201C) {
+		uint8_t statusByte = _controlManager ? _controlManager->GetDeterministicPortCapabilities(0) : 0;
+		return statusByte;
+	}
+	if (addr == 0xA1201D) {
+		uint8_t statusByte = _controlManager ? _controlManager->GetDeterministicPortDigest(0) : 0;
+		return statusByte;
+	}
+	if (addr == 0xA1201E) {
+		uint8_t statusByte = _controlManager ? _controlManager->GetDeterministicPortCapabilities(1) : 0;
+		return statusByte;
+	}
+	if (addr == 0xA1201F) {
+		uint8_t statusByte = _controlManager ? _controlManager->GetDeterministicPortDigest(1) : 0;
+		return statusByte;
+	}
+	uint8_t statusByte = 0;
+	return statusByte;
+}
+
+void GenesisMemoryManager::Update32xSh2Staging(uint32_t addr, uint8_t value) {
+	uint8_t effectiveValue = value;
+	bool changed = false;
+	if (addr == 0xA15012) {
+		bool nextMaster = (effectiveValue & 0x01) != 0;
+		bool nextSlave = (effectiveValue & 0x02) != 0;
+		changed = nextMaster != _m32xMasterSh2Running || nextSlave != _m32xSlaveSh2Running;
+		_m32xMasterSh2Running = nextMaster;
+		_m32xSlaveSh2Running = nextSlave;
+	} else if (addr == 0xA15013) {
+		uint8_t phase = (uint8_t)(effectiveValue & 0x0F);
+		changed = phase != _m32xSh2SyncPhase;
+		_m32xSh2SyncPhase = phase;
+	} else if (addr == 0xA15014) {
+		changed = effectiveValue != _m32xSh2Milestone;
+		_m32xSh2Milestone = effectiveValue;
+	}
+
+	if (changed) {
+		_m32xSh2SyncEpoch++;
+	}
+
+	uint8_t digest = 0;
+	digest |= _m32xMasterSh2Running ? 0x01 : 0x00;
+	digest |= _m32xSlaveSh2Running ? 0x02 : 0x00;
+	digest ^= (uint8_t)(_m32xSh2SyncPhase << 2);
+	digest ^= _m32xSh2Milestone;
+	digest ^= (uint8_t)(_m32xSh2SyncEpoch & 0xFF);
+	_m32xSh2Digest = digest;
+}
+
+uint8_t GenesisMemoryManager::Get32xSh2StatusByte(uint32_t addr) const {
+	if (addr == 0xA1501A) {
+		uint8_t status = 0;
+		if (_m32xMasterSh2Running) {
+			status |= 0x01;
+		}
+		if (_m32xSlaveSh2Running) {
+			status |= 0x02;
+		}
+		status |= (uint8_t)((_m32xSh2SyncPhase & 0x0F) << 2);
+		return status;
+	}
+	if (addr == 0xA1501B) {
+		uint8_t statusByte = _m32xSh2Digest;
+		return statusByte;
+	}
+	uint8_t statusByte = 0;
+	return statusByte;
+}
+
+void GenesisMemoryManager::Update32xCompositionStaging(uint32_t addr, uint8_t value) {
+	uint8_t effectiveValue = value;
+	bool changed = false;
+	if (addr == 0xA15016) {
+		uint8_t blend = (uint8_t)(effectiveValue & 0x0F);
+		changed = blend != _m32xCompositionBlend;
+		_m32xCompositionBlend = blend;
+	} else if (addr == 0xA15017) {
+		uint8_t nextMarker = effectiveValue;
+		changed = nextMarker != _m32xFrameSyncMarker;
+		_m32xFrameSyncMarker = nextMarker;
+	}
+
+	if (changed) {
+		_m32xFrameSyncEpoch++;
+	}
+
+	uint8_t digest = _m32xSh2Digest;
+	digest ^= (uint8_t)(_m32xCompositionBlend << 1);
+	digest ^= _m32xFrameSyncMarker;
+	digest ^= (uint8_t)(_m32xFrameSyncEpoch & 0xFF);
+	_m32xCompositionDigest = digest;
+}
+
+uint8_t GenesisMemoryManager::Get32xCompositionStatusByte(uint32_t addr) const {
+	if (addr == 0xA1501C) {
+		uint8_t status = (uint8_t)(_m32xCompositionBlend & 0x0F);
+		status |= (uint8_t)((_m32xFrameSyncEpoch & 0x03) << 6);
+		return status;
+	}
+	if (addr == 0xA1501D) {
+		uint8_t statusByte = _m32xCompositionDigest;
+		return statusByte;
+	}
+	uint8_t statusByte = 0;
+	return statusByte;
+}
+
+void GenesisMemoryManager::Update32xToolingContract(uint32_t addr, uint8_t value) {
+	uint8_t* target = nullptr;
+	if (addr == 0xA15008) {
+		target = &_m32xToolingDebuggerSignal;
+	} else if (addr == 0xA15009) {
+		target = &_m32xToolingTasSignal;
+	} else if (addr == 0xA1500A) {
+		target = &_m32xToolingSaveStateSignal;
+	} else if (addr == 0xA1500B) {
+		target = &_m32xToolingCheatSignal;
+	}
+
+	if (!target) {
+		return;
+	}
+
+	uint8_t effectiveValue = value;
+	if (*target != effectiveValue) {
+		*target = effectiveValue;
+		_m32xToolingEventCount++;
+	}
+
+	uint8_t digest = _m32xCompositionDigest;
+	digest ^= _m32xToolingDebuggerSignal;
+	digest ^= (uint8_t)(_m32xToolingTasSignal << 1);
+	digest ^= (uint8_t)(_m32xToolingSaveStateSignal << 2);
+	digest ^= (uint8_t)(_m32xToolingCheatSignal << 3);
+	digest ^= (uint8_t)(_m32xToolingEventCount & 0xFF);
+	_m32xToolingDigest = digest;
+}
+
+uint8_t GenesisMemoryManager::Get32xToolingStatusByte(uint32_t addr) const {
+	if (addr == 0xA15018) {
+		uint8_t statusByte = (uint8_t)(_m32xToolingEventCount & 0xFF);
+		return statusByte;
+	}
+	if (addr == 0xA15019) {
+		uint8_t statusByte = (uint8_t)((_m32xToolingEventCount >> 8) & 0xFF);
+		return statusByte;
+	}
+	if (addr == 0xA1501E) {
+		uint8_t statusByte = 0x0F;
+		return statusByte;
+	}
+	if (addr == 0xA1501F) {
+		uint8_t statusByte = _m32xToolingDigest;
+		return statusByte;
+	}
+	uint8_t statusByte = 0;
+	return statusByte;
+}
+
+void GenesisMemoryManager::Update32xCoprocContract(uint32_t addr, uint8_t value) {
+	uint8_t* target = nullptr;
+	if (addr == 0xA16012) {
+		target = &_m32xCoprocMasterSignal;
+	} else if (addr == 0xA16013) {
+		target = &_m32xCoprocSlaveSignal;
+	} else if (addr == 0xA16014) {
+		target = &_m32xCoprocPhaseSignal;
+	} else if (addr == 0xA16015) {
+		target = &_m32xCoprocFenceSignal;
+	}
+
+	if (!target) {
+		return;
+	}
+
+	uint8_t effectiveValue = Normalize32xCoprocControlValue(addr, value);
+	uint8_t previousValue = *target;
+	if (previousValue != effectiveValue) {
+		*target = effectiveValue;
+		_m32xCoprocEventCount++;
+		_m32xCoprocEdgeCount++;
+
+		if (addr == 0xA16014) {
+			uint8_t previousPhase = (uint8_t)(previousValue & 0x0F);
+			uint8_t nextPhase = (uint8_t)(effectiveValue & 0x0F);
+			uint8_t phaseDelta = (uint8_t)((nextPhase - previousPhase) & 0x0F);
+			if (phaseDelta == 0) {
+				phaseDelta = 1;
+			}
+			_m32xCoprocPhaseEpoch = (uint16_t)(_m32xCoprocPhaseEpoch + phaseDelta);
+		}
+
+		if (addr == 0xA16015) {
+			uint8_t previousFence = (uint8_t)(previousValue & 0x03);
+			uint8_t nextFence = (uint8_t)(effectiveValue & 0x03);
+			if (((previousFence ^ nextFence) & 0x01) != 0) {
+				_m32xCoprocFenceEpoch++;
+			}
+		}
+	}
+
+	uint8_t arbiterLatch = 0;
+	arbiterLatch |= (_m32xCoprocMasterSignal & 0x01);
+	arbiterLatch |= (uint8_t)((_m32xCoprocSlaveSignal & 0x01) << 1);
+	arbiterLatch |= (uint8_t)((_m32xCoprocPhaseEpoch & 0x03) << 2);
+	arbiterLatch |= (uint8_t)((_m32xCoprocFenceEpoch & 0x03) << 4);
+	if ((_m32xCoprocMasterSignal & _m32xCoprocSlaveSignal & 0x01) != 0) {
+		arbiterLatch |= 0x40;
+	}
+	if ((_m32xCoprocEdgeCount & 0x01) != 0) {
+		arbiterLatch |= 0x80;
+	}
+	_m32xCoprocArbiterLatch = arbiterLatch;
+
+	Recompute32xCoprocDigest();
+}
+
+uint8_t GenesisMemoryManager::Get32xCoprocStatusByte(uint32_t addr) const {
+	if (addr == 0xA1601A) {
+		return (uint8_t)(_m32xCoprocEventCount & 0xFF);
+	}
+	if (addr == 0xA1601B) {
+		return (uint8_t)((_m32xCoprocEventCount >> 8) & 0xFF);
+	}
+	if (addr == 0xA1601C) {
+		uint8_t status = 0;
+		status |= (_m32xCoprocMasterSignal & 0x01);
+		status |= (uint8_t)((_m32xCoprocSlaveSignal & 0x01) << 1);
+		status |= (uint8_t)((_m32xCoprocPhaseSignal & 0x03) << 2);
+		status |= (uint8_t)((_m32xCoprocFenceSignal & 0x03) << 4);
+		status |= (uint8_t)(_m32xCoprocArbiterLatch & 0xC0);
+		return status;
+	}
+	if (addr == 0xA1601D) {
+		return _m32xCoprocDigest;
+	}
+	if (addr == 0xA1601E) {
+		return (uint8_t)(_m32xCoprocEdgeCount & 0xFF);
+	}
+	if (addr == 0xA1601F) {
+		return (uint8_t)((_m32xCoprocPhaseEpoch & 0x0F) | ((_m32xCoprocFenceEpoch & 0x0F) << 4));
+	}
+	return 0;
+}
+
+void GenesisMemoryManager::Update32xHostToolingContract(uint32_t addr, uint8_t value) {
+	uint8_t* target = nullptr;
+	if (addr == 0xA18008) {
+		target = &_m32xHostDebuggerSignal;
+	} else if (addr == 0xA18009) {
+		target = &_m32xHostTasSignal;
+	} else if (addr == 0xA1800A) {
+		target = &_m32xHostSaveStateSignal;
+	} else if (addr == 0xA1800B) {
+		target = &_m32xHostCheatSignal;
+	}
+
+	if (!target) {
+		return;
+	}
+
+	uint8_t effectiveValue = Normalize32xHostControlValue(addr, value);
+	uint8_t previousValue = *target;
+	if (previousValue != effectiveValue) {
+		*target = effectiveValue;
+		_m32xHostEventCount++;
+		_m32xHostEdgeCount++;
+
+		if (addr == 0xA18008) {
+			_m32xHostCommandNonce ^= effectiveValue ? 0x11 : 0x1D;
+			_m32xHostAckToken = (uint8_t)(_m32xHostAckToken + 0x03);
+		} else if (addr == 0xA18009) {
+			_m32xHostCommandNonce = (uint8_t)(_m32xHostCommandNonce + (effectiveValue ? 0x17 : 0x05));
+			_m32xHostAckToken ^= 0x05;
+		} else if (addr == 0xA1800A) {
+			_m32xHostCommandNonce = (uint8_t)((_m32xHostCommandNonce << 1) | (_m32xHostCommandNonce >> 7));
+			_m32xHostAckToken = (uint8_t)(_m32xHostAckToken + (effectiveValue ? 0x2B : 0x09));
+		} else if (addr == 0xA1800B) {
+			_m32xHostCommandNonce ^= 0x3C;
+			_m32xHostAckToken = (uint8_t)(_m32xHostAckToken + (effectiveValue ? 0x33 : 0x0F));
+		}
+	}
+
+	uint8_t determinismLatch = 0;
+	determinismLatch |= (_m32xHostDebuggerSignal & 0x01);
+	determinismLatch |= (uint8_t)((_m32xHostTasSignal & 0x01) << 1);
+	determinismLatch |= (uint8_t)((_m32xHostSaveStateSignal & 0x01) << 2);
+	determinismLatch |= (uint8_t)((_m32xHostCheatSignal & 0x01) << 3);
+	determinismLatch |= (uint8_t)((_m32xHostEdgeCount & 0x0F) << 4);
+	_m32xHostDeterminismLatch = determinismLatch;
+
+	Recompute32xHostDigest();
+}
+
+uint8_t GenesisMemoryManager::Get32xHostToolingStatusByte(uint32_t addr) const {
+	if (addr == 0xA18018) {
+		return (uint8_t)(_m32xHostEventCount & 0xFF);
+	}
+	if (addr == 0xA18019) {
+		return (uint8_t)((_m32xHostEventCount >> 8) & 0xFF);
+	}
+	if (addr == 0xA1801A) {
+		return _m32xHostDeterminismLatch;
+	}
+	if (addr == 0xA1801B) {
+		return _m32xHostDigest;
+	}
+	if (addr == 0xA1801C) {
+		return _m32xHostCommandNonce;
+	}
+	if (addr == 0xA1801D) {
+		return _m32xHostAckToken;
+	}
+	if (addr == 0xA1801E) {
+		uint8_t capability = _controlManager ? _controlManager->GetDeterministicPortCapabilities(0) : 0;
+		return (uint8_t)(capability ^ _m32xHostDeterminismLatch);
+	}
+	if (addr == 0xA1801F) {
+		uint8_t digest = _controlManager ? _controlManager->GetDeterministicPortDigest(0) : 0;
+		return (uint8_t)(digest ^ _m32xHostDigest);
+	}
+	return 0;
+}
+
+void GenesisMemoryManager::TrackSegaCdTranscript(uint32_t addr, bool isWrite, uint8_t value) {
+	uint8_t effectiveValue = value;
+	uint8_t effectiveRoleFlags = 0;
+	if ((addr & 0x10) != 0) {
+		effectiveRoleFlags |= 0x02;
+	}
+	if (addr >= 0xA13000 && addr <= 0xA1301F) {
+		effectiveRoleFlags |= 0x04;
+	} else if (addr >= 0xA14000 && addr <= 0xA1401F) {
+		effectiveRoleFlags |= 0x08;
+	} else if (addr >= 0xA15000 && addr <= 0xA1501F) {
+		effectiveRoleFlags |= 0x10;
+	} else if (addr >= 0xA16000 && addr <= 0xA1601F) {
+		effectiveRoleFlags |= 0x20;
+	} else if (addr >= 0xA18000 && addr <= 0xA1801F) {
+		effectiveRoleFlags |= 0x40;
+	}
+
+	TrackTranscriptEntry(addr, isWrite, effectiveValue, effectiveRoleFlags);
+}
+
+void GenesisMemoryManager::TrackSegaCdHandshakeTranscript(uint32_t addr, bool isWrite, uint8_t value) {
+	uint8_t effectiveValue = value;
+	uint8_t effectiveRoleFlags = 0x80;
+	if (IsZ80ResetAddress(addr)) {
+		effectiveRoleFlags |= 0x04;
+	}
+	if (!isWrite) {
+		effectiveRoleFlags |= 0x02;
+	}
+
+	TrackTranscriptEntry(addr, isWrite, effectiveValue, effectiveRoleFlags);
+}
+
+void GenesisMemoryManager::TrackTranscriptEntry(uint32_t addr, bool isWrite, uint8_t value, uint8_t roleFlags) {
+	static constexpr uint64_t FnvOffsetBasis = 1469598103934665603ull;
+	static constexpr uint64_t FnvPrime = 1099511628211ull;
+	uint8_t effectiveValue = value;
+	uint8_t effectiveRoleFlags = roleFlags;
+
+	if (isWrite) {
+		effectiveRoleFlags |= 0x01;
+	}
+
+	uint64_t hash = _ioState.TranscriptLaneDigest == 0 ? FnvOffsetBasis : _ioState.TranscriptLaneDigest;
+	hash ^= (addr & 0xFFFFFF);
+	hash *= FnvPrime;
+	hash ^= effectiveValue;
+	hash *= FnvPrime;
+	hash ^= effectiveRoleFlags;
+	hash *= FnvPrime;
+	_ioState.TranscriptLaneDigest = hash;
+
+	uint32_t index = _ioState.TranscriptLaneCount % 4;
+	_ioState.TranscriptEntryAddress[index] = addr & 0xFFFFFF;
+	_ioState.TranscriptEntryValue[index] = effectiveValue;
+	_ioState.TranscriptEntryFlags[index] = effectiveRoleFlags;
+	_ioState.TranscriptLaneCount++;
+}
+
+void GenesisMemoryManager::TrackDebugTranscriptEntry(uint32_t addr, bool isWrite, uint8_t value, uint8_t roleFlags) {
+	static constexpr uint64_t FnvOffsetBasis = 1469598103934665603ull;
+	static constexpr uint64_t FnvPrime = 1099511628211ull;
+	uint8_t effectiveValue = value;
+	uint8_t effectiveRoleFlags = roleFlags;
+
+	if (isWrite) {
+		effectiveRoleFlags |= 0x01;
+	}
+	effectiveRoleFlags |= 0x40;
+
+	uint64_t hash = _ioState.DebugTranscriptLaneDigest == 0 ? FnvOffsetBasis : _ioState.DebugTranscriptLaneDigest;
+	hash ^= (addr & 0xFFFFFF);
+	hash *= FnvPrime;
+	hash ^= effectiveValue;
+	hash *= FnvPrime;
+	hash ^= effectiveRoleFlags;
+	hash *= FnvPrime;
+	_ioState.DebugTranscriptLaneDigest = hash;
+
+	uint32_t index = _ioState.DebugTranscriptLaneCount % 4;
+	_ioState.DebugTranscriptEntryAddress[index] = addr & 0xFFFFFF;
+	_ioState.DebugTranscriptEntryValue[index] = effectiveValue;
+	_ioState.DebugTranscriptEntryFlags[index] = effectiveRoleFlags;
+	_ioState.DebugTranscriptLaneCount++;
+}
+
+void GenesisMemoryManager::ClearDebugTranscriptLane() {
+	_ioState.DebugTranscriptLaneCount = 0;
+	_ioState.DebugTranscriptLaneDigest = 0;
+	for (uint32_t i = 0; i < 4; i++) {
+		_ioState.DebugTranscriptEntryAddress[i] = 0;
+		_ioState.DebugTranscriptEntryValue[i] = 0;
+		_ioState.DebugTranscriptEntryFlags[i] = 0;
+	}
+}
+
+bool GenesisMemoryManager::IsSramAddress(uint32_t addr) const {
+	return HasSaveRam() && _ramEnable && addr >= _sramStart && addr <= _sramEnd;
+}
+
+bool GenesisMemoryManager::TryGetSramOffset(uint32_t addr, uint32_t& offset) const {
+	uint32_t effectiveAddr = addr;
+	if (!IsSramAddress(effectiveAddr)) {
+		return false;
+	}
+
+	if ((effectiveAddr & 0x01) == 0) {
+		if (!_sramEvenBytes) {
+			return false;
+		}
+	} else if (!_sramOddBytes) {
+		return false;
+	}
+
+	if (_sramEvenBytes && _sramOddBytes) {
+		offset = effectiveAddr - _sramStart;
+	} else {
+		offset = (effectiveAddr - _sramStart) >> 1;
+	}
+
+	return offset < _saveRamSize;
+}
+
+// =============================================
+// Genesis 68000 memory map (24-bit, big-endian)
+// =============================================
+// $000000-$3FFFFF : Cartridge ROM (up to 4MB)
+// $400000-$7FFFFF : Reserved / expansion
+// $A00000-$A0FFFF : Z80 address space (8KB RAM + mirrored)
+// $A10000-$A1001F : I/O registers
+// $A11100         : Z80 bus request
+// $A11200         : Z80 reset
+// $C00000-$C0001F : VDP ports
+// $E00000-$FFFFFF : 68000 work RAM (64KB, mirrored)
+
+uint8_t GenesisMemoryManager::Read8(uint32_t addr) {
+	addr &= 0xFFFFFF;
+	auto traceRead8 = [&](const char* opTag, uint32_t effectiveAddr, uint8_t effectiveValue) {
+		MaybeRecordRuntimeOp(opTag, effectiveAddr, effectiveValue, false, false);
+		return effectiveValue;
+	};
+	AdvanceZ80BusArbitration(7);
+	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "read8");
+	uint32_t sramOffset = 0;
+	if (addr == 0xA11000 || addr == 0xA11001) [[unlikely]] {
+		uint8_t effectiveValue = 0x00;
+		_openBus = effectiveValue;
+		return traceRead8("read8-busreq-open", addr, effectiveValue);
+	}
+	if (addr == 0xA14100) [[unlikely]] {
+		uint8_t effectiveValue = 0xFF;
+		TraceStartupEvent("TMSS_CART_R8", addr, effectiveValue, _tmssUnlocked ? 1 : 0);
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
+	if (IsTmssCartAddress(addr)) [[unlikely]] {
+		uint8_t effectiveValue = 0xFF;
+		TraceStartupEvent("TMSS_CART_R8", addr, effectiveValue, _tmssUnlocked ? 1 : 0);
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
+	if (IsTmssAddress(addr)) [[unlikely]] {
+		uint8_t effectiveValue = 0xFF;
+		TraceStartupEvent("TMSS_R8", addr, effectiveValue, _tmssUnlocked ? 1 : 0);
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
+
+	if (TryGetSramOffset(addr, sramOffset)) [[unlikely]] {
+		uint8_t effectiveValue = _saveRam[sramOffset];
+		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Read);
+		_openBus = effectiveValue;
+		return traceRead8("read8-sram", addr, effectiveValue);
+	}
+
+	if (addr < 0x400000) [[likely]] {
+		// Cartridge ROM
+		uint32_t mappedAddr = TranslateRomAddress(addr);
+		uint8_t effectiveValue = _prgRom[mappedAddr];
+		_ioState.RomReadHeartbeat++;
+		_emu->ProcessMemoryRead<CpuType::Genesis>(mappedAddr, effectiveValue, MemoryOperationType::Read);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL8", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
+		_openBus = effectiveValue;
+		return traceRead8("read8-rom", addr, effectiveValue);
+	}
+
+	if (addr >= 0xE00000) [[likely]] {
+		// Work RAM
+		uint32_t offset = addr & 0xFFFF;
+		uint8_t effectiveValue = _workRam[offset];
+		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Read);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL8", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
+		_openBus = effectiveValue;
+		return traceRead8("read8-wram", addr, effectiveValue);
+	}
+
+	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
+		if (IsTmssVdpLockEnforced()) {
+			if (!IsTmssLockedVdpReadAllowed(addr)) {
+				if (!_tmssVdpBlockLogged) {
+					_tmssVdpBlockLogged = true;
+					MessageManager::Log(std::format("[Genesis][MMU] TMSS is locking VDP read8 access at ${:06x}", addr));
+				}
+				uint8_t effectiveValue = _openBus;
+				TraceStartupEvent("TMSS_VDP_R8_BLOCK", addr, effectiveValue, _tmssUnlocked ? 1 : 0);
+				_openBus = effectiveValue;
+				return effectiveValue;
+			}
+
+			if (!_tmssStartupBypassLogged) {
+				_tmssStartupBypassLogged = true;
+				MessageManager::Log(std::format("[Genesis][MMU] TMSS startup compatibility allows VDP read8 at ${:06x}", addr));
+			}
+			TraceStartupEvent("TMSS_VDP_R8_ALLOW", addr, 0, IsStartupWindowActive() ? 1 : 0);
+		}
+		// Use byte-accurate VDP semantics to avoid duplicating word-read side effects.
+		uint8_t effectiveValue = _vdp ? _vdp->ReadPortByte(addr) : 0xFF;
+		if (_vdp) {
+			uint32_t port = addr & 0x1F;
+			if (port < 0x04) {
+				TraceStartupEvent("VDP_DATA_R", addr, effectiveValue, (uint16_t)port);
+			} else if (port < 0x08) {
+				GenesisVdpState stateAfterRead = _vdp->GetState();
+				if (stateAfterRead.FrameCount > 0u) {
+					TraceStartupEvent("VDP_CTRL_R", addr, effectiveValue, (uint16_t)port);
+				}
+			} else if (port < 0x10) {
+				TraceStartupEvent("VDP_HV_R", addr, effectiveValue, (uint16_t)port);
+			}
+
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			uint32_t frame = _vdp->GetFrameCount();
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL8", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
+		_openBus = effectiveValue;
+		return traceRead8("read8-vdp", addr, effectiveValue);
+	}
+
+	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
+		// Z80 address space
+		static uint64_t z80WindowReadCount = 0;
+		z80WindowReadCount++;
+		if (IsZ80BusGranted()) {
+			uint32_t z80Addr = addr & 0xFFFFu;
+			uint8_t effectiveValue = ReadZ80Window8(addr);
+			bool traceAccess = z80WindowReadCount <= 256 || (z80WindowReadCount % 4096) == 0 || (z80Addr >= 0xfff0);
+			if (traceAccess) {
+				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+				MessageManager::Log(std::format("[Genesis][MMU] Z80 read #{} addr=${:06x} z80=${:04x} val=${:02x} pc=${:06x} busReq={} reset={} gate=allow",
+					z80WindowReadCount,
+					addr,
+					z80Addr,
+					effectiveValue,
+					pc,
+					_z80BusRequest ? 1 : 0,
+					_z80Reset ? 1 : 0));
+			}
+			_openBus = effectiveValue;
+			return effectiveValue;
+		}
+		uint8_t effectiveValue = 0xFF;
+		if (z80WindowReadCount <= 256 || (z80WindowReadCount % 4096) == 0) {
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			MessageManager::Log(std::format("[Genesis][MMU] Z80 read #{} addr=${:06x} val=${:02x} pc=${:06x} busReq={} reset={} gate=blocked",
+				z80WindowReadCount,
+				addr,
+				effectiveValue,
+				pc,
+				_z80BusRequest ? 1 : 0,
+				_z80Reset ? 1 : 0));
+		}
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
+
+	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
+		uint8_t effectiveValue = ReadIo(addr);
+		return traceRead8("read8-io", addr, effectiveValue);
+	}
+	if (addr >= 0xA13000 && addr <= 0xA130FF) [[unlikely]] {
+		uint8_t bankSlot = 0;
+		uint8_t effectiveValue = 0x00;
+		if (IsRamControlRegister(addr)) {
+			effectiveValue = GetRamControlRegisterValue();
+		} else if (TryGetRomBankRegisterSlot(addr, bankSlot)) {
+			effectiveValue = _romBankRegisters[bankSlot];
+		}
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
+
+	uint8_t bankSlot = 0;
+	if (IsRamControlRegister(addr)) [[unlikely]] {
+		uint8_t effectiveValue = GetRamControlRegisterValue();
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
+
+	if (TryGetRomBankRegisterSlot(addr, bankSlot)) [[unlikely]] {
+		uint8_t effectiveValue = _romBankRegisters[bankSlot];
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
+
+	uint8_t* bridgeSlot = nullptr;
+	uint32_t bridgeIndex = 0;
+	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
+		uint8_t effectiveValue = 0x00;
+		if (IsSegaCdSubCpuControlAddress(addr)) {
+			effectiveValue = GetSegaCdSubCpuStatusByte();
+		} else if (IsBridgeControlReadbackAddress(addr)) {
+			effectiveValue = bridgeSlot[bridgeIndex];
+		} else if (IsSegaCdAudioStatusAddress(addr)) {
+			effectiveValue = GetSegaCdAudioStatusByte(addr);
+		} else if (IsSegaCdToolingStatusAddress(addr)) {
+			effectiveValue = GetSegaCdToolingStatusByte(addr);
+		} else if (Is32xSh2StatusAddress(addr)) {
+			effectiveValue = Get32xSh2StatusByte(addr);
+		} else if (Is32xCompositionStatusAddress(addr)) {
+			effectiveValue = Get32xCompositionStatusByte(addr);
+		} else if (Is32xToolingStatusAddress(addr)) {
+			effectiveValue = Get32xToolingStatusByte(addr);
+		} else if (Is32xCoprocStatusAddress(addr)) {
+			effectiveValue = Get32xCoprocStatusByte(addr);
+		} else if (Is32xHostToolingStatusAddress(addr)) {
+			effectiveValue = Get32xHostToolingStatusByte(addr);
+		} else if (IsLegacyBridgePassThroughAddress(addr)) {
+			effectiveValue = bridgeSlot[bridgeIndex];
+		}
+		TrackSegaCdTranscript(addr, false, effectiveValue);
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
+
+	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
+		// Z80 bus request: bit 0 indicates bus grant, mirrored on both byte lanes.
+		uint8_t effectiveValue = GetZ80BusReqReadValue();
+		static uint64_t z80BusReqReadCount = 0;
+		z80BusReqReadCount++;
+		if (z80BusReqReadCount <= 256 || (z80BusReqReadCount % 2048) == 0) {
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			MessageManager::Log(std::format("[Genesis][MMU] Z80 busreq read #{} addr=${:06x} val=${:02x} ack={} pc=${:06x} busReq={} reset={}",
+				z80BusReqReadCount,
+				addr,
+				effectiveValue,
+				GetZ80BusAckStatusBit(_z80BusAck),
+				pc,
+				_z80BusRequest ? 1 : 0,
+				_z80Reset ? 1 : 0));
+		}
+		TrackSegaCdHandshakeTranscript(addr, false, effectiveValue);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL8", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
+		_openBus = effectiveValue;
+		return traceRead8("read8-z80-busreq", addr, effectiveValue);
+	}
+
+	if (IsZ80ResetAddress(addr)) [[unlikely]] {
+		uint8_t effectiveValue = GetZ80ResetReadValue();
+		static uint64_t z80ResetReadCount = 0;
+		z80ResetReadCount++;
+		if (z80ResetReadCount <= 256 || (z80ResetReadCount % 2048) == 0) {
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			MessageManager::Log(std::format("[Genesis][MMU] Z80 reset read #{} addr=${:06x} val=${:02x} status={} pc=${:06x} busReq={} reset={}",
+				z80ResetReadCount,
+				addr,
+				effectiveValue,
+				GetZ80ResetReadValue(),
+				pc,
+				_z80BusRequest ? 1 : 0,
+				_z80Reset ? 1 : 0));
+		}
+		TrackSegaCdHandshakeTranscript(addr, false, effectiveValue);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL8", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
+		_openBus = effectiveValue;
+		return traceRead8("read8-z80-reset", addr, effectiveValue);
+	}
+
+	uint8_t effectiveValue = _openBus;
+	_openBus = effectiveValue;
+	return traceRead8("read8-openbus", addr, effectiveValue);
+}
+
+uint16_t GenesisMemoryManager::Read16(uint32_t addr) {
+	addr &= 0xFFFFFE;
+	auto traceRead16 = [&](const char* opTag, uint32_t effectiveAddr, uint16_t effectiveValue) {
+		MaybeRecordRuntimeOp(opTag, effectiveAddr, effectiveValue, true, false);
+		return effectiveValue;
+	};
+	AdvanceZ80BusArbitration(7);
+	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "read16");
+	if (addr == 0xA11000) [[unlikely]] {
+		uint16_t effectiveValue = 0x0000;
+		_openBus = 0x00;
+		return traceRead16("read16-busreq-open", addr, effectiveValue);
+	}
+	if (addr == 0xA14100) [[unlikely]] {
+		uint16_t effectiveValue = 0xFFFF;
+		_openBus = 0xFF;
+		TraceStartupEvent("TMSS_CART_R16", addr, effectiveValue, 0);
+		return effectiveValue;
+	}
+	if (IsTmssAddress(addr)) [[unlikely]] {
+		uint16_t effectiveValue = 0xFFFF;
+		_openBus = 0xFF;
+		TraceStartupEvent("TMSS_R16", addr, effectiveValue, _tmssUnlocked ? 1 : 0);
+		return effectiveValue;
+	}
+	if (HasSaveRam() && addr >= _sramStart && addr <= _sramEnd) [[unlikely]] {
+		uint8_t hi = Read8(addr);
+		uint8_t lo = Read8(addr + 1);
+		return ((uint16_t)hi << 8) | lo;
+	}
+
+	if (addr < 0x400000) [[likely]] {
+		uint32_t mappedAddrHi = 0;
+		uint32_t mappedAddrLo = 0;
+		TranslateRomAddressPair(addr, mappedAddrHi, mappedAddrLo);
+		uint8_t effectiveHighByte = _prgRom[mappedAddrHi];
+		uint8_t effectiveLowByte = _prgRom[mappedAddrLo];
+		uint16_t effectiveValue = ((uint16_t)effectiveHighByte << 8) | effectiveLowByte;
+		_ioState.RomReadHeartbeat += 2;
+		_emu->ProcessMemoryRead<CpuType::Genesis>(mappedAddrHi, effectiveHighByte, MemoryOperationType::Read);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL16", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return traceRead16("read16-rom", addr, effectiveValue);
+	}
+
+	if (addr >= 0xE00000) [[likely]] {
+		uint32_t offset = addr & 0xFFFF;
+		uint8_t effectiveHighByte = _workRam[offset];
+		uint8_t effectiveLowByte = _workRam[(offset + 1) & 0xFFFF];
+		uint16_t effectiveValue = ((uint16_t)effectiveHighByte << 8) | effectiveLowByte;
+		_emu->ProcessMemoryRead<CpuType::Genesis>(addr, effectiveHighByte, MemoryOperationType::Read);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL16", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
+		_openBus = effectiveLowByte;
+		return traceRead16("read16-wram", addr, effectiveValue);
+	}
+
+	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
+		if (IsTmssVdpLockEnforced()) {
+			if (!IsTmssLockedVdpReadAllowed(addr)) {
+				if (!_tmssVdpBlockLogged) {
+					_tmssVdpBlockLogged = true;
+					MessageManager::Log(std::format("[Genesis][MMU] TMSS is locking VDP read16 access at ${:06x}", addr));
+				}
+				uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
+				_openBus = (uint8_t)(effectiveValue & 0xFF);
+				TraceStartupEvent("TMSS_VDP_R16_BLOCK", addr, effectiveValue, _tmssUnlocked ? 1 : 0);
+				return effectiveValue;
+			}
+
+			if (!_tmssStartupBypassLogged) {
+				_tmssStartupBypassLogged = true;
+				MessageManager::Log(std::format("[Genesis][MMU] TMSS startup compatibility allows VDP read16 at ${:06x}", addr));
+			}
+			TraceStartupEvent("TMSS_VDP_R16_ALLOW", addr, 0, IsStartupWindowActive() ? 1 : 0);
+		}
+		uint16_t effectiveValue = ReadVdpPort(addr);
+		if (_vdp) {
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			uint32_t frame = _vdp->GetFrameCount();
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL16", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return effectiveValue;
+	}
+
+	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
+		if (IsZ80BusGranted()) {
+			uint16_t effectiveValue = ReadZ80Window16(addr);
+			_openBus = (uint8_t)(effectiveValue & 0xFF);
+			return effectiveValue;
+		}
+		uint16_t effectiveValue = 0xFFFF;
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return effectiveValue;
+	}
+
+	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
+		// 68k word access targets even addresses; Genesis I/O registers are byte-mapped on odd addresses.
+		// Keep the high byte neutral and read the register from addr+1.
+		uint8_t effectiveHi = 0x00;
+		uint8_t effectiveLo = ReadIo(addr + 1);
+		uint16_t effectiveValue = ((uint16_t)effectiveHi << 8) | effectiveLo;
+		_openBus = effectiveLo;
+		return effectiveValue;
+	}
+
+	if (addr >= 0xA13000 && addr <= 0xA130FE) [[unlikely]] {
+		uint8_t effectiveHi = Read8(addr);
+		uint8_t effectiveLo = Read8(addr + 1);
+		return ((uint16_t)effectiveHi << 8) | effectiveLo;
+	}
+
+	uint8_t* bridgeSlot = nullptr;
+	uint32_t bridgeIndex = 0;
+	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
+		uint8_t effectiveHi = Read8(addr);
+		uint8_t effectiveLo = Read8(addr + 1);
+		return ((uint16_t)effectiveHi << 8) | effectiveLo;
+	}
+
+	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
+		uint8_t busStatus = GetZ80BusReqReadValue();
+		uint16_t effectiveValue = (uint16_t)(((uint16_t)busStatus << 8) | busStatus);
+		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
+		TrackSegaCdHandshakeTranscript(addr, false, effectiveHighByte);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL16", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
+		_openBus = busStatus;
+		return effectiveValue;
+	}
+
+	if (IsZ80ResetAddress(addr)) [[unlikely]] {
+		uint8_t resetStatus = GetZ80ResetReadValue();
+		uint16_t effectiveValue = (uint16_t)(((uint16_t)resetStatus << 8) | resetStatus);
+		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
+		TrackSegaCdHandshakeTranscript(addr, false, effectiveHighByte);
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffffu) : 0xffffffffu;
+			if (ShouldTraceStartupLoopPoll(frame, pc)) {
+				TraceStartupEvent("LOOP_POLL16", addr, effectiveValue, (uint16_t)(pc & 0xFFFFu));
+			}
+		}
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return effectiveValue;
+	}
+
+	uint16_t effectiveValue = (uint16_t)((_openBus << 8) | _openBus);
+	_openBus = (uint8_t)(effectiveValue & 0xFF);
+	return traceRead16("read16-openbus", addr, effectiveValue);
+}
+
+void GenesisMemoryManager::Write8(uint32_t addr, uint8_t value) {
+	addr &= 0xFFFFFF;
+	auto traceWrite8 = [&](const char* opTag, uint32_t effectiveAddr, uint8_t effectiveValue) {
+		MaybeRecordRuntimeOp(opTag, effectiveAddr, effectiveValue, false, true);
+	};
+	AdvanceZ80BusArbitration(7);
+	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "write8-pre");
+	uint32_t sramOffset = 0;
+	if (addr == 0xA11000 || addr == 0xA11001) [[unlikely]] {
+		traceWrite8("write8-busreq-noop", addr, value);
+		return;
+	}
+	if (addr >= 0xA13000 && addr <= 0xA130FF) [[unlikely]] {
+		if (TryWriteRomBankRegister(addr, value)) {
+			uint8_t effectiveValue = (uint8_t)(value & 0x3F);
+			_openBus = effectiveValue;
+			traceWrite8("write8-bankreg", addr, effectiveValue);
+			return;
+		}
+		if (IsRamControlRegister(addr)) {
+			uint8_t effectiveValue = value;
+			WriteRamControlRegister(effectiveValue);
+			_openBus = effectiveValue;
+			traceWrite8("write8-ramctrl", addr, effectiveValue);
+			return;
+		}
+		traceWrite8("write8-bank-noop", addr, value);
+		return;
+	}
+	if ((addr & 0xFFFFFE) == 0xA14100) [[unlikely]] {
+		// TMSS/cart byte writes are no-op on this path.
+		TraceStartupEvent("TMSS_CART_W8", addr, value, 0);
+		traceWrite8("write8-tmss-cart", addr, value);
+		return;
+	}
+	if (IsTmssCartAddress(addr)) [[unlikely]] {
+		// TMSS/cart byte writes are no-op on this path.
+		TraceStartupEvent("TMSS_CART_W8", addr, value, 0);
+		return;
+	}
+	if (IsTmssAddress(addr)) [[unlikely]] {
+		uint8_t effectiveValue = value;
+		uint32_t slot = addr & 0x03;
+		_segaCdBridgeA140[slot] = effectiveValue;
+		_openBus = effectiveValue;
+		EvaluateTmssUnlockState(true, addr, effectiveValue, true);
+		TraceStartupEvent("TMSS_W8", addr, effectiveValue, _tmssUnlocked ? 1 : (_tmssUnlockPending ? 2 : 0));
+		if (_tmssEnabled) {
+			MessageManager::Log(std::format("[Genesis][MMU] TMSS write ${:06x}=${:02x} state='{}{}{}{}' unlocked={} pending={} delay={}",
+				addr,
+				effectiveValue,
+				(char)_segaCdBridgeA140[0],
+				(char)_segaCdBridgeA140[1],
+				(char)_segaCdBridgeA140[2],
+				(char)_segaCdBridgeA140[3],
+				_tmssUnlocked ? "true" : "false",
+				_tmssUnlockPending ? 1 : 0,
+				_tmssUnlockDelayMclk));
+		}
+		return;
+	}
+
+	if (TryGetSramOffset(addr, sramOffset)) [[unlikely]] {
+		if (!_ramWritable) {
+			_openBus = value;
+			traceWrite8("write8-sram-blocked", addr, value);
+			return;
+		}
+
+		uint8_t effectiveValue = value;
+		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Write);
+		_saveRam[sramOffset] = effectiveValue;
+		_openBus = effectiveValue;
+		traceWrite8("write8-sram", addr, effectiveValue);
+		return;
+	}
+
+	if (addr < 0x400000) [[likely]] {
+		uint8_t effectiveValue = value;
+		_openBus = effectiveValue;
+		TrackSegaCdTranscript(addr, true, effectiveValue);
+		traceWrite8("write8-rom-noop", addr, effectiveValue);
+		return;
+	}
+
+	if (addr >= 0xE00000) [[likely]] {
+		uint32_t offset = addr & 0xFFFF;
+		uint8_t effectiveValue = value;
+		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, effectiveValue, MemoryOperationType::Write);
+		_workRam[offset] = effectiveValue;
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			if (_startupProfilePreferNexenBusHandoff && frame == 0u) {
+				frame = 1u;
+			}
+			uint16_t line = _vdp->GetScanline();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
+			if (ShouldLogNexenWramTrace(frame, addr)) {
+				LogNexenWramTrace(frame, line, addr, effectiveValue, pc, _masterClock);
+			}
+			TraceWramPcTransitionOrdering(frame, line, addr, effectiveValue, pc);
+		}
+		_openBus = effectiveValue;
+		traceWrite8("write8-wram", addr, effectiveValue);
+		return;
+	}
+
+	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
+		uint8_t effectiveValue = value;
+		static uint64_t vdpWrite8GateCount = 0;
+		if (vdpWrite8GateCount < 64) {
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			MessageManager::Log(std::format("[Genesis][MMU] VDP write8 gate #{} addr=${:06x} val=${:02x} pc=${:06x}",
+				vdpWrite8GateCount + 1,
+				addr,
+				effectiveValue,
+				pc));
+		}
+		vdpWrite8GateCount++;
+		if (IsTmssVdpLockEnforced()) {
+			if (!IsTmssLockedVdpWriteAllowed(addr)) {
+				if (!_tmssVdpBlockLogged) {
+					_tmssVdpBlockLogged = true;
+					MessageManager::Log(std::format("[Genesis][MMU] TMSS is locking VDP write8 access at ${:06x}", addr));
+				}
+				TraceStartupEvent("TMSS_VDP_W8_BLOCK", addr, effectiveValue, 0);
+				_openBus = effectiveValue;
+				return;
+			}
+
+			if (!_tmssStartupBypassLogged) {
+				_tmssStartupBypassLogged = true;
+				MessageManager::Log(std::format("[Genesis][MMU] TMSS startup compatibility allows VDP write8 at ${:06x}", addr));
+			}
+			TraceStartupEvent("TMSS_VDP_W8_ALLOW", addr, effectiveValue, IsStartupWindowActive() ? 1 : 0);
+		}
+		uint32_t port = addr & 0x1F;
+		if (_vdp && port < 0x04) {
+			TraceStartupEvent("VDP_DATA_W", addr, effectiveValue, (uint16_t)port);
+			_vdp->WriteDataPortByte(effectiveValue, (addr & 1u) == 0u);
+		} else if (_vdp && port < 0x08) {
+			GenesisVdpState stateBeforeWrite = _vdp->GetState();
+			TraceStartupEvent("VDP_CTRL_W", addr, effectiveValue, (uint16_t)port);
+			_vdp->WriteControlPortByte(effectiveValue, (addr & 1u) == 0u);
+			GenesisVdpState stateAfterWrite = _vdp->GetState();
+			for (uint32_t reg = 0; reg < 24; reg++) {
+				uint8_t oldValue = stateBeforeWrite.Registers[reg];
+				uint8_t newValue = stateAfterWrite.Registers[reg];
+				if (oldValue != newValue) {
+					uint16_t packed = (uint16_t)(((uint16_t)oldValue << 8) | newValue);
+					TraceStartupEvent("VDP_REG_W", 0xC00004, packed, (uint16_t)reg);
+				}
+			}
+			if (stateBeforeWrite.StatusRegister != stateAfterWrite.StatusRegister) {
+				TraceStartupEvent("VDP_STAT_W", 0xC00004, stateAfterWrite.StatusRegister, (uint16_t)(stateBeforeWrite.StatusRegister ^ stateAfterWrite.StatusRegister));
+			}
+		} else {
+			// Non data/control VDP byte writes keep legacy behavior.
+			WriteVdpPort(addr, (uint16_t)effectiveValue | ((uint16_t)effectiveValue << 8));
+		}
+		_openBus = effectiveValue;
+		traceWrite8("write8-vdp", addr, effectiveValue);
+		return;
+	}
+
+	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
+		uint8_t effectiveValue = value;
+		static uint64_t z80WindowWriteCount = 0;
+		z80WindowWriteCount++;
+		if (IsZ80BusGranted()) {
+			uint32_t z80Addr = addr & 0xFFFFu;
+			WriteZ80Window8(addr, effectiveValue);
+			bool traceAccess = z80WindowWriteCount <= 256 || (z80WindowWriteCount % 4096) == 0 || (z80Addr >= 0xfff0);
+			if (traceAccess) {
+				uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+				MessageManager::Log(std::format("[Genesis][MMU] Z80 write #{} addr=${:06x} z80=${:04x} val=${:02x} pc=${:06x} busReq={} reset={} gate=allow",
+					z80WindowWriteCount,
+					addr,
+					z80Addr,
+					effectiveValue,
+					pc,
+					_z80BusRequest ? 1 : 0,
+					_z80Reset ? 1 : 0));
+			}
+		} else if (z80WindowWriteCount <= 256 || (z80WindowWriteCount % 4096) == 0) {
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			MessageManager::Log(std::format("[Genesis][MMU] Z80 write #{} addr=${:06x} val=${:02x} pc=${:06x} busReq={} reset={} gate=blocked",
+				z80WindowWriteCount,
+				addr,
+				effectiveValue,
+				pc,
+				_z80BusRequest ? 1 : 0,
+				_z80Reset ? 1 : 0));
+		}
+		_openBus = effectiveValue;
+		return;
+	}
+
+	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
+		uint8_t effectiveValue = value;
+		WriteIo(addr, effectiveValue);
+		traceWrite8("write8-io", addr, effectiveValue);
+		return;
+	}
+
+	if (TryWriteRomBankRegister(addr, value)) [[unlikely]] {
+		uint8_t effectiveValue = (uint8_t)(value & 0x3F);
+		_openBus = effectiveValue;
+		traceWrite8("write8-bankreg", addr, effectiveValue);
+		return;
+	}
+
+	if (IsRamControlRegister(addr)) [[unlikely]] {
+		uint8_t effectiveValue = value;
+		WriteRamControlRegister(effectiveValue);
+		_openBus = effectiveValue;
+		traceWrite8("write8-ramctrl", addr, effectiveValue);
+		return;
+	}
+
+	uint8_t* bridgeSlot = nullptr;
+	uint32_t bridgeIndex = 0;
+	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
+		if (!IsBridgeModeledWriteAddress(addr)) {
+			return;
+		}
+
+		uint8_t effectiveValue = value;
+		if (Is32xCoprocControlAddress(addr)) {
+			effectiveValue = Normalize32xCoprocControlValue(addr, effectiveValue);
+		} else if (Is32xHostToolingControlAddress(addr)) {
+			effectiveValue = Normalize32xHostControlValue(addr, effectiveValue);
+		}
+		bridgeSlot[bridgeIndex] = effectiveValue;
+		_openBus = effectiveValue;
+		if (IsSegaCdSubCpuControlAddress(addr)) {
+			UpdateSegaCdSubCpuControl(effectiveValue);
+		} else if (IsSegaCdAudioDataAddress(addr)) {
+			UpdateSegaCdAudioPath(addr, effectiveValue);
+		} else if (IsSegaCdToolingControlAddress(addr)) {
+			UpdateSegaCdToolingContract(addr, effectiveValue);
+		} else if (Is32xSh2ControlAddress(addr)) {
+			Update32xSh2Staging(addr, effectiveValue);
+		} else if (Is32xCompositionControlAddress(addr)) {
+			Update32xCompositionStaging(addr, effectiveValue);
+		} else if (Is32xToolingControlAddress(addr)) {
+			Update32xToolingContract(addr, effectiveValue);
+		} else if (Is32xCoprocControlAddress(addr)) {
+			Update32xCoprocContract(addr, effectiveValue);
+		} else if (Is32xHostToolingControlAddress(addr)) {
+			Update32xHostToolingContract(addr, effectiveValue);
+		}
+		TrackSegaCdTranscript(addr, true, effectiveValue);
+		traceWrite8("write8-bridge", addr, effectiveValue);
+		return;
+	}
+
+	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
+		uint8_t effectiveValue = value;
+		if (!_z80LatchOnlyHighByteWrites || !(addr & 0x01)) {
+			static uint64_t z80BusReqWriteCount = 0;
+			z80BusReqWriteCount++;
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			bool request = (effectiveValue & 0x01) != 0;
+			SetZ80BusRequest(request, true, addr, pc, "write8-busreq");
+			if ((pc >= 0x071b00 && pc <= 0x071cff) || z80BusReqWriteCount <= 256 || (z80BusReqWriteCount % 2048) == 0) {
+				MessageManager::Log(std::format("[Genesis][MMU] Z80 busreq write8 #{} addr=${:06x} val=${:02x} pc=${:06x} req={} reset={} ack={} reqDelay={} resumeDelay={}",
+					z80BusReqWriteCount,
+					addr,
+					effectiveValue,
+					pc,
+					request ? 1 : 0,
+					_z80Reset ? 1 : 0,
+					_z80BusAck ? 1 : 0,
+					_z80BusReqDelayMclk,
+					_z80ResumeDelayMclk));
+			}
+		}
+		TrackSegaCdHandshakeTranscript(addr, true, effectiveValue);
+		traceWrite8("write8-z80-busreq", addr, effectiveValue);
+		return;
+	}
+
+	if (IsZ80ResetAddress(addr)) [[unlikely]] {
+		uint8_t effectiveValue = value;
+		if (!_z80LatchOnlyHighByteWrites || !(addr & 0x01)) {
+			static uint64_t z80ResetWriteCount = 0;
+			z80ResetWriteCount++;
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			bool resetAsserted = !(effectiveValue & 0x01);
+			SetZ80Reset(resetAsserted, true, addr, pc, "write8-reset");
+			if ((pc >= 0x071b00 && pc <= 0x071cff) || z80ResetWriteCount <= 256 || (z80ResetWriteCount % 2048) == 0) {
+				MessageManager::Log(std::format("[Genesis][MMU] Z80 reset write8 #{} addr=${:06x} val=${:02x} pc=${:06x} reset={} req={} ack={} reqDelay={} resumeDelay={}",
+					z80ResetWriteCount,
+					addr,
+					effectiveValue,
+					pc,
+					resetAsserted ? 1 : 0,
+					_z80BusRequest ? 1 : 0,
+					_z80BusAck ? 1 : 0,
+					_z80BusReqDelayMclk,
+					_z80ResumeDelayMclk));
+			}
+		}
+		TrackSegaCdHandshakeTranscript(addr, true, effectiveValue);
+		traceWrite8("write8-z80-reset", addr, effectiveValue);
+		return;
+	}
+
+	// Unmapped/ROM area — ignore writes (no mapper for now)
+	uint8_t effectiveValue = value;
+	_openBus = effectiveValue;
+	traceWrite8("write8-openbus", addr, effectiveValue);
+}
+
+void GenesisMemoryManager::Write16(uint32_t addr, uint16_t value) {
+	addr &= 0xFFFFFE;
+	auto traceWrite16 = [&](const char* opTag, uint32_t effectiveAddr, uint16_t effectiveValue) {
+		MaybeRecordRuntimeOp(opTag, effectiveAddr, effectiveValue, true, true);
+	};
+	AdvanceZ80BusArbitration(7);
+	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "write16-pre");
+	if (addr == 0xA11000) [[unlikely]] {
+		traceWrite16("write16-busreq-noop", addr, value);
+		return;
+	}
+	if (addr == 0xA14100) [[unlikely]] {
+		// TMSS/cart word writes are no-op.
+		TraceStartupEvent("TMSS_CART_W16", addr, value, 0);
+		traceWrite16("write16-tmss-cart", addr, value);
+		return;
+	}
+	if (IsTmssAddress(addr)) [[unlikely]] {
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		Write8(addr, effectiveHighByte);
+		Write8(addr + 1, effectiveLowByte);
+		return;
+	}
+	if (HasSaveRam() && addr >= _sramStart && addr <= _sramEnd) [[unlikely]] {
+		if (!_ramEnable || !_ramWritable) {
+			uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+			_openBus = effectiveLowByte;
+			return;
+		}
+
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		Write8(addr, effectiveHighByte);
+		Write8(addr + 1, effectiveLowByte);
+		return;
+	}
+
+	if (addr >= 0xA13000 && addr <= 0xA130FE) [[unlikely]] {
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		Write8(addr, effectiveHighByte);
+		Write8(addr + 1, effectiveLowByte);
+		return;
+	}
+
+	if (addr < 0x400000) [[likely]] {
+		uint16_t effectiveValue = value;
+		uint8_t effectiveLowByte = (uint8_t)(effectiveValue & 0xFF);
+		_openBus = effectiveLowByte;
+		traceWrite16("write16-rom-noop", addr, effectiveValue);
+		return;
+	}
+
+	if (addr >= 0xE00000) [[likely]] {
+		uint32_t offset = addr & 0xFFFF;
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		_emu->ProcessMemoryWrite<CpuType::Genesis>(addr, effectiveHighByte, MemoryOperationType::Write);
+		_workRam[offset] = effectiveHighByte;
+		_workRam[(offset + 1) & 0xFFFF] = effectiveLowByte;
+		if (_vdp) {
+			uint32_t frame = _vdp->GetFrameCount();
+			if (_startupProfilePreferNexenBusHandoff && frame == 0u) {
+				frame = 1u;
+			}
+			uint16_t line = _vdp->GetScanline();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0;
+			if (ShouldLogNexenWramTrace(frame, addr)) {
+				LogNexenWramTrace(frame, line, addr, effectiveHighByte, pc, _masterClock);
+			}
+			TraceWramPcTransitionOrdering(frame, line, addr, effectiveHighByte, pc);
+			uint32_t lowAddress = (addr + 1) & 0xFFFFFF;
+			if (ShouldLogNexenWramTrace(frame, lowAddress)) {
+				LogNexenWramTrace(frame, line, lowAddress, effectiveLowByte, pc, _masterClock);
+			}
+			TraceWramPcTransitionOrdering(frame, line, lowAddress, effectiveLowByte, pc);
+		}
+		_openBus = effectiveLowByte;
+		traceWrite16("write16-wram", addr, value);
+		return;
+	}
+
+	if (addr >= 0xC00000 && addr <= 0xC0001F) [[unlikely]] {
+		uint16_t effectiveValue = value;
+		uint8_t effectiveLowByte = (uint8_t)(effectiveValue & 0xFF);
+		static uint64_t vdpWrite16GateCount = 0;
+		if (vdpWrite16GateCount < 128) {
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			MessageManager::Log(std::format("[Genesis][MMU] VDP write16 gate #{} addr=${:06x} val=${:04x} pc=${:06x}",
+				vdpWrite16GateCount + 1,
+				addr,
+				effectiveValue,
+				pc));
+		}
+		vdpWrite16GateCount++;
+		if (IsTmssVdpLockEnforced()) {
+			if (!IsTmssLockedVdpWriteAllowed(addr)) {
+				TraceStartupEvent("TMSS_VDP_W16_BLOCK", addr, effectiveValue, 0);
+				_openBus = effectiveLowByte;
+				return;
+			}
+
+			if (!_tmssStartupBypassLogged) {
+				_tmssStartupBypassLogged = true;
+				MessageManager::Log(std::format("[Genesis][MMU] TMSS startup compatibility allows VDP write16 at ${:06x}", addr));
+			}
+			TraceStartupEvent("TMSS_VDP_W16_ALLOW", addr, effectiveValue, IsStartupWindowActive() ? 1 : 0);
+		}
+		WriteVdpPort(addr, effectiveValue);
+		_openBus = effectiveLowByte;
+		traceWrite16("write16-vdp", addr, effectiveValue);
+		return;
+	}
+
+	if (addr >= 0xA00000 && addr <= 0xA0FFFF) [[unlikely]] {
+		uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		if (IsZ80BusGranted()) {
+			WriteZ80Window8(addr, effectiveHighByte);
+			WriteZ80Window8(addr + 1, effectiveLowByte);
+		}
+		_openBus = effectiveLowByte;
+		return;
+	}
+
+	if (addr >= 0xA10000 && addr <= 0xA1001F) [[unlikely]] {
+		uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+		// 68k word writes hit even addresses; only the low byte maps to the odd-byte I/O register.
+		WriteIo(addr + 1, effectiveLowByte);
+		_openBus = effectiveLowByte;
+		return;
+	}
+
+	uint8_t* bridgeSlot = nullptr;
+	uint32_t bridgeIndex = 0;
+	if (TryGetSegaCdBridgeSlot(addr, bridgeSlot, bridgeIndex)) [[unlikely]] {
+		uint16_t effectiveValue = value;
+		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(effectiveValue & 0xFF);
+		Write8(addr, effectiveHighByte);
+		Write8(addr + 1, effectiveLowByte);
+		return;
+	}
+
+	if (IsZ80BusReqAddress(addr)) [[unlikely]] {
+		uint16_t effectiveValue = value;
+		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
+		bool request = (effectiveHighByte & 0x01) != 0;
+		static uint64_t z80BusReqWrite16Count = 0;
+		z80BusReqWrite16Count++;
+		uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+		SetZ80BusRequest(request, true, addr, pc, "write16-busreq");
+		if ((pc >= 0x071b00 && pc <= 0x071cff) || z80BusReqWrite16Count <= 256 || (z80BusReqWrite16Count % 2048) == 0) {
+			MessageManager::Log(std::format("[Genesis][MMU] Z80 busreq write16 #{} addr=${:06x} val=${:04x} hi=${:02x} pc=${:06x} req={} reset={} ack={} reqDelay={} resumeDelay={}",
+				z80BusReqWrite16Count,
+				addr,
+				effectiveValue,
+				effectiveHighByte,
+				pc,
+				request ? 1 : 0,
+				_z80Reset ? 1 : 0,
+				_z80BusAck ? 1 : 0,
+				_z80BusReqDelayMclk,
+				_z80ResumeDelayMclk));
+		}
+		TrackSegaCdHandshakeTranscript(addr, true, effectiveHighByte);
+		return;
+	}
+
+	if (IsZ80ResetAddress(addr)) [[unlikely]] {
+		uint16_t effectiveValue = value;
+		uint8_t effectiveHighByte = (uint8_t)(effectiveValue >> 8);
+		uint8_t effectiveLowByte = (uint8_t)(effectiveValue & 0xFF);
+		bool resetAsserted = !(effectiveHighByte & 0x01);
+		static uint64_t z80ResetWrite16Count = 0;
+		z80ResetWrite16Count++;
+		uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+		SetZ80Reset(resetAsserted, true, addr, pc, "write16-reset");
+		if ((pc >= 0x071b00 && pc <= 0x071cff) || z80ResetWrite16Count <= 256 || (z80ResetWrite16Count % 2048) == 0) {
+			MessageManager::Log(std::format("[Genesis][MMU] Z80 reset write16 #{} addr=${:06x} val=${:04x} hi=${:02x} pc=${:06x} reset={} req={} ack={} reqDelay={} resumeDelay={}",
+				z80ResetWrite16Count,
+				addr,
+				effectiveValue,
+				effectiveHighByte,
+				pc,
+				resetAsserted ? 1 : 0,
+				_z80BusRequest ? 1 : 0,
+				_z80BusAck ? 1 : 0,
+				_z80BusReqDelayMclk,
+				_z80ResumeDelayMclk));
+		}
+		_openBus = effectiveLowByte;
+		TrackSegaCdHandshakeTranscript(addr, true, effectiveHighByte);
+		return;
+	}
+
+	uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+	_openBus = effectiveLowByte;
+}
+
+// VDP port access
+uint16_t GenesisMemoryManager::ReadVdpPort(uint32_t addr) {
+	uint32_t port = addr & 0x1F;
+	if (port < 0x04) {
+		uint16_t effectiveValue = _vdp->ReadDataPort();
+		TraceStartupEvent("VDP_DATA_R", addr, effectiveValue, port);
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return effectiveValue;
+	} else if (port < 0x08) {
+		GenesisVdpState stateBeforeRead = _vdp->GetState();
+		uint16_t effectiveValue = _vdp->ReadControlPort();
+		static uint64_t controlPortReadCount = 0;
+		controlPortReadCount++;
+		if (controlPortReadCount <= 128 || (controlPortReadCount % 4096) == 0) {
+			GenesisVdpState vdpState = _vdp->GetState();
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			uint8_t statusLo = (uint8_t)(effectiveValue & 0xff);
+			bool vblankBit = (statusLo & (uint8_t)VdpStatus::VBlankFlag) != 0;
+			bool displayEnabled = (vdpState.Registers[1] & 0x40) != 0;
+			MessageManager::Log(std::format("[Genesis][MMU] CtrlPortRead #{} addr=${:06x} pc=${:06x} status=${:04x} lo=${:02x} vb={} display={} vc={} hc={} r1=${:02x}",
+				controlPortReadCount,
+				addr & 0x00ffffff,
+				pc & 0x00ffffff,
+				effectiveValue,
+				statusLo,
+				vblankBit ? 1 : 0,
+				displayEnabled ? 1 : 0,
+				vdpState.VCounter,
+				vdpState.HCounter,
+				vdpState.Registers[1]));
+			MessageManager::Log(std::format("[Genesis][MMU] CtrlPortReadState #{} beforeStatus=${:04x} afterStatus=${:04x} beforePending={} latchedPending={} afterPending={} beforeVc={} afterVc={} beforeHc={} afterHc={}",
+				controlPortReadCount,
+				stateBeforeRead.StatusRegister,
+				vdpState.StatusRegister,
+				(stateBeforeRead.StatusRegister & VdpStatus::VIntPending) ? 1 : 0,
+				(effectiveValue & VdpStatus::VIntPending) ? 1 : 0,
+				(vdpState.StatusRegister & VdpStatus::VIntPending) ? 1 : 0,
+				stateBeforeRead.VCounter,
+				vdpState.VCounter,
+				stateBeforeRead.HCounter,
+				vdpState.HCounter));
+		}
+		GenesisVdpState stateAfterRead = _vdp->GetState();
+		if (stateAfterRead.FrameCount > 0u) {
+			TraceStartupEvent("VDP_CTRL_R", addr, effectiveValue, (uint16_t)(stateBeforeRead.StatusRegister ^ stateAfterRead.StatusRegister));
+		}
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return effectiveValue;
+	} else if (port < 0x10) {
+		uint16_t effectiveValue = _vdp->ReadHVCounter();
+		TraceStartupEvent("VDP_HV_R", addr, effectiveValue, port);
+		_openBus = (uint8_t)(effectiveValue & 0xFF);
+		return effectiveValue;
+	}
+	uint16_t effectiveValue = _openBus;
+	_openBus = (uint8_t)(effectiveValue & 0xFF);
+	return effectiveValue;
+}
+
+void GenesisMemoryManager::WriteVdpPort(uint32_t addr, uint16_t value) {
+	uint32_t port = addr & 0x1F;
+	uint16_t effectiveValue = value;
+	uint8_t effectiveHighByte = (uint8_t)(value >> 8);
+	uint8_t effectiveLowByte = (uint8_t)(value & 0xFF);
+	static uint64_t vdpPortWriteCount = 0;
+	static bool loggedFirstNonZeroDataWrite = false;
+	static bool loggedFirstNonZeroControlWrite = false;
+	vdpPortWriteCount++;
+
+	if (port < 0x04) {
+		if (!loggedFirstNonZeroDataWrite && effectiveValue != 0) {
+			loggedFirstNonZeroDataWrite = true;
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			MessageManager::Log(std::format("[Genesis][MMU] First non-zero VDP data write #{} addr=${:06x} port=${:02x} word=${:04x} hi=${:02x} lo=${:02x} pc=${:06x}",
+				vdpPortWriteCount,
+				addr & 0x00ffffff,
+				port,
+				effectiveValue,
+				effectiveHighByte,
+				effectiveLowByte,
+				pc));
+		}
+		TraceStartupEvent("VDP_DATA_W", addr, effectiveValue, port);
+		_vdp->WriteDataPort(effectiveValue);
+	} else if (port < 0x08) {
+		GenesisVdpState stateBeforeWrite = _vdp->GetState();
+		if (!loggedFirstNonZeroControlWrite && effectiveValue != 0) {
+			loggedFirstNonZeroControlWrite = true;
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			MessageManager::Log(std::format("[Genesis][MMU] First non-zero VDP control write #{} addr=${:06x} port=${:02x} word=${:04x} hi=${:02x} lo=${:02x} pc=${:06x}",
+				vdpPortWriteCount,
+				addr & 0x00ffffff,
+				port,
+				effectiveValue,
+				effectiveHighByte,
+				effectiveLowByte,
+				pc));
+		}
+		TraceStartupEvent("VDP_CTRL_W", addr, effectiveValue, port);
+		_vdp->WriteControlPort(effectiveValue);
+		GenesisVdpState stateAfterWrite = _vdp->GetState();
+		for (uint32_t reg = 0; reg < 24; reg++) {
+			uint8_t oldValue = stateBeforeWrite.Registers[reg];
+			uint8_t newValue = stateAfterWrite.Registers[reg];
+			if (oldValue != newValue) {
+				uint16_t packed = (uint16_t)(((uint16_t)oldValue << 8) | newValue);
+				TraceStartupEvent("VDP_REG_W", 0xC00004, packed, (uint16_t)reg);
+			}
+		}
+		if (stateBeforeWrite.StatusRegister != stateAfterWrite.StatusRegister) {
+			TraceStartupEvent("VDP_STAT_W", 0xC00004, stateAfterWrite.StatusRegister, (uint16_t)(stateBeforeWrite.StatusRegister ^ stateAfterWrite.StatusRegister));
+		}
+	} else if (port >= 0x11 && port < 0x14) {
+		// PSG write — SN76489 accepts byte writes via top byte of word
+		if (_psg) {
+			_psg->Write(effectiveHighByte);
+		}
+	}
+	_openBus = effectiveLowByte;
+}
+
+uint8_t GenesisMemoryManager::ReadVersionRegister() const {
+	return BuildVersionRegister(_console ? _console->GetRegion() : ConsoleRegion::Ntsc);
+}
+
+void GenesisMemoryManager::SyncIoPadRuntimeState(uint8_t port) {
+	if (port > 1) {
+		return;
+	}
+
+	if (_controlManager) {
+		_ioState.ThState[port] = _controlManager->GetThState(port);
+		_ioState.ThCount[port] = _controlManager->GetThCount(port);
+	} else {
+		_ioState.ThState[port] = 0;
+		_ioState.ThCount[port] = 0;
+	}
+}
+
+uint8_t GenesisMemoryManager::ReadIoDataPort(uint8_t port) {
+	if (port < 2) {
+		uint8_t value = _controlManager ? _controlManager->ReadDataPort(port) : 0x7Fu;
+		_ioState.DataPort[port] = (uint8_t)(value & 0x7Fu);
+		SyncIoPadRuntimeState(port);
+		return _ioState.DataPort[port];
+	}
+
+	uint8_t ctrl = (uint8_t)(_ioState.CtrlPort[2] & 0x7Fu);
+	uint8_t inputData = 0x7Fu;
+	uint8_t outputData = (uint8_t)(_ioState.DataPort[2] & ctrl);
+	uint8_t inputBits = (uint8_t)(inputData & (uint8_t)(~ctrl));
+	uint8_t value = (uint8_t)((outputData | inputBits) & 0x7Fu);
+	_ioState.DataPort[2] = value;
+	return value;
+}
+
+uint8_t GenesisMemoryManager::ReadIoControlPort(uint8_t port) {
+	if (port > 2) {
+		return 0;
+	}
+
+	if (_controlManager && port < 2) {
+		_controlManager->WriteControlPort(port, _ioState.CtrlPort[port]);
+		SyncIoPadRuntimeState(port);
+	}
+
+	return (uint8_t)(_ioState.CtrlPort[port] & 0x7Fu);
+}
+
+void GenesisMemoryManager::WriteIoDataPort(uint8_t port, uint8_t value) {
+	if (port > 2) {
+		return;
+	}
+
+	uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+	if (_controlManager && port < 2) {
+		_controlManager->WriteDataPort(port, effectiveValue);
+		_ioState.DataPort[port] = _controlManager->GetDataPortWriteLatch(port);
+		SyncIoPadRuntimeState(port);
+	} else {
+		_ioState.DataPort[port] = effectiveValue;
+		if (port < 2) {
+			_ioState.ThState[port] = 0;
+			_ioState.ThCount[port] = 0;
+		}
+	}
+}
+
+void GenesisMemoryManager::WriteIoControlPort(uint8_t port, uint8_t value) {
+	if (port > 2) {
+		return;
+	}
+
+	uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+	_ioState.CtrlPort[port] = effectiveValue;
+	if (_controlManager && port < 2) {
+		_controlManager->WriteControlPort(port, effectiveValue);
+		SyncIoPadRuntimeState(port);
+	}
+}
+
+void GenesisMemoryManager::UpdateYmStatusForDataWrite(uint16_t regIndex, uint8_t value) {
+	uint16_t normalizedReg = (uint16_t)(regIndex & 0x01FFu);
+	if (normalizedReg == 0x024u) {
+		_ymTimerAValue = (uint16_t)((_ymTimerAValue & 0x0003u) | ((uint16_t)value << 2));
+	}
+
+	if (normalizedReg == 0x025u) {
+		_ymTimerAValue = (uint16_t)((_ymTimerAValue & 0x03FCu) | (value & 0x03u));
+	}
+
+	if (normalizedReg == 0x026u) {
+		_ymTimerBValue = value;
+	}
+
+	if (normalizedReg == 0x027u) {
+		_ymTimerALoad = (value & 0x01u) != 0u;
+		_ymTimerBLoad = (value & 0x02u) != 0u;
+		_ymTimerAIrqEnable = (value & 0x04u) != 0u;
+		_ymTimerBIrqEnable = (value & 0x08u) != 0u;
+
+		if (_ymTimerALoad) {
+			uint16_t period = (uint16_t)(1024u - (_ymTimerAValue & 0x03FFu));
+			_ymTimerARemaining = period == 0 ? 1024u : period;
+			_ymTimerAAccumMclk = 0;
+		}
+
+		if (_ymTimerBLoad) {
+			uint16_t period = (uint16_t)(256u - _ymTimerBValue);
+			_ymTimerBRemaining = period == 0 ? 256u : period;
+			_ymTimerBAccumMclk = 0;
+		}
+
+		if ((value & 0x10u) != 0u) {
+			_ymStatusFlags &= 0xFEu;
+		}
+		if ((value & 0x20u) != 0u) {
+			_ymStatusFlags &= 0xFDu;
+		}
+	}
+
+	if (normalizedReg == 0x028u) {
+		_ymLastKeyOnValue = value;
+		uint8_t rawChannel = (uint8_t)(value & 0x07u);
+		uint8_t channelIndex = 0xFFu;
+		switch (rawChannel) {
+			case 0: channelIndex = 0; break;
+			case 1: channelIndex = 1; break;
+			case 2: channelIndex = 2; break;
+			case 4: channelIndex = 3; break;
+			case 5: channelIndex = 4; break;
+			case 6: channelIndex = 5; break;
+		}
+
+		if (channelIndex < 6) {
+			uint8_t channelMask = (uint8_t)(1u << channelIndex);
+			if ((value & 0xF0u) != 0u) {
+				_ymKeyOnMask |= channelMask;
+			} else {
+				_ymKeyOnMask = (uint8_t)(_ymKeyOnMask & (uint8_t)(0xFFu ^ channelMask));
+			}
+		}
+	}
+}
+
+void GenesisMemoryManager::AdvanceYmTimers(uint32_t masterClocks) {
+	if (masterClocks == 0) {
+		return;
+	}
+
+	uint64_t ymMasterClocks = (uint64_t)masterClocks * 7u;
+
+	if (_ymTimerALoad) {
+		_ymTimerAAccumMclk += ymMasterClocks;
+		uint64_t aPeriodTicks = 1024u - (_ymTimerAValue & 0x03FFu);
+		if (aPeriodTicks == 0) {
+			aPeriodTicks = 1024u;
+		}
+		uint64_t aPeriod = aPeriodTicks * 24u;
+		while (_ymTimerAAccumMclk >= aPeriod) {
+			_ymTimerAAccumMclk -= aPeriod;
+			_ymTimerARemaining = (uint16_t)aPeriodTicks;
+			if (_ymTimerAIrqEnable) {
+				_ymStatusFlags |= 0x01u;
+			}
+		}
+	}
+
+	if (_ymTimerBLoad) {
+		_ymTimerBAccumMclk += ymMasterClocks;
+		uint64_t bPeriodTicks = 256u - _ymTimerBValue;
+		if (bPeriodTicks == 0) {
+			bPeriodTicks = 256u;
+		}
+		uint64_t bPeriod = bPeriodTicks * 384u;
+		while (_ymTimerBAccumMclk >= bPeriod) {
+			_ymTimerBAccumMclk -= bPeriod;
+			_ymTimerBRemaining = (uint16_t)bPeriodTicks;
+			if (_ymTimerBIrqEnable) {
+				_ymStatusFlags |= 0x02u;
+			}
+		}
+	}
+}
+
+uint8_t GenesisMemoryManager::BuildYmStatusByte() const {
+	uint8_t status = (uint8_t)(_ymStatusFlags & 0x03u);
+	if (_masterClock < _ymBusyUntilMclk) {
+		status |= 0x80u;
+	}
+	return status;
+}
+
+uint8_t GenesisMemoryManager::ReadZ80Window8(uint32_t addr) {
+	uint16_t z80Addr = (uint16_t)(addr & 0xFFFFu);
+
+	if (z80Addr < 0x4000u) {
+		return _z80Ram[z80Addr & 0x1FFFu];
+	}
+
+	if (z80Addr < 0x6000u) {
+		// YM2612 status read ($4000/$4001 = part0, $4002/$4003 = part1).
+		return BuildYmStatusByte();
+	}
+
+	if (z80Addr < 0x8000u) {
+		if ((z80Addr & 0xFF00u) == 0x7F00u) {
+			uint8_t low = (uint8_t)(z80Addr & 0x00FFu);
+			if (low == 0x11u) {
+				return 0xFF;
+			}
+
+			uint32_t vdpAddr = 0xC00000u | low;
+			if (_vdp) {
+				return _vdp->ReadPortByte(vdpAddr);
+			}
+		}
+		return 0xFF;
+	}
+
+	uint32_t physAddr = ((uint32_t)_z80BankReg << 15) | (z80Addr & 0x7FFFu);
+	if (_prgRom && _prgRomSize > 0) {
+		return _prgRom[TranslateRomAddress(physAddr)];
+	}
+	return 0xFF;
+}
+
+uint16_t GenesisMemoryManager::ReadZ80Window16(uint32_t addr) {
+	uint16_t z80Addr = (uint16_t)(addr & 0xFFFFu);
+	if (z80Addr < 0x3FFFu) {
+		uint8_t hi = _z80Ram[z80Addr & 0x1FFFu];
+		uint8_t lo = _z80Ram[(z80Addr + 1u) & 0x1FFFu];
+		return (uint16_t)(((uint16_t)hi << 8) | lo);
+	}
+
+	if (z80Addr >= 0x8000u && z80Addr < 0xFFFFu && _prgRom && _prgRomSize > 0) {
+		uint32_t physAddr = ((uint32_t)_z80BankReg << 15) | (z80Addr & 0x7FFFu);
+		uint32_t mappedAddrHi = 0;
+		uint32_t mappedAddrLo = 0;
+		TranslateRomAddressPair(physAddr, mappedAddrHi, mappedAddrLo);
+		uint8_t hi = _prgRom[mappedAddrHi];
+		uint8_t lo = _prgRom[mappedAddrLo];
+		return (uint16_t)(((uint16_t)hi << 8) | lo);
+	}
+
+	uint8_t hi = ReadZ80Window8(addr);
+	uint8_t lo = ReadZ80Window8(addr + 1u);
+	return (uint16_t)(((uint16_t)hi << 8) | lo);
+}
+
+void GenesisMemoryManager::WriteZ80Window8(uint32_t addr, uint8_t value) {
+	uint16_t z80Addr = (uint16_t)(addr & 0xFFFFu);
+
+	if (z80Addr < 0x4000u) {
+		_z80Ram[z80Addr & 0x1FFFu] = value;
+		return;
+	}
+
+	if (z80Addr < 0x6000u) {
+		// YM2612 writes: even lanes latch address, odd lanes write data.
+		uint8_t part = (uint8_t)((z80Addr >> 1) & 0x01u);
+		bool isAddressWrite = (z80Addr & 0x01u) == 0u;
+		uint64_t alignedClock = ((_masterClock + YmBusyAlignCycles - 1u) / YmBusyAlignCycles) * YmBusyAlignCycles;
+		_ymBusyUntilMclk = alignedClock + YmBusyWindowCycles;
+		if (isAddressWrite) {
+			if (part == 0u) {
+				_ymAddressPort0 = value;
+			} else {
+				_ymAddressPort1 = value;
+			}
+		} else {
+			uint16_t regIndex = (uint16_t)(part == 0u ? _ymAddressPort0 : (0x100u | _ymAddressPort1));
+			regIndex &= 0x01FFu;
+			_ymRegisters[regIndex] = value;
+			UpdateYmStatusForDataWrite(regIndex, value);
+		}
+		return;
+	}
+
+	if (z80Addr < 0x8000u) {
+		if ((z80Addr & 0xFF00u) == 0x6000u) {
+			// 9-bit Z80 bank register shift latch: incoming bit enters bit8.
+			_z80BankReg = (uint16_t)(((_z80BankReg >> 1) | ((uint16_t)(value & 0x01u) << 8)) & 0x01FFu);
+			return;
+		}
+
+		if ((z80Addr & 0xFF00u) == 0x7F00u) {
+			uint8_t low = (uint8_t)(z80Addr & 0x00FFu);
+			if (low == 0x11u) {
+				if (_psg) {
+					_psg->Write(value);
+				}
+				return;
+			}
+
+			uint32_t vdpAddr = 0xC00000u | low;
+			if (_vdp) {
+				uint32_t port = vdpAddr & 0x1Fu;
+				if (port < 0x04u) {
+					_vdp->WriteDataPortByte(value, (vdpAddr & 1u) == 0u);
+				} else if (port < 0x08u) {
+					_vdp->WriteControlPortByte(value, (vdpAddr & 1u) == 0u);
+				} else {
+					WriteVdpPort(vdpAddr, (uint16_t)value | ((uint16_t)value << 8));
+				}
+			}
+		}
+		return;
+	}
+
+	// Z80 banked ROM window writes are ignored on this path.
+}
+
+// I/O registers ($A10001-$A1001F)
+uint8_t GenesisMemoryManager::ReadIo(uint32_t addr) {
+	if ((addr & 0x01) == 0) {
+		uint8_t effectiveValue = 0x00;
+		_openBus = effectiveValue;
+		return effectiveValue;
+	}
+
+	uint32_t reg = addr & 0x1F;
+	switch (reg) {
+		case 0x01:
+			{
+				uint8_t effectiveValue = ReadVersionRegister();
+				_openBus = effectiveValue;
+				return effectiveValue;
+			}
+		case 0x03:
+			{
+				uint8_t effectiveValue = ReadIoDataPort(0);
+				_openBus = effectiveValue;
+				return effectiveValue;
+			}
+		case 0x05:
+			{
+				uint8_t effectiveValue = ReadIoDataPort(1);
+				_openBus = effectiveValue;
+				return effectiveValue;
+			}
+		case 0x07:
+			{
+				uint8_t effectiveValue = ReadIoDataPort(2);
+				_openBus = effectiveValue;
+				return effectiveValue;
+			}
+		case 0x09:
+			{
+				uint8_t effectiveValue = ReadIoControlPort(0);
+				_openBus = effectiveValue;
+				return effectiveValue;
+			}
+		case 0x0B:
+			{
+				uint8_t effectiveValue = ReadIoControlPort(1);
+				_openBus = effectiveValue;
+				return effectiveValue;
+			}
+		case 0x0D:
+			{
+				uint8_t effectiveValue = ReadIoControlPort(2);
+				_openBus = effectiveValue;
+				return effectiveValue;
+			}
+		default:
+			{
+				uint8_t effectiveValue = _openBus;
+				_openBus = effectiveValue;
+				return effectiveValue;
+			}
+	}
+}
+
+void GenesisMemoryManager::WriteIo(uint32_t addr, uint8_t value) {
+	if ((addr & 0x01) == 0) {
+		return;
+	}
+
+	uint32_t reg = addr & 0x1F;
+	switch (reg) {
+		case 0x03:
+			{
+				uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+				WriteIoDataPort(0, effectiveValue);
+				break;
+			}
+		case 0x05:
+			{
+				uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+				WriteIoDataPort(1, effectiveValue);
+				break;
+			}
+		case 0x09:
+			{
+				uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+				WriteIoControlPort(0, effectiveValue);
+				break;
+			}
+		case 0x0B:
+			{
+				uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+				WriteIoControlPort(1, effectiveValue);
+				break;
+			}
+		case 0x0D:
+			{
+				uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+				WriteIoControlPort(2, effectiveValue);
+				break;
+			}
+	}
+	uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+	_openBus = effectiveValue;
+}
+
+uint8_t GenesisMemoryManager::DebugRead8(uint32_t addr) {
+	addr &= 0xFFFFFF;
+	AdvanceZ80BusArbitration(7);
+	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "debugread8");
+	uint32_t effectiveAddr = addr;
+	if (effectiveAddr == 0xA11000 || effectiveAddr == 0xA11001) {
+		uint8_t effectiveValue = 0x00;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x12);
+		return effectiveValue;
+	}
+	if (effectiveAddr == 0xA14100) {
+		uint8_t effectiveValue = 0xFF;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+		return effectiveValue;
+	}
+	if (IsTmssCartAddress(effectiveAddr)) {
+		uint8_t effectiveValue = 0xFF;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+		return effectiveValue;
+	}
+	if (IsTmssAddress(effectiveAddr)) {
+		uint8_t effectiveValue = 0xFF;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+		return effectiveValue;
+	}
+	if (effectiveAddr < 0x400000) {
+		uint32_t mappedAddr = TranslateRomAddress(effectiveAddr);
+		uint8_t effectiveValue = _prgRom[mappedAddr];
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x01);
+		return effectiveValue;
+	}
+	if (effectiveAddr >= 0xE00000) {
+		uint8_t effectiveValue = _workRam[effectiveAddr & 0xFFFF];
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x04);
+		return effectiveValue;
+	}
+	if (effectiveAddr >= 0xA10000 && effectiveAddr <= 0xA1001F) {
+		if ((effectiveAddr & 0x01) == 0) {
+			uint8_t effectiveValue = 0x00;
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x10);
+			return effectiveValue;
+		}
+
+		uint32_t reg = effectiveAddr & 0x1F;
+		uint8_t effectiveValue = _openBus;
+		switch (reg) {
+			case 0x01:
+				{
+					uint8_t statusByte = ReadVersionRegister();
+					effectiveValue = statusByte;
+				}
+				break;
+			case 0x03:
+				{
+					uint8_t statusByte = ReadIoDataPort(0);
+					effectiveValue = statusByte;
+				}
+				break;
+			case 0x05:
+				{
+					uint8_t statusByte = ReadIoDataPort(1);
+					effectiveValue = statusByte;
+				}
+				break;
+			case 0x07:
+				{
+					uint8_t statusByte = ReadIoDataPort(2);
+					effectiveValue = statusByte;
+				}
+				break;
+			case 0x09:
+				{
+					uint8_t statusByte = ReadIoControlPort(0);
+					effectiveValue = statusByte;
+				}
+				break;
+			case 0x0B:
+				{
+					uint8_t statusByte = ReadIoControlPort(1);
+					effectiveValue = statusByte;
+				}
+				break;
+			case 0x0D:
+				{
+					uint8_t statusByte = ReadIoControlPort(2);
+					effectiveValue = statusByte;
+				}
+				break;
+			default:
+				{
+					uint8_t statusByte = _openBus;
+					effectiveValue = statusByte;
+				}
+				break;
+		}
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x10);
+		return effectiveValue;
+	}
+	if (effectiveAddr >= 0xA13000 && effectiveAddr <= 0xA130FF) {
+		uint8_t bankSlot = 0;
+		uint8_t effectiveValue = 0x00;
+		if (IsRamControlRegister(effectiveAddr)) {
+			effectiveValue = GetRamControlRegisterValue();
+		} else if (TryGetRomBankRegisterSlot(effectiveAddr, bankSlot)) {
+			effectiveValue = _romBankRegisters[bankSlot];
+		}
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x11);
+		return effectiveValue;
+	}
+	uint8_t bankSlot = 0;
+	if (IsRamControlRegister(effectiveAddr)) {
+		uint8_t effectiveValue = GetRamControlRegisterValue();
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x11);
+		return effectiveValue;
+	}
+
+	if (TryGetRomBankRegisterSlot(effectiveAddr, bankSlot)) {
+		uint8_t effectiveValue = _romBankRegisters[bankSlot];
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x11);
+		return effectiveValue;
+	}
+	if (IsZ80BusReqAddress(effectiveAddr)) {
+		uint8_t effectiveValue = GetZ80BusReqReadValue();
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x82);
+		return effectiveValue;
+	}
+	if (IsZ80ResetAddress(effectiveAddr)) {
+		uint8_t effectiveValue = GetZ80ResetReadValue();
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x86);
+		return effectiveValue;
+	}
+	if (effectiveAddr >= 0xA00000 && effectiveAddr <= 0xA0FFFF) {
+		uint8_t effectiveValue = 0xFF;
+		if (IsZ80BusGranted()) {
+			effectiveValue = ReadZ80Window8(effectiveAddr);
+		}
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x20);
+		return effectiveValue;
+	}
+	if (effectiveAddr >= 0xC00000 && effectiveAddr <= 0xC0001F) {
+		if (IsTmssVdpLockEnforced()) {
+			uint8_t effectiveValue = _openBus;
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x30);
+			return effectiveValue;
+		}
+		uint8_t effectiveValue = _openBus;
+		if (_vdp) {
+			uint16_t effectiveWord = ReadVdpPort(effectiveAddr);
+			if (effectiveAddr & 1) {
+				effectiveValue = (uint8_t)(effectiveWord & 0xFF);
+			} else {
+				effectiveValue = (uint8_t)(effectiveWord >> 8);
+			}
+		}
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x30);
+		return effectiveValue;
+	}
+
+	uint8_t* bridgeSlot = nullptr;
+	uint32_t bridgeIndex = 0;
+	if (TryGetSegaCdBridgeSlot(effectiveAddr, bridgeSlot, bridgeIndex)) {
+		if (IsBridgeControlReadbackAddress(effectiveAddr)) {
+			uint8_t effectiveValue = bridgeSlot[bridgeIndex];
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+			return effectiveValue;
+		}
+		if (IsSegaCdSubCpuControlAddress(effectiveAddr)) {
+			uint8_t effectiveValue = GetSegaCdSubCpuStatusByte();
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+			return effectiveValue;
+		}
+		if (IsSegaCdAudioStatusAddress(effectiveAddr)) {
+			uint8_t effectiveValue = GetSegaCdAudioStatusByte(effectiveAddr);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+			return effectiveValue;
+		}
+		if (IsSegaCdToolingStatusAddress(effectiveAddr)) {
+			uint8_t effectiveValue = GetSegaCdToolingStatusByte(effectiveAddr);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+			return effectiveValue;
+		}
+		if (Is32xSh2StatusAddress(effectiveAddr)) {
+			uint8_t effectiveValue = Get32xSh2StatusByte(effectiveAddr);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+			return effectiveValue;
+		}
+		if (Is32xCompositionStatusAddress(effectiveAddr)) {
+			uint8_t effectiveValue = Get32xCompositionStatusByte(effectiveAddr);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+			return effectiveValue;
+		}
+		if (Is32xToolingStatusAddress(effectiveAddr)) {
+			uint8_t effectiveValue = Get32xToolingStatusByte(effectiveAddr);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+			return effectiveValue;
+		}
+		if (Is32xCoprocStatusAddress(effectiveAddr)) {
+			uint8_t effectiveValue = Get32xCoprocStatusByte(effectiveAddr);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+			return effectiveValue;
+		}
+		if (Is32xHostToolingStatusAddress(effectiveAddr)) {
+			uint8_t effectiveValue = Get32xHostToolingStatusByte(effectiveAddr);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+			return effectiveValue;
+		}
+		uint8_t effectiveValue = 0x00;
+		if (IsLegacyBridgePassThroughAddress(effectiveAddr)) {
+			effectiveValue = bridgeSlot[bridgeIndex];
+		}
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x02);
+		return effectiveValue;
+	}
+	uint8_t effectiveValue = _openBus;
+	_openBus = effectiveValue;
+	TrackDebugTranscriptEntry(effectiveAddr, false, effectiveValue, 0x00);
+	return effectiveValue;
+}
+
+uint8_t GenesisMemoryManager::Peek8ForTrace(uint32_t addr) const {
+	uint32_t effectiveAddr = addr & 0xFFFFFF;
+
+	if (effectiveAddr < 0x400000) {
+		if (!_prgRom || _prgRomSize == 0) {
+			return 0;
+		}
+		uint32_t mappedAddr = TranslateRomAddress(effectiveAddr);
+		if (mappedAddr >= _prgRomSize) {
+			mappedAddr &= (_prgRomSize - 1);
+		}
+		return _prgRom[mappedAddr];
+	}
+
+	if (effectiveAddr >= 0xE00000) {
+		return _workRam ? _workRam[effectiveAddr & 0xFFFF] : 0;
+	}
+
+	if (effectiveAddr >= 0xA00000 && effectiveAddr <= 0xA0FFFF) {
+		uint16_t z80Addr = (uint16_t)(effectiveAddr & 0xFFFFu);
+		if (z80Addr < 0x4000u) {
+			return _z80Ram ? _z80Ram[z80Addr & 0x1FFFu] : 0;
+		}
+
+		if (z80Addr >= 0x8000u && _prgRom && _prgRomSize > 0) {
+			uint32_t physAddr = ((uint32_t)_z80BankReg << 15) | (z80Addr & 0x7FFFu);
+			return _prgRom[TranslateRomAddress(physAddr)];
+		}
+
+		return 0xFF;
+	}
+
+	if (IsZ80BusReqAddress(effectiveAddr)) {
+		return GetZ80BusReqReadValue();
+	}
+
+	if (IsZ80ResetAddress(effectiveAddr)) {
+		return GetZ80ResetReadValue();
+	}
+
+	if (effectiveAddr >= 0xA10000 && effectiveAddr <= 0xA1001F) {
+		if ((effectiveAddr & 0x01) == 0) {
+			return 0;
+		}
+		switch (effectiveAddr & 0x1F) {
+			case 0x01: return _ioState.DataPort[0];
+			case 0x03: return _ioState.DataPort[1];
+			case 0x05: return _ioState.DataPort[2];
+			case 0x09: return _ioState.CtrlPort[0];
+			case 0x0B: return _ioState.CtrlPort[1];
+			case 0x0D: return _ioState.CtrlPort[2];
+			default: return 0;
+		}
+	}
+
+	return _openBus;
+}
+
+void GenesisMemoryManager::DebugWrite8(uint32_t addr, uint8_t value) {
+	addr &= 0xFFFFFF;
+	AdvanceZ80BusArbitration(7);
+	UpdateZ80RuntimeState(false, addr, _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff, "debugwrite8-pre");
+	uint32_t effectiveAddr = addr;
+	if (effectiveAddr == 0xA11000 || effectiveAddr == 0xA11001) {
+		TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x12);
+		return;
+	}
+	if (effectiveAddr >= 0xA13000 && effectiveAddr <= 0xA130FF) {
+		if (TryWriteRomBankRegister(effectiveAddr, value)) {
+			uint8_t effectiveValue = (uint8_t)(value & 0x3F);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x11);
+			return;
+		}
+		if (IsRamControlRegister(effectiveAddr)) {
+			uint8_t effectiveValue = value;
+			WriteRamControlRegister(effectiveValue);
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x11);
+			return;
+		}
+		TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x11);
+		return;
+	}
+	if ((effectiveAddr & 0xFFFFFE) == 0xA14100) {
+		TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x02);
+		return;
+	}
+	if (IsTmssCartAddress(effectiveAddr)) {
+		TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x02);
+		return;
+	}
+	if (IsTmssAddress(effectiveAddr)) {
+		uint8_t effectiveValue = value;
+		uint32_t slot = effectiveAddr & 0x03;
+		_segaCdBridgeA140[slot] = effectiveValue;
+		_openBus = effectiveValue;
+		EvaluateTmssUnlockState(false, effectiveAddr, effectiveValue, true);
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x02);
+		return;
+	}
+	if (effectiveAddr < 0x400000) {
+		uint8_t effectiveValue = value;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x01);
+		return;
+	}
+	if (effectiveAddr >= 0xE00000) {
+		uint8_t effectiveValue = value;
+		_workRam[effectiveAddr & 0xFFFF] = effectiveValue;
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x04);
+		return;
+	}
+	if (effectiveAddr >= 0xA10000 && effectiveAddr <= 0xA1001F) {
+		if ((effectiveAddr & 0x01) == 0) {
+			TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x10);
+			return;
+		}
+
+		uint32_t reg = effectiveAddr & 0x1F;
+		switch (reg) {
+			case 0x03:
+				{
+					uint8_t ioWriteValue = (uint8_t)(value & 0x7Fu);
+					WriteIoDataPort(0, ioWriteValue);
+				{
+					uint8_t effectiveValue = ioWriteValue;
+					_openBus = effectiveValue;
+					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
+				}
+				return;
+				}
+			case 0x05:
+				{
+					uint8_t ioWriteValue = (uint8_t)(value & 0x7Fu);
+					WriteIoDataPort(1, ioWriteValue);
+				{
+					uint8_t effectiveValue = ioWriteValue;
+					_openBus = effectiveValue;
+					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
+				}
+				return;
+				}
+			case 0x09:
+				{
+					uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+					WriteIoControlPort(0, effectiveValue);
+					_openBus = effectiveValue;
+					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
+				}
+				return;
+			case 0x0B:
+				{
+					uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+					WriteIoControlPort(1, effectiveValue);
+					_openBus = effectiveValue;
+					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
+				}
+				return;
+			case 0x0D:
+				{
+					uint8_t effectiveValue = (uint8_t)(value & 0x7Fu);
+					WriteIoControlPort(2, effectiveValue);
+					_openBus = effectiveValue;
+					TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x10);
+				}
+				return;
+			default:
+				{
+					uint8_t ioWriteValue = value;
+					_openBus = ioWriteValue;
+					TrackDebugTranscriptEntry(effectiveAddr, true, ioWriteValue, 0x10);
+				}
+				return;
+		}
+	}
+	if (TryWriteRomBankRegister(effectiveAddr, value)) {
+		uint8_t effectiveValue = (uint8_t)(value & 0x3F);
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x11);
+		return;
+	}
+	if (IsRamControlRegister(effectiveAddr)) {
+		uint8_t effectiveValue = value;
+		WriteRamControlRegister(effectiveValue);
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x11);
+		return;
+	}
+	if (IsZ80BusReqAddress(effectiveAddr)) {
+		uint8_t effectiveValue = value;
+		if (!_z80LatchOnlyHighByteWrites || !(effectiveAddr & 0x01)) {
+			bool request = (effectiveValue & 0x01) != 0;
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			SetZ80BusRequest(request, false, effectiveAddr, pc, "debugwrite8-busreq");
+		}
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x80);
+		return;
+	}
+	if (IsZ80ResetAddress(effectiveAddr)) {
+		uint8_t effectiveValue = value;
+		if (!_z80LatchOnlyHighByteWrites || !(effectiveAddr & 0x01)) {
+			bool resetAsserted = !(effectiveValue & 0x01);
+			uint32_t pc = _cpu ? (_cpu->GetState().PC & 0x00ffffff) : 0xffffffff;
+			SetZ80Reset(resetAsserted, false, effectiveAddr, pc, "debugwrite8-reset");
+		}
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x84);
+		return;
+	}
+	if (effectiveAddr >= 0xA00000 && effectiveAddr <= 0xA0FFFF) {
+		uint8_t effectiveValue = value;
+		if (IsZ80BusGranted()) {
+			WriteZ80Window8(effectiveAddr, effectiveValue);
+		}
+		_openBus = effectiveValue;
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x20);
+		return;
+	}
+	if (effectiveAddr >= 0xC00000 && effectiveAddr <= 0xC0001F) {
+		uint8_t effectiveValue = value;
+		if (IsTmssVdpLockEnforced()) {
+			_openBus = effectiveValue;
+			TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x30);
+			return;
+		}
+		if (_vdp) {
+			uint32_t port = effectiveAddr & 0x1F;
+			if (port < 0x04) {
+				_vdp->WriteDataPortByte(effectiveValue, (effectiveAddr & 1u) == 0u);
+			} else if (port < 0x08) {
+				_vdp->WriteControlPortByte(effectiveValue, (effectiveAddr & 1u) == 0u);
+			} else {
+				WriteVdpPort(effectiveAddr, (uint16_t)effectiveValue | ((uint16_t)effectiveValue << 8));
+			}
+			_openBus = effectiveValue;
+		}
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x30);
+		return;
+	}
+
+	uint8_t* bridgeSlot = nullptr;
+	uint32_t bridgeIndex = 0;
+	if (TryGetSegaCdBridgeSlot(effectiveAddr, bridgeSlot, bridgeIndex)) {
+		if (!IsBridgeModeledWriteAddress(effectiveAddr)) {
+			TrackDebugTranscriptEntry(effectiveAddr, true, _openBus, 0x02);
+			return;
+		}
+
+		uint8_t effectiveValue = value;
+		if (Is32xCoprocControlAddress(effectiveAddr)) {
+			effectiveValue = Normalize32xCoprocControlValue(effectiveAddr, effectiveValue);
+		} else if (Is32xHostToolingControlAddress(effectiveAddr)) {
+			effectiveValue = Normalize32xHostControlValue(effectiveAddr, effectiveValue);
+		}
+		bridgeSlot[bridgeIndex] = effectiveValue;
+		_openBus = effectiveValue;
+		if (IsSegaCdSubCpuControlAddress(effectiveAddr)) {
+			UpdateSegaCdSubCpuControl(effectiveValue);
+		} else if (IsSegaCdAudioDataAddress(effectiveAddr)) {
+			UpdateSegaCdAudioPath(effectiveAddr, effectiveValue);
+		} else if (IsSegaCdToolingControlAddress(effectiveAddr)) {
+			UpdateSegaCdToolingContract(effectiveAddr, effectiveValue);
+		} else if (Is32xSh2ControlAddress(effectiveAddr)) {
+			Update32xSh2Staging(effectiveAddr, effectiveValue);
+		} else if (Is32xCompositionControlAddress(effectiveAddr)) {
+			Update32xCompositionStaging(effectiveAddr, effectiveValue);
+		} else if (Is32xToolingControlAddress(effectiveAddr)) {
+			Update32xToolingContract(effectiveAddr, effectiveValue);
+		} else if (Is32xCoprocControlAddress(effectiveAddr)) {
+			Update32xCoprocContract(effectiveAddr, effectiveValue);
+		} else if (Is32xHostToolingControlAddress(effectiveAddr)) {
+			Update32xHostToolingContract(effectiveAddr, effectiveValue);
+		}
+		TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x02);
+		return;
+	}
+
+	uint8_t effectiveValue = value;
+	_openBus = effectiveValue;
+	TrackDebugTranscriptEntry(effectiveAddr, true, effectiveValue, 0x00);
+}
+
+AddressInfo GenesisMemoryManager::GetAbsoluteAddress(uint32_t addr) {
+	addr &= 0xFFFFFF;
+	uint32_t effectiveAddress = addr;
+	AddressInfo info = {};
+	if (effectiveAddress < 0x400000) {
+		info.Address = TranslateRomAddress(effectiveAddress);
+		info.Type = MemoryType::GenesisPrgRom;
+	} else if (effectiveAddress >= 0xE00000) {
+		info.Address = effectiveAddress & 0xFFFF;
+		info.Type = MemoryType::GenesisWorkRam;
+	} else {
+		info.Address = -1;
+		info.Type = MemoryType::None;
+	}
+	return info;
+}
+
+int32_t GenesisMemoryManager::GetRelativeAddress(AddressInfo& absAddress) {
+	int32_t relativeAddress = -1;
+	if (absAddress.Type == MemoryType::GenesisPrgRom) {
+		relativeAddress = absAddress.Address;
+	} else if (absAddress.Type == MemoryType::GenesisWorkRam) {
+		relativeAddress = 0xE00000 + absAddress.Address;
+	}
+	return relativeAddress;
+}
+
+void GenesisMemoryManager::Serialize(Serializer& s) {
+	SVArray(_workRam, WorkRamSize);
+	SVArray(_z80Ram, Z80RamSize);
+	SV(_hasSram);
+	SV(_sramStart);
+	SV(_sramEnd);
+	SV(_sramEvenBytes);
+	SV(_sramOddBytes);
+	if (_saveRam && _saveRamSize > 0) {
+		SVArray(_saveRam, _saveRamSize);
+	}
+	SV(_masterClock);
+	SV(_openBus);
+	SV(_z80BusRequest);
+	SV(_z80Reset);
+	SV(_z80BusAck);
+	SV(_z80BusReqDelayMclk);
+	SV(_z80ResumeDelayMclk);
+	SV(_z80BankReg);
+	SV(_ymAddressPort0);
+	SV(_ymAddressPort1);
+	SVArray(_ymRegisters, (uint32_t)sizeof(_ymRegisters));
+	SV(_ymStatusFlags);
+	SV(_ymKeyOnMask);
+	SV(_ymLastKeyOnValue);
+	SV(_ymBusyUntilMclk);
+	SV(_ymTimerAValue);
+	SV(_ymTimerBValue);
+	SV(_ymTimerARemaining);
+	SV(_ymTimerBRemaining);
+	SV(_ymTimerAAccumMclk);
+	SV(_ymTimerBAccumMclk);
+	SV(_ymTimerALoad);
+	SV(_ymTimerBLoad);
+	SV(_ymTimerAIrqEnable);
+	SV(_ymTimerBIrqEnable);
+	SV(_romBankMapperEnabled);
+	SVArray(_romBankRegisters, (uint32_t)sizeof(_romBankRegisters));
+	SV(_ramEnable);
+	SV(_ramWritable);
+	SV(_tmssEnabled);
+	SV(_tmssStrictMode);
+	SV(_tmssUnlocked);
+	SV(_tmssStartupBypassLogged);
+	SV(_tmssUnlockPending);
+	SV(_tmssUnlockDelayMclk);
+	SV(_tmssUnlockDelayMclkSetting);
+	SV(_tmssCartRegister);
+	SV(_startupProfileKindValue);
+	SV(_startupWindowFrames);
+	SV(_startupBootRelaxFrames);
+	SV(_startupLogoPhaseEndFrame);
+	SV(_startupStrictPhaseStartFrame);
+	SV(_startupBusTimingRetuneCount);
+	SV(_startupLastBusTimingFrame);
+	SV(_startupEarlyBusReqAckDelayMclk);
+	SV(_startupEarlyBusResumeDelayMclk);
+	SV(_startupLateBusReqAckDelayMclk);
+	SV(_startupLateBusResumeDelayMclk);
+	SV(_startupUseDynamicBusTiming);
+	SV(_startupMesenCompatMode);
+	SV(_startupHybridBusHandoff);
+	SV(_startupStrictTmssDuringLogo);
+	SV(_startupForceTmssUntilUnlock);
+	SV(_startupHadTmssSignature);
+	SV(_startupTmssUnlockLogged);
+	SV(_startupTraceSequence);
+	SV(_startupTraceDigest);
+	SV(_startupHasNexenClockAnchor);
+	SV(_startupNexenClockAnchor);
+	SV(_startupHasNexenPcAnchor);
+	SV(_startupNexenPcAnchor);
+	SV(_startupCheckpointIntervalFrames);
+	SV(_startupCheckpointEndFrame);
+	SV(_startupNextCheckpointFrame);
+	SV(_startupDisplayTransitionCount);
+	SV(_startupLastDisplayEnabled);
+	SV(_startupHasLastDisplayState);
+	SV(_startupHasLastZ80RunState);
+	SV(_startupLastZ80Running);
+	SV(_startupHasLastZ80BusReqState);
+	SV(_startupLastZ80BusReq);
+	SV(_startupHasLastZ80ResetState);
+	SV(_startupLastZ80Reset);
+	SV(_startupHasLastVdpRegs);
+	SVArray(_startupLastVdpRegs, (uint32_t)sizeof(_startupLastVdpRegs));
+	SV(_startupLastVdpStatus);
+	SV(_startupProfilePreferNexenBusHandoff);
+	SV(_startupProfilePreferMesenBusHandoff);
+	SV(_startupTitleClassValue);
+	SV(_startupTitleAutotuneApplied);
+	SV(_startupTitleHintUsed);
+	SVArray(_startupDetectedTitle, (uint32_t)sizeof(_startupDetectedTitle));
+	SVArray(_startupDetectedProductCode, (uint32_t)sizeof(_startupDetectedProductCode));
+	SV(_startupArbitrationDigest);
+	SV(_startupArbitrationEpoch);
+	SV(_startupLastArbitrationMclk);
+	SV(_segaCdSubCpuRunning);
+	SV(_segaCdSubCpuBusRequest);
+	SV(_segaCdSubCpuTransitionCount);
+	SV(_segaCdPcmLeft);
+	SV(_segaCdPcmRight);
+	SV(_segaCdCddaLeft);
+	SV(_segaCdCddaRight);
+	SV(_segaCdMixedLeft);
+	SV(_segaCdMixedRight);
+	SV(_segaCdAudioCheckpointCount);
+	SV(_segaCdToolingDebuggerSignal);
+	SV(_segaCdToolingTasSignal);
+	SV(_segaCdToolingSaveStateSignal);
+	SV(_segaCdToolingCheatSignal);
+	SV(_segaCdToolingEventCount);
+	SV(_segaCdToolingDigest);
+	SV(_m32xMasterSh2Running);
+	SV(_m32xSlaveSh2Running);
+	SV(_m32xSh2SyncPhase);
+	SV(_m32xSh2Milestone);
+	SV(_m32xSh2SyncEpoch);
+	SV(_m32xSh2Digest);
+	SV(_m32xCompositionBlend);
+	SV(_m32xFrameSyncMarker);
+	SV(_m32xFrameSyncEpoch);
+	SV(_m32xCompositionDigest);
+	SV(_m32xToolingDebuggerSignal);
+	SV(_m32xToolingTasSignal);
+	SV(_m32xToolingSaveStateSignal);
+	SV(_m32xToolingCheatSignal);
+	SV(_m32xToolingEventCount);
+	SV(_m32xToolingDigest);
+	SV(_m32xCoprocMasterSignal);
+	SV(_m32xCoprocSlaveSignal);
+	SV(_m32xCoprocPhaseSignal);
+	SV(_m32xCoprocFenceSignal);
+	SV(_m32xCoprocEventCount);
+	SV(_m32xCoprocDigest);
+	SV(_m32xCoprocEdgeCount);
+	SV(_m32xCoprocPhaseEpoch);
+	SV(_m32xCoprocFenceEpoch);
+	SV(_m32xCoprocArbiterLatch);
+	SV(_m32xHostDebuggerSignal);
+	SV(_m32xHostTasSignal);
+	SV(_m32xHostSaveStateSignal);
+	SV(_m32xHostCheatSignal);
+	SV(_m32xHostEventCount);
+	SV(_m32xHostDigest);
+	SV(_m32xHostEdgeCount);
+	SV(_m32xHostCommandNonce);
+	SV(_m32xHostAckToken);
+	SV(_m32xHostDeterminismLatch);
+	SVArray(_segaCdBridgeA120, (uint32_t)sizeof(_segaCdBridgeA120));
+	SVArray(_segaCdBridgeA130, (uint32_t)sizeof(_segaCdBridgeA130));
+	SVArray(_segaCdBridgeA140, (uint32_t)sizeof(_segaCdBridgeA140));
+	SVArray(_segaCdBridgeA150, (uint32_t)sizeof(_segaCdBridgeA150));
+	SVArray(_segaCdBridgeA160, (uint32_t)sizeof(_segaCdBridgeA160));
+	SVArray(_segaCdBridgeA180, (uint32_t)sizeof(_segaCdBridgeA180));
+	SV(_ioState.DataPort[0]); SV(_ioState.DataPort[1]); SV(_ioState.DataPort[2]);
+	SV(_ioState.CtrlPort[0]); SV(_ioState.CtrlPort[1]); SV(_ioState.CtrlPort[2]);
+	SV(_ioState.TmssEnabled);
+	SV(_ioState.TmssUnlocked);
+	SV(_ioState.CpuProgramCounterHeartbeat);
+	SV(_ioState.CpuCycleHeartbeat);
+	SV(_ioState.CpuInstructionHeartbeat);
+	SV(_ioState.TranscriptLaneCount);
+	SV(_ioState.TranscriptLaneDigest);
+	for (uint32_t i = 0; i < 4; i++) {
+		SV(_ioState.TranscriptEntryAddress[i]);
+		SV(_ioState.TranscriptEntryValue[i]);
+		SV(_ioState.TranscriptEntryFlags[i]);
+	}
+	SV(_ioState.DebugTranscriptLaneCount);
+	SV(_ioState.DebugTranscriptLaneDigest);
+	for (uint32_t i = 0; i < 4; i++) {
+		SV(_ioState.DebugTranscriptEntryAddress[i]);
+		SV(_ioState.DebugTranscriptEntryValue[i]);
+		SV(_ioState.DebugTranscriptEntryFlags[i]);
+	}
+	SV(_ioState.RomReadHeartbeat);
+}
+
+void GenesisMemoryManager::LoadBattery() {
+	if (HasSaveRam()) {
+		BatteryManager* batteryManager = _emu->GetBatteryManager();
+		batteryManager->LoadBattery(".sav", std::span<uint8_t>(_saveRam, _saveRamSize));
+	}
+}
+
+void GenesisMemoryManager::SaveBattery() {
+	if (HasSaveRam()) {
+		BatteryManager* batteryManager = _emu->GetBatteryManager();
+		batteryManager->SaveBattery(".sav", std::span<const uint8_t>(_saveRam, _saveRamSize));
+	}
+}
+
+void GenesisMemoryManager::ResetRuntimeState(bool hardReset) {
+	(void)hardReset;
+	EnsureNexenWramTraceOpen();
+	InvalidateNexenStartupTraceConfigCache();
+	if (_emu && _emu->GetSettings()) {
+		_tmssEnabled = _emu->GetSettings()->GetGenesisConfig().EnableTmss;
+	}
+	ApplyStartupEnvironmentProfile();
+	EnsureNexenStartupTraceOpen();
+
+	bool nextZ80BusRequest = false;
+	bool nextZ80Reset = sNexenGenesisPowerOnZ80ResetAsserted;
+	uint8_t nextOpenBus = 0;
+	bool nextTmssUnlocked = false;
+	bool tmssEnabled = _tmssEnabled;
+	_z80BusRequest = nextZ80BusRequest;
+	_z80Reset = nextZ80Reset;
+	_z80BusAck = false;
+	_z80BusReqDelayMclk = 0;
+	_z80ResumeDelayMclk = 0;
+	_z80RuntimeRunning = false;
+	_z80RuntimeRunnableCycles = 0;
+	_z80RuntimeStalledCycles = 0;
+	_z80RuntimeTransitionCount = 0;
+	_z80RuntimeStateEpoch = 0;
+	_z80RuntimeLastTransitionClock = 0;
+	UpdateZ80RuntimeState(false, 0, 0, "reset");
+	_openBus = nextOpenBus;
+	_tmssUnlocked = nextTmssUnlocked;
+	_tmssStartupBypassLogged = false;
+	_tmssUnlockPending = false;
+	_tmssUnlockDelayMclk = 0;
+	_tmssCartRegister = 0;
+	_startupTraceSequence = 0;
+	_startupEarlyCpuProbeCount = 0;
+	_startupSetupHasLastD6 = false;
+	_startupSetupLastD6 = 0;
+	_startupSetupD6ChangeEmitCount = 0;
+	_startupEarlyPcEmitCount = 0;
+	_startupD6SeedWindowEmitCount = 0;
+	_startupMovemWindowEmitCount = 0;
+	_startupLowD6EmitCount = 0;
+	_startupTraceDigest = 1469598103934665603ull;
+	_startupHasNexenClockAnchor = false;
+	_startupNexenClockAnchor = 0;
+	_startupHasNexenPcAnchor = false;
+	_startupNexenPcAnchor = 0;
+	_pcOrderTraceHasLastWramPc = false;
+	_pcOrderTraceLastWramPc = 0;
+	_pcOrderTraceEdgeCount = 0;
+	_pcOrderTraceEventCount = 0;
+	_pcOrderTraceSaw000264 = false;
+	_pcOrderTraceSaw00034A = false;
+	_pcOrderTraceFirst264Frame = 0;
+	_pcOrderTraceFirst34AFrame = 0;
+	_pcOrderTraceFirst264Line = 0;
+	_pcOrderTraceFirst34ALine = 0;
+	_pcOrderTraceFirst264Seq = 0;
+	_pcOrderTraceFirst34ASeq = 0;
+	_pcOrderTraceFirst264Mclk = 0;
+	_pcOrderTraceFirst34AMclk = 0;
+	_pcOrderTraceTransitionSummaryEmitted = false;
+	_pcOrderTrace264LoopSeen = false;
+	_pcOrderTrace264FirstD6 = 0;
+	_pcOrderTrace264LastD6 = 0;
+	_pcOrderTrace264IterCount = 0;
+	_pcOrderTrace264To34ASummaryEmitted = false;
+	_startupDisplayTransitionCount = 0;
+	_startupNextCheckpointFrame = 0;
+	_startupHasLastDisplayState = false;
+	_startupHasLastZ80RunState = false;
+	_startupLastZ80Running = false;
+	_startupHasLastZ80BusReqState = false;
+	_startupLastZ80BusReq = false;
+	_startupHasLastZ80ResetState = false;
+	_startupLastZ80Reset = false;
+	_startupHasLastVdpRegs = false;
+	memset(_startupLastVdpRegs, 0, sizeof(_startupLastVdpRegs));
+	_startupLastVdpStatus = 0;
+	_startupLastDisplayEnabled = _vdp ? ((_vdp->GetState().Registers[VdpReg::ModeSet2] & 0x40) != 0) : false;
+	_ramEnable = false;
+	_ramWritable = true;
+	_tmssVdpBlockLogged = false;
+
+	if (tmssEnabled) {
+		memset(_segaCdBridgeA140, 0, sizeof(_segaCdBridgeA140));
+	}
+
+	ResetRomBankMapper();
+
+	memset(_ioState.DataPort, 0, sizeof(_ioState.DataPort));
+	memset(_ioState.CtrlPort, 0, sizeof(_ioState.CtrlPort));
+	memset(_ioState.TxData, 0, sizeof(_ioState.TxData));
+	memset(_ioState.RxData, 0, sizeof(_ioState.RxData));
+	memset(_ioState.SCtrl, 0, sizeof(_ioState.SCtrl));
+	memset(_ioState.ThCount, 0, sizeof(_ioState.ThCount));
+	memset(_ioState.ThState, 0, sizeof(_ioState.ThState));
+	if (_controlManager) {
+		_controlManager->ResetRuntimeState();
+		_controlManager->WriteControlPort(0, _ioState.CtrlPort[0]);
+		_controlManager->WriteControlPort(1, _ioState.CtrlPort[1]);
+		_controlManager->WriteDataPort(0, _ioState.DataPort[0]);
+		_controlManager->WriteDataPort(1, _ioState.DataPort[1]);
+	}
+	_ioState.CpuProgramCounterHeartbeat = 0;
+	_ioState.CpuCycleHeartbeat = 0;
+	_ioState.CpuInstructionHeartbeat = 0;
+	uint32_t resetTranscriptLaneCount = 0;
+	uint64_t resetTranscriptLaneDigest = 0;
+	_ioState.TranscriptLaneCount = resetTranscriptLaneCount;
+	_ioState.TranscriptLaneDigest = resetTranscriptLaneDigest;
+	_ioState.RomReadHeartbeat = 0;
+	for (uint32_t i = 0; i < 4; i++) {
+		_ioState.TranscriptEntryAddress[i] = 0;
+		_ioState.TranscriptEntryValue[i] = 0;
+		_ioState.TranscriptEntryFlags[i] = 0;
+	}
+
+	uint8_t tmssEnabledValue = tmssEnabled ? 1 : 0;
+	uint8_t tmssUnlockedValue = nextTmssUnlocked ? 1 : 0;
+	_ioState.TmssEnabled = tmssEnabledValue;
+	_ioState.TmssUnlocked = tmssUnlockedValue;
+
+	_segaCdToolingDebuggerSignal = 0;
+	_segaCdToolingTasSignal = 0;
+	_segaCdToolingSaveStateSignal = 0;
+	_segaCdToolingCheatSignal = 0;
+	_segaCdToolingEventCount = 0;
+	_segaCdToolingDigest = 0;
+
+	_m32xToolingDebuggerSignal = 0;
+	_m32xToolingTasSignal = 0;
+	_m32xToolingSaveStateSignal = 0;
+	_m32xToolingCheatSignal = 0;
+	_m32xToolingEventCount = 0;
+	_m32xToolingDigest = 0;
+	_m32xCoprocMasterSignal = 0;
+	_m32xCoprocSlaveSignal = 0;
+	_m32xCoprocPhaseSignal = 0;
+	_m32xCoprocFenceSignal = 0;
+	_m32xCoprocEventCount = 0;
+	_m32xCoprocDigest = 0;
+	_m32xCoprocEdgeCount = 0;
+	_m32xCoprocPhaseEpoch = 0;
+	_m32xCoprocFenceEpoch = 0;
+	_m32xCoprocArbiterLatch = 0;
+	_m32xHostDebuggerSignal = 0;
+	_m32xHostTasSignal = 0;
+	_m32xHostSaveStateSignal = 0;
+	_m32xHostCheatSignal = 0;
+	_m32xHostEventCount = 0;
+	_m32xHostDigest = 0;
+	_m32xHostEdgeCount = 0;
+	_m32xHostCommandNonce = 0;
+	_m32xHostAckToken = 0;
+	_m32xHostDeterminismLatch = 0;
+
+	ClearDebugTranscriptLane();
+	TraceStartupEvent("STARTUP_BOOT", 0x000000, 0, 0);
+}
+
+
+

@@ -6,7 +6,7 @@
 	<Color name="Symbols" fontWeight="bold" foreground="DarkMagenta" />
 	<Color name="StringLiteral" fontWeight="bold" foreground="DarkRed" />
 	<Color name="Punctuation" fontWeight="bold" foreground="Black" />
-	<Color name="Mesen" fontWeight="bold" foreground="Indigo" />
+	<Color name="Nexen" fontWeight="bold" foreground="Indigo" />
 
 	<RuleSet>
 		<Span color="Comment" multiline="true">
@@ -16,11 +16,11 @@
 		<Span color="Comment">
 			<Begin>--</Begin>
 		</Span>
-		
-		<Keywords color="Mesen">
+
+		<Keywords color="Nexen">
 			<Word>emu</Word>
 		</Keywords>
-		
+
 		<Keywords color="Keywords">
 			<Word>and</Word>
 			<Word>break</Word>

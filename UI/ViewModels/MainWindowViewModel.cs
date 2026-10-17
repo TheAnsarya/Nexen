@@ -1,13 +1,4 @@
-﻿using Avalonia;
-using Mesen.Config;
-using Mesen.Controls;
-using Mesen.Interop;
-using Mesen.Localization;
-using Mesen.Utilities;
-using Mesen.Windows;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -15,91 +6,126 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia;
+using Nexen.Config;
+using Nexen.Controls;
+using Nexen.Interop;
+using Nexen.Localization;
+using Nexen.Utilities;
+using Nexen.Windows;
+using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.ViewModels
-{
-	public class MainWindowViewModel : ViewModelBase
-	{
-		public static MainWindowViewModel Instance { get; private set; } = null!;
+namespace Nexen.ViewModels;
+/// <summary>
+/// Primary ViewModel for the main application window.
+/// Manages the menu, ROM state, rendering, and recent games display.
+/// </summary>
+public sealed partial class MainWindowViewModel : ViewModelBase {
+	/// <summary>Gets the singleton instance of the main window ViewModel.</summary>
+	public static MainWindowViewModel Instance { get; private set; } = null!;
 
-		[Reactive] public MainMenuViewModel MainMenu { get; set; }
-		[Reactive] public RomInfo RomInfo { get; set; }
-		[Reactive] public AudioPlayerViewModel? AudioPlayer { get; private set; }
-		[Reactive] public RecentGamesViewModel RecentGames { get; private set; }
+	/// <summary>Gets or sets the main menu ViewModel.</summary>
+	[Reactive] public partial MainMenuViewModel MainMenu { get; set; }
 
-		[Reactive] public string WindowTitle { get; private set; } = "Mesen";
-		[Reactive] public Size RendererSize { get; set; }
+	/// <summary>Gets or sets the currently loaded ROM information.</summary>
+	[Reactive] public partial RomInfo RomInfo { get; set; }
 
-		[Reactive] public bool IsMenuVisible { get; set; }
-		
-		[Reactive] public bool IsNativeRendererVisible { get; set; }
-		[Reactive] public bool IsSoftwareRendererVisible { get; set; }
+	/// <summary>Gets or sets the audio player ViewModel for music formats (NSF, SPC, etc.).</summary>
+	[Reactive] public partial AudioPlayerViewModel? AudioPlayer { get; private set; }
 
-		public SoftwareRendererViewModel SoftwareRenderer { get; } = new();
+	/// <summary>Gets or sets the recent games selection screen ViewModel.</summary>
+	[Reactive] public partial RecentGamesViewModel RecentGames { get; private set; }
 
-		public Configuration Config { get; }
+	/// <summary>Gets or sets the window title bar text.</summary>
+	[Reactive] public partial string WindowTitle { get; private set; } = "Nexen";
 
-		public MainWindowViewModel()
-		{
-			Instance = this;
+	/// <summary>Gets or sets the current render surface size.</summary>
+	[Reactive] public partial Size RendererSize { get; set; }
 
-			Config = ConfigManager.Config;
-			MainMenu = new MainMenuViewModel(this);
-			RomInfo = new RomInfo();
-			RecentGames = new RecentGamesViewModel();
+	/// <summary>Gets or sets whether the main menu is visible.</summary>
+	[Reactive] public partial bool IsMenuVisible { get; set; }
 
-			IsMenuVisible = !Config.Preferences.AutoHideMenu;
-		}
+	/// <summary>Gets or sets whether the native (GPU) renderer is visible.</summary>
+	[Reactive] public partial bool IsNativeRendererVisible { get; set; }
 
-		public void Init(MainWindow wnd)
-		{
-			MainMenu.Initialize(wnd);
-			RecentGames.Init(GameScreenMode.RecentGames);
+	/// <summary>Gets or sets whether the software renderer is visible.</summary>
+	[Reactive] public partial bool IsSoftwareRendererVisible { get; set; }
 
-			this.WhenAnyValue(x => x.RecentGames.Visible, x => x.SoftwareRenderer.FrameSurface).Subscribe(x => {
-				IsNativeRendererVisible = !RecentGames.Visible && SoftwareRenderer.FrameSurface == null;
-				IsSoftwareRendererVisible = !RecentGames.Visible && SoftwareRenderer.FrameSurface != null;
-			});
-			
-			this.WhenAnyValue(x => x.RomInfo).Subscribe(x => {
-				bool showAudioPlayer = x.Format == RomFormat.Nsf || x.Format == RomFormat.Spc || x.Format == RomFormat.Gbs || x.Format == RomFormat.PceHes;
-				if(AudioPlayer == null && showAudioPlayer) {
-					AudioPlayer = new AudioPlayerViewModel();
-				} else if(!showAudioPlayer) {
-					AudioPlayer = null;
-				}
-			});
+	/// <summary>Gets the software renderer ViewModel.</summary>
+	public SoftwareRendererViewModel SoftwareRenderer { get; } = new();
 
-			this.WhenAnyValue(
-				x => x.RomInfo,
-				x => x.RendererSize,
-				x => x.Config.Preferences.ShowTitleBarInfo,
-				x => x.Config.Video.AspectRatio,
-				x => x.Config.Video.VideoFilter
-			).Subscribe(x => {
-				UpdateWindowTitle();
-			});
+	/// <summary>Gets the application configuration.</summary>
+	public Configuration Config { get; }
 
-			UpdateWindowTitle();
-		}
+	/// <summary>
+	/// Initializes a new instance of the <see cref="MainWindowViewModel"/> class.
+	/// </summary>
+	public MainWindowViewModel() {
+		Instance = this;
 
-		private void UpdateWindowTitle()
-		{
-			string title = "Mesen";
-			string romName = RomInfo.GetRomName();
-			if(!string.IsNullOrWhiteSpace(romName)) {
-				title += " - " + romName;
-				if(ConfigManager.Config.Preferences.ShowTitleBarInfo) {
-					FrameInfo baseSize = EmuApi.GetBaseScreenSize();
-					double scale = (double)RendererSize.Height / baseSize.Height;
-					title += string.Format(" - {0}x{1} ({2:0.###}x, {3})",
-						Math.Round(RendererSize.Width),
-						Math.Round(RendererSize.Height),
-						scale,
-						ResourceHelper.GetEnumText(ConfigManager.Config.Video.VideoFilter));
-				}
+		Config = ConfigManager.Config;
+		MainMenu = new MainMenuViewModel(this);
+		RomInfo = new RomInfo();
+		RecentGames = new RecentGamesViewModel();
+
+		IsMenuVisible = !Config.Preferences.AutoHideMenu;
+		ResourceHelper.LanguageChanged += ResourceHelper_LanguageChanged;
+	}
+
+	private void ResourceHelper_LanguageChanged(object? sender, EventArgs e) {
+		UpdateWindowTitle();
+	}
+
+	/// <summary>
+	/// Initializes the ViewModel with the main window reference.
+	/// Sets up reactive subscriptions for UI updates.
+	/// </summary>
+	/// <param name="wnd">The main window instance.</param>
+	public void Init(MainWindow wnd) {
+		MainMenu.Initialize(wnd);
+		RecentGames.Init(GameScreenMode.RecentGames);
+
+		this.WhenAnyValue(x => x.RecentGames.Visible, x => x.SoftwareRenderer.FrameSurface).Subscribe(x => {
+			IsNativeRendererVisible = !RecentGames.Visible && SoftwareRenderer.FrameSurface is null;
+			IsSoftwareRendererVisible = !RecentGames.Visible && SoftwareRenderer.FrameSurface is not null;
+		});
+
+		this.WhenAnyValue(x => x.RomInfo).Subscribe(x => {
+			bool showAudioPlayer = x.Format is RomFormat.Nsf or RomFormat.Spc or RomFormat.Gbs or RomFormat.PceHes;
+			if (AudioPlayer is null && showAudioPlayer) {
+				AudioPlayer = new AudioPlayerViewModel();
+			} else if (!showAudioPlayer) {
+				AudioPlayer = null;
 			}
-			WindowTitle = title;
+		});
+
+		this.WhenAnyValue(
+			x => x.RomInfo,
+			x => x.RendererSize,
+			x => x.Config.Preferences.ShowTitleBarInfo,
+			x => x.Config.Video.AspectRatio,
+			x => x.Config.Video.VideoFilter
+		).Subscribe(x => UpdateWindowTitle());
+
+		UpdateWindowTitle();
+	}
+
+	/// <summary>
+	/// Updates the window title with ROM name and optional size/filter info.
+	/// </summary>
+	private void UpdateWindowTitle() {
+		string title = "Nexen";
+		string romName = RomInfo.GetRomName();
+		if (!string.IsNullOrWhiteSpace(romName)) {
+			title += " - " + romName;
+			if (ConfigManager.Config.Preferences.ShowTitleBarInfo) {
+				FrameInfo baseSize = EmuApi.GetBaseScreenSize();
+				double scale = (double)RendererSize.Height / baseSize.Height;
+				title += $" - {Math.Round(RendererSize.Width)}x{Math.Round(RendererSize.Height)} ({scale:0.###}x, {ResourceHelper.GetEnumText(ConfigManager.Config.Video.VideoFilter)})";
+			}
 		}
+
+		WindowTitle = title;
 	}
 }

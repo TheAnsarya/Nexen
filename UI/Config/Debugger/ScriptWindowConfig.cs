@@ -1,56 +1,51 @@
-﻿using Avalonia;
-using Avalonia.Media;
-using Mesen.Interop;
-using ReactiveUI.Fody.Helpers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Media;
+using Nexen.Interop;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.Config
-{
-	public class ScriptWindowConfig : BaseWindowConfig<ScriptWindowConfig>
-	{
-		private const int MaxRecentScripts = 10;
+namespace Nexen.Config;
+public sealed partial class ScriptWindowConfig : BaseWindowConfig<ScriptWindowConfig> {
+	private const int MaxRecentScripts = 10;
 
-		[Reactive] public List<string> RecentScripts { get; set; } = new List<string>();
+	[Reactive] public partial List<string> RecentScripts { get; set; } = [];
 
-		[Reactive] public int Zoom { get; set; } = 100;
+	[Reactive] public partial int Zoom { get; set; } = 100;
 
-		[Reactive] public double LogWindowHeight { get; set; } = 100;
+	[Reactive] public partial double LogWindowHeight { get; set; } = 100;
 
-		[Reactive] public ScriptStartupBehavior ScriptStartupBehavior { get; set; } = ScriptStartupBehavior.ShowTutorial;
-		[Reactive] public bool SaveScriptBeforeRun { get; set; } = true;
-		[Reactive] public bool AutoStartScriptOnLoad { get; set; } = true;
-		[Reactive] public bool AutoReloadScriptWhenFileChanges { get; set; } = true;
-		[Reactive] public bool AutoRestartScriptAfterPowerCycle { get; set; } = true;
-		
-		[Reactive] public bool AllowIoOsAccess { get; set; } = false;
-		[Reactive] public bool AllowNetworkAccess { get; set; } = false;
+	[Reactive] public partial ScriptStartupBehavior ScriptStartupBehavior { get; set; } = ScriptStartupBehavior.ShowBlankWindow;
+	[Reactive] public partial bool SaveScriptBeforeRun { get; set; } = true;
+	[Reactive] public partial bool AutoStartScriptOnLoad { get; set; } = false;
+	[Reactive] public partial bool AutoReloadScriptWhenFileChanges { get; set; } = true;
+	[Reactive] public partial bool AutoRestartScriptAfterPowerCycle { get; set; } = true;
 
-		[Reactive] public bool ShowLineNumbers { get; set; } = false;
+	[Reactive] public partial bool AllowIoOsAccess { get; set; } = false;
+	[Reactive] public partial bool AllowNetworkAccess { get; set; } = false;
 
-		[Reactive] public UInt32 ScriptTimeout { get; set; } = 1;
+	[Reactive] public partial bool ShowLineNumbers { get; set; } = false;
 
-		public void AddRecentScript(string scriptFile)
-		{
-			string? existingItem = RecentScripts.Where((file) => file == scriptFile).FirstOrDefault();
-			if(existingItem != null) {
-				RecentScripts.Remove(existingItem);
-			}
+	[Reactive] public partial UInt32 ScriptTimeout { get; set; } = 1;
 
-			RecentScripts.Insert(0, scriptFile);
-			if(RecentScripts.Count > ScriptWindowConfig.MaxRecentScripts) {
-				RecentScripts.RemoveAt(ScriptWindowConfig.MaxRecentScripts);
-			}
+	public void AddRecentScript(string scriptFile) {
+		string? existingItem = RecentScripts.Where((file) => file == scriptFile).FirstOrDefault();
+		if (existingItem is not null) {
+			RecentScripts.Remove(existingItem);
+		}
+
+		RecentScripts.Insert(0, scriptFile);
+		if (RecentScripts.Count > ScriptWindowConfig.MaxRecentScripts) {
+			RecentScripts.RemoveAt(ScriptWindowConfig.MaxRecentScripts);
 		}
 	}
+}
 
-	public enum ScriptStartupBehavior
-	{
-		ShowTutorial = 0,
-		ShowBlankWindow = 1,
-		LoadLastScript = 2
-	}
+public enum ScriptStartupBehavior {
+	ShowTutorial = 0,
+	ShowBlankWindow = 1,
+	LoadLastScript = 2
 }

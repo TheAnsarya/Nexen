@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <Resources>
 	<Forms>
 		<Form ID="MainMenuView">
@@ -8,6 +8,20 @@
 			<Control ID="mnuTools">_Tools</Control>
 			<Control ID="mnuDebug">_Debug</Control>
 			<Control ID="mnuHelp">_Help</Control>
+			<Control ID="mnuLanguageSelector">Language</Control>
+			<Control ID="mnuLanguageEnglish">English</Control>
+			<Control ID="mnuLanguageSpanish">Spanish</Control>
+			<Control ID="mnuLanguageJapanese">Japanese</Control>
+		</Form>
+		<Form ID="SpeedSliderPrototypeWindow">
+			<Control ID="wndTitle">Speed Slider Prototype</Control>
+			<Control ID="lblPrototype">Prototype: speed slider for the Settings -> Speed menu.</Control>
+			<Control ID="lblSemantics">Semantics: Pause, presets (25/50/100/200/300), and Maximum.</Control>
+			<Control ID="lblCurrentSelection">Current selection:</Control>
+			<Control ID="lblRiskHint">Apply is manual to reduce accidental speed changes.</Control>
+			<Control ID="btnApply">Apply</Control>
+			<Control ID="btnApplyAndClose">Apply &amp; Close</Control>
+			<Control ID="btnClose">Close</Control>
 		</Form>
 		<Form ID="AudioConfigView">
 			<Control ID="tpgGeneral">General</Control>
@@ -52,17 +66,17 @@
 			<Control ID="lblLightDetectionRadius">Light detection radius for light guns:</Control>
 			<Control ID="lblSmall">Small</Control>
 			<Control ID="lblLarge">Large</Control>
-			
+
 			<Control ID="grpHardware">Hardware buttons</Control>
 
 			<Control ID="lblFourScoreConfig">Four Score Configuration</Control>
 			<Control ID="lblFourPlayerAdapterConfig">4-Player Adapter Configuration</Control>
 			<Control ID="lblTwoPlayerAdapterConfig">2-Player Adapter Configuration</Control>
-			
+
 			<Control ID="btnSetup">Setup</Control>
 			<Control ID="lblPlayer1">Port 1:</Control>
 			<Control ID="lblPlayer2">Port 2:</Control>
-			
+
 			<Control ID="lblPort1A">Port 1:</Control>
 			<Control ID="lblPort1B">Port 2:</Control>
 			<Control ID="lblPort1C">Port 3:</Control>
@@ -150,16 +164,16 @@
 			<Control ID="tpgPicture">Picture</Control>
 			<Control ID="btnSelectPreset">Select Preset...</Control>
 			<Control ID="btnReset">Reset</Control>
-			
+
 			<Control ID="lblPictureSettings">General settings</Control>
 			<Control ID="trkBrightness">Brightness</Control>
 			<Control ID="trkContrast">Contrast</Control>
 			<Control ID="trkHue">Hue</Control>
 			<Control ID="trkSaturation">Saturation</Control>
-			
+
 			<Control ID="lblFilterSettings">Filter settings</Control>
 			<Control ID="lblVideoFilter">Filter:</Control>
-			
+
 			<Control ID="lblNtscBlarggSettings">NTSC settings (blargg)</Control>
 			<Control ID="trkArtifacts">Artifacts</Control>
 			<Control ID="trkBleed">Bleed</Control>
@@ -215,7 +229,7 @@
 			<Control ID="lblColecoVision">ColecoVision</Control>
 			<Control ID="lblWonderSwan">WonderSwan</Control>
 			<Control ID="lblOtherConsoles">Other systems</Control>
-			
+
 			<Control ID="lblWrongHash">File does not contain the expected data, and may not work correctly.</Control>
 		</Form>
 
@@ -230,7 +244,7 @@
 		<Form ID="SnesConfigView">
 			<Control ID="tpgGeneral">General</Control>
 			<Control ID="lblRegion">Region:</Control>
-			
+
 			<Control ID="tpgAudio">Audio</Control>
 			<Control ID="lblAudioInterpolation">Audio interpolation type:</Control>
 			<Control ID="grpVolume">Volume</Control>
@@ -365,12 +379,12 @@
 			<Control ID="tpgGeneral">General</Control>
 			<Control ID="lblModel">Model:</Control>
 			<Control ID="chkUseSgb2">In Super Game Boy mode, use SGB2 timings and behavior</Control>
-			
+
 			<Control ID="tpgEmulation">Emulation</Control>
 			<Control ID="lblRamPowerOnState">Default power on state for RAM: </Control>
 			<Control ID="grpGeneral">General</Control>
 			<Control ID="chkAllowInvalidInput">Allow invalid input (e.g Down + Up or Left + Right at the same time)</Control>
-			
+
 			<Control ID="tpgVideo">Video</Control>
 			<Control ID="lblGameboyPalette">Game Boy (DMG) Palette</Control>
 			<Control ID="lblGbBackground">Background:</Control>
@@ -398,13 +412,13 @@
 			<Control ID="lblSquare2">Square 2</Control>
 			<Control ID="lblWave">Wave</Control>
 			<Control ID="lblNoise">Noise</Control>
-			
+
 			<Control ID="tpgInput">Input</Control>
 			<Control ID="grpControllers">Controllers</Control>
 			<Control ID="lblPlayer1">Player 1</Control>
 			<Control ID="btnSetup">Setup</Control>
 		</Form>
-		
+
 		<Form ID="GbaConfigView">
 			<Control ID="tpgGeneral">General</Control>
 			<Control ID="chkSkipBootScreen">Skip boot screen</Control>
@@ -465,7 +479,7 @@
 			<Control ID="lblChannel6">Channel 6</Control>
 			<Control ID="lblCdAudio">CD Audio</Control>
 			<Control ID="lblAdpcm">ADPCM</Control>
-			
+
 			<Control ID="tpgEmulation">Emulation</Control>
 			<Control ID="lblDeveloperSettings">Recommended settings for developers (homebrew / ROM hacking)</Control>
 			<Control ID="lblRamPowerOnState">Default power on state for RAM: </Control>
@@ -473,9 +487,9 @@
 			<Control ID="chkEnableCdRomForHuCardGames">Enable CD-ROM emulation when running HuCard games</Control>
 			<Control ID="chkDisableCdRomSaveRamForHuCardGames">Disable CD-ROM save RAM when running HuCard games</Control>
 			<Control ID="chkUseHuC6280aAudio">Use HuC6280A audio (reduces popping)</Control>
-			
+
 			<Control ID="tpgInput">Input</Control>
-			
+
 			<Control ID="tpgVideo">Video</Control>
 			<Control ID="lblMiscSettings">Miscellaneous Settings</Control>
 			<Control ID="chkRemoveSpriteLimit">Remove sprite limit</Control>
@@ -489,13 +503,13 @@
 			<Control ID="lblOverscan">Overscan</Control>
 			<Control ID="lblPalette">Palette</Control>
 		</Form>
-		
+
 		<Form ID="ColorPickerWindow">
 			<Control ID="wndTitle">Color picker</Control>
 			<Control ID="btnOk">OK</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
-		
+
 		<Form ID="PaletteConfig">
 			<Control ID="btnSelectPalette">Load preset palette...</Control>
 			<Control ID="btnExportPalette">Export palette</Control>
@@ -610,14 +624,15 @@
 			<Control ID="lblController1">Port 1:</Control>
 			<Control ID="lblController2">Port 2:</Control>
 		</Form>
-		
+
 		<Form ID="WsConfigView">
 			<Control ID="tpgGeneral">General</Control>
+			<Control ID="lblWsGeneralHint">Select the target WonderSwan model and baseline behavior used for emulation startup.</Control>
 			<Control ID="lblModel">Model:</Control>
 
 			<Control ID="tpgEmulation">Emulation</Control>
 			<Control ID="chkUseBootRom">Use boot ROM</Control>
-						
+
 			<Control ID="tpgVideo">Video</Control>
 			<Control ID="lblLcdSettings">LCD Settings</Control>
 			<Control ID="chkAutoRotate">Automatically rotate screen</Control>
@@ -642,11 +657,119 @@
 
 			<Control ID="tpgInput">Input</Control>
 			<Control ID="grpControllers">Controllers</Control>
+			<Control ID="lblWsInputHint">Configure both horizontal and vertical handheld layouts to avoid orientation-specific input surprises.</Control>
 			<Control ID="lblPlayer1Horizontal">Controller (Horizontal)</Control>
 			<Control ID="lblPlayer1Vertical">Controller (Vertical)</Control>
 			<Control ID="btnSetup">Setup</Control>
+
+			<Control ID="lblWsVideoHint">Adjust LCD blending and layer visibility options for gameplay tuning and graphics debugging.</Control>
 		</Form>
-		
+
+		<Form ID="WsControllerView">
+			<Control ID="lblTurboA">Turbo A</Control>
+			<Control ID="lblTurboB">Turbo B</Control>
+			<Control ID="lblSound">Sound</Control>
+			<Control ID="lblStart">Start</Control>
+		</Form>
+
+		<Form ID="WsControllerVerticalView">
+			<Control ID="lblTurboA">Turbo A</Control>
+			<Control ID="lblTurboB">Turbo B</Control>
+			<Control ID="lblSound">Sound</Control>
+			<Control ID="lblStart">Start</Control>
+		</Form>
+
+		<Form ID="Atari2600ConfigView">
+			<Control ID="tpgGeneral">General</Control>
+			<Control ID="lblConsoleSwitches">Console Switches</Control>
+			<Control ID="lblAtari2600ConsoleSwitchesHint">Toggle the console's physical front-panel switches used by many Atari 2600 games (difficulty and color/B&amp;W mode).</Control>
+			<Control ID="chkP0DifficultyB">Player 1 difficulty B (beginner)</Control>
+			<Control ID="chkP1DifficultyB">Player 2 difficulty B (beginner)</Control>
+			<Control ID="chkColorMode">Color mode (vs B/W)</Control>
+
+			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="grpVolume">Volume</Control>
+			<Control ID="lblChannel1">Channel 1</Control>
+			<Control ID="lblChannel2">Channel 2</Control>
+
+			<Control ID="tpgEmulation">Emulation</Control>
+			<Control ID="lblDeveloperSettings">Recommended settings for developers (homebrew / ROM hacking)</Control>
+			<Control ID="lblAtari2600DeveloperSettingsHint">Choose how RAM initializes on power-on. Randomized RAM can expose startup assumptions and improve compatibility testing.</Control>
+			<Control ID="lblRamPowerOnState">Default power on state for RAM: </Control>
+
+			<Control ID="tpgInput">Input</Control>
+			<Control ID="grpControllers">Controllers</Control>
+			<Control ID="lblController1">Left (Port 1):</Control>
+			<Control ID="lblController2">Right (Port 2):</Control>
+
+			<Control ID="tpgVideo">Video</Control>
+			<Control ID="lblDisplaySettings">Display Settings</Control>
+			<Control ID="lblAtari2600VideoHint">These options hide individual TIA layers to help debug graphics composition and sprite/playfield interactions.</Control>
+			<Control ID="chkHidePlayfield">Hide playfield</Control>
+			<Control ID="chkHidePlayer0">Hide player 0 (P0)</Control>
+			<Control ID="chkHidePlayer1">Hide player 1 (P1)</Control>
+			<Control ID="chkHideMissile0">Hide missile 0 (M0)</Control>
+			<Control ID="chkHideMissile1">Hide missile 1 (M1)</Control>
+			<Control ID="chkHideBall">Hide ball (BL)</Control>
+		</Form>
+
+		<Form ID="Atari2600InputConfigView">
+			<Control ID="lblController1">Left (Port 1):</Control>
+			<Control ID="lblController2">Right (Port 2):</Control>
+		</Form>
+
+		<Form ID="LynxConfigView">
+			<Control ID="tpgGeneral">General</Control>
+			<Control ID="lblLynxGeneralHint">Enable auto-rotation to match the orientation expected by games that support portrait and landscape modes.</Control>
+			<Control ID="chkAutoRotate">Automatically rotate screen</Control>
+
+			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="grpVolume">Volume</Control>
+			<Control ID="lblChannel1">Channel 1</Control>
+			<Control ID="lblChannel2">Channel 2</Control>
+			<Control ID="lblChannel3">Channel 3</Control>
+			<Control ID="lblChannel4">Channel 4</Control>
+
+			<Control ID="tpgEmulation">Emulation</Control>
+			<Control ID="lblLynxBootRomHint">Use the original Lynx boot ROM for improved startup behavior and compatibility with software that depends on boot code routines.</Control>
+			<Control ID="chkUseBootRom">Use boot ROM</Control>
+
+			<Control ID="tpgInput">Input</Control>
+			<Control ID="grpControllers">Controllers</Control>
+			<Control ID="lblLynxInputHint">Configure the Lynx handheld controls for player 1.</Control>
+			<Control ID="lblPlayer1">Player 1</Control>
+			<Control ID="btnSetup">Setup</Control>
+
+			<Control ID="tpgVideo">Video</Control>
+			<Control ID="lblDisplaySettings">Display Settings</Control>
+			<Control ID="lblLynxVideoHint">Use these options to approximate LCD behavior or selectively disable layers while debugging graphics output.</Control>
+			<Control ID="chkBlendFrames">Enable LCD frame blending</Control>
+			<Control ID="chkDisableBackground">Disable background</Control>
+			<Control ID="chkDisableSprites">Disable sprites</Control>
+		</Form>
+
+		<Form ID="ChannelFConfigView">
+			<Control ID="tpgAudio">Audio</Control>
+			<Control ID="grpVolume">Volume</Control>
+			<Control ID="lblAudio">Audio</Control>
+			<Control ID="lblChannelFAudioHelp">Channel F uses a single mixed audio channel. Adjust this slider to control overall output volume.</Control>
+
+			<Control ID="tpgEmulation">Emulation</Control>
+			<Control ID="lblDeveloperSettings">Recommended settings for developers (homebrew / ROM hacking)</Control>
+			<Control ID="lblChannelFDeveloperSettingsHint">RAM power-on behavior can affect startup logic. Use random RAM to detect assumptions and improve compatibility testing.</Control>
+			<Control ID="lblRamPowerOnState">Default power on state for RAM: </Control>
+
+			<Control ID="tpgInput">Input</Control>
+			<Control ID="tpgVideo">Video</Control>
+		</Form>
+
+		<Form ID="ChannelFInputConfigView">
+			<Control ID="grpControllers">Controllers</Control>
+			<Control ID="lblInputHint">Configure the detachable hand controller and the console front-panel controls used by Channel F games.</Control>
+			<Control ID="lblMainController">Hand Controller:</Control>
+			<Control ID="lblConsolePanel">Console Panel:</Control>
+		</Form>
+
 		<Form ID="ShortcutKeysTabView">
 			<Control ID="lblShortcutWarning">Warning: Your current configuration contains conflicting key bindings. If this is not intentional, please review and correct your key bindings.</Control>
 			<Control ID="colAction">Action</Control>
@@ -671,24 +794,106 @@
 			<Control ID="tabGba">GBA</Control>
 			<Control ID="tabPcEngine">PC Engine</Control>
 			<Control ID="tabSms">SMS</Control>
+			<Control ID="tabGenesis">Genesis</Control>
 			<Control ID="tabWs">WonderSwan</Control>
+			<Control ID="tabLynx">Lynx</Control>
+			<Control ID="tabAtari2600">Atari 2600</Control>
+			<Control ID="tabChannelF">Channel F</Control>
 			<Control ID="tabOtherConsoles">Other systems</Control>
 			<Control ID="tabPreferences">Preferences</Control>
 
-			<Control ID="btnOpenMesenFolder">Open Mesen folder</Control>
+			<Control ID="btnOpenNexenFolder">Open Nexen folder</Control>
 			<Control ID="btnResetSettings">Reset all settings</Control>
 
 			<Control ID="btnOK">OK</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
-		
+
 		<Form ID="PreferencesConfigView">
 			<Control ID="tpgGeneral">General</Control>
 			<Control ID="lblTheme">Theme:</Control>
+			<Control ID="lblThemeProfiles">Theme Profiles</Control>
+			<Control ID="lblThemeProfile">Profile</Control>
+			<Control ID="btnThemeApply">Apply</Control>
+			<Control ID="btnThemeSaveCurrent">Save Current</Control>
+			<Control ID="btnThemeDelete">Delete</Control>
+			<Control ID="btnThemeImportProfile">Import Profile</Control>
+			<Control ID="btnThemeExportProfile">Export Profile</Control>
+			<Control ID="btnThemeResetDefaults">Reset Defaults</Control>
+			<Control ID="btnThemeApplyLightPreset">Apply Light Preset</Control>
+			<Control ID="btnThemeApplyDarkPreset">Apply Dark Preset</Control>
+			<Control ID="lblThemeRenameTo">Rename To</Control>
+			<Control ID="btnThemeRename">Rename</Control>
+			<Control ID="lblThemeDuplicateAs">Duplicate As</Control>
+			<Control ID="btnThemeDuplicate">Duplicate</Control>
+			<Control ID="lblThemeStartupBackground">Startup Background</Control>
+			<Control ID="lblThemeStartupText">Startup Text</Control>
+			<Control ID="lblThemePrimaryAction">Primary Action</Control>
+			<Control ID="lblThemeMenuBackground">Menu Background</Control>
+			<Control ID="lblThemeMenuHighlight">Menu Highlight</Control>
+			<Control ID="lblThemeAccentColor">Accent Color</Control>
+			<Control ID="lblThemeControlHoverBackground">Control Hover Background</Control>
+			<Control ID="lblThemeControlPressedBackground">Control Pressed Background</Control>
+			<Control ID="lblThemeControlHoverBorder">Control Hover Border</Control>
+			<Control ID="lblThemeControlPressedBorder">Control Pressed Border</Control>
+			<Control ID="lblThemeSidebarBorderColor">Sidebar Border Color</Control>
+			<Control ID="lblThemeDockTabStripBackground">Dock Tab Strip Background</Control>
+			<Control ID="lblThemeDockTabHoverBackground">Dock Tab Hover Background</Control>
+			<Control ID="lblThemeDockTabActiveBackground">Dock Tab Active Background</Control>
+			<Control ID="lblThemeDockTabActiveBorder">Dock Tab Active Border</Control>
+			<Control ID="lblThemeCheckBoxHoverBorder">Checkbox Hover Border</Control>
+			<Control ID="lblThemeCheckBoxPressedBackground">Checkbox Pressed Background</Control>
+			<Control ID="lblThemeCheckBoxPressedBorder">Checkbox Pressed Border</Control>
+			<Control ID="lblThemeRadioButtonHoverBorder">Radio Button Hover Border</Control>
+			<Control ID="lblThemeRadioButtonPressedBackground">Radio Button Pressed Background</Control>
+			<Control ID="lblThemeRadioButtonPressedBorder">Radio Button Pressed Border</Control>
+			<Control ID="lblThemeSliderHoverTrack">Slider Hover Track</Control>
+			<Control ID="lblThemeSliderPressedTrack">Slider Pressed Track</Control>
+			<Control ID="lblThemeTextSelection">Text Selection</Control>
+			<Control ID="lblThemeTextControlDisabledBackground">Disabled Text Background</Control>
+			<Control ID="lblThemeToolTipBackground">Tooltip Background</Control>
+			<Control ID="lblThemeMenuFlyoutBackground">Menu Flyout Background</Control>
+			<Control ID="lblThemeMenuFlyoutBorder">Menu Flyout Border</Control>
+			<Control ID="lblThemeComboBoxDropDownBackground">ComboBox Dropdown Background</Control>
+			<Control ID="lblThemeComboBoxDropDownBorder">ComboBox Dropdown Border</Control>
+			<Control ID="lblThemeDataGridHeaderBackground">DataGrid Header Background</Control>
+			<Control ID="lblThemeDataGridHeaderForeground">DataGrid Header Foreground</Control>
+			<Control ID="lblThemeDataGridSelectedRowForeground">DataGrid Selected Row Foreground</Control>
+			<Control ID="lblThemeListBoxHoverBackground">ListBox Hover Background</Control>
+			<Control ID="lblThemeListBoxSelectedBackground">ListBox Selected Background</Control>
+			<Control ID="lblThemeListBoxSelectedForeground">ListBox Selected Foreground</Control>
+			<Control ID="lblThemeTreeViewHoverBackground">TreeView Hover Background</Control>
+			<Control ID="lblThemeTreeViewSelectedBackground">TreeView Selected Background</Control>
+			<Control ID="lblThemeTreeViewSelectedForeground">TreeView Selected Foreground</Control>
+			<Control ID="lblThemeNavigationViewHoverBackground">NavigationView Hover Background</Control>
+			<Control ID="lblThemeNavigationViewSelectedBackground">NavigationView Selected Background</Control>
+			<Control ID="lblThemeNavigationViewSelectedForeground">NavigationView Selected Foreground</Control>
+			<Control ID="lblThemeListViewHoverBackground">ListView Hover Background</Control>
+			<Control ID="lblThemeListViewSelectedBackground">ListView Selected Background</Control>
+			<Control ID="lblThemeListViewSelectedForeground">ListView Selected Foreground</Control>
+			<Control ID="lblThemeGroupStartup">Startup</Control>
+			<Control ID="lblThemeGroupChrome">Chrome and Accent</Control>
+			<Control ID="lblThemeGroupControlStates">Control States</Control>
+			<Control ID="lblThemeGroupInputsAndFlyouts">Inputs and Flyouts</Control>
+			<Control ID="lblThemeGroupComboAndDataGrid">Combo and DataGrid</Control>
+			<Control ID="lblThemeGroupListAndTree">List and Tree</Control>
+			<Control ID="lblThemeGroupNavigationAndListView">Navigation and ListView</Control>
+			<Control ID="btnThemePickColor">Pick</Control>
+			<Control ID="lblThemeLivePreview">Live Preview</Control>
+			<Control ID="lblThemePresetStatus">Preset Status:</Control>
+			<Control ID="lblThemeMatchesDefaults">Matches defaults</Control>
+			<Control ID="lblThemeTokensCustomized">tokens customized</Control>
+			<Control ID="lblThemeCustomizedTokens">Customized Tokens:</Control>
+			<Control ID="lblThemeCustomizedFonts">Fonts:</Control>
+			<Control ID="lblThemeCustomizedStartup">Startup:</Control>
+			<Control ID="lblThemeCustomizedSetup">Setup:</Control>
 			<Control ID="lblRequiresRestart">(requires restart)</Control>
-			
+
 			<Control ID="lblDisplayLanguage">Display Language:</Control>
-			<Control ID="chkSingleInstance">Only allow one instance of Mesen at a time</Control>
+			<Control ID="lblAppliesImmediately">(applies immediately, no restart)</Control>
+			<Control ID="btnApplyLanguageNow">Apply Now</Control>
+			<Control ID="lblAvailableLanguages">Available languages:</Control>
+			<Control ID="chkSingleInstance">Only allow one instance of Nexen at a time</Control>
 			<Control ID="chkAutomaticallyCheckForUpdates">Automatically check for updates</Control>
 
 			<Control ID="chkDeveloperMode">Enable developer mode</Control>
@@ -742,12 +947,18 @@
 			<Control ID="chkSaveStatesOverride">Save States:</Control>
 			<Control ID="chkMoviesOverride">Movies:</Control>
 
+			<Control ID="grpDataMigration">Data Migration</Control>
+			<Control ID="lblMigrationDescription">When legacy game data is detected, Nexen can migrate save states and battery saves to per-game folders on ROM load. Use the button below to remove old copies of files that have already been migrated.</Control>
+			<Control ID="btnCleanupLegacyData">Clean up migrated legacy files...</Control>
+
 			<Control ID="tpgAdvanced">Advanced</Control>
 			<Control ID="chkShowFullPathInRecents">Show full file path in recent file list</Control>
 			<Control ID="chkShowFrameCounter">Show frame counter</Control>
 			<Control ID="chkShowGameTimer">Show game timer</Control>
 			<Control ID="chkShowLagCounter">Show lag counter</Control>
 			<Control ID="btnResetLagCounter">Reset lag counter</Control>
+			<Control ID="chkShowRerecordCounter">Show rerecord counter (TAS)</Control>
+			<Control ID="chkShowLagFrameIndicator">Flash screen on lag frames (TAS)</Control>
 			<Control ID="chkShowVsConfigOnLoad">Show game configuration dialog when loading VS System games</Control>
 
 			<Control ID="lblFontSettings">Font Settings</Control>
@@ -758,6 +969,8 @@
 			<Control ID="lblAdvancedMisc">Miscellaneous Settings</Control>
 			<Control ID="chkEnableAutoSaveState">Automatically create a save state every </Control>
 			<Control ID="lblSaveStateMinutes">minutes (game clock)</Control>
+			<Control ID="chkShowAutoSaveNotifications">Show notification for auto-save</Control>
+			<Control ID="chkShowRecentPlayNotifications">Show notification for recent-play save</Control>
 			<Control ID="lblRewind">Allow rewind to use up to </Control>
 			<Control ID="lblRewindMinutes">MB of memory (Memory Usage ≈5MB/min)</Control>
 
@@ -786,7 +999,7 @@
 		</Form>
 		<Form ID="SelectStorageFolderWindow">
 			<Control ID="wndTitle">Select Data Storage Folder</Control>
-			<Control ID="lblStorageHint">Select where you want to store Mesen's data:</Control>
+			<Control ID="lblStorageHint">Select where you want to store Nexen's data:</Control>
 			<Control ID="radStorageDocuments">Store data in my user profile</Control>
 			<Control ID="radStoragePortable">Store data in the same folder as the application</Control>
 			<Control ID="lblFolder">Destination folder: </Control>
@@ -833,23 +1046,23 @@
 			<Control ID="lblHint">To enter multiple codes, enter 1 code per line.</Control>
 			<Control ID="lblInvalidCodes">Some codes do not match the selected format.</Control>
 			<Control ID="lblFormat">Format:</Control>
-			
+
 			<Control ID="btnOK">OK</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
 		<Form ID="AboutWindow">
-			<Control ID="wndTitle">About - Mesen</Control>
-			<Control ID="lblName">Mesen</Control>
+			<Control ID="wndTitle">About - Nexen</Control>
+			<Control ID="lblName">Nexen</Control>
 			<Control ID="lblWebsite">Website:</Control>
-			<Control ID="lblLink">www.mesen.ca</Control>
+			<Control ID="lblLink">www.Nexen.ca</Control>
 			<Control ID="lblVersion">Version:</Control>
 			<Control ID="lblBuildDate">Build Date:</Control>
 			<Control ID="lblCommitId">Commit ID:</Control>
 			<Control ID="lblRuntimeVersion">Runtime:</Control>
 
 			<Control ID="grpAcknowledgements">Acknowledgements</Control>
-			<Control ID="lblAcknowledgeList">Thank you to the following people/projects for their direct and indirect help in making Mesen possible:</Control>
-			<Control ID="lblUsedSoftware">Mesen uses the following open-source software:</Control>
+			<Control ID="lblAcknowledgeList">Thank you to the following people/projects for their direct and indirect help in making Nexen possible:</Control>
+			<Control ID="lblUsedSoftware">Nexen uses the following open-source software:</Control>
 			<Control ID="lblSpecialThanks">And thank you to everybody who has contributed in any way! (bug reports, testing, research, etc.)</Control>
 
 			<Control ID="btnOk">OK</Control>
@@ -871,32 +1084,46 @@
 
 			<Control ID="lblRecordSystemHud">Record system HUD (game timer, on-screen messages, etc.)</Control>
 			<Control ID="lblRecordInputHud">Record input HUD</Control>
-			
+
 			<Control ID="btnBrowse">Browse...</Control>
 			<Control ID="btnOK">Record</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
 		<Form ID="UpdatePromptWindow">
-			<Control ID="wndTitle">Mesen Updater</Control>
+			<Control ID="wndTitle">Nexen Updater</Control>
 			<Control ID="lblLatestVersion">Latest version:</Control>
 			<Control ID="lblInstalledVersion">Installed version:</Control>
-			<Control ID="lblNewVersionAvailable">A new version of Mesen is available</Control>
+			<Control ID="lblNewVersionAvailable">A new version of Nexen is available</Control>
 			<Control ID="lblReleaseNotes">Release notes</Control>
 			<Control ID="btnUpdate">Update</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
 		<Form ID="SetupWizardWindow">
-			<Control ID="wndTitle">Mesen</Control>
-			<Control ID="lblMesen">Mesen - Emulator</Control>
+			<Control ID="wndTitle">Nexen</Control>
+			<Control ID="lblNexen">Nexen - Emulator</Control>
 			<Control ID="lblConfigWizard">Configuration</Control>
-			<Control ID="lblInitialSetup">Please take a moment to perform Mesen's initial setup.</Control>
+			<Control ID="lblInitialSetup">Please take a moment to perform Nexen's initial setup.</Control>
+			<Control ID="lblResumeDraftLoaded">Your previous setup choices were restored so you can continue where you left off.</Control>
+			<Control ID="btnStartFresh">Start fresh</Control>
+			<Control ID="lblPrimaryUsage">Primary Usage</Control>
+			<Control ID="lblPrimaryUsageHint">Choose the default setup that best matches how you plan to use Nexen.</Control>
+			<Control ID="radPrimaryUsagePlaying">Mostly playing games</Control>
+			<Control ID="lblPrimaryUsagePlayingHint">Keeps background CDL and automatic Pansy export disabled by default to reduce overhead during normal play.</Control>
+			<Control ID="radPrimaryUsageDebugging">Mostly debugging and reverse engineering</Control>
+			<Control ID="lblPrimaryUsageDebuggingHint">Turns on background CDL recording, automatic Pansy export, and related debugging-friendly defaults immediately.</Control>
 			<Control ID="lblStorageLocation">Data Storage Location</Control>
-			<Control ID="lblStorageHint">Select where you want to store Mesen's data:</Control>
+			<Control ID="lblStorageHint">Select where you want to store Nexen's data:</Control>
 			<Control ID="radStorageDocuments">Store the data in my user profile</Control>
+			<Control ID="lblStorageDocumentsHint">Recommended for most users. Settings and saves stay with your account and survive app upgrades.</Control>
 			<Control ID="radStoragePortable">Store the data in the same folder as the application</Control>
+			<Control ID="lblStoragePortableHint">Best for portable installs on writable folders. Data may be lost if the app folder is replaced.</Control>
+			<Control ID="lblStoragePortableUnavailableHint">Portable mode is unavailable in this environment. Use user profile storage for reliable writes.</Control>
 			<Control ID="lblDataLocation">Folder:</Control>
+			<Control ID="btnStorageResetRecommended">Use recommended location</Control>
 			<Control ID="lblInputMappings">Input Mappings</Control>
-			<Control ID="lblInputHint">Select your preferred input methods:</Control>
+			<Control ID="lblInputHint">Input defaults are ready to use. Customize only if you want to override them now.</Control>
+			<Control ID="chkCustomizeInputMappingsNow">Customize input mappings now (optional)</Control>
+			<Control ID="lblInputDefaultsHint">You can always change controller mappings later from Input settings for the active system.</Control>
 			<Control ID="lblMiscOptions">Other Options</Control>
 			<Control ID="chkCreateShortcut">Create a shortcut on my desktop</Control>
 			<Control ID="chkCheckForUpdates">Automatically check for updates when launched</Control>
@@ -914,9 +1141,31 @@
 			<Control ID="btnOK">Record</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
+		<Form ID="GreenzoneSettingsDialog">
+			<Control ID="wndTitle">Greenzone Settings</Control>
+			<Control ID="lblTitle">Greenzone Settings</Control>
+			<Control ID="lblHint">Tune capture interval, memory budget, and compression to balance rewind smoothness and RAM usage.</Control>
+			<Control ID="lblSavestates">Savestates:</Control>
+			<Control ID="lblMemoryUsage">Memory Usage:</Control>
+			<Control ID="lblCaptureInterval">Capture Interval:</Control>
+			<Control ID="ttCaptureInterval">Frames between automatic savestate captures.</Control>
+			<Control ID="lblMaxSavestates">Max Savestates:</Control>
+			<Control ID="ttMaxSavestates">Maximum number of savestates kept in memory.</Control>
+			<Control ID="lblMemoryLimit">Memory Limit (MB):</Control>
+			<Control ID="ttMemoryLimit">Maximum memory budget for greenzone in megabytes.</Control>
+			<Control ID="lblRingBufferSize">Ring Buffer Size:</Control>
+			<Control ID="ttRingBufferSize">Recent frames kept uncompressed for fast rewind.</Control>
+			<Control ID="lblCompression">Compression:</Control>
+			<Control ID="chkCompression">Compress older states</Control>
+			<Control ID="lblCompressionThreshold">Compression Threshold:</Control>
+			<Control ID="ttCompressionThreshold">Frames older than this are compressed.</Control>
+			<Control ID="btnClearAllStates">Clear All States</Control>
+			<Control ID="btnOK">OK</Control>
+			<Control ID="btnCancel">Cancel</Control>
+		</Form>
 		<Form ID="HdPackBuilderWindow">
 			<Control ID="wndTitle">HD Pack Builder</Control>
-			
+
 			<Control ID="grpOptions">Recording Settings</Control>
 			<Control ID="lblBankSize">CHR Bank Size:</Control>
 			<Control ID="lblScale">Scale/Filter:</Control>
@@ -935,7 +1184,7 @@
 			<Control ID="btnStartRecording">Start Recording</Control>
 			<Control ID="btnStopRecording">Stop Recording</Control>
 			<Control ID="btnOpenFolder">Open Save Folder</Control>
-			
+
 			<Control ID="lblSaveTo">Save to:</Control>
 		</Form>
 		<Form ID="InputBarcodeWindow">
@@ -950,9 +1199,9 @@
 
 			<Control ID="tabOverscan">Overscan</Control>
 			<Control ID="chkOverrideOverscan">Use game-specific overscan settings</Control>
-			
+
 			<Control ID="tabDipSwitches">DIP Switches</Control>
-			
+
 			<Control ID="btnOk">OK</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
@@ -963,14 +1212,14 @@
 			<Control ID="btnOK">OK</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
-		
+
 		<Form ID="CheatDatabaseWindow">
 			<Control ID="wndTitle">Import cheats from cheat database...</Control>
 			<Control ID="lblSearch">Search:</Control>
 			<Control ID="btnOK">OK</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
-		
+
 		<Form ID="BaseInputConfigForm">
 			<Control ID="btnOK">OK</Control>
 			<Control ID="btnCancel">Cancel</Control>
@@ -981,12 +1230,12 @@
 			<Control ID="lblHint">Each button can be mapped to up to 4 different keyboard keys or gamepad buttons.</Control>
 			<Control ID="btnSetDefaultBindings">Set Default Bindings</Control>
 			<Control ID="btnClear">Clear Key Bindings</Control>
-			
+
 			<Control ID="tpgSet1">Key Set #1</Control>
 			<Control ID="tpgSet2">Key Set #2</Control>
 			<Control ID="tpgSet3">Key Set #3</Control>
 			<Control ID="tpgSet4">Key Set #4</Control>
-			
+
 			<Control ID="lblTurboSpeed">Turbo Speed:</Control>
 			<Control ID="lblTurboFast">Fast</Control>
 			<Control ID="lblTurboSlow">Slow</Control>
@@ -995,7 +1244,7 @@
 			<Control ID="mnuKeyboard">Keyboard</Control>
 			<Control ID="mnuWasdLayout">WASD Layout</Control>
 			<Control ID="mnuArrowLayout">Arrow Keys Layout</Control>
-			
+
 			<Control ID="mnuXboxController">Xbox Controller</Control>
 			<Control ID="mnuXboxLayout1">Controller #1</Control>
 			<Control ID="mnuXboxLayout1AltA">Controller #1 - A+B layout</Control>
@@ -1015,7 +1264,7 @@
 			<Control ID="btnOK">OK</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
-		
+
 		<Form ID="CheckBoxWarning">
 			<Control ID="Hint">(not recommended)</Control>
 		</Form>
@@ -1028,9 +1277,15 @@
 			<Control ID="lblGba">GBA</Control>
 			<Control ID="lblPcEngine">PC Engine</Control>
 			<Control ID="lblSms">SMS</Control>
+			<Control ID="lblGenesis">Genesis</Control>
 			<Control ID="lblWs">WonderSwan</Control>
+			<Control ID="lblLynx">Lynx</Control>
 		</Form>
-		
+
+		<Form ID="GenesisConfigView">
+			<Control ID="lblGenesisOverrides">Genesis - Global Config Overrides</Control>
+		</Form>
+
 		<Form ID="AudioPlayerView">
 			<Control ID="btnPrevTrack">Previous track</Control>
 			<Control ID="btnNextTrack">Next track</Control>
@@ -1038,7 +1293,7 @@
 			<Control ID="btnToggleShuffle">Shuffle on/off</Control>
 			<Control ID="btnToggleRepeat">Repeat on/off</Control>
 		</Form>
-		
+
 		<Form ID="TilemapViewerWindow">
 			<Control ID="wndTitle">Tilemap Viewer</Control>
 
@@ -1055,13 +1310,13 @@
 			<Control ID="chkNesShowAttributeGrid">Show attribute grid (16x16)</Control>
 			<Control ID="chkNesShowAttributeByteGrid">Show attribute grid (32x32)</Control>
 			<Control ID="chkNesShowTilemapGrid">Show nametable delimiters</Control>
-			
+
 			<Control ID="lblHighlightOptions">Highlight settings</Control>
 			<Control ID="lblTileHighlightMode">Tiles:</Control>
 			<Control ID="lblAttributeHighlightMode">Attributes:</Control>
 			<Control ID="chkShowScrollOverlay">Show scroll overlay</Control>
 		</Form>
-		
+
 		<Form ID="TileEditorWindow">
 			<Control ID="wndTitle">Tile Editor</Control>
 			<Control ID="mnuFile">_File</Control>
@@ -1071,14 +1326,14 @@
 			<Control ID="lblBackground">Background:</Control>
 			<Control ID="chkShowGrid">Show grid</Control>
 			<Control ID="lblPreview">Preview</Control>
-			
+
 			<Control ID="lblHint1">Select color by clicking above.</Control>
 			<Control ID="lblHint2">Left-click: Draw selected color</Control>
 			<Control ID="lblHint3">Hold shift: Details on pixel under cursor</Control>
 			<Control ID="lblHint4">Shift-click/Right-click: Pick color under cursor</Control>
 			<Control ID="lblHint5">Ctrl-click: Make pixel transparent</Control>
 		</Form>
-		
+
 		<Form ID="TileViewerWindow">
 			<Control ID="wndTitle">Tile Viewer</Control>
 			<Control ID="mnuFile">_File</Control>
@@ -1146,7 +1401,7 @@
 
 			<Control ID="mnuFile">_File</Control>
 			<Control ID="mnuOptions">_Settings</Control>
-			
+
 			<Control ID="lblStartAddress">Start address: $</Control>
 			<Control ID="lblBytesUsed">Bytes used: </Control>
 
@@ -1159,23 +1414,23 @@
 			<Control ID="btnOk">Apply</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
-		
+
 		<Form ID="ScriptWindow">
 			<Control ID="wndTitle">Script Window</Control>
 
 			<Control ID="mnuFile">_File</Control>
 			<Control ID="mnuScript">_Script</Control>
 			<Control ID="mnuHelp">_Help</Control>
-			
+
 			<Control ID="btnRun">Run</Control>
 			<Control ID="btnStop">Stop</Control>
 		</Form>
-		
+
 		<Form ID="LogWindow">
 			<Control ID="wndTitle">Log Window</Control>
 			<Control ID="btnClose">Close</Control>
 		</Form>
-		
+
 		<Form ID="DebugLogWindow">
 			<Control ID="wndTitle">Debug Log</Control>
 			<Control ID="btnClose">Close</Control>
@@ -1218,19 +1473,19 @@
 			<Control ID="lblSaveRam">Save RAM:</Control>
 			<Control ID="lblChrRam">CHR RAM:</Control>
 			<Control ID="lblChrSaveRam">CHR Save RAM:</Control>
-			
+
 			<Control ID="chkBattery">Battery</Control>
 			<Control ID="chkTrainer">Trainer</Control>
 
 			<Control ID="btnSaveAs">Save as...</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
-		
+
 		<Form ID="TraceLoggerWindow">
 			<Control ID="wndTitle">Trace Logger</Control>
 			<Control ID="lblCondition">Condition: </Control>
 			<Control ID="chkEnabled">Enabled</Control>
-			
+
 			<Control ID="grpLogOptions">{0} - Log settings</Control>
 
 			<Control ID="chkCustomFormat">Use custom format:</Control>
@@ -1248,7 +1503,7 @@
 
 			<Control ID="chkUseLabels">Use labels</Control>
 			<Control ID="chkIndentCode">Indent based on stack pointer</Control>
-			
+
 			<Control ID="lblConditionError">Condition contains invalid syntax or symbols.</Control>
 
 			<Control ID="mnuFile">_File</Control>
@@ -1274,7 +1529,7 @@
 			<Control ID="chkShowListView">Show list view</Control>
 			<Control ID="btnSelectAll">Select all</Control>
 			<Control ID="btnDeselectAll">Deselect all</Control>
-			
+
 			<Control ID="colPc">PC</Control>
 			<Control ID="colScanline">Scanline</Control>
 			<Control ID="colCycle">Cycle</Control>
@@ -1299,13 +1554,13 @@
 			<Control ID="colAddress">Address</Control>
 			<Control ID="colCondition">Condition</Control>
 		</Form>
-		
+
 		<Form ID="CallStackView">
 			<Control ID="colFunction">Function</Control>
 			<Control ID="colPcAddress">PC Address</Control>
 			<Control ID="colRomAddress">ROM Address</Control>
 		</Form>
-		
+
 		<Form ID="FindResultListView">
 			<Control ID="colAddress">Address</Control>
 			<Control ID="colResult">Result</Control>
@@ -1328,7 +1583,7 @@
 			<Control ID="colName">Name</Control>
 			<Control ID="colValue">Value</Control>
 		</Form>
-		
+
 		<Form ID="QuickSearchView">
 			<Control ID="lblSearch">Search</Control>
 		</Form>
@@ -1357,9 +1612,9 @@
 			<Control ID="chkBreakOnStp">STP</Control>
 			<Control ID="chkBreakOnInvalidPpuAccess">Invalid PPU memory access</Control>
 			<Control ID="chkBreakOnReadDuringAutoJoy">Controller read during auto-read</Control>
-			
+
 			<Control ID="chkSpcBreakOnStpSleep">STOP / SLEEP</Control>
-			
+
 			<Control ID="chkBreakOnUninitRead">Uninitialized memory read</Control>
 			<Control ID="chkBreakOnOpen">Debugger opened</Control>
 			<Control ID="chkBreakOnPowerCycleReset">Power/reset</Control>
@@ -1409,11 +1664,11 @@
 			<Control ID="mnuFile">_File</Control>
 			<Control ID="mnuView">_View</Control>
 			<Control ID="mnuSearch">_Search</Control>
-			
+
 			<Control ID="lblMemoryType">Memory Type:</Control>
 			<Control ID="btnToggleSettings">Toggle settings panel</Control>
 		</Form>
-		
+
 		<Form ID="MemoryToolsDisplayOptionsView">
 			<Control ID="lblAccessHighlight">Access highlighting</Control>
 			<Control ID="lblFadeSpeed">Fade speed: </Control>
@@ -1458,9 +1713,9 @@
 			<Control ID="lblNoMatchFound">No match found!</Control>
 			<Control ID="btnFindPrev">Previous</Control>
 			<Control ID="btnFindNext">Next</Control>
-			
+
 			<Control ID="lblSearchHelp">When searching hexadecimal values, a question mark (?)&#10;can be used to define a byte that can take any value.&#10;&#10;e.g: "FF ? 55" will search for any set of three&#10;bytes that starts with FF and ends with 55.</Control>
-			
+
 			<Control ID="btnClose">Close</Control>
 		</Form>
 		<Form ID="FontOptionsView">
@@ -1476,7 +1731,7 @@
 			<Control ID="lblResetToDefault">Reset to default</Control>
 			<Control ID="chkRefreshOnBreakPause">Refresh on break</Control>
 		</Form>
-		
+
 		<Form ID="GoToAllWindow">
 			<Control ID="wndTitle">Go to All</Control>
 			<Control ID="lblSearch">Search:</Control>
@@ -1484,12 +1739,12 @@
 			<Control ID="btnSelect">Select</Control>
 			<Control ID="btnClose">Close</Control>
 		</Form>
-		
+
 		<Form ID="DebuggerConfigWindow">
 			<Control ID="wndTitle">Debugger Settings</Control>
 			<Control ID="btnOK">OK</Control>
 			<Control ID="btnCancel">Cancel</Control>
-			
+
 			<Control ID="tabDebugger">Debugger</Control>
 			<Control ID="lblGeneralSettings">General settings</Control>
 			<Control ID="chkAutoResetCdl">Reset CDL when ROM changes</Control>
@@ -1513,13 +1768,13 @@
 
 			<Control ID="lblDisplaySettings">Display settings</Control>
 			<Control ID="chkShowLineNumbers">Show line numbers</Control>
-			
+
 			<Control ID="lblRestrictions">Restrictions</Control>
 			<Control ID="lblMaxExecutionTime">Maximum execution time:</Control>
 			<Control ID="lblSeconds">seconds</Control>
 			<Control ID="chkAllowIoOsAccess">Allow access to I/O and OS functions</Control>
 			<Control ID="chkAllowNetworkAccess">Allow network access</Control>
-			
+
 			<Control ID="tabFonts">Fonts &amp; Colors</Control>
 			<Control ID="lblFontSettings">Font settings</Control>
 
@@ -1528,7 +1783,7 @@
 			<Control ID="lblAssemblerFont">Assembler:</Control>
 			<Control ID="lblScriptWindowFont">Script window:</Control>
 			<Control ID="lblOtherMonoFont">Other (monospace):</Control>
-			
+
 			<Control ID="lblSyntaxHighlighting">Syntax highlighting</Control>
 			<Control ID="lblCodeOpcodeColor">Opcode</Control>
 			<Control ID="lblCodeLabelDefinitionColor">Label</Control>
@@ -1538,7 +1793,7 @@
 			<Control ID="lblCodeEffectiveAddressColor">Effective Address</Control>
 			<Control ID="lblCodeActiveStatementColor">Active Statement</Control>
 			<Control ID="lblCodeActiveMidInstructionColor">Active Statement (mid-instruction)</Control>
-			
+
 			<Control ID="lblCodeVerifiedDataColor">Verified Data</Control>
 			<Control ID="lblCodeUnidentifiedDataColor">Unidentified Block</Control>
 			<Control ID="lblCodeUnexecutedCodeColor">Unexecuted Code</Control>
@@ -1550,15 +1805,39 @@
 			<Control ID="tabIntegration">Integration</Control>
 			<Control ID="lblIntegrationSettings">Integration settings</Control>
 			<Control ID="chkResetLabelsOnImport">Reset workspace labels to their default state before importing label/symbol files</Control>
+			<Control ID="lblIntegrationDefaultsHint">Recommended defaults: Playing mode keeps background CDL recording and automatic Pansy export off; Debugging mode turns them on.</Control>
 			<Control ID="lblAutoLoadSettings">Auto-load settings</Control>
 			<Control ID="lblAutoLoadHint">Automatically load the following file types when a matching file is found in the ROM's folder:</Control>
 			<Control ID="chkAutoLoadDbgFiles">.DBG files (CA65 debug symbols)</Control>
 			<Control ID="chkAutoLoadSymFiles">.SYM files (PCEAS, RGBDS, WLA DX, bass)</Control>
 			<Control ID="chkAutoLoadCdbFiles">.CDB files (SDCC)</Control>
 			<Control ID="chkAutoLoadElfFiles">.ELF files (devkitARM - GBA)</Control>
-			<Control ID="chkAutoLoadMlbFiles">.MLB files (Mesen label file)</Control>
+			<Control ID="chkAutoLoadLabelFiles">.nexen-labels files (Nexen label file)</Control>
 			<Control ID="chkAutoLoadFnsFiles">.FNS files (NESASM)</Control>
 			<Control ID="chkAutoLoadCdlFiles">.CDL files (Code/data log)</Control>
+
+			<Control ID="lblAutoExportSettings">Auto-export settings</Control>
+			<Control ID="chkAutoExportPansy">Automatically export .PANSY files (disassembly metadata)</Control>
+			<Control ID="chkBackgroundCdlRecording">Enable background CDL recording (record execution without debugger)</Control>
+			<Control ID="lblAutoExportHint">Use these only when you need analysis data. Keeping them disabled reduces background overhead during normal play.</Control>
+			<Control ID="lblAutoSaveInterval">Auto-save interval:</Control>
+			<Control ID="lblMinutes">minutes</Control>
+			<Control ID="chkSavePansyOnRomUnload">Save .PANSY file when ROM is closed</Control>
+			<Control ID="lblPansyLifecycleHint">ROM change/reset note: auto-save writes the current session's metadata before unload. Turning this off avoids unintended overwrites when switching ROMs quickly.</Control>
+			<Control ID="lblPansyExportOptions">Pansy export options</Control>
+			<Control ID="chkPansyIncludeMemoryRegions">Include system memory regions</Control>
+			<Control ID="chkPansyIncludeCrossReferences">Include cross-references (may slow export)</Control>
+			<Control ID="chkPansyIncludeDataBlocks">Include data blocks</Control>
+			<Control ID="chkPansyUseCompression">Use GZip compression</Control>
+			<Control ID="lblPansyCompressionHint">Compression is disabled by default for faster writes and easier external diffs; enable it for smaller files when export size matters more than speed.</Control>
+			<Control ID="lblPansySyncSettings">Pansy sync settings (Phase 7.5)</Control>
+			<Control ID="chkUseFolderStorage">Use folder-based storage (per-ROM debug folders)</Control>
+			<Control ID="chkSyncLabelFiles">Sync label files</Control>
+			<Control ID="chkSyncCdlFiles">Sync CDL code/data log files</Control>
+			<Control ID="chkKeepVersionHistory">Keep version history</Control>
+			<Control ID="lblMaxHistoryEntries">Max history entries:</Control>
+			<Control ID="chkEnableFileWatching">Watch files for external changes</Control>
+			<Control ID="chkAutoReloadOnExternalChange">Auto-reload when files change externally</Control>
 
 			<Control ID="lblImportFilters">Import filters</Control>
 			<Control ID="lblImportFiltersHint">Import the following types of labels:</Control>
@@ -1577,16 +1856,31 @@
 			<Control ID="tabMisc">Misc.</Control>
 		</Form>
 
+		<Form ID="PansyExportProgressWindow">
+			<Control ID="wndPansyExportProgress">Pansy Export</Control>
+			<Control ID="lblExportingPansy">Exporting Pansy Metadata...</Control>
+			<Control ID="lblInitializing">Initializing...</Control>
+			<Control ID="lblExportComplete">Export Complete</Control>
+			<Control ID="lblExportSuccessful">Export completed successfully.</Control>
+			<Control ID="lblExportFailed">Export Failed</Control>
+			<Control ID="lblSymbolsExported">Symbols exported:</Control>
+			<Control ID="lblCommentsExported">Comments exported:</Control>
+			<Control ID="lblCodeBytesMarked">Code bytes marked:</Control>
+			<Control ID="lblDataBytesMarked">Data bytes marked:</Control>
+			<Control ID="lblFileSize">File size:</Control>
+			<Control ID="lblExportTime">Export time:</Control>
+		</Form>
+
 		<Form ID="WatchWindow">
 			<Control ID="wndTitle">Watch Window</Control>
 		</Form>
-		
+
 		<Form ID="ProfilerWindow">
 			<Control ID="wndTitle">Profiler</Control>
 
 			<Control ID="mnuFile">_File</Control>
 			<Control ID="mnuView">_View</Control>
-			
+
 			<Control ID="btnReset">Reset</Control>
 			<Control ID="btnRefresh">Refresh</Control>
 			<Control ID="chkRefreshOnBreakPause">Refresh on break</Control>
@@ -1601,7 +1895,7 @@
 			<Control ID="colMinCycles">Min. Cycles</Control>
 			<Control ID="colMaxCycles">Max. Cycles</Control>
 		</Form>
-		
+
 		<Form ID="MemorySearchWindow">
 			<Control ID="wndTitle">Memory Search</Control>
 			<Control ID="btnApplyFilter">Apply filter</Control>
@@ -1629,7 +1923,7 @@
 			<Control ID="colLastExec">Last Exec</Control>
 			<Control ID="colMatch">Match</Control>
 		</Form>
-		
+
 		<Form ID="GoToWindow">
 			<Control ID="wndTitle">Go to Address...</Control>
 			<Control ID="lblAddress">Address:</Control>
@@ -1677,7 +1971,7 @@
 			<Control ID="btnOk">OK</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
-		
+
 		<Form ID="CommentEditWindow">
 			<Control ID="wndTitle">Edit comment...</Control>
 			<Control ID="btnOk">OK</Control>
@@ -1690,7 +1984,7 @@
 			<Control ID="mnuFile">_File</Control>
 			<Control ID="mnuView">_View</Control>
 		</Form>
-		
+
 		<Form ID="RegisterTabView">
 			<Control ID="colAddress">Address</Control>
 			<Control ID="colName">Name</Control>
@@ -1707,10 +2001,10 @@
 
 			<Control ID="lblBreakpointType">Memory type:</Control>
 			<Control ID="lblBreakOn">Break on:</Control>
-			
+
 			<Control ID="lblAddress">Address:</Control>
 			<Control ID="lblAddressTo">to $</Control>
-			
+
 			<Control ID="lblCondition">Condition:</Control>
 
 			<Control ID="chkIgnoreDummyOperations">Ignore dummy reads/writes</Control>
@@ -1735,6 +2029,10 @@
 		<Message ID="SlotNumber">Slot #{0}</Message>
 		<Message ID="LoadStateDialog">Load State Menu</Message>
 		<Message ID="SaveStateDialog">Save State Menu</Message>
+		<Message ID="RecentPlaySaves">Recent Play Saves</Message>
+		<Message ID="AutoSaves">Auto Saves</Message>
+		<Message ID="OpenRomButton">Open ROM</Message>
+		<Message ID="VerifiedGamesButton">Verified Games</Message>
 
 		<Message ID="LoadFromFile">Load from file...</Message>
 		<Message ID="SaveToFile">Save to file...</Message>
@@ -1757,6 +2055,9 @@
 		<Message ID="MovieExportEntireSegment">Export entire segment</Message>
 		<Message ID="MovieExportSpecificRange">Export specific range...</Message>
 		<Message ID="MovieSaveError">An error occurred while trying to save the movie file.</Message>
+		<Message ID="InvalidMoviePath">Please select a valid movie file path before recording.</Message>
+		<Message ID="MovieRecordStartError">Unable to start movie recording.&#xA;&#xA;Details:&#xA;{0}</Message>
+		<Message ID="GreenzoneMemoryUsageMB">{0} MB</Message>
 		<Message ID="FileSaveError">An error occurred while trying to save the file.</Message>
 
 		<Message ID="SetKeyHint">Press any key on your keyboard to set a new binding.</Message>
@@ -1774,7 +2075,7 @@ E
 		<Message ID="BandaiMicrophone">Bandai Microphone</Message>
 		<Message ID="DatachBarcodeReader">Datach Barcode Reader</Message>
 
-		<Message ID="HelpFullscreen">/fullscreen - Start Mesen in fullscreen mode</Message>
+		<Message ID="HelpFullscreen">/fullscreen - Start Nexen in fullscreen mode</Message>
 		<Message ID="HelpDoNotSaveSettings">/DoNotSaveSettings - Prevent settings from being saved to the disk (useful to prevent command line options from becoming the default settings)</Message>
 		<Message ID="HelpRecordMovie">/RecordMovie="filename.mmo" - Start recording a movie after the specified game is loaded.</Message>
 		<Message ID="HelpLoadLastSession">/LoadLastSession - Resumes the game in the state it was left in when it was last played.</Message>
@@ -1797,18 +2098,39 @@ E
 
 		<Message ID="ResetSettingsConfirmation">Warning: This will reset ALL settings and cannot be undone!&#xA;&#xA;Continue?</Message>
 
+		<Message ID="NoLegacyFilesToCleanup">No legacy files found to clean up. Game data is already migrated.</Message>
+		<Message ID="ConfirmGameDataMigration">Legacy data was found for this game ({0} file(s)).&#xA;&#xA;Migrate now to the per-game GameData folder?&#xA;&#xA;This copies files and keeps legacy files as fallback.</Message>
+		<Message ID="ConfirmCleanupLegacyData">This will delete {0} legacy file(s) from {1} game(s) that have already been migrated to per-game folders.&#xA;&#xA;The new copies in the GameData folder will not be affected.&#xA;&#xA;Continue?</Message>
+		<Message ID="CleanupComplete">Cleaned up {0} legacy file(s).</Message>
+		<Message ID="ThemeProfileApplied">Theme profile applied.</Message>
+		<Message ID="ThemeProfileSaved">Current theme settings saved to profile.</Message>
+		<Message ID="ThemeProfileDeleteFailed">Unable to delete profile.</Message>
+		<Message ID="ThemeProfileRenameFailed">Unable to rename profile.</Message>
+		<Message ID="ThemeProfileDuplicateFailed">Unable to duplicate profile.</Message>
+		<Message ID="ThemeProfileImportInvalid">Invalid theme profile file.</Message>
+		<Message ID="ThemeProfileImportComplete">Theme profile imported: {0}</Message>
+		<Message ID="ThemeProfileImportFailed">Failed to import profile: {0}</Message>
+		<Message ID="ThemeProfileImportConflict">A profile named '{0}' already exists.&#xA;&#xA;Press OK to overwrite it, or Cancel to import as a copy.</Message>
+		<Message ID="ThemeProfileExportNoSelection">No theme profile selected.</Message>
+		<Message ID="ThemeProfileResetDefaultsComplete">Theme profile reset to defaults.</Message>
+		<Message ID="ThemeProfileResetDefaultsFailed">Unable to reset theme profile to defaults.</Message>
+		<Message ID="ThemeProfilePresetLightApplied">Light preset applied to theme profile.</Message>
+		<Message ID="ThemeProfilePresetDarkApplied">Dark preset applied to theme profile.</Message>
+		<Message ID="ThemeProfilePresetApplyFailed">Unable to apply preset to theme profile.</Message>
+
 		<Message ID="ResetWorkspaceConfirmation">Warning: This operation will empty the watch window, remove all breakpoints and reset labels to their default state.&#xA;&#xA;This resets the workspace of all CPUs for the current ROM.&#xA;&#xA;Are you sure?</Message>
 		<Message ID="ImportLabels">Import completed: {0} labels imported.</Message>
 		<Message ID="ImportLabelsWithErrors">Import completed: {0} labels imported (and {1} errors.)</Message>
 		<Message ID="ImportLabelsWithMissingFiles">Import completed: {0} labels imported.&#xA;&#xA;The following files could not be found:&#xA;{1}</Message>
 		<Message ID="ImportLabelsWithErrorsAndMissingFiles">Import completed: {0} labels imported (and {1} errors.)&#xA;&#xA;The following files could not be found:&#xA;{2}</Message>
-		<Message ID="RandomGameNoGameFound">Mesen could not find any games to load.</Message>
+		<Message ID="PansyImportComplete">Pansy import complete.&#xA;&#xA;{0}</Message>
+		<Message ID="RandomGameNoGameFound">Nexen could not find any games to load.</Message>
 
 		<Message ID="InvalidPaletteFile">Invalid palette file (too small or too large.)</Message>
 
 		<Message ID="CannotWriteToFolder">The selected folder cannot be written to - please select another folder and try again.&#xA;&#xA;Details:&#xA;{0}</Message>
 		<Message ID="InvalidPaths">The following path overrides are invalid:&#xA;&#xA;{0}&#xA;&#xA;Please use valid and writable folders and try again.</Message>
-		<Message ID="CopyMesenDataPrompt">All files will be copied from:&#xA;&#xA;{0}&#xA;to&#xA;{1}&#xA;&#xA;Once the copy is completed, Mesen will restart.&#xA;Continue?</Message>
+		<Message ID="CopyNexenDataPrompt">All files will be copied from:&#xA;&#xA;{0}&#xA;to&#xA;{1}&#xA;&#xA;Once the copy is completed, Nexen will restart.&#xA;Continue?</Message>
 
 		<Message ID="CheatsFound">{0} games in database</Message>
 		<Message ID="CheatsImported">{0} cheats imported for {1}.</Message>
@@ -1819,21 +2141,32 @@ E
 
 		<Message ID="CouldNotInstallRuntime">The Visual Studio Runtime could not be installed properly.</Message>
 		<Message ID="EmptyState">&lt;empty&gt;</Message>
-		<Message ID="AutoUpdateNotSupported">The version of Mesen you're using does not support automatic updates. Please visit the website and manually download the latest release.</Message>
+		<Message ID="AutoUpdateNotSupported">The version of Nexen you're using does not support automatic updates. Please visit the website and manually download the latest release.</Message>
 		<Message ID="ErrorWhileCheckingUpdates">An error has occurred while trying to check for updates. Check your internet connection and try again.&#xA;&#xA;Error details:&#xA;{0}</Message>
 		<Message ID="AutoUpdateInvalidFile">The downloaded file did not match the expected file.&#xA;&#xA;   Expected SHA256 signature: {0}&#xA;&#xA;   File SHA256 signature: {1}&#xA;&#xA;Please visit the website and manually download the latest release.</Message>
 		<Message ID="FileNotFound">File not found: {0}</Message>
 		<Message ID="InvalidArgument">Invalid argument: {0}</Message>
+		<Message ID="UnsupportedFileType">Unsupported file type: {0}&#xA;&#xA;Select a valid ROM, archive, patch, save state, movie (while running), or recent game file.</Message>
 
-		<Message ID="MesenUpToDate">You are running the latest version of Mesen.</Message>
+		<Message ID="NexenUpToDate">You are running the latest version of Nexen.</Message>
 		<Message ID="PatchAndReset">Patch and reset the current game?</Message>
 		<Message ID="SelectRomIps">Please select a ROM for this patch file.</Message>
 		<Message ID="UnableToDownload">Unable to download file. Check your internet connection and try again.&#xA;&#xA;Details:&#xA;{0}</Message>
-		<Message ID="UnableToStartMissingSdl">Mesen could not launch because SDL2 could not be found. Install SDL2 using your package manager and try again.&#xA;&#xA;Error details:&#xA;{0}</Message>
-		<Message ID="UnableToStartMissingDependencies">Mesen could not launch because of missing dependencies.&#xA;&#xA;Error details:&#xA;{0}</Message>
-		<Message ID="UnableToStartMissingFiles">Mesen was unable to start due to missing files.&#xA;&#xA;Error: MesenCore.dll is missing.</Message>
+		<Message ID="UnableToStartMissingSdl">Nexen could not launch because SDL2 could not be found. Install SDL2 using your package manager and try again.&#xA;&#xA;Error details:&#xA;{0}</Message>
+		<Message ID="UnableToStartMissingDependencies">Nexen could not launch because of missing dependencies.&#xA;&#xA;Error details:&#xA;{0}</Message>
+		<Message ID="UnableToStartMissingFiles">Nexen was unable to start due to missing files.&#xA;&#xA;Error: NexenCore.dll is missing.</Message>
+
+		<Message ID="AlreadyRunningTitle">Nexen Already Running</Message>
+		<Message ID="AlreadyRunningMessage">Nexen is already running. Would you like to close the existing instance and restart?</Message>
+		<Message ID="AlreadyRunningRestart">Close and Restart Nexen</Message>
+		<Message ID="AlreadyRunningLeave">Leave Current Version Running</Message>
+		<Message ID="LanguageChangeRestartPrompt">Display language changes are ready. Restart Nexen now to apply them?</Message>
+		<Message ID="LanguageApplyNowPrompt">Restart Nexen now to apply the selected display language?</Message>
+		<Message ID="GameLoadFailedTitle">Error</Message>
+		<Message ID="GameLoadFailedMessage">Game failed to load. Select a game to try again.</Message>
+
 		<Message ID="UnexpectedError">An unexpected error has occurred.&#xA;&#xA;Error details:&#xA;{0}</Message>
-		<Message ID="UpdateDownloadFailed">Download failed - the file appears to be corrupted. Please visit the Mesen website to download the latest version manually.</Message>
+		<Message ID="UpdateDownloadFailed">Download failed - the file appears to be corrupted. Please visit the Nexen website to download the latest version manually.</Message>
 		<Message ID="UpgradeSuccess">Upgrade completed successfully.</Message>
 		<Message ID="UpdaterNotFound">The update process could not be started due to missing files.</Message>
 		<Message ID="Net45NotFound">The Microsoft .NET Framework 4.5 could not be found. Please download and install the latest version of the .NET Framework from Microsoft's website and try again.</Message>
@@ -1847,6 +2180,11 @@ E
 		<Message ID="ConfirmReloadRom">Are you sure you want to reload the ROM from the disk?</Message>
 		<Message ID="ConfirmPowerOff">Are you sure you want to power off?</Message>
 		<Message ID="ConfirmExit">Are you sure you want to exit?</Message>
+		<Message ID="MenuFdsDiskSide">Disk {0} Side {1}</Message>
+		<Message ID="MenuSpeedSliderPrototype">Speed Slider Prototype...</Message>
+		<Message ID="MenuCreateNewMovie">Create New Movie</Message>
+		<Message ID="TasEditorInitFailed">Failed to initialize TAS Editor.</Message>
+		<Message ID="ConfirmDeleteSaveState">Are you sure you want to delete this save state?&#xA;&#xA;{0}</Message>
 
 		<Message ID="InstallHdPackWrongRom">The selected HD Pack is not compatible with the currently running game and cannot be installed.</Message>
 		<Message ID="InstallHdPackError">An error occurred while trying to install the HD Pack: &#xA;&#xA;{0}</Message>
@@ -1854,6 +2192,10 @@ E
 		<Message ID="InstallHdPackInvalidZipFile">The selected file is not a valid ZIP file.</Message>
 		<Message ID="InstallHdPackConfirmOverwrite">The destination folder ({0}) already exists - are you sure you want to overwrite it?</Message>
 		<Message ID="InstallHdPackConfirmReset">The HD Pack has been installed successfully. Do you want to reset the game and load the HD Pack now?</Message>
+
+		<Message ID="GamePackageExported">Game package exported successfully: {0}</Message>
+		<Message ID="GamePackageExportFailed">Failed to export game package. No ROM is currently loaded.</Message>
+		<Message ID="GamePackageExportError">An error occurred while exporting the game package: &#xA;&#xA;{0}</Message>
 
 		<Message ID="Player">Player</Message>
 
@@ -1871,13 +2213,19 @@ E
 		<Message ID="btnNo">No</Message>
 
 		<Message ID="ScriptSaveConfirmation">You have unsaved changes for this script - would you like to save them?</Message>
-		
+
 		<Message ID="AssemblerConfirmation">{0}&#xA;&#xA;OK?</Message>
 		<Message ID="LabelNameInUse">A label with this name already exists.</Message>
 		<Message ID="InvalidLabel">Label does not follow naming rules.</Message>
 		<Message ID="LabelOrCommentRequired">A label or a comment must be specified.</Message>
 		<Message ID="AddressOutOfRange">The address is out of range.</Message>
 		<Message ID="AddressHasOtherLabel">Another label exists for this address: {0}</Message>
+
+		<Message ID="ExportPansySuccess">Pansy metadata file exported successfully.</Message>
+		<Message ID="ExportPansyFailed">Failed to export Pansy metadata file.</Message>
+		<Message ID="lblExportComplete">Export Complete</Message>
+		<Message ID="lblExportSuccessful">Export completed successfully.</Message>
+		<Message ID="lblExportFailed">Export Failed</Message>
 	</Messages>
 	<Enums>
 		<Enum ID="EmulatorShortcut">
@@ -1894,6 +2242,10 @@ E
 			<Value ID="PowerCycle">Power Cycle</Value>
 			<Value ID="ReloadRom">Reload ROM</Value>
 			<Value ID="PowerOff">Power Off</Value>
+			<Value ID="ExecReset">Reset (Execute)</Value>
+			<Value ID="ExecPowerCycle">Power Cycle (Execute)</Value>
+			<Value ID="ExecReloadRom">Reload ROM (Execute)</Value>
+			<Value ID="ExecPowerOff">Power Off (Execute)</Value>
 			<Value ID="Exit">Exit</Value>
 			<Value ID="TakeScreenshot">Take Screenshot</Value>
 			<Value ID="MoveToNextStateSlot">Select Next Save Slot</Value>
@@ -1926,7 +2278,12 @@ E
 			<Value ID="ToggleGameTimer">Toggle Game Timer</Value>
 			<Value ID="ToggleFrameCounter">Toggle Frame Counter</Value>
 			<Value ID="ToggleLagCounter">Toggle Lag Counter</Value>
+			<Value ID="ToggleLagFrameIndicator">Toggle Lag Frame Indicator (TAS)</Value>
 			<Value ID="ResetLagCounter">Reset Lag Counter</Value>
+			<Value ID="ToggleRerecordCounter">Toggle Rerecord Counter (TAS)</Value>
+			<Value ID="TasFrameAdvance">TAS Frame Advance</Value>
+			<Value ID="TasPreviousFrame">TAS Previous Frame</Value>
+			<Value ID="TasToggleReadOnly">TAS Toggle Read-Only Mode</Value>
 			<Value ID="ToggleOsd">Show/Hide on-screen messages</Value>
 			<Value ID="ToggleAlwaysOnTop">Toggle Display on Top</Value>
 			<Value ID="ToggleKeyboardMode">Toggle Keyboard Mode</Value>
@@ -1970,6 +2327,8 @@ E
 			<Value ID="LoadStateFromFile">Load State from File</Value>
 			<Value ID="LoadStateDialog">Open Load State Menu</Value>
 			<Value ID="LoadLastSession">Load Last Session</Value>
+			<Value ID="QuickSaveTimestamped">Quick Save (Timestamped)</Value>
+			<Value ID="OpenSaveStatePicker">Open Save State Picker</Value>
 
 			<Value ID="SelectSaveSlot1">Select Save Slot 1</Value>
 			<Value ID="SelectSaveSlot2">Select Save Slot 2</Value>
@@ -1982,10 +2341,18 @@ E
 			<Value ID="SelectSaveSlot9">Select Save Slot 9</Value>
 			<Value ID="SelectSaveSlot10">Select Save Slot 10</Value>
 
+			<Value ID="SaveDesignatedSlot">Save Designated Slot 1</Value>
+			<Value ID="LoadDesignatedSlot">Load Designated Slot 1</Value>
+			<Value ID="SaveDesignatedSlot2">Save Designated Slot 2</Value>
+			<Value ID="LoadDesignatedSlot2">Load Designated Slot 2</Value>
+			<Value ID="SaveDesignatedSlot3">Save Designated Slot 3</Value>
+			<Value ID="LoadDesignatedSlot3">Load Designated Slot 3</Value>
+
 			<Value ID="OpenFile">Open File</Value>
 
 			<Value ID="FdsSwitchDiskSide">FDS - Switch Disk Side</Value>
 			<Value ID="FdsEjectDisk">FDS - Eject Disk</Value>
+			<Value ID="FdsInsertDiskNumber">FDS - Insert Disk Number</Value>
 			<Value ID="FdsInsertNextDisk">FDS - Insert Next Disk</Value>
 			<Value ID="VsInsertCoin1">VS - Insert Coin 1</Value>
 			<Value ID="VsInsertCoin2">VS - Insert Coin 2</Value>
@@ -1998,6 +2365,9 @@ E
 			<Value ID="LoadTape">Load Tape From File</Value>
 			<Value ID="RecordTape">Start Recording Tape To File</Value>
 			<Value ID="StopRecordTape">Stop Recording Tape</Value>
+			<Value ID="StartRecordHdPack">HD Pack - Start Recording</Value>
+			<Value ID="StopRecordHdPack">HD Pack - Stop Recording</Value>
+			<Value ID="LastValidValue">Last Valid Value (Internal)</Value>
 		</Enum>
 		<Enum ID="ControllerType">
 			<Value ID="None">None</Value>
@@ -2043,7 +2413,8 @@ E
 			<Value ID="DatachBarcodeReader">Datach Barcode Reader</Value>
 
 			<Value ID="GameboyController">Gameboy Controller</Value>
-			
+			<Value ID="GameboyAccelerometer">Game Boy Accelerometer</Value>
+
 			<Value ID="PceController">2-button Controller</Value>
 			<Value ID="PceAvenuePad6">6-button Controller</Value>
 			<Value ID="PceTurboTap">Turbo Tap</Value>
@@ -2051,6 +2422,24 @@ E
 			<Value ID="SmsController">SMS Controller</Value>
 			<Value ID="SmsLightPhaser">Light Phaser</Value>
 			<Value ID="ColecoVisionController">ColecoVision Controller</Value>
+
+			<Value ID="GbaController">GBA Controller</Value>
+
+			<Value ID="WsController">WonderSwan Controller (Horizontal)</Value>
+			<Value ID="WsControllerVertical">WonderSwan Controller (Vertical)</Value>
+
+			<Value ID="LynxController">Atari Lynx Controller</Value>
+
+			<Value ID="GenesisController">Genesis Controller</Value>
+
+			<Value ID="Atari2600Joystick">Joystick (CX40)</Value>
+			<Value ID="Atari2600Paddle">Paddle (CX30)</Value>
+			<Value ID="Atari2600Keypad">Keypad (CX50)</Value>
+			<Value ID="Atari2600DrivingController">Driving Controller (CX20)</Value>
+			<Value ID="Atari2600BoosterGrip">Booster Grip</Value>
+
+			<Value ID="ChannelFController">Channel F Hand Controller</Value>
+			<Value ID="ChannelFConsolePanel">Channel F Console Panel</Value>
 		</Enum>
 		<Enum ID="NesJissenMahjongButtons">
 			<Value ID="A">A</Value>
@@ -2309,7 +2698,7 @@ E
 			<Value ID="Dot">Dot (.)</Value>
 			<Value ID="SemiColon">Semicolon (;)</Value>
 			<Value ID="Apostrophe">Apostrophe (')</Value>
-			
+
 			<Value ID="Slash">Slash (/)</Value>
 			<Value ID="Backslash">Backslash (\)</Value>
 			<Value ID="Equal">Equal (=)</Value>
@@ -2467,9 +2856,14 @@ E
 			<Value ID="BottomLeft">Bottom Left</Value>
 			<Value ID="BottomRight">Bottom Right</Value>
 		</Enum>
-		<Enum ID="MesenTheme">
+		<Enum ID="NexenTheme">
 			<Value ID="Light">Light</Value>
 			<Value ID="Dark">Dark</Value>
+		</Enum>
+		<Enum ID="UiLanguage">
+			<Value ID="English">English</Value>
+			<Value ID="Spanish">Spanish</Value>
+			<Value ID="Japanese">Japanese</Value>
 		</Enum>
 		<Enum ID="PceConsoleType">
 			<Value ID="Auto">Auto (recommended)</Value>
@@ -2734,6 +3128,8 @@ E
 			<Value ID="Ymf288AdpcmRom">YFM288 ADPCM ROM (EPSM)</Value>
 			<Value ID="SmsBootRom">Master System - Boot ROM</Value>
 			<Value ID="GgBootRom">Game Gear - Boot ROM</Value>
+			<Value ID="LynxBootRom">Atari Lynx - Boot ROM</Value>
+			<Value ID="ChannelFBios">Channel F - BIOS</Value>
 		</Enum>
 
 		<Enum ID="CpuType">
@@ -2748,10 +3144,11 @@ E
 			<Value ID="Nes">NES</Value>
 			<Value ID="Pce">PC Engine</Value>
 			<Value ID="Sms">SMS</Value>
+			<Value ID="Genesis">Genesis</Value>
 			<Value ID="Gba">GBA</Value>
 			<Value ID="Ws">WS</Value>
 		</Enum>
-		
+
 		<Enum ID="MemoryType">
 			<Value ID="SnesMemory">CPU Memory</Value>
 			<Value ID="SpcMemory">SPC Memory</Value>
@@ -2784,7 +3181,7 @@ E
 			<Value ID="SufamiTurboFirmware">Sufami Turbo Firmware</Value>
 			<Value ID="SufamiTurboSecondCart">Sufami Slot B ROM</Value>
 			<Value ID="SufamiTurboSecondCartRam">Sufami Slot B RAM</Value>
-			
+
 			<Value ID="GameboyMemory">GB - CPU Memory</Value>
 			<Value ID="GbPrgRom">GB - PRG ROM</Value>
 			<Value ID="GbWorkRam">GB - Work RAM</Value>
@@ -2807,7 +3204,7 @@ E
 			<Value ID="NesChrRom">CHR ROM</Value>
 			<Value ID="NesChrRam">CHR RAM</Value>
 			<Value ID="NesPaletteRam">Palette RAM</Value>
-			
+
 			<Value ID="PceMemory">CPU Memory</Value>
 			<Value ID="PcePrgRom">HuCard ROM</Value>
 			<Value ID="PceWorkRam">Work RAM</Value>
@@ -2821,7 +3218,7 @@ E
 			<Value ID="PcePaletteRam">Palette RAM</Value>
 			<Value ID="PceSpriteRam">Sprite RAM</Value>
 			<Value ID="PceSpriteRamVdc2">Sprite RAM (VDC2)</Value>
-			
+
 			<Value ID="SmsMemory">CPU Memory</Value>
 			<Value ID="SmsPrgRom">ROM</Value>
 			<Value ID="SmsWorkRam">System RAM</Value>
@@ -2849,6 +3246,29 @@ E
 			<Value ID="WsBootRom">Boot ROM</Value>
 			<Value ID="WsInternalEeprom">IEEPROM (Internal)</Value>
 			<Value ID="WsPort">I/O Port</Value>
+
+			<Value ID="LynxMemory">CPU Memory</Value>
+			<Value ID="GenesisMemory">CPU Memory</Value>
+			<Value ID="Atari2600Memory">CPU Memory</Value>
+			<Value ID="ChannelFMemory">CPU Memory</Value>
+
+			<Value ID="LynxPrgRom">ROM</Value>
+			<Value ID="LynxWorkRam">Work RAM</Value>
+			<Value ID="LynxBootRom">Boot ROM</Value>
+			<Value ID="LynxSaveRam">Save RAM</Value>
+
+			<Value ID="GenesisPrgRom">ROM</Value>
+			<Value ID="GenesisWorkRam">Work RAM</Value>
+			<Value ID="GenesisVideoRam">Video RAM</Value>
+			<Value ID="GenesisPaletteRam">Palette RAM</Value>
+
+			<Value ID="Atari2600PrgRom">ROM</Value>
+			<Value ID="Atari2600Ram">RAM</Value>
+			<Value ID="Atari2600TiaRegisters">TIA Registers</Value>
+
+			<Value ID="ChannelFBiosRom">BIOS ROM</Value>
+			<Value ID="ChannelFCartRom">Cartridge ROM</Value>
+			<Value ID="ChannelFVideoRam">Video RAM</Value>
 
 			<Value ID="None">None</Value>
 		</Enum>
@@ -2944,6 +3364,7 @@ E
 			<Value ID="CompactText">Text (Active only)</Value>
 		</Enum>
 		<Enum ID="BreakSource">
+			<Value ID="Unspecified">Unspecified</Value>
 			<Value ID="Breakpoint">Breakpoint</Value>
 			<Value ID="Pause">Pause</Value>
 			<Value ID="CpuStep">CPU Step</Value>
@@ -2963,8 +3384,9 @@ E
 
 			<Value ID="Irq">IRQ</Value>
 			<Value ID="Nmi">NMI</Value>
-			
+
 			<Value ID="NesBreakOnDecayedOamRead">Decayed OAM read</Value>
+			<Value ID="NesBreakOnPpuScrollGlitch">PPU scroll glitch</Value>
 			<Value ID="NesBreakOnPpu2000ScrollGlitch">$2000/5/6 scroll glitch</Value>
 			<Value ID="NesBreakOnPpu2006ScrollGlitch">$2006 scroll glitch</Value>
 			<Value ID="BreakOnUnofficialOpCode">Unofficial OP</Value>
@@ -2975,11 +3397,11 @@ E
 			<Value ID="NesInvalidVramAccess">Invalid VRAM access</Value>
 			<Value ID="NesInvalidOamWrite">Invalid OAM access</Value>
 			<Value ID="NesDmaInputRead">DMA controller read</Value>
-			
+
 			<Value ID="PceBreakOnInvalidVramAddress">Invalid VRAM address (>= $8000)</Value>
 
 			<Value ID="SmsNopLoad">LD B, B (NOP)</Value>
-			
+
 			<Value ID="GbaNopLoad">MOV R11, R11 (NOP)</Value>
 			<Value ID="GbaInvalidOpCode">Invalid instruction</Value>
 			<Value ID="GbaUnalignedMemoryAccess">Unaligned memory access</Value>
@@ -3175,6 +3597,7 @@ E
 			<Value ID="StkRelIndIdxY">(d,s),y - Stack Relative Indirect Indexed</Value>
 
 			<Value ID="AbxXInd">(a,x) - Absolute Indexed Indirect</Value>
+			<Value ID="AbsXInd">(a,x) - Absolute Indexed Indirect</Value>
 			<Value ID="Block">s,d,l - Block Transfer</Value>
 			<Value ID="ImZero">#i,z - Immediate Zero Page</Value>
 			<Value ID="ImZeroX">#i,z,x - Immediate Zero Page Indexed</Value>
@@ -3225,6 +3648,7 @@ E
 			<Value ID="OpenRegisterViewer">Open Register Viewer</Value>
 			<Value ID="OpenDebugLog">Open Debug Log</Value>
 			<Value ID="OpenNesHeaderEditor">Open NES Header Editor</Value>
+			<Value ID="OpenDebugSettings">Open Debug Settings</Value>
 			<Value ID="OpenTilemapViewer">Open Tilemap Viewer</Value>
 			<Value ID="OpenTileViewer">Open Tile Viewer</Value>
 			<Value ID="OpenSpriteViewer">Open Sprite Viewer</Value>
@@ -3251,6 +3675,11 @@ E
 			<Value ID="RunToIrq">Run to IRQ</Value>
 			<Value ID="ImportLabels">Import labels</Value>
 			<Value ID="ExportLabels">Export labels</Value>
+			<Value ID="ImportLegacyMlb">Import legacy MLB file</Value>
+			<Value ID="ExportLegacyMlb">Export as legacy MLB</Value>
+			<Value ID="ExportPansy">Export Pansy metadata</Value>
+			<Value ID="ExportPansySuccess">Pansy metadata file exported successfully.</Value>
+			<Value ID="ExportPansyFailed">Failed to export Pansy metadata file.</Value>
 			<Value ID="ImportWatchEntries">Import watch entries</Value>
 			<Value ID="ExportWatchEntries">Export watch entries</Value>
 			<Value ID="ResetWorkspace">Reset workspace</Value>
@@ -3353,6 +3782,7 @@ E
 			<Value ID="MemoryViewer_GoToNextExec">Navigate to: Next exec block</Value>
 
 			<Value ID="ScriptWindow_OpenScript">Open Script</Value>
+			<Value ID="ScriptWindow_NewScript">New Script</Value>
 			<Value ID="ScriptWindow_SaveScript">Save Script</Value>
 			<Value ID="ScriptWindow_RunScript">Run Script</Value>
 			<Value ID="ScriptWindow_StopScript">Stop Script</Value>
@@ -3374,8 +3804,13 @@ E
 			<Value ID="TileEditor_TranslateRight">Tile Editor - Translate right</Value>
 			<Value ID="TileEditor_TranslateUp">Tile Editor - Translate up</Value>
 			<Value ID="TileEditor_TranslateDown">Tile Editor - Translate down</Value>
+
+			<Value ID="ExportPansy">Integration - Export Pansy File</Value>
+			<Value ID="ImportPansy">Integration - Import Pansy File</Value>
+			<Value ID="SyncPansyFolder">Integration - Sync Folder</Value>
 		</Enum>
 		<Enum ID="ActionType">
+			<Value ID="Custom">Custom</Value>
 			<Value ID="Copy">Copy</Value>
 			<Value ID="Paste">Paste</Value>
 			<Value ID="SelectAll">Select All</Value>
@@ -3419,7 +3854,7 @@ E
 			<Value ID="RowFormatSigned32Bits">Signed decimal (32-bit)</Value>
 			<Value ID="RowFormatUnsigned">Unsigned decimal</Value>
 			<Value ID="ClearFormat">Clear</Value>
-			
+
 			<Value ID="Import">Import...</Value>
 			<Value ID="Export">Export...</Value>
 
@@ -3430,7 +3865,7 @@ E
 			<Value ID="ShowCallStack">Show call stack</Value>
 			<Value ID="ShowConsoleStatus">Show console status</Value>
 			<Value ID="ShowControllers">Show controllers</Value>
-			
+
 			<Value ID="ShowSettingsPanel">Show settings panel</Value>
 			<Value ID="ShowMemoryMappings">Show memory mappings</Value>
 
@@ -3476,11 +3911,11 @@ E
 			<Value ID="RecentScripts">Recent Scripts</Value>
 
 			<Value ID="GoToLocation">Go to Location</Value>
-			
+
 			<Value ID="ExportToPng">Export to PNG</Value>
 			<Value ID="ViewInTileViewer">View in Tile Viewer</Value>
 			<Value ID="ViewInMemoryViewer">View in Memory Viewer</Value>
-			
+
 			<Value ID="LoadTblFile">Load TBL file...</Value>
 			<Value ID="ResetTblMappings">Reset TBL mappings</Value>
 
@@ -3516,6 +3951,7 @@ E
 
 			<Value ID="Tools">Tools</Value>
 			<Value ID="HistoryViewer">History Viewer</Value>
+			<Value ID="TasEditor">TAS Editor</Value>
 			<Value ID="NetPlay">Net Play</Value>
 			<Value ID="StartServer">Start server...</Value>
 			<Value ID="StopServer">Stop server</Value>
@@ -3526,6 +3962,8 @@ E
 			<Value ID="Play">Play...</Value>
 			<Value ID="Record">Record...</Value>
 			<Value ID="Stop">Stop</Value>
+			<Value ID="ImportMovie">Import Movie...</Value>
+			<Value ID="ExportMovie">Export Movie...</Value>
 			<Value ID="SoundRecorder">Sound Recorder</Value>
 			<Value ID="VideoRecorder">Video Recorder</Value>
 			<Value ID="Cheats">Cheats</Value>
@@ -3568,6 +4006,7 @@ E
 			<Value ID="Gba">GBA</Value>
 			<Value ID="PcEngine">PC Engine</Value>
 			<Value ID="Sms">SMS</Value>
+			<Value ID="Genesis">Genesis</Value>
 			<Value ID="Ws">WonderSwan</Value>
 			<Value ID="OtherConsoles">Other systems</Value>
 
@@ -3576,7 +4015,7 @@ E
 			<Value ID="PowerOff">Power Off</Value>
 			<Value ID="SelectDisk">Select Disk</Value>
 			<Value ID="EjectDisk">Eject Disk</Value>
-			
+
 			<Value ID="InsertCoin1">Insert Coin (1)</Value>
 			<Value ID="InsertCoin2">Insert Coin (2)</Value>
 			<Value ID="InsertCoin3">Insert Coin (3 - DualSystem)</Value>
@@ -3585,6 +4024,11 @@ E
 			<Value ID="SaveState">Save State</Value>
 			<Value ID="LoadState">Load State</Value>
 			<Value ID="LoadLastSession">Load Last Session</Value>
+
+			<Value ID="QuickSaveTimestamped">Quick Save (Timestamped)</Value>
+			<Value ID="OpenSaveStatePicker">Browse Save States...</Value>
+			<Value ID="BrowseRecentPlay">Browse Recent Play Saves...</Value>
+			<Value ID="BrowseAutoSaves">Browse Auto Saves...</Value>
 
 			<Value ID="LoadStateDialog">Load State Menu</Value>
 			<Value ID="LoadStateFromFile">Load from file...</Value>
@@ -3602,13 +4046,13 @@ E
 			<Value ID="ToggleBreakpoint">Toggle Breakpoint</Value>
 			<Value ID="EditSelectedCode">Edit Selected Code</Value>
 			<Value ID="ViewInDebugger">View in Debugger</Value>
-			
+
 			<Value ID="EnableBreakpoint">Enable Breakpoint</Value>
 			<Value ID="DisableBreakpoint">Disable Breakpoint</Value>
 			<Value ID="SetBreakpoint">Set Breakpoint</Value>
 			<Value ID="RemoveBreakpoint">Remove Breakpoint</Value>
 			<Value ID="CodeWindowEditBreakpoint">Edit Breakpoint</Value>
-			
+
 			<Value ID="CodeDataLogger">Code/Data Logger</Value>
 			<Value ID="ResetCdl">Reset CDL data</Value>
 			<Value ID="LoadCdl">Load CDL data from...</Value>
@@ -3624,6 +4068,9 @@ E
 			<Value ID="ResetWorkspace">Reset workspace</Value>
 			<Value ID="ImportLabels">Import labels...</Value>
 			<Value ID="ExportLabels">Export labels...</Value>
+			<Value ID="ImportLegacyMlb">Import legacy MLB file...</Value>
+			<Value ID="ExportLegacyMlb">Export as legacy MLB...</Value>
+			<Value ID="ExportPansy">Export Pansy metadata...</Value>
 			<Value ID="ImportWatchEntries">Import watch entries...</Value>
 			<Value ID="ExportWatchEntries">Export watch entries...</Value>
 
@@ -3664,7 +4111,7 @@ E
 			<Value ID="ResumeGameplay">Resume Gameplay</Value>
 
 			<Value ID="GameConfig">Game Settings</Value>
-			
+
 			<Value ID="FreezeMemory">Freeze</Value>
 			<Value ID="UnfreezeMemory">Unfreeze</Value>
 
@@ -3679,7 +4126,7 @@ E
 
 			<Value ID="FlipHorizontal">Flip horizontal</Value>
 			<Value ID="FlipVertical">Flip vertical</Value>
-			
+
 			<Value ID="TranslateLeft">Translate left</Value>
 			<Value ID="TranslateRight">Translate right</Value>
 			<Value ID="TranslateUp">Translate up</Value>
@@ -3690,6 +4137,13 @@ E
 
 			<Value ID="CopyToClipboard">Copy to clipboard</Value>
 			<Value ID="ResetProfilerData">Reset profiler data</Value>
+
+			<Value ID="AutoSave">Auto Save</Value>
+			<Value ID="AutoSaveStates">Auto Save States</Value>
+			<Value ID="AutoSavePansy">Auto Save Pansy Data</Value>
+			<Value ID="SavePansyOnUnload">Save Pansy on ROM Unload</Value>
+			<Value ID="ExportGamePackage">Export Game Package...</Value>
+			<Value ID="OpenGamePacksFolder">Open Game Packs Folder</Value>
 		</Enum>
 	</Enums>
 </Resources>

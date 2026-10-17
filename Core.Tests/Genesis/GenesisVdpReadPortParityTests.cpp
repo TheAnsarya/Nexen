@@ -1,0 +1,400 @@
+﻿#include "pch.h"
+#include "Genesis/GenesisVdp.h"
+
+namespace {
+	static void WriteReg(GenesisVdp& vdp, uint8_t reg, uint8_t value) {
+		vdp.WriteControlPort((uint16_t)(0x8000u | ((uint16_t)reg << 8) | value));
+	}
+
+	static void SetDataPortCommand(GenesisVdp& vdp, uint8_t modeLow, uint16_t address) {
+		uint16_t first = (uint16_t)(((uint16_t)(modeLow & 0x03u) << 14) | (address & 0x3fffu));
+		uint16_t second = (uint16_t)((address >> 14) & 0x0003u);
+		vdp.WriteControlPort(first);
+		vdp.WriteControlPort(second);
+	}
+
+	static void SetDataPortWriteVram(GenesisVdp& vdp, uint16_t address) {
+		// CD3..0 = 0001 (VRAM write)
+		uint16_t first = (uint16_t)(0x4000u | (address & 0x3fffu));
+		uint16_t second = (uint16_t)(0x0000u | ((address >> 14) & 0x0003u));
+		vdp.WriteControlPort(first);
+		vdp.WriteControlPort(second);
+	}
+
+	static void SetDataPortWriteCram(GenesisVdp& vdp, uint16_t address) {
+		// CD3..0 = 0011 (CRAM write)
+		uint16_t first = (uint16_t)(0xC000u | (address & 0x3fffu));
+		uint16_t second = (uint16_t)(0x0000u | ((address >> 14) & 0x0003u));
+		vdp.WriteControlPort(first);
+		vdp.WriteControlPort(second);
+	}
+
+	static void SetDataPortWriteVsram(GenesisVdp& vdp, uint16_t address) {
+		// CD3..0 = 0101 (VSRAM write)
+		uint16_t first = (uint16_t)(0x4000u | (address & 0x3fffu));
+		uint16_t second = (uint16_t)(0x0010u | ((address >> 14) & 0x0003u));
+		vdp.WriteControlPort(first);
+		vdp.WriteControlPort(second);
+	}
+
+	static void SetDataPortReadVram(GenesisVdp& vdp, uint16_t address) {
+		SetDataPortCommand(vdp, 0x00, address);
+	}
+
+	static void SetDataPortReadVsram(GenesisVdp& vdp, uint16_t address) {
+		SetDataPortCommand(vdp, 0x00, address);
+		// Force read mode select bits to VSRAM read by writing high CD bits in second word.
+		uint16_t first = (uint16_t)(0x0000u | (address & 0x3fffu));
+		uint16_t second = (uint16_t)(0x0010u | ((address >> 14) & 0x0003u)); // sets access mode 0x04
+		vdp.WriteControlPort(first);
+		vdp.WriteControlPort(second);
+	}
+
+	static void SetDataPortReadCram(GenesisVdp& vdp, uint16_t address) {
+		SetDataPortCommand(vdp, 0x00, address);
+		uint16_t first = (uint16_t)(0x0000u | (address & 0x3fffu));
+		uint16_t second = (uint16_t)(0x0020u | ((address >> 14) & 0x0003u)); // sets access mode 0x08
+		vdp.WriteControlPort(first);
+		vdp.WriteControlPort(second);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, VramReadUsesReadAheadBufferSemantics) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+		WriteReg(vdp, 15, 0x02);
+
+		SetDataPortWriteVram(vdp, 0x0000);
+		vdp.WriteDataPort(0x1234);
+		vdp.WriteDataPort(0xabcd);
+
+		SetDataPortReadVram(vdp, 0x0000);
+		uint16_t first = vdp.ReadDataPort();
+		uint16_t second = vdp.ReadDataPort();
+		uint16_t third = vdp.ReadDataPort();
+
+		// Command finalization primes the first word into the buffer.
+		EXPECT_EQ(first, 0x1234u);
+		EXPECT_EQ(second, 0xabcdu);
+		EXPECT_EQ(third, 0x0000u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, VramReadAdvancesByConfiguredAutoincrement) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+		WriteReg(vdp, 15, 0x04);
+
+		SetDataPortWriteVram(vdp, 0x0000);
+		vdp.WriteDataPort(0x1001);
+		vdp.WriteDataPort(0x2002);
+		vdp.WriteDataPort(0x3003);
+
+		SetDataPortReadVram(vdp, 0x0000);
+		uint16_t w0 = vdp.ReadDataPort();
+		uint16_t w1 = vdp.ReadDataPort();
+		uint16_t w2 = vdp.ReadDataPort();
+
+		EXPECT_EQ(w0, 0x1001u);
+		EXPECT_EQ(w1, 0x2002u);
+		EXPECT_EQ(w2, 0x3003u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, CramReadUsesReadAheadBufferAfterModeSwitch) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 15, 0x02);
+		vdp.GetCramPointer()[0] = 0x00ee;
+		vdp.GetCramPointer()[1] = 0x0444;
+
+		SetDataPortReadCram(vdp, 0x0000);
+		uint16_t first = vdp.ReadDataPort();
+		uint16_t second = vdp.ReadDataPort();
+		uint16_t third = vdp.ReadDataPort();
+
+		EXPECT_EQ(first, 0x00eeu);
+		EXPECT_EQ(second, 0x0444u);
+		EXPECT_EQ(third, 0x0000u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, VsramReadUsesReadAheadBufferAfterModeSwitch) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 15, 0x02);
+		GenesisVdpState state = vdp.GetState();
+		state.Vsram[0] = 0x0011;
+		state.Vsram[1] = 0x0222;
+
+		// Seed VSRAM through writes so internal storage is authoritative.
+		vdp.WriteControlPort(0x4000);
+		vdp.WriteControlPort(0x0014); // VSRAM write mode
+		vdp.WriteDataPort(0x0011);
+		vdp.WriteDataPort(0x0222);
+
+		SetDataPortReadVsram(vdp, 0x0000);
+		uint16_t first = vdp.ReadDataPort();
+		uint16_t second = vdp.ReadDataPort();
+		uint16_t third = vdp.ReadDataPort();
+
+		EXPECT_EQ(first & 0x07ffu, 0x0011u);
+		EXPECT_EQ(second & 0x07ffu, 0x0222u);
+		EXPECT_EQ(third & 0x07ffu, 0x0000u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, ControlPortProgrammingUpdatesCommandStateForDebugTools) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x4012);
+		vdp.WriteControlPort(0x0001);
+		GenesisVdpState state = vdp.GetState();
+		EXPECT_NE(state.AddressRegister, 0u);
+		EXPECT_NE(state.CodeRegister, 0u);
+
+		vdp.WriteControlPort(0x1234);
+		vdp.WriteControlPort(0x0020);
+		state = vdp.GetState();
+		EXPECT_NE(state.CodeRegister & 0x0fu, 0u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, StatusReadClearsPendingControlWritePairState) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x1234);
+		GenesisVdpState pending = vdp.GetState();
+		EXPECT_TRUE(pending.WritePending);
+
+		(void)vdp.ReadControlPort();
+		GenesisVdpState afterRead = vdp.GetState();
+		EXPECT_FALSE(afterRead.WritePending);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, DataReadDoesNotClearPendingControlWritePairState) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x1234);
+		GenesisVdpState pending = vdp.GetState();
+		EXPECT_TRUE(pending.WritePending);
+
+		(void)vdp.ReadDataPort();
+		GenesisVdpState afterDataRead = vdp.GetState();
+		EXPECT_TRUE(afterDataRead.WritePending);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, DataWriteDoesNotClearPendingControlWritePairState) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPort(0x1234);
+		GenesisVdpState pending = vdp.GetState();
+		EXPECT_TRUE(pending.WritePending);
+
+		vdp.WriteDataPort(0xabcd);
+		GenesisVdpState afterDataWrite = vdp.GetState();
+		EXPECT_TRUE(afterDataWrite.WritePending);
+
+		vdp.WriteControlPort(0x0020);
+		GenesisVdpState afterSecondWord = vdp.GetState();
+		EXPECT_FALSE(afterSecondWord.WritePending);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, FullWordDataWriteClearsStaleHighByteDataLatch) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteDataPortByte(0x56u, true);
+		vdp.WriteDataPort(0xabcdu);
+		vdp.WriteDataPortByte(0x78u, false);
+
+		GenesisVdpState state = vdp.GetState();
+		EXPECT_EQ(state.DataPortBuffer, 0x0078u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, FullWordControlWriteClearsStaleHighByteControlLatch) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		vdp.WriteControlPortByte(0x12u, true);
+		vdp.WriteControlPort(0x4000u);
+		vdp.WriteControlPort(0x0000u);
+
+		vdp.WriteControlPortByte(0x34u, false);
+		vdp.WriteControlPortByte(0x00u, false);
+
+		GenesisVdpState state = vdp.GetState();
+		EXPECT_EQ(state.AddressRegister & 0xff00u, 0x0000u);
+		EXPECT_NE(state.AddressRegister & 0xff00u, 0x1200u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, FifoStatusBitsTrackQueuedWritesAcrossReadCycles) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 1, 0x44);
+		SetDataPortWriteVram(vdp, 0x2000);
+
+		vdp.WriteDataPort(0xaaaa);
+		vdp.WriteDataPort(0xbbbb);
+		vdp.WriteDataPort(0xcccc);
+		vdp.WriteDataPort(0xdddd);
+
+		uint16_t fullStatus = vdp.ReadControlPort();
+		EXPECT_NE((uint16_t)(fullStatus & (uint16_t)VdpStatus::FifoFull), (uint16_t)0);
+		EXPECT_EQ((uint16_t)(fullStatus & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+
+		vdp.Run(400);
+		uint16_t midStatus = vdp.ReadControlPort();
+		EXPECT_EQ((uint16_t)(midStatus & (uint16_t)VdpStatus::FifoFull), (uint16_t)0);
+
+		vdp.Run(488);
+		uint16_t emptyStatus = vdp.ReadControlPort();
+		EXPECT_NE((uint16_t)(emptyStatus & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, Mode0ActiveDisplayWriteQueuesFifoWithoutMutatingVram) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 1, 0x44); // Display on so writes in active display hit FIFO timing path
+		SetDataPortCommand(vdp, 0x00, 0x2200); // CD3..0 = 0000 (non-write mode)
+		vdp.WriteDataPort(0xdeadu);
+
+		uint16_t statusQueued = vdp.ReadControlPort();
+		EXPECT_EQ((uint16_t)(statusQueued & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+
+		vdp.Run(600);
+		uint16_t statusDrained = vdp.ReadControlPort();
+		EXPECT_NE((uint16_t)(statusDrained & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+		EXPECT_EQ((uint16_t)(statusDrained & (uint16_t)VdpStatus::FifoFull), (uint16_t)0);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		EXPECT_EQ(vram[0x2200], 0x00u);
+		EXPECT_EQ(vram[0x2201], 0x00u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, Mode4ActiveDisplayWriteQueuesFifoWithoutMutatingVsram) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 1, 0x44);
+		SetDataPortWriteVsram(vdp, 0x0000);
+		vdp.WriteDataPort(0x0555u);
+
+		SetDataPortReadVsram(vdp, 0x0000); // CD3..0 = 0100
+		vdp.WriteDataPort(0xa5a5u);
+
+		uint16_t statusQueued = vdp.ReadControlPort();
+		EXPECT_EQ((uint16_t)(statusQueued & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+
+		vdp.Run(600);
+		uint16_t statusDrained = vdp.ReadControlPort();
+		EXPECT_NE((uint16_t)(statusDrained & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+
+		GenesisVdpState state = vdp.GetState();
+		EXPECT_EQ(state.Vsram[0], 0x0555u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, Mode8ActiveDisplayWriteQueuesFifoWithoutMutatingCram) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 1, 0x44);
+		SetDataPortWriteCram(vdp, 0x0000);
+		vdp.WriteDataPort(0x0444u);
+
+		SetDataPortReadCram(vdp, 0x0000); // CD3..0 = 1000
+		vdp.WriteDataPort(0xbeefu);
+
+		uint16_t statusQueued = vdp.ReadControlPort();
+		EXPECT_EQ((uint16_t)(statusQueued & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+
+		vdp.Run(600);
+		uint16_t statusDrained = vdp.ReadControlPort();
+		EXPECT_NE((uint16_t)(statusDrained & (uint16_t)VdpStatus::FifoEmpty), (uint16_t)0);
+
+		uint16_t* cram = vdp.GetCramPointer();
+		EXPECT_EQ(cram[0], 0x0444u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, VramWriteWrapsAcrossEndOfAddressSpace) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 15, 0x02);
+		SetDataPortWriteVram(vdp, 0xFFFF);
+		vdp.WriteDataPort(0x1234);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		EXPECT_EQ(vram[0xFFFF], 0x12u);
+		EXPECT_EQ(vram[0x0000], 0x34u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, Mode0DataWriteDoesNotMutateVramButStillAdvancesAddress) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		WriteReg(vdp, 15, 0x02);
+		SetDataPortCommand(vdp, 0x00, 0x1234); // CD3..0 = 0000
+		GenesisVdpState beforeWrite = vdp.GetState();
+		vdp.WriteDataPort(0x7a55);
+
+		uint8_t* vram = vdp.GetVramPointer();
+		EXPECT_EQ(vram[0x1234], 0x00u);
+		EXPECT_EQ(vram[0x1235], 0x00u);
+
+		GenesisVdpState state = vdp.GetState();
+		EXPECT_EQ((uint16_t)(state.AddressRegister - beforeWrite.AddressRegister), (uint16_t)beforeWrite.Registers[15]);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, CramWritePreservesFullWordReadback) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		SetDataPortWriteCram(vdp, 0x0000);
+		vdp.WriteDataPort(0xFFFF);
+
+		uint16_t* cram = vdp.GetCramPointer();
+		EXPECT_EQ(cram[0], 0xFFFFu);
+
+		SetDataPortReadCram(vdp, 0x0000);
+		uint16_t first = vdp.ReadDataPort();
+		EXPECT_EQ(first, 0xFFFFu);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, VsramWriteMirrorsOutOfRangeAddressesUsingHardwareMask) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		SetDataPortWriteVsram(vdp, 0x0050); // (0x50 >> 1)=0x28 -> 0x28 & 0x27 = 0x20
+		vdp.WriteDataPort(0x06abu);
+
+		GenesisVdpState state = vdp.GetState();
+		EXPECT_EQ(state.Vsram[0x20], 0x06abu);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, VsramReadMirrorsOutOfRangeAddressesUsingHardwareMask) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		SetDataPortWriteVsram(vdp, 0x0040); // canonical address for index 0x20
+		vdp.WriteDataPort(0x0333u);
+
+		SetDataPortReadVsram(vdp, 0x0050); // mirrored address should map to same index 0x20
+		uint16_t first = vdp.ReadDataPort();
+		EXPECT_EQ(first & 0x07ffu, 0x0333u);
+	}
+
+	TEST(GenesisVdpReadPortParityTests, VsramReadPreservesUpperBitsWrittenThroughPort) {
+		GenesisVdp vdp;
+		vdp.Init(nullptr, nullptr, nullptr, nullptr);
+
+		SetDataPortWriteVsram(vdp, 0x0000);
+		vdp.WriteDataPort(0xfabcu);
+
+		SetDataPortReadVsram(vdp, 0x0000);
+		uint16_t first = vdp.ReadDataPort();
+		EXPECT_EQ(first, 0xfabcu);
+	}
+}

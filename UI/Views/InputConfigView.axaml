@@ -3,15 +3,15 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:InputConfigViewModel"
-	x:Class="Mesen.Views.InputConfigView"
+	x:Class="Nexen.Views.InputConfigView"
 >
 	<Design.DataContext>
 		<vm:InputConfigViewModel />
@@ -26,7 +26,7 @@
 					<c:OptionSection Header="{l:Translate tpgGeneral}">
 						<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
 							<TextBlock Grid.Row="0" Text="{l:Translate lblDeadzone}" VerticalAlignment="Top" Margin="0 15 5 0" />
-							<c:MesenSlider
+							<c:NexenSlider
 								Margin="12 2 10 0"
 								HorizontalAlignment="Left"
 								Grid.Row="0"
@@ -45,7 +45,7 @@
 							</Grid>
 
 							<TextBlock Grid.Row="2" Text="{l:Translate lblSensitivity}" VerticalAlignment="Top" Margin="0 15 5 0" />
-							<c:MesenSlider
+							<c:NexenSlider
 								Margin="12 2 10 0"
 								HorizontalAlignment="Left"
 								Grid.Row="2"
@@ -64,7 +64,7 @@
 							</Grid>
 
 							<TextBlock Grid.Row="4" Text="{l:Translate lblForceFeedbackIntensity}" VerticalAlignment="Top" Margin="0 15 5 0" />
-							<c:MesenSlider
+							<c:NexenSlider
 								Margin="12 2 10 0"
 								HorizontalAlignment="Left"
 								Grid.Row="4"

@@ -1,18 +1,18 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "Shared/Video/BaseVideoFilter.h"
 #include "Shared/Video/GenericNtscFilter.h"
 #include "Shared/SettingTypes.h"
 
 class Emulator;
 
-class GbaDefaultVideoFilter : public BaseVideoFilter
-{
+class GbaDefaultVideoFilter : public BaseVideoFilter {
 private:
 	uint32_t _calculatedPalette[0x8000] = {};
 	VideoConfig _videoConfig = {};
 
-	uint16_t* _prevFrame = nullptr;
+	std::unique_ptr<uint16_t[]> _prevFrame;
 	bool _blendFrames = false;
 	bool _gbaAdjustColors = false;
 

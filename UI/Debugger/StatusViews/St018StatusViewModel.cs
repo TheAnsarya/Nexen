@@ -1,54 +1,51 @@
-﻿using Mesen.Interop;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Text;
+using Nexen.Interop;
+using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.Debugger.StatusViews;
+namespace Nexen.Debugger.StatusViews;
 
-public class St018StatusViewModel : BaseConsoleStatusViewModel
-{
-	[Reactive] public UInt32 Reg0 { get; set; }
-	[Reactive] public UInt32 Reg1 { get; set; }
-	[Reactive] public UInt32 Reg2 { get; set; }
-	[Reactive] public UInt32 Reg3 { get; set; }
-	[Reactive] public UInt32 Reg4 { get; set; }
-	[Reactive] public UInt32 Reg5 { get; set; }
-	[Reactive] public UInt32 Reg6 { get; set; }
-	[Reactive] public UInt32 Reg7 { get; set; }
-	[Reactive] public UInt32 Reg8 { get; set; }
-	[Reactive] public UInt32 Reg9 { get; set; }
-	[Reactive] public UInt32 Reg10 { get; set; }
-	[Reactive] public UInt32 Reg11 { get; set; }
-	[Reactive] public UInt32 Reg12 { get; set; }
-	[Reactive] public UInt32 Reg13 { get; set; }
-	[Reactive] public UInt32 Reg14 { get; set; }
-	[Reactive] public UInt32 Reg15 { get; set; }
+public sealed partial class St018StatusViewModel : BaseConsoleStatusViewModel {
+	[Reactive] public partial UInt32 Reg0 { get; set; }
+	[Reactive] public partial UInt32 Reg1 { get; set; }
+	[Reactive] public partial UInt32 Reg2 { get; set; }
+	[Reactive] public partial UInt32 Reg3 { get; set; }
+	[Reactive] public partial UInt32 Reg4 { get; set; }
+	[Reactive] public partial UInt32 Reg5 { get; set; }
+	[Reactive] public partial UInt32 Reg6 { get; set; }
+	[Reactive] public partial UInt32 Reg7 { get; set; }
+	[Reactive] public partial UInt32 Reg8 { get; set; }
+	[Reactive] public partial UInt32 Reg9 { get; set; }
+	[Reactive] public partial UInt32 Reg10 { get; set; }
+	[Reactive] public partial UInt32 Reg11 { get; set; }
+	[Reactive] public partial UInt32 Reg12 { get; set; }
+	[Reactive] public partial UInt32 Reg13 { get; set; }
+	[Reactive] public partial UInt32 Reg14 { get; set; }
+	[Reactive] public partial UInt32 Reg15 { get; set; }
 
-	[Reactive] public UInt32 RegCpsr { get; set; }
+	[Reactive] public partial UInt32 RegCpsr { get; set; }
 
-	[Reactive] public ArmV3CpuMode Mode { get; set; }
-	[Reactive] public string ModeString { get; set; } = ArmV3CpuMode.User.ToString();
+	[Reactive] public partial ArmV3CpuMode Mode { get; set; }
+	[Reactive] public partial string ModeString { get; set; } = ArmV3CpuMode.User.ToString();
 
-	[Reactive] public bool FlagZero { get; set; }
-	[Reactive] public bool FlagCarry { get; set; }
-	[Reactive] public bool FlagNegative { get; set; }
-	[Reactive] public bool FlagOverflow { get; set; }
-	
-	[Reactive] public bool FlagThumb { get; set; }
-	[Reactive] public bool FlagIrqDisable { get; set; }
-	[Reactive] public bool FlagFiqDisable { get; set; }
+	[Reactive] public partial bool FlagZero { get; set; }
+	[Reactive] public partial bool FlagCarry { get; set; }
+	[Reactive] public partial bool FlagNegative { get; set; }
+	[Reactive] public partial bool FlagOverflow { get; set; }
 
-	[Reactive] public string StackPreview { get; set; } = "";
+	[Reactive] public partial bool FlagThumb { get; set; }
+	[Reactive] public partial bool FlagIrqDisable { get; set; }
+	[Reactive] public partial bool FlagFiqDisable { get; set; }
 
-	public St018StatusViewModel()
-	{
-		this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagNegative, x => x.FlagOverflow).Subscribe(x => UpdateFlags());
-		this.WhenAnyValue(x => x.FlagIrqDisable, x => x.FlagFiqDisable).Subscribe(x => UpdateFlags());
+	[Reactive] public partial string StackPreview { get; set; } = "";
+
+	public St018StatusViewModel() {
+		AddDisposable(this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagNegative, x => x.FlagOverflow).Subscribe(x => UpdateFlags()));
+		AddDisposable(this.WhenAnyValue(x => x.FlagIrqDisable, x => x.FlagFiqDisable).Subscribe(x => UpdateFlags()));
 	}
 
-	private void UpdateFlags()
-	{
+	private void UpdateFlags() {
 		RegCpsr = (UInt32)(
 			(FlagNegative ? (1 << 31) : 0) |
 			(FlagZero ? (1 << 30) : 0) |
@@ -61,8 +58,7 @@ public class St018StatusViewModel : BaseConsoleStatusViewModel
 		);
 	}
 
-	protected override void InternalUpdateUiState()
-	{
+	protected override void InternalUpdateUiState() {
 		ArmV3CpuState cpu = DebugApi.GetCpuState<ArmV3CpuState>(CpuType.St018);
 		UpdateCycleCount(cpu.CycleCount);
 
@@ -91,31 +87,30 @@ public class St018StatusViewModel : BaseConsoleStatusViewModel
 		FlagFiqDisable = cpu.CPSR.FiqDisable;
 
 		Mode = cpu.CPSR.Mode;
-		if(cpu.CPSR.Mode == ArmV3CpuMode.Irq || cpu.CPSR.Mode == ArmV3CpuMode.Fiq) {
-			ModeString = cpu.CPSR.Mode.ToString().ToUpper();
-		} else {
-			ModeString = cpu.CPSR.Mode.ToString();
-		}
+		ModeString = cpu.CPSR.Mode is ArmV3CpuMode.Irq or ArmV3CpuMode.Fiq
+			? cpu.CPSR.Mode.ToString().ToUpper()
+			: cpu.CPSR.Mode.ToString();
 
 		StringBuilder sb = new StringBuilder();
-		if(cpu.R[13] >= 0xE0000000) {
+		if (cpu.R[13] >= 0xE0000000) {
 			//Patch to show work ram data directly (since APIs don't work well with addresses over 2^31)
 			uint start = (cpu.R[13] - 0xE0000000) & 0x3FFF;
-			uint end = (cpu.R[13] - 0xE0000000 + 30 * 4 - 1) & 0x3FFF;
-			if(end < start) {
+			uint end = (cpu.R[13] - 0xE0000000 + (30 * 4) - 1) & 0x3FFF;
+			if (end < start) {
 				end = 0x3FFF;
 			}
+
 			byte[] stackValues = DebugApi.GetMemoryValues(MemoryType.St018WorkRam, start, end);
-			for(int i = 0; i < stackValues.Length; i += 4) {
+			for (int i = 0; i < stackValues.Length; i += 4) {
 				UInt32 value = (uint)stackValues[i] | (uint)(stackValues[i + 1] << 8) | (uint)(stackValues[i + 2] << 16) | (uint)(stackValues[i + 3] << 24);
 				sb.Append($"${value:X8} ");
 			}
 		}
+
 		StackPreview = sb.ToString();
 	}
 
-	protected override void InternalUpdateConsoleState()
-	{
+	protected override void InternalUpdateConsoleState() {
 		ArmV3CpuState cpu = DebugApi.GetCpuState<ArmV3CpuState>(CpuType.St018);
 
 		cpu.R[0] = Reg0;

@@ -3,26 +3,23 @@
 #include "WS/APU/WsApu.h"
 #include "WS/WsTypes.h"
 
-class WsApuCh1
-{
+class WsApuCh1 {
 private:
 	WsApu* _apu = nullptr;
 	WsApuCh1State* _state = nullptr;
 
 public:
-	WsApuCh1(WsApu* apu, WsApuCh1State& state)
-	{
+	WsApuCh1(WsApu* apu, WsApuCh1State& state) {
 		_state = &state;
 		_apu = apu;
 	}
 
-	void Exec()
-	{
-		if(!_state->Enabled) {
+	void Exec() {
+		if (!_state->Enabled) {
 			return;
 		}
 
-		if(_state->Timer == 0) {
+		if (_state->Timer == 0) {
 			_state->Timer = 2047 - _state->Frequency;
 			_state->SamplePosition = (_state->SamplePosition + 1) & 0x1F;
 		} else {
@@ -30,9 +27,8 @@ public:
 		}
 	}
 
-	void UpdateOutput()
-	{
-		if(!_state->Enabled) {
+	void UpdateOutput() {
+		if (!_state->Enabled) {
 			_state->LeftOutput = 0;
 			_state->RightOutput = 0;
 			return;

@@ -1,41 +1,48 @@
-﻿using Avalonia.Controls;
-using Mesen.Config;
-using Mesen.Interop;
-using Mesen.Utilities;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-using System.Reactive.Linq;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Reactive.Linq;
+using Avalonia.Controls;
+using Nexen.Config;
+using Nexen.Interop;
+using Nexen.Utilities;
+using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.ViewModels
-{
-	public class AudioConfigViewModel : DisposableViewModel
-	{
-		[Reactive] public AudioConfig Config { get; set; }
-		[Reactive] public AudioConfig OriginalConfig { get; set; }
-		[Reactive] public List<string> AudioDevices { get; set; } = new();
-		[Reactive] public bool ShowLatencyWarning { get; set; } = false;
+namespace Nexen.ViewModels;
+/// <summary>
+/// ViewModel for the audio configuration tab.
+/// </summary>
+public sealed partial class AudioConfigViewModel : DisposableViewModel {
+	/// <summary>Gets or sets the current audio configuration.</summary>
+	[Reactive] public partial AudioConfig Config { get; set; }
 
-		public AudioConfigViewModel()
-		{
-			Config = ConfigManager.Config.Audio;
-			OriginalConfig = Config.Clone();
+	/// <summary>Gets or sets the original audio configuration for revert.</summary>
+	[Reactive] public partial AudioConfig OriginalConfig { get; set; }
 
-			if(Design.IsDesignMode) {
-				return;
-			}
+	/// <summary>Gets or sets the list of available audio devices.</summary>
+	[Reactive] public partial List<string> AudioDevices { get; set; } = new();
 
-			AudioDevices = ConfigApi.GetAudioDevices();
-			if(AudioDevices.Count > 0 && !AudioDevices.Contains(Config.AudioDevice)) {
-				Config.AudioDevice = AudioDevices[0];
-			}
+	/// <summary>Gets or sets whether to show the latency warning.</summary>
+	[Reactive] public partial bool ShowLatencyWarning { get; set; } = false;
 
-			AddDisposable(this.WhenAnyValue(x => x.Config.AudioLatency).Subscribe(x => {
-				ShowLatencyWarning = Config.AudioLatency <= 55;
-			}));
+	/// <summary>
+	/// Initializes a new instance of the <see cref="AudioConfigViewModel"/> class.
+	/// </summary>
+	public AudioConfigViewModel() {
+		Config = ConfigManager.Config.Audio;
+		OriginalConfig = Config.Clone();
 
-			AddDisposable(ReactiveHelper.RegisterRecursiveObserver(Config, (s, e) => { Config.ApplyConfig(); }));
+		if (Design.IsDesignMode) {
+			return;
 		}
+
+		AudioDevices = ConfigApi.GetAudioDevices();
+		if (AudioDevices.Count > 0 && !AudioDevices.Contains(Config.AudioDevice)) {
+			Config.AudioDevice = AudioDevices[0];
+		}
+
+		AddDisposable(this.WhenAnyValue(x => x.Config.AudioLatency).Subscribe(x => ShowLatencyWarning = Config.AudioLatency <= 55));
+
+		AddDisposable(ReactiveHelper.RegisterRecursiveObserver(Config, (s, e) => Config.ApplyConfig()));
 	}
 }

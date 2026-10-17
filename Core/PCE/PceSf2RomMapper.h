@@ -5,8 +5,7 @@
 
 class PceConsole;
 
-class PceSf2RomMapper final : public IPceMapper
-{
+class PceSf2RomMapper final : public IPceMapper {
 private:
 	uint8_t _selectedBank = 0;
 	PceConsole* _console = nullptr;

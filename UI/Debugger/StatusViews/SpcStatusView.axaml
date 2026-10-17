@@ -3,14 +3,14 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:du="using:Mesen.Debugger.Utilities"
-	xmlns:vm="using:Mesen.Debugger.StatusViews"
-	xmlns:c="using:Mesen.Controls"
+	xmlns:du="using:Nexen.Debugger.Utilities"
+	xmlns:vm="using:Nexen.Debugger.StatusViews"
+	xmlns:c="using:Nexen.Controls"
 	mc:Ignorable="d" d:DesignWidth="350"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:SpcStatusViewModel"
-	x:Class="Mesen.Debugger.StatusViews.SpcStatusView"
+	x:Class="Nexen.Debugger.StatusViews.SpcStatusView"
 >
 	<Design.DataContext>
 		<vm:SpcStatusViewModel />
@@ -25,7 +25,7 @@
 			<StackPanel DockPanel.Dock="Right">
 				<StackPanel Orientation="Horizontal" IsEnabled="{Binding EditAllowed}">
 					<TextBlock Margin="0">SP:</TextBlock>
-					<c:MesenNumericTextBox Value="{Binding RegSP}" Hex="True" Max="0xFF" />
+					<c:NexenNumericTextBox Value="{Binding RegSP}" Hex="True" Max="0xFF" />
 				</StackPanel>
 				<TextBox
 					TextWrapping="Wrap"
@@ -42,32 +42,32 @@
 				<WrapPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>A:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RegA}" Hex="True" Max="0xFF" />
+						<c:NexenNumericTextBox Value="{Binding RegA}" Hex="True" Max="0xFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>X:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RegX}" Hex="True" Max="0xFF" />
+						<c:NexenNumericTextBox Value="{Binding RegX}" Hex="True" Max="0xFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>Y:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RegY}" Hex="True" Max="0xFF" />
+						<c:NexenNumericTextBox Value="{Binding RegY}" Hex="True" Max="0xFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>PC:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RegPC}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding RegPC}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>Cycle:</TextBlock>
-						<c:MesenNumericTextBox Width="70" Value="{Binding CycleCount}" IsEnabled="False" />
+						<c:NexenNumericTextBox Width="70" Value="{Binding CycleCount}" IsEnabled="False" />
 					</StackPanel>
 				</WrapPanel>
 
-				<Rectangle Stroke="{StaticResource MesenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" />
+				<Rectangle Stroke="{StaticResource NexenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" />
 
 				<WrapPanel Margin="0 2 0 0" DockPanel.Dock="Top">
 					<StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Top">
 						<TextBlock>P:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RegPS}" Hex="True" Max="0xFF" />
+						<c:NexenNumericTextBox Value="{Binding RegPS}" Hex="True" Max="0xFF" />
 					</StackPanel>
 
 					<WrapPanel>

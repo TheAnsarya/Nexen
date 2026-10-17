@@ -2,20 +2,20 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
 	xmlns:sys="using:System"
-	xmlns:v="using:Mesen.Views"
-	xmlns:du="using:Mesen.Debugger.Utilities"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:i="using:Mesen.Interop"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:v="using:Nexen.Views"
+	xmlns:du="using:Nexen.Debugger.Utilities"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:i="using:Nexen.Interop"
+	xmlns:l="using:Nexen.Localization"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels"
-	xmlns:dc="using:Mesen.Debugger.Controls"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	mc:Ignorable="d"
 	Icon="/Assets/Edit.png"
-	x:Class="Mesen.Debugger.Windows.NesHeaderEditWindow"
+	x:Class="Nexen.Debugger.Windows.NesHeaderEditWindow"
 	x:DataType="vm:NesHeaderEditViewModel"
 	CanResize="False"
 	Name="root"
@@ -51,8 +51,8 @@
 			IsReadOnly="True"
 			Text="{Binding HeaderBytes}"
 			Width="NaN"
-			FontFamily="{DynamicResource MesenMonospaceFont}"
-			FontSize="{DynamicResource MesenMonospaceFontSize}"
+			FontFamily="{DynamicResource NexenMonospaceFont}"
+			FontSize="{DynamicResource NexenMonospaceFontSize}"
 		/>
 		
 		<Grid ColumnDefinitions="Auto,1.5*,10,Auto,1*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
@@ -60,10 +60,10 @@
 			<c:EnumComboBox SelectedItem="{Binding Header.FileType}" Grid.Row="0" Grid.Column="1" />
 			
 			<TextBlock Text="{l:Translate lblMapper}" Grid.Row="1" />
-			<c:MesenNumericTextBox Value="{Binding Header.MapperId}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" />
+			<c:NexenNumericTextBox Value="{Binding Header.MapperId}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" />
 			
 			<TextBlock Text="{l:Translate lblSubmapper}" Grid.Row="2" />
-			<c:MesenNumericTextBox Value="{Binding Header.SubmapperId}" IsEnabled="{Binding IsNes20}" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" />
+			<c:NexenNumericTextBox Value="{Binding Header.SubmapperId}" IsEnabled="{Binding IsNes20}" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" />
 			
 			<TextBlock Text="{l:Translate lblMirroringType}" Grid.Row="3" />
 			<c:EnumComboBox SelectedItem="{Binding Header.Mirroring}" Grid.Row="3" Grid.Column="1" />
@@ -85,13 +85,13 @@
 
 			<TextBlock Text="{l:Translate lblPrgRom}" Grid.Row="0" Grid.Column="3" />
 			<StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="4">
-				<c:MesenNumericTextBox Value="{Binding Header.PrgRom}"  />
+				<c:NexenNumericTextBox Value="{Binding Header.PrgRom}"  />
 				<TextBlock Text=" KB" />
 			</StackPanel>
 
 			<TextBlock Text="{l:Translate lblChrRom}" Grid.Row="1" Grid.Column="3" />
 			<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="4">
-				<c:MesenNumericTextBox Value="{Binding Header.ChrRom}"  />
+				<c:NexenNumericTextBox Value="{Binding Header.ChrRom}"  />
 				<TextBlock Text=" KB" />
 			</StackPanel>
 

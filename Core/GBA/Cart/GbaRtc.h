@@ -4,8 +4,7 @@
 
 class Emulator;
 
-struct GbaRtcState
-{
+struct GbaRtcState {
 	uint8_t Year;
 	uint8_t Month;
 	uint8_t Day;
@@ -15,17 +14,15 @@ struct GbaRtcState
 	uint8_t Second;
 
 	uint8_t Status;
-	uint8_t IntHour; //unimplemented
-	uint8_t IntMinute; //unimplemented
+	uint8_t IntHour;   // unimplemented
+	uint8_t IntMinute; // unimplemented
 
-	bool TestMode; //unimplemented
+	bool TestMode; // unimplemented
 };
 
-class GbaRtc final : public ISerializable
-{
+class GbaRtc final : public ISerializable {
 private:
-	enum class Command : uint8_t
-	{
+	enum class Command : uint8_t {
 		Reset,
 		Status,
 		DateTime,
@@ -64,7 +61,7 @@ private:
 	void ProcessDataIn(uint8_t value);
 	void ProcessDataOut();
 	void ProcessCommand();
-	
+
 	void Reset();
 	void UpdateTime();
 

@@ -1,35 +1,37 @@
-<UserControl 
+﻿<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:u="using:Mesen.Utilities"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:u="using:Nexen.Utilities"
 	xmlns:cp="using:Avalonia.Markup.Xaml.Converters"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="50"
 	x:Name="root"
+	x:DataType="dc:ColorCheckbox"
 	HorizontalAlignment="Stretch"
-	x:Class="Mesen.Debugger.Controls.ColorCheckbox"
+	x:Class="Nexen.Debugger.Controls.ColorCheckbox"
 >
 	<UserControl.Resources>
 		<cp:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
 	</UserControl.Resources>
-	
+
 	<StackPanel Orientation="Horizontal" DataContext="{Binding ElementName=root}">
 		<Button
 			MinWidth="0"
-			Padding="0"
+			Padding="2"
 			Margin="0"
 			BorderThickness="0"
 			Background="Transparent"
 			Click="OnColorClick"
 		>
 			<Border
-				BorderBrush="{DynamicResource MesenBlackBorderColor}"
+				BorderBrush="{DynamicResource NexenBlackBorderColor}"
 				BorderThickness="1"
 				Background="{Binding Color, Converter={StaticResource ColorToBrushConverter}}"
-				Width="16"
-				Height="16"
+				Width="20"
+				Height="20"
 			/>
 		</Button>
 		<CheckBox

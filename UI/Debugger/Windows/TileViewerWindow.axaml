@@ -2,19 +2,19 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:vm="using:Mesen.ViewModels"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:vm="using:Nexen.ViewModels"
 	xmlns:sys="using:System"
-	xmlns:v="using:Mesen.Views"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:i="using:Mesen.Interop"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:v="using:Nexen.Views"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:i="using:Nexen.Interop"
+	xmlns:l="using:Nexen.Localization"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:dv="using:Mesen.Debugger.Views"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:dv="using:Nexen.Debugger.Views"
 	mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
-	x:Class="Mesen.Debugger.Windows.TileViewerWindow"
+	x:Class="Nexen.Debugger.Windows.TileViewerWindow"
 	x:DataType="dvm:TileViewerViewModel"
 	Width="600" Height="600"
 	Title="{l:Translate wndTitle}"
@@ -44,10 +44,10 @@
 	
 	<DockPanel>
 		<Panel DockPanel.Dock="Top">
-			<c:MesenMenu DockPanel.Dock="Top" Name="ActionMenu">
+			<c:NexenMenu DockPanel.Dock="Top" Name="ActionMenu">
 				<MenuItem Header="{l:Translate mnuFile}" ItemsSource="{Binding FileMenuActions}" />
 				<MenuItem Header="{l:Translate mnuView}" ItemsSource="{Binding ViewMenuActions}" />
-			</c:MesenMenu>
+			</c:NexenMenu>
 			<c:IconButton
 				HorizontalAlignment="Right"
 				DockPanel.Dock="Right"
@@ -84,7 +84,7 @@
 						</ItemsControl>
 					</Panel>
 
-					<Rectangle Grid.Row="1" Stroke="{StaticResource MesenGrayBorderColor}" StrokeThickness="1" Margin="0 5" DockPanel.Dock="Top" Grid.ColumnSpan="2" />
+					<Rectangle Grid.Row="1" Stroke="{StaticResource NexenGrayBorderColor}" StrokeThickness="1" Margin="0 5" DockPanel.Dock="Top" Grid.ColumnSpan="2" />
 
 					<TextBlock Grid.Column="0" Grid.Row="2" Text="{l:Translate lblSource}" />
 					<c:EnumComboBox
@@ -106,9 +106,9 @@
 
 					<TextBlock Grid.Column="0" Grid.Row="4" Text="{l:Translate lblSize}" />
 					<StackPanel Grid.Column="1" Grid.Row="4" Orientation="Horizontal">
-						<c:MesenNumericUpDown Value="{Binding Config.ColumnCount}" Minimum="4" Maximum="256" Increment="2" />
+						<c:NexenNumericUpDown Value="{Binding Config.ColumnCount}" Minimum="4" Maximum="256" Increment="2" />
 						<TextBlock Margin="5 0">by</TextBlock>
-						<c:MesenNumericUpDown Value="{Binding Config.RowCount}" Minimum="4" Maximum="256" Increment="2" />
+						<c:NexenNumericUpDown Value="{Binding Config.RowCount}" Minimum="4" Maximum="256" Increment="2" />
 					</StackPanel>
 					
 					<TextBlock Grid.Column="0" Grid.Row="5" Text="{l:Translate lblFormat}" IsVisible="{Binding ShowFormatDropdown}" />

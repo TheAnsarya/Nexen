@@ -1,46 +1,39 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using System;
-using System.ComponentModel;
-using Avalonia.Data;
-using Mesen.Interop;
-using System.Collections.Generic;
-using Avalonia.Input;
-using Mesen.Utilities;
+using Nexen.Interop;
+using Nexen.Utilities;
 
-namespace Mesen.Windows
-{
-	public class CommandLineHelpWindow : MesenWindow
-	{
-		public List<CommandLineTabEntry> HelpTabs { get; } = new();
+namespace Nexen.Windows; 
+public partial class CommandLineHelpWindow : NexenWindow {
+	public List<CommandLineTabEntry> HelpTabs { get; } = new();
 
-		public CommandLineHelpWindow()
-		{
-			Dictionary<string, string> switchesPerCategory = CommandLineHelper.GetAvailableSwitches();
-			foreach(var kvp in switchesPerCategory) {
-				HelpTabs.Add(new() { Name = kvp.Key, Content = kvp.Value });
-			}
-
-			InitializeComponent();
+	public CommandLineHelpWindow() {
+		Dictionary<string, string> switchesPerCategory = CommandLineHelper.GetAvailableSwitches();
+		foreach (var kvp in switchesPerCategory) {
+			HelpTabs.Add(new() { Name = kvp.Key, Content = kvp.Value });
 		}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
-
-		private void btnOk_OnClick(object? sender, RoutedEventArgs e)
-		{
-			Close();
-		}
+		InitializeComponent();
 	}
 
-	public class CommandLineTabEntry
-	{
-		public string Name { get; set; } = "";
-		public string Content { get; set; } = "";
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
 	}
+
+	private void btnOk_OnClick(object? sender, RoutedEventArgs e) {
+		Close();
+	}
+}
+
+public partial class CommandLineTabEntry {
+	public string Name { get; set; } = "";
+	public string Content { get; set; } = "";
 }

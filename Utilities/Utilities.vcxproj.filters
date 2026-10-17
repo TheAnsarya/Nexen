@@ -148,8 +148,6 @@
       <Filter>Video</Filter>
     </ClInclude>
     <ClInclude Include="ArchiveReader.h" />
-    <ClInclude Include="miniz.h" />
-    <ClInclude Include="SZReader.h" />
     <ClInclude Include="ZipReader.h" />
     <ClInclude Include="ZipWriter.h" />
     <ClInclude Include="AutoResetEvent.h" />
@@ -158,14 +156,12 @@
     <ClInclude Include="FolderUtilities.h" />
     <ClInclude Include="HexUtilities.h" />
     <ClInclude Include="ISerializable.h" />
-    <ClInclude Include="kissfft.h" />
     <ClInclude Include="PlatformUtilities.h" />
     <ClInclude Include="RandomHelper.h" />
     <ClInclude Include="safe_ptr.h" />
     <ClInclude Include="Serializer.h" />
     <ClInclude Include="SimpleLock.h" />
     <ClInclude Include="Socket.h" />
-    <ClInclude Include="spng.h" />
     <ClInclude Include="StringUtilities.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="UPnPPortMapper.h" />
@@ -174,7 +170,6 @@
     <ClInclude Include="CRC32.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="sha1.h" />
-    <ClInclude Include="magic_enum.hpp" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="CompressionHelper.h" />
     <ClInclude Include="NTSC\sms_ntsc_impl.h">
@@ -250,7 +245,6 @@
     <ClCompile Include="PNGHelper.cpp">
       <Filter>Video</Filter>
     </ClCompile>
-    <ClCompile Include="spng.c" />
     <ClCompile Include="Audio\blip_buf.cpp">
       <Filter>Audio</Filter>
     </ClCompile>
@@ -308,12 +302,13 @@
     <ClCompile Include="NTSC\nes_ntsc.cpp">
       <Filter>NTSC</Filter>
     </ClCompile>
+    <ClCompile Include="NTSC\sms_ntsc.cpp">
+      <Filter>NTSC</Filter>
+    </ClCompile>
     <ClCompile Include="NTSC\snes_ntsc.cpp">
       <Filter>NTSC</Filter>
     </ClCompile>
     <ClCompile Include="ArchiveReader.cpp" />
-    <ClCompile Include="miniz.cpp" />
-    <ClCompile Include="SZReader.cpp" />
     <ClCompile Include="ZipReader.cpp" />
     <ClCompile Include="ZipWriter.cpp" />
     <ClCompile Include="AutoResetEvent.cpp" />
@@ -331,9 +326,6 @@
     <ClCompile Include="CRC32.cpp" />
     <ClCompile Include="md5.cpp" />
     <ClCompile Include="sha1.cpp" />
-    <ClCompile Include="NTSC\sms_ntsc.cpp">
-      <Filter>NTSC</Filter>
-    </ClCompile>
     <ClCompile Include="Audio\ymfm\ymfm_misc.cpp">
       <Filter>Audio\ymfm</Filter>
     </ClCompile>

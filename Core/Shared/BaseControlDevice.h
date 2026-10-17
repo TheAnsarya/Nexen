@@ -9,15 +9,41 @@
 class Emulator;
 class InputHud;
 
-struct DeviceButtonName
-{
-	string Name;
-	int ButtonId = 0;
-	bool IsNumeric = false;
+/// <summary>
+/// Device button metadata for Lua API and input display.
+/// </summary>
+struct DeviceButtonName {
+	string Name;            ///< Human-readable button name ("A", "Start", "Fire1")
+	int ButtonId = 0;       ///< Unique button identifier (0-based bit index)
+	bool IsNumeric = false; ///< True if button ID is numeric (e.g., "Button 3")
 };
 
-class BaseControlDevice : public ISerializable
-{
+/// <summary>
+/// Base class for all controller and input devices.
+/// Manages input state, key mappings, serialization, and hardware interaction.
+/// </summary>
+/// <remarks>
+/// Concrete controller types derive from this:
+/// - StandardController (NES/SNES gamepad)
+/// - Zapper (NES light gun)
+/// - PowerPad (NES dance mat)
+/// - Mouse (SNES Mouse, Arkanoid Paddle)
+/// - Keyboard (Famicom Keyboard)
+/// - ControllerHub (multitap adapter)
+///
+/// Responsibilities:
+/// - Input state management (button presses, coordinates, turbos)
+/// - Key mapping (keyboard/gamepad → emulated buttons)
+/// - Serialization (save states)
+/// - Hardware reads/writes (controller port I/O)
+/// - Input HUD rendering (on-screen button display)
+///
+/// Thread safety:
+/// - _stateLock protects concurrent state access
+/// - State updates from input thread
+/// - Hardware reads from emulation thread
+/// </remarks>
+class BaseControlDevice : public ISerializable {
 protected:
 	ControlDeviceState _state = {};
 
@@ -28,10 +54,18 @@ protected:
 	uint8_t _port = 0;
 	bool _connected = true;
 	SimpleLock _stateLock;
+	string _cachedKeyNames;
+	bool _keyNamesCached = false;
 
-	virtual void RefreshStateBuffer() { }
+	virtual void RefreshStateBuffer() {}
 
 	void EnsureCapacity(int32_t minBitCount);
+	void EnsureCapacityUnsafe(int32_t minBitCount);
+	bool IsPressedUnsafe(uint8_t bit);
+	MousePosition GetCoordinatesUnsafe();
+	void ClearStateUnsafe();
+	void SetBitUnsafe(uint8_t bit);
+	void ClearBitUnsafe(uint8_t bit);
 	uint32_t GetByteIndex(uint8_t bit);
 	virtual bool HasCoordinates();
 	virtual bool IsRawString();
@@ -41,7 +75,7 @@ protected:
 	void StrobeProcessRead();
 	void StrobeProcessWrite(uint8_t value);
 
-	virtual string GetKeyNames() { return ""; }
+	[[nodiscard]] virtual string GetKeyNames() { return ""; }
 
 	void SetPressedState(uint8_t bit, uint16_t keyCode);
 	void SetPressedState(uint8_t bit, bool enabled);
@@ -63,35 +97,36 @@ public:
 
 	BaseControlDevice(Emulator* emu, ControllerType type, uint8_t port, KeyMappingSet keyMappingSet = KeyMappingSet());
 	virtual ~BaseControlDevice();
-	
+
 	virtual void Init() {}
 
-	uint8_t GetPort();
-	ControllerType GetControllerType();
+	[[nodiscard]] uint8_t GetPort();
+	[[nodiscard]] ControllerType GetControllerType();
 
-	bool IsPressed(uint8_t bit);
+	[[nodiscard]] bool IsPressed(uint8_t bit);
 
-	MousePosition GetCoordinates();
+	[[nodiscard]] MousePosition GetCoordinates();
 	void SetCoordinates(MousePosition pos);
 
 	void Connect();
 	void Disconnect();
-	bool IsConnected();
+	[[nodiscard]] bool IsConnected();
 
 	void ClearState();
 	void SetBit(uint8_t bit);
 	void ClearBit(uint8_t bit);
 	void InvertBit(uint8_t bit);
 	void SetBitValue(uint8_t bit, bool set);
-	
-	virtual void SetTextState(string state);
-	virtual string GetTextState();
+
+	virtual void SetTextState(string_view state);
+	[[nodiscard]] virtual string GetTextState();
+	virtual void GetTextState(string& output);
 
 	void SetStateFromInput();
-	virtual void OnAfterSetState() { }
-	
+	virtual void OnAfterSetState() {}
+
 	virtual void SetRawState(ControlDeviceState state);
-	virtual ControlDeviceState GetRawState();
+	[[nodiscard]] virtual ControlDeviceState GetRawState();
 
 	virtual void InternalDrawController(InputHud& hud) {}
 	virtual void DrawController(InputHud& hud);
@@ -99,12 +134,12 @@ public:
 	virtual uint8_t ReadRam(uint16_t addr) = 0;
 	virtual void WriteRam(uint16_t addr, uint8_t value) = 0;
 
-	//Used by Lua API
-	virtual vector<DeviceButtonName> GetKeyNameAssociations() { return {}; }
+	// Used by Lua API
+	[[nodiscard]] virtual vector<DeviceButtonName> GetKeyNameAssociations() { return {}; }
 
-	virtual bool HasControllerType(ControllerType type);
-	
-	void static SwapButtons(shared_ptr<BaseControlDevice> state1, uint8_t button1, shared_ptr<BaseControlDevice> state2, uint8_t button2);
+	[[nodiscard]] virtual bool HasControllerType(ControllerType type);
 
-	void Serialize(Serializer &s) override;
+	void static SwapButtons(const shared_ptr<BaseControlDevice>& state1, uint8_t button1, const shared_ptr<BaseControlDevice>& state2, uint8_t button2);
+
+	void Serialize(Serializer& s) override;
 };

@@ -4,9 +4,8 @@
 
 class NesConsole;
 
-class BaseExpansionAudio : public ISerializable
-{
-protected: 
+class BaseExpansionAudio : public ISerializable {
+protected:
 	NesConsole* _console = nullptr;
 
 	virtual void ClockAudio() = 0;

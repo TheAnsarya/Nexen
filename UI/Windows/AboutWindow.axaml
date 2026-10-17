@@ -2,15 +2,15 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:w="using:Mesen.Windows"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:v="using:Mesen.Views"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:w="using:Nexen.Windows"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:v="using:Nexen.Views"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d"
-	x:Class="Mesen.Windows.AboutWindow"
+	x:Class="Nexen.Windows.AboutWindow"
 	Width="350" Height="525"
 	Title="{l:Translate wndTitle}"
 	CanResize="False"
@@ -43,14 +43,14 @@
 				</DataTemplate>
 			</Setter>
 		</Style>
-		
+
 	</Window.Styles>
-	
+
 	<DockPanel>
 		<DockPanel DockPanel.Dock="Top">
 			<Image
 				DockPanel.Dock="Left"
-				Source="/Assets/Icon.ico"
+				Source="/Assets/NexenIcon.ico"
 				Height="64"
 				Width="64"
 				Margin="10"
@@ -76,11 +76,11 @@
 				<TextBlock Name="lblCopyright" Margin="3" />
 				<StackPanel Orientation="Horizontal" Margin="3">
 					<TextBlock Text="{l:Translate lblWebsite}" Margin="0 0 5 0" />
-					<TextBlock Text="{l:Translate lblLink}" Foreground="{DynamicResource SystemAccentColor}" TextDecorations="Underline" Cursor="Hand" Tapped="OnMesenLinkTapped" />
+					<TextBlock Text="{l:Translate lblLink}" Foreground="{DynamicResource SystemAccentColor}" TextDecorations="Underline" Cursor="Hand" Tapped="OnNexenLinkTapped" />
 				</StackPanel>
 			</StackPanel>
 		</DockPanel>
-		
+
 		<StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="5 3">
 			<Button
 				MinWidth="70"
@@ -114,6 +114,6 @@
 				</Border>
 			</DockPanel>
 		</c:GroupBox>
-		
+
 	</DockPanel>
 </Window>

@@ -8,22 +8,17 @@
 #include "Shared/SettingTypes.h"
 #include "Shared/ColorUtilities.h"
 
-GbaDefaultVideoFilter::GbaDefaultVideoFilter(Emulator* emu, bool applyNtscFilter) : BaseVideoFilter(emu), _ntscFilter(emu)
-{
+GbaDefaultVideoFilter::GbaDefaultVideoFilter(Emulator* emu, bool applyNtscFilter) : BaseVideoFilter(emu), _ntscFilter(emu) {
 	InitLookupTable();
 	_applyNtscFilter = applyNtscFilter;
-	_prevFrame = new uint16_t[GbaConstants::PixelCount];
-	memset(_prevFrame, 0, GbaConstants::PixelCount * sizeof(uint16_t));
+	_prevFrame = std::make_unique<uint16_t[]>(GbaConstants::PixelCount);
+	memset(_prevFrame.get(), 0, GbaConstants::PixelCount * sizeof(uint16_t));
 }
 
-GbaDefaultVideoFilter::~GbaDefaultVideoFilter()
-{
-	delete[] _prevFrame;
-}
+GbaDefaultVideoFilter::~GbaDefaultVideoFilter() = default;
 
-FrameInfo GbaDefaultVideoFilter::GetFrameInfo()
-{
-	if(_applyNtscFilter) {
+FrameInfo GbaDefaultVideoFilter::GetFrameInfo() {
+	if (_applyNtscFilter) {
 		FrameInfo frameInfo;
 		frameInfo.Width = SNES_NTSC_OUT_WIDTH(_baseFrameInfo.Width);
 		frameInfo.Height = _baseFrameInfo.Height;
@@ -32,19 +27,18 @@ FrameInfo GbaDefaultVideoFilter::GetFrameInfo()
 	return BaseVideoFilter::GetFrameInfo();
 }
 
-void GbaDefaultVideoFilter::InitLookupTable()
-{
+void GbaDefaultVideoFilter::InitLookupTable() {
 	VideoConfig config = _emu->GetSettings()->GetVideoConfig();
 
 	InitConversionMatrix(config.Hue, config.Saturation);
 
-	for(int rgb555 = 0; rgb555 < 0x8000; rgb555++) {
+	for (int rgb555 = 0; rgb555 < 0x8000; rgb555++) {
 		uint8_t r = rgb555 & 0x1F;
 		uint8_t g = (rgb555 >> 5) & 0x1F;
 		uint8_t b = (rgb555 >> 10) & 0x1F;
 
-		if(_gbaAdjustColors) {
-			//Adjust colors to simulate LCD screen (uses the same formula as Ares)
+		if (_gbaAdjustColors) {
+			// Adjust colors to simulate LCD screen (uses the same formula as Ares)
 			constexpr double lcdGamma = 4.0;
 			constexpr double outGamma = 2.2;
 			double lr = std::pow(r / 31.0, lcdGamma);
@@ -59,7 +53,7 @@ void GbaDefaultVideoFilter::InitLookupTable()
 			b = ColorUtilities::Convert5BitTo8Bit(b);
 		}
 
-		if(config.Hue != 0 || config.Saturation != 0 || config.Brightness != 0 || config.Contrast != 0) {
+		if (config.Hue != 0 || config.Saturation != 0 || config.Brightness != 0 || config.Contrast != 0) {
 			ApplyColorOptions(r, g, b, config.Brightness, config.Contrast);
 			_calculatedPalette[rgb555] = 0xFF000000 | (r << 16) | (g << 8) | b;
 		} else {
@@ -70,54 +64,49 @@ void GbaDefaultVideoFilter::InitLookupTable()
 	_videoConfig = config;
 }
 
-void GbaDefaultVideoFilter::OnBeforeApplyFilter()
-{
+void GbaDefaultVideoFilter::OnBeforeApplyFilter() {
 	VideoConfig config = _emu->GetSettings()->GetVideoConfig();
 	GbaConfig gbaConfig = _emu->GetSettings()->GetGbaConfig();
 
 	bool adjustColors = gbaConfig.GbaAdjustColors;
-	if(_videoConfig.Hue != config.Hue || _videoConfig.Saturation != config.Saturation || _videoConfig.Contrast != config.Contrast || _videoConfig.Brightness != config.Brightness || _gbaAdjustColors != adjustColors) {
+	if (_videoConfig.Hue != config.Hue || _videoConfig.Saturation != config.Saturation || _videoConfig.Contrast != config.Contrast || _videoConfig.Brightness != config.Brightness || _gbaAdjustColors != adjustColors) {
 		_gbaAdjustColors = adjustColors;
 		InitLookupTable();
 	}
 	bool blendFrames = gbaConfig.BlendFrames && !_emu->GetRewindManager()->IsRewinding() && !_emu->IsPaused();
-	if(_blendFrames != blendFrames) {
+	if (_blendFrames != blendFrames) {
 		_blendFrames = blendFrames;
-		memset(_prevFrame, 0, GbaConstants::PixelCount * sizeof(uint16_t));
+		memset(_prevFrame.get(), 0, GbaConstants::PixelCount * sizeof(uint16_t));
 	}
 
 	_videoConfig = config;
 }
 
-void GbaDefaultVideoFilter::ApplyFilter(uint16_t* ppuOutputBuffer)
-{
+void GbaDefaultVideoFilter::ApplyFilter(uint16_t* ppuOutputBuffer) {
 	uint32_t* out = GetOutputBuffer();
 
-	for(uint32_t i = 0; i < GbaConstants::ScreenHeight; i++) {
-		for(uint32_t j = 0; j < GbaConstants::ScreenWidth; j++) {
-			out[i * GbaConstants::ScreenWidth + j] = GetPixel(ppuOutputBuffer, i * GbaConstants::ScreenWidth + j);
-		}
+	// Flat loop eliminates per-pixel multiply (was i * ScreenWidth + j)
+	for (uint32_t idx = 0; idx < GbaConstants::PixelCount; idx++) {
+		out[idx] = GetPixel(ppuOutputBuffer, idx);
 	}
 
-	if(_blendFrames) {
-		std::copy(ppuOutputBuffer, ppuOutputBuffer + GbaConstants::PixelCount, _prevFrame);
+	if (_blendFrames) {
+		std::copy(ppuOutputBuffer, ppuOutputBuffer + GbaConstants::PixelCount, _prevFrame.get());
 	}
 
-	if(_applyNtscFilter) {
+	if (_applyNtscFilter) {
 		_ntscFilter.ApplyFilter(out, GbaConstants::ScreenWidth, GbaConstants::ScreenHeight, 0);
 	}
 }
 
-uint32_t GbaDefaultVideoFilter::GetPixel(uint16_t* ppuFrame, uint32_t offset)
-{
-	if(_blendFrames) {
+uint32_t GbaDefaultVideoFilter::GetPixel(uint16_t* ppuFrame, uint32_t offset) {
+	if (_blendFrames) {
 		return BlendPixels(_calculatedPalette[_prevFrame[offset] & 0x7FFF], _calculatedPalette[ppuFrame[offset] & 0x7FFF]);
 	} else {
 		return _calculatedPalette[ppuFrame[offset] & 0x7FFF];
 	}
 }
 
-uint32_t GbaDefaultVideoFilter::BlendPixels(uint32_t a, uint32_t b)
-{
+uint32_t GbaDefaultVideoFilter::BlendPixels(uint32_t a, uint32_t b) {
 	return ((((a) ^ (b)) & 0xfffefefeL) >> 1) + ((a) & (b));
 }

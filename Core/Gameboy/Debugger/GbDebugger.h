@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "Debugger/DebugTypes.h"
 #include "Debugger/IDebugger.h"
@@ -23,8 +23,7 @@ class DummyGbCpu;
 
 enum class MemoryOperationType;
 
-class GbDebugger final : public IDebugger
-{
+class GbDebugger final : public IDebugger {
 	Debugger* _debugger;
 	Emulator* _emu;
 	GbCpu* _cpu;
@@ -72,7 +71,7 @@ public:
 
 	void DrawPartialFrame() override;
 
-	bool SaveRomToDisk(string filename, bool saveAsIps, CdlStripOption stripOption);
+	bool SaveRomToDisk(const string& filename, bool saveAsIps, CdlStripOption stripOption) override;
 
 	void ProcessInputOverrides(DebugControllerState inputOverrides[8]) override;
 

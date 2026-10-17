@@ -1,23 +1,18 @@
+using System.Collections.Generic;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using Mesen.Config;
-using System.Collections.Generic;
-using System.Linq;
+using Nexen.Config;
 
-namespace Mesen.Debugger.Views
-{
-	public class MemoryToolsDisplayOptionsView : UserControl
-	{
-		public MemoryToolsDisplayOptionsView()
-		{
-			InitializeComponent();
-		}
+namespace Nexen.Debugger.Views; 
+public partial class MemoryToolsDisplayOptionsView : UserControl {
+	public MemoryToolsDisplayOptionsView() {
+		InitializeComponent();
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
 	}
 }

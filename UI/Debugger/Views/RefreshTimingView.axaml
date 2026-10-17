@@ -3,16 +3,16 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="410"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="dvm:RefreshTimingViewModel"
-	x:Class="Mesen.Debugger.Views.RefreshTimingView"
+	x:Class="Nexen.Debugger.Views.RefreshTimingView"
 >
 	<Design.DataContext>
 		<dvm:RefreshTimingViewModel />
@@ -20,14 +20,14 @@
 
 	<StackPanel Orientation="Horizontal" Background="#15808080">
 		<CheckBox IsChecked="{Binding Config.AutoRefresh}" Content="{l:Translate lblScanline}" />
-		<c:MesenNumericUpDown
+		<c:NexenNumericUpDown
 			Value="{Binding Config.RefreshScanline}"
 			Minimum="{Binding MinScanline}"
 			Maximum="{Binding MaxScanline}"
 			Margin="3 0"
 		/>
 		<TextBlock VerticalAlignment="Center" Text="{l:Translate lblCycle}" />
-		<c:MesenNumericUpDown
+		<c:NexenNumericUpDown
 			Value="{Binding Config.RefreshCycle}"
 			Minimum="0"
 			Maximum="{Binding MaxCycle}"
@@ -42,7 +42,7 @@
 		<Line
 			StartPoint="0.5,0"
 			EndPoint="0.5,20"
-			Stroke="{StaticResource MesenGrayBorderColor}"
+			Stroke="{StaticResource NexenGrayBorderColor}"
 			StrokeThickness="1"
 			Margin="5 0"
 			VerticalAlignment="Center"

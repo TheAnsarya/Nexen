@@ -9,8 +9,7 @@ class Emulator;
 class PceCdRom;
 struct DiscInfo;
 
-class PceCdAudioPlayer final : public IAudioProvider, public ISerializable
-{
+class PceCdAudioPlayer final : public IAudioProvider, public ISerializable {
 	Emulator* _emu = nullptr;
 	DiscInfo* _disc = nullptr;
 	PceCdRom* _cdrom = nullptr;
@@ -24,9 +23,9 @@ class PceCdAudioPlayer final : public IAudioProvider, public ISerializable
 	uint32_t _subcodeSector = 0;
 	uint32_t _nextSubcodeSector = 0;
 	uint32_t _seekDelay = 0;
-	
+
 	HermiteResampler _resampler;
-	
+
 	void PlaySample();
 	void ProcessAudioPlaybackStart();
 
@@ -40,31 +39,30 @@ public:
 	void Stop() { _state.Status = CdAudioStatus::Stopped; }
 	void Pause() { _state.Status = CdAudioStatus::Paused; }
 	void SetIdle() { _state.Status = CdAudioStatus::Inactive; }
-	
+
 	PceCdAudioPlayerState& GetState() { return _state; }
 
-	CdAudioStatus GetStatus() { return _state.Status; }
-	
-	uint32_t GetSubcodeSector() { return _subcodeSector; }
-	uint8_t GetSubcodePosition() { return _subcodePosition; }
-	uint32_t GetCurrentSector() { return _state.CurrentSector; }
+	[[nodiscard]] CdAudioStatus GetStatus() { return _state.Status; }
 
-	__forceinline void Exec()
-	{
+	[[nodiscard]] uint32_t GetSubcodeSector() { return _subcodeSector; }
+	[[nodiscard]] uint8_t GetSubcodePosition() { return _subcodePosition; }
+	[[nodiscard]] uint32_t GetCurrentSector() { return _state.CurrentSector; }
+
+	__forceinline void Exec() {
 		_clockCounter += 3;
-		if(_clockCounter > 487) {
+		if (_clockCounter > 487) {
 			_clockCounter -= 487;
 
-			if(++_irqCounter >= 6) {
-				//Trigger subchannel irq every 6 samples, regardless of whether or not the cd-rom is playing, paused, stopped or seeking (?)
+			if (++_irqCounter >= 6) {
+				// Trigger subchannel irq every 6 samples, regardless of whether or not the cd-rom is playing, paused, stopped or seeking (?)
 				ProcessSubcodeIrq();
 			}
 
-			if(_seekDelay == 0) {
-				//Output one sample every 487 master clocks (~44101.1hz)
+			if (_seekDelay == 0) {
+				// Output one sample every 487 master clocks (~44101.1hz)
 				PlaySample();
 			} else {
-				if(_seekDelay <= 487) {
+				if (_seekDelay <= 487) {
 					_seekDelay = 0;
 					ProcessAudioPlaybackStart();
 				} else {
@@ -74,8 +72,8 @@ public:
 		}
 	}
 
-	int16_t GetLeftSample() { return _state.LeftSample; }
-	int16_t GetRightSample() { return _state.RightSample; }
+	[[nodiscard]] int16_t GetLeftSample() { return _state.LeftSample; }
+	[[nodiscard]] int16_t GetRightSample() { return _state.RightSample; }
 
 	void MixAudio(int16_t* out, uint32_t sampleCount, uint32_t sampleRate) override;
 

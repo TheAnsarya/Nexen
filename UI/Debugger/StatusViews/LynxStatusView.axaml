@@ -1,0 +1,112 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:du="using:Nexen.Debugger.Utilities"
+	xmlns:vm="using:Nexen.Debugger.StatusViews"
+	xmlns:c="using:Nexen.Controls"
+	mc:Ignorable="d" d:DesignWidth="350"
+	VerticalAlignment="Stretch"
+	HorizontalAlignment="Stretch"
+	x:DataType="vm:LynxStatusViewModel"
+	x:Class="Nexen.Debugger.StatusViews.LynxStatusView"
+>
+	<Design.DataContext>
+		<vm:LynxStatusViewModel />
+	</Design.DataContext>
+
+	<UserControl.Styles>
+		<StyleInclude Source="/Styles/DebugStatusStyles.xaml" />
+	</UserControl.Styles>
+
+	<ScrollViewer>
+		<StackPanel>
+			<DockPanel>
+				<StackPanel DockPanel.Dock="Right">
+					<StackPanel Orientation="Horizontal" IsEnabled="{Binding EditAllowed}">
+						<TextBlock Margin="0">SP:</TextBlock>
+						<c:NexenNumericTextBox Value="{Binding RegSP}" Hex="True" Max="0xFF" />
+					</StackPanel>
+					<TextBox
+						TextWrapping="Wrap"
+						Width="78"
+						Height="65"
+						AcceptsReturn="True"
+						IsReadOnly="True"
+						ScrollViewer.VerticalScrollBarVisibility="Visible"
+						Text="{Binding StackPreview}"
+					/>
+				</StackPanel>
+
+				<StackPanel DockPanel.Dock="Top" IsEnabled="{Binding EditAllowed}">
+					<WrapPanel>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock>A:</TextBlock>
+							<c:NexenNumericTextBox Value="{Binding RegA}" Hex="True" Max="0xFF" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock>X:</TextBlock>
+							<c:NexenNumericTextBox Value="{Binding RegX}" Hex="True" Max="0xFF" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock>Y:</TextBlock>
+							<c:NexenNumericTextBox Value="{Binding RegY}" Hex="True" Max="0xFF" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock>PC:</TextBlock>
+							<c:NexenNumericTextBox Value="{Binding RegPC}" Hex="True" Max="0xFFFF" />
+						</StackPanel>
+						<StackPanel Orientation="Horizontal">
+							<TextBlock>Cycle:</TextBlock>
+							<c:NexenNumericTextBox Width="70" Value="{Binding CycleCount}" IsEnabled="False" />
+						</StackPanel>
+					</WrapPanel>
+
+					<Rectangle Stroke="{StaticResource NexenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" />
+
+					<WrapPanel Margin="0 2 0 0" DockPanel.Dock="Top">
+						<StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Top">
+							<TextBlock>P:</TextBlock>
+							<c:NexenNumericTextBox Value="{Binding RegPS}" Hex="True" Max="0xFF" />
+						</StackPanel>
+
+						<WrapPanel>
+							<StackPanel>
+								<CheckBox IsChecked="{Binding FlagC}" Content="Carry" />
+								<CheckBox IsEnabled="False" Content="----" />
+							</StackPanel>
+							<StackPanel>
+								<CheckBox IsChecked="{Binding FlagZ}" Content="Zero" />
+								<CheckBox IsEnabled="False" Content="----" />
+							</StackPanel>
+							<StackPanel>
+								<CheckBox IsChecked="{Binding FlagI}" Content="Interrupt" />
+								<CheckBox IsChecked="{Binding FlagV}" Content="Overflow" />
+							</StackPanel>
+							<StackPanel>
+								<CheckBox IsChecked="{Binding FlagD}" Content="Decimal" />
+								<CheckBox IsChecked="{Binding FlagN}" Content="Negative" />
+							</StackPanel>
+						</WrapPanel>
+					</WrapPanel>
+				</StackPanel>
+			</DockPanel>
+
+			<StackPanel IsEnabled="{Binding EditAllowed}">
+				<Rectangle Stroke="{StaticResource NexenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 4" />
+
+				<WrapPanel>
+					<Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto">
+						<TextBlock>Cycle:</TextBlock>
+						<c:NexenNumericTextBox Grid.Column="1" Value="{Binding Cycle}" IsEnabled="False" />
+						<TextBlock Grid.Row="1">Scanline:</TextBlock>
+						<c:NexenNumericTextBox Grid.Row="1" Grid.Column="1" Value="{Binding Scanline}" IsEnabled="False" />
+						<TextBlock Grid.Row="2">Frame:</TextBlock>
+						<c:NexenNumericTextBox Grid.Row="2" Grid.Column="1" Value="{Binding FrameCount}" IsEnabled="False" />
+					</Grid>
+				</WrapPanel>
+			</StackPanel>
+		</StackPanel>
+	</ScrollViewer>
+</UserControl>

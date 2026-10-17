@@ -15,47 +15,90 @@ class Gameboy;
 class GbPpu;
 class Emulator;
 
-class GbCpu : public ISerializable
-{
+/// <summary>
+/// Game Boy CPU emulator - Sharp LR35902 implementation.
+/// Modified Z80 core used in Game Boy, Game Boy Color, and Super Game Boy.
+/// </summary>
+/// <remarks>
+/// The LR35902 is a hybrid CPU combining Z80 and 8080 features:
+/// - 8-bit data bus, 16-bit address bus
+/// - 7 8-bit registers: A, B, C, D, E, H, L
+/// - Paired as 16-bit: AF, BC, DE, HL (HL used as memory pointer)
+/// - Stack pointer (SP) and program counter (PC)
+/// - 4 flag bits in F register: Z (zero), N (subtract), H (half-carry), C (carry)
+///
+/// **Differences from Z80:**
+/// - No IX, IY index registers
+/// - No alternate register set
+/// - No I/O port instructions
+/// - Different interrupt handling (IM modes → IE/IF registers)
+/// - Simplified instruction set (no ED, DD, FD prefixes)
+/// - CB prefix for bit operations and rotates
+///
+/// **Clock Speed:**
+/// - DMG (original): 4.194304 MHz (1 M-cycle = 4 T-states)
+/// - CGB (Color): 4.194304 MHz or 8.388608 MHz (double speed mode)
+/// - SGB: Slightly different (~4.295 MHz)
+///
+/// **Interrupts (IF/IE at $FF0F/$FFFF):**
+/// - V-Blank ($0040): Triggered at end of frame
+/// - LCD STAT ($0048): Various LCD conditions
+/// - Timer ($0050): Timer overflow
+/// - Serial ($0058): Serial transfer complete
+/// - Joypad ($0060): Button press (active low transition)
+///
+/// **Special Features:**
+/// - HALT: Low-power mode until interrupt
+/// - STOP: Very low-power mode (also triggers CGB speed switch)
+/// - HALT bug: PC increment skipped if interrupts disabled
+/// - OAM corruption: Certain operations during OAM scan cause glitches
+/// </remarks>
+class GbCpu : public ISerializable {
 private:
-	GbCpuState _state = {};
-	Register16 _regAF = Register16(&_state.A, &_state.Flags);
-	Register16 _regBC = Register16(&_state.B, &_state.C);
-	Register16 _regDE = Register16(&_state.D, &_state.E);
-	Register16 _regHL = Register16(&_state.H, &_state.L);
+	GbCpuState _state = {};  ///< CPU registers (A, F, B, C, D, E, H, L, SP, PC)
 
-	GbMemoryManager* _memoryManager = nullptr;
-	Emulator* _emu = nullptr;
-	Gameboy* _gameboy = nullptr;
-	GbPpu* _ppu = nullptr;
+	// Register pair wrappers for 16-bit access
+	Register16 _regAF = Register16(&_state.A, &_state.Flags);  ///< Accumulator + Flags
+	Register16 _regBC = Register16(&_state.B, &_state.C);      ///< BC pair
+	Register16 _regDE = Register16(&_state.D, &_state.E);      ///< DE pair
+	Register16 _regHL = Register16(&_state.H, &_state.L);      ///< HL pair (memory pointer)
 
-	uint8_t _prevIrqVector = 0;
+	GbMemoryManager* _memoryManager = nullptr;  ///< Memory mapping and bus access
+	Emulator* _emu = nullptr;                   ///< Emulator for debugger hooks
+	Gameboy* _gameboy = nullptr;                ///< Parent console
+	GbPpu* _ppu = nullptr;                      ///< PPU reference for timing
 
-	void ExecOpCode(uint8_t opCode);
+	uint8_t _prevIrqVector = 0;  ///< Previous interrupt vector (for edge detection)
 
-	void ProcessCgbSpeedSwitch();
-	__noinline void ProcessHaltBug();
+	void ExecOpCode(uint8_t opCode);  ///< Execute single instruction
 
-	__forceinline void ExecCpuCycle();
-	__forceinline void ExecMasterCycle();
-	__forceinline uint8_t ReadOpCode();
-	__forceinline uint8_t ReadCode();
-	__forceinline uint16_t ReadCodeWord();
+	void ProcessCgbSpeedSwitch();     ///< Handle CGB double-speed mode toggle
+	__noinline void ProcessHaltBug(); ///< Handle HALT bug (PC not incremented)
 
-	template<GbOamCorruptionType oamCorruptionType = GbOamCorruptionType::Read>
+	__forceinline void ExecCpuCycle();    ///< Execute one M-cycle (4 T-states)
+	__forceinline void ExecMasterCycle(); ///< Execute one T-state
+	__forceinline uint8_t ReadOpCode();   ///< Fetch opcode at PC
+	__forceinline uint8_t ReadCode();     ///< Read byte at PC, increment PC
+	__forceinline uint16_t ReadCodeWord(); ///< Read word at PC (little-endian)
+
+	/// Read memory with optional OAM corruption emulation
+	template <GbOamCorruptionType oamCorruptionType = GbOamCorruptionType::Read>
 	__forceinline uint8_t Read(uint16_t addr);
 
-	__forceinline void Write(uint16_t addr, uint8_t value);
+	__forceinline void Write(uint16_t addr, uint8_t value);  ///< Write memory
 
+	// Flag operations
 	bool CheckFlag(uint8_t flag);
 	void SetFlag(uint8_t flag);
 	void ClearFlag(uint8_t flag);
 	void SetFlagState(uint8_t flag, bool state);
 
+	// Stack operations
 	void PushByte(uint8_t value);
 	void PushWord(uint16_t value);
 	uint16_t PopWord();
 
+	// Load instructions
 	void LD(uint8_t& dst, uint8_t value);
 	void LD(uint16_t& dst, uint16_t value);
 	void LD(Register16& dst, uint16_t value);
@@ -63,6 +106,7 @@ private:
 	void LD_Indirect16(uint16_t dst, uint16_t value);
 	void LD_HL(int8_t value);
 
+	// Increment/decrement instructions
 	void INC(uint8_t& dst);
 	void INC(Register16& dst);
 	void INC_SP();
@@ -72,6 +116,7 @@ private:
 	void DEC_Indirect(uint16_t addr);
 	void DEC_SP();
 
+	// Arithmetic instructions
 	void ADD(uint8_t value);
 	void ADD_SP(int8_t value);
 	void ADD(Register16& reg, uint16_t value);
@@ -82,7 +127,7 @@ private:
 	void AND(uint8_t value);
 	void OR(uint8_t value);
 	void XOR(uint8_t value);
-	
+
 	void CP(uint8_t value);
 
 	void NOP();
@@ -114,22 +159,22 @@ private:
 	void SWAP(uint8_t& dst);
 	void SWAP_Indirect(uint16_t addr);
 
-	template<MemoryOperationType type, GbOamCorruptionType oamCorruptionType>
+	template <MemoryOperationType type, GbOamCorruptionType oamCorruptionType>
 	uint8_t ReadMemory(uint16_t addr);
 
-	template<uint8_t bit>
+	template <uint8_t bit>
 	void BIT(uint8_t src);
 
-	template<uint8_t bit>
+	template <uint8_t bit>
 	void RES(uint8_t& dst);
 
-	template<uint8_t bit>
+	template <uint8_t bit>
 	void RES_Indirect(uint16_t addr);
 
-	template<uint8_t bit>
+	template <uint8_t bit>
 	void SET(uint8_t& dst);
 
-	template<uint8_t bit>
+	template <uint8_t bit>
 	void SET_Indirect(uint16_t addr);
 
 	void DAA();
@@ -146,7 +191,7 @@ private:
 	void RET(bool condition);
 	void RETI();
 	void RST(uint8_t value);
-	
+
 	void POP(Register16& reg);
 	void PUSH(Register16& reg);
 	void POP_AF();
@@ -157,7 +202,7 @@ private:
 	void EI();
 	void DI();
 	void PREFIX();
-	
+
 	__forceinline void ProcessNextCycleStart();
 	__noinline bool HandleStoppedState();
 
@@ -169,7 +214,7 @@ public:
 	GbCpuState& GetState();
 	bool IsHalted();
 
-	uint64_t GetCycleCount() { return _state.CycleCount; }
+	[[nodiscard]] uint64_t GetCycleCount() { return _state.CycleCount; }
 
 	void Exec();
 	void PowerOn();
@@ -183,7 +228,7 @@ private:
 
 public:
 	void SetDummyState(GbCpuState& state);
-	uint32_t GetOperationCount();
+	[[nodiscard]] uint32_t GetOperationCount();
 	void LogMemoryOperation(uint32_t addr, uint8_t value, MemoryOperationType type);
 	MemoryOperationInfo GetOperationInfo(uint32_t index);
 #endif

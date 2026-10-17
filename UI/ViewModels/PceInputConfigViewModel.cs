@@ -1,42 +1,34 @@
-﻿using Avalonia.Threading;
-using Mesen.Config;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Reactive.Linq;
+using Avalonia.Threading;
+using Nexen.Config;
+using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.ViewModels
-{
-	public class PceInputConfigViewModel : DisposableViewModel
-	{
-		[Reactive] public PcEngineConfig Config { get; set; }
-		[Reactive] public bool HasTurboTap { get; private set; }
+namespace Nexen.ViewModels; 
+public sealed partial class PceInputConfigViewModel : DisposableViewModel {
+	[Reactive] public partial PcEngineConfig Config { get; set; }
+	[Reactive] public partial bool HasTurboTap { get; private set; }
 
-		public Enum[] AvailableControllerTypesP1 => new Enum[] {
-			ControllerType.None,
-			ControllerType.PceController,
-			ControllerType.PceAvenuePad6,
-			ControllerType.PceTurboTap,
-		};
+	public Enum[] AvailableControllerTypesP1 => new Enum[] {
+		ControllerType.None,
+		ControllerType.PceController,
+		ControllerType.PceAvenuePad6,
+		ControllerType.PceTurboTap,
+	};
 
-		public Enum[] AvailableControllerTypesTurboTap => new Enum[] {
-			ControllerType.None,
-			ControllerType.PceController,
-			ControllerType.PceAvenuePad6,
-		};
+	public Enum[] AvailableControllerTypesTurboTap => new Enum[] {
+		ControllerType.None,
+		ControllerType.PceController,
+		ControllerType.PceAvenuePad6,
+	};
 
-		[Obsolete("For designer only")]
-		public PceInputConfigViewModel() : this(new PcEngineConfig()) { }
+	[Obsolete("For designer only")]
+	public PceInputConfigViewModel() : this(new PcEngineConfig()) { }
 
-		public PceInputConfigViewModel(PcEngineConfig config)
-		{
-			Config = config;
+	public PceInputConfigViewModel(PcEngineConfig config) {
+		Config = config;
 
-			AddDisposable(this.WhenAnyValue(x => x.Config.Port1.Type).Subscribe(t => {
-				Dispatcher.UIThread.Post(() => {
-					HasTurboTap = Config.Port1.Type == ControllerType.PceTurboTap;
-				});
-			}));
-		}
+		AddDisposable(this.WhenAnyValue(x => x.Config.Port1.Type).Subscribe(t => Dispatcher.UIThread.Post(() => HasTurboTap = Config.Port1.Type == ControllerType.PceTurboTap)));
 	}
 }

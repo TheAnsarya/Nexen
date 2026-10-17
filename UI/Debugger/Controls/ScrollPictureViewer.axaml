@@ -3,11 +3,11 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:u="using:Mesen.Utilities"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:u="using:Nexen.Utilities"
 	mc:Ignorable="d"
 	x:Name="root"
-	x:Class="Mesen.Debugger.Controls.ScrollPictureViewer"
+	x:Class="Nexen.Debugger.Controls.ScrollPictureViewer"
 >
 	<Border BorderBrush="Gray" BorderThickness="1">
 		<ScrollViewer

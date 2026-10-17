@@ -2,11 +2,9 @@
 #include "Shared/Utilities/emu2413.h"
 #include "Utilities/Serializer.h"
 
-class Emu2413Serializer
-{
+class Emu2413Serializer {
 public:
-	static void Serialize(OPLL* opll, Serializer& s)
-	{
+	static void Serialize(OPLL* opll, Serializer& s) {
 		SV(opll->clk);
 		SV(opll->rate);
 
@@ -35,7 +33,7 @@ public:
 
 		SVArray(opll->patch_number, 9);
 
-		for(int i = 0; i < 18; i++) {
+		for (int i = 0; i < 18; i++) {
 			SVI(opll->slot[i].number);
 			SVI(opll->slot[i].type);
 
@@ -68,8 +66,8 @@ public:
 		SVArray(opll->ch_out, 14);
 		SVArray(opll->mix_out, 2);
 
-		//custom patches
-		for(int i = 0; i < 2; i++) {
+		// custom patches
+		for (int i = 0; i < 2; i++) {
 			SVI(opll->patch[i].TL);
 			SVI(opll->patch[i].FB);
 			SVI(opll->patch[i].EG);
@@ -85,7 +83,7 @@ public:
 			SVI(opll->patch[i].WS);
 		}
 
-		if(!s.IsSaving()) {
+		if (!s.IsSaving()) {
 			OPLL_forceRefresh(opll);
 		}
 	}

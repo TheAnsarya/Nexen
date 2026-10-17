@@ -1,21 +1,21 @@
 #include "pch.h"
+#include <array>
 #include "Shared/Interfaces/IRenderingDevice.h"
 #include "Utilities/SimpleLock.h"
 
 class Emulator;
 
-class SoftwareRenderer : public IRenderingDevice
-{
+class SoftwareRenderer : public IRenderingDevice {
 private:
 	Emulator* _emu = nullptr;
 
 	SimpleLock _frameLock;
 	SimpleLock _textureLock;
-	
+
 	uint32_t _frameWidth = 0;
 	uint32_t _frameHeight = 0;
-	
-	uint32_t* _textureBuffer[2] = { nullptr, nullptr };
+
+	std::array<std::unique_ptr<uint32_t[]>, 2> _textureBuffer;
 
 	atomic<bool> _needSwap = false;
 

@@ -7,8 +7,35 @@
 
 class Emulator;
 
-class EmuSettings final : public ISerializable
-{
+/// <summary>
+/// Global emulator configuration manager.
+/// Centralizes all settings for video, audio, input, emulation, and platform-specific configs.
+/// </summary>
+/// <remarks>
+/// Architecture:
+/// - Settings organized into config structs (VideoConfig, AudioConfig, etc.)
+/// - Thread-safe access using atomic flags
+/// - Serialization support for save/load configuration files
+/// - Hot-reload support (changes applied immediately without restart)
+///
+/// Configuration categories:
+/// - Video: Resolution, filters, aspect ratio, overscan
+/// - Audio: Volume, sample rate, latency, audio device
+/// - Input: Controller mappings, keyboard shortcuts, turbo buttons
+/// - Emulation: Speed, rewind, cheats, power-on state randomization
+/// - Debug: Debugger options, trace logging, performance stats
+/// - Platform-specific: SNES, NES, GB, PCE, SMS, CV, GBA, WS configs
+///
+/// Settings persistence:
+/// - Global settings: Nexen.cfg in user data folder
+/// - Per-game overrides: Stored in save folder alongside save files
+///
+/// Thread safety:
+/// - Flag checks use atomic operations (lock-free)
+/// - Config updates use SimpleLock for mutual exclusion
+/// - Shortcut key updates use dedicated lock
+/// </remarks>
+class EmuSettings final : public ISerializable {
 private:
 	Emulator* _emu;
 	std::mt19937 _mt;
@@ -31,6 +58,10 @@ private:
 	CvConfig _cv;
 	GbaConfig _gba;
 	WsConfig _ws;
+	LynxConfig _lynx;
+	GenesisConfig _genesis;
+	Atari2600Config _atari2600;
+	ChannelFConfig _channelF;
 
 	atomic<uint32_t> _flags;
 	atomic<uint64_t> _debuggerFlags;
@@ -45,20 +76,20 @@ private:
 
 	SimpleLock _updateShortcutsLock;
 
-	void ProcessString(string &str, const char** strPointer);
+	void ProcessString(string& str, const char** strPointer);
 
 	void ClearShortcutKeys();
 	void SetShortcutKey(EmulatorShortcut shortcut, KeyCombination keyCombination, int keySetIndex);
 
 public:
 	EmuSettings(Emulator* emu);
-	
+
 	void CopySettings(EmuSettings& src);
 
 	void Serialize(Serializer& s) override;
 
-	uint32_t GetVersion();
-	string GetVersionString();
+	[[nodiscard]] uint32_t GetVersion();
+	[[nodiscard]] string GetVersionString();
 
 	void SetVideoConfig(VideoConfig& config);
 	VideoConfig& GetVideoConfig();
@@ -96,46 +127,57 @@ public:
 	void SetWsConfig(WsConfig& config);
 	WsConfig& GetWsConfig();
 
+	void SetLynxConfig(LynxConfig& config);
+	LynxConfig& GetLynxConfig();
+
+	void SetGenesisConfig(GenesisConfig& config);
+	GenesisConfig& GetGenesisConfig();
+
+	void SetAtari2600Config(Atari2600Config& config);
+	Atari2600Config& GetAtari2600Config();
+
+	void SetChannelFConfig(ChannelFConfig& config);
+	ChannelFConfig& GetChannelFConfig();
+
 	void SetGameConfig(GameConfig& config);
 	GameConfig& GetGameConfig();
 
 	void SetPreferences(PreferencesConfig& config);
 	PreferencesConfig& GetPreferences();
-	
+
 	void SetAudioPlayerConfig(AudioPlayerConfig& config);
 	AudioPlayerConfig& GetAudioPlayerConfig();
 
 	void SetDebugConfig(DebugConfig& config);
 	DebugConfig& GetDebugConfig();
 
-	void SetShortcutKeys(vector<ShortcutKeyInfo> shortcuts);
+	void SetShortcutKeys(const vector<ShortcutKeyInfo>& shortcuts);
 	KeyCombination GetShortcutKey(EmulatorShortcut shortcut, int keySetIndex);
 	vector<KeyCombination> GetShortcutSupersets(EmulatorShortcut shortcut, int keySetIndex);
 
 	OverscanDimensions GetOverscan();
-	uint32_t GetEmulationSpeed();
+	[[nodiscard]] uint32_t GetEmulationSpeed();
 	double GetAspectRatio(ConsoleRegion region, FrameInfo baseFrameSize);
 
 	void SetFlag(EmulationFlags flag);
 	void SetFlagState(EmulationFlags flag, bool enabled);
 	void ClearFlag(EmulationFlags flag);
-	bool CheckFlag(EmulationFlags flag);
+	[[nodiscard]] bool CheckFlag(EmulationFlags flag);
 
 	void SetDebuggerFlag(DebuggerFlags flag, bool enabled);
-	bool CheckDebuggerFlag(DebuggerFlags flags);
+	[[nodiscard]] bool CheckDebuggerFlag(DebuggerFlags flags);
 
-	bool HasRandomPowerOnState(ConsoleType consoleType);
+	[[nodiscard]] bool HasRandomPowerOnState(ConsoleType consoleType);
 	int GetRandomValue(int maxValue);
-	bool GetRandomBool();
+	[[nodiscard]] bool GetRandomBool();
 	void InitializeRam(RamState state, void* data, uint32_t length);
 
-	bool IsInputEnabled();
+	[[nodiscard]] bool IsInputEnabled();
 	double GetControllerDeadzoneRatio();
 
-	template<typename T>
-	bool IsEqual(T& prevCfg, T& newCfg)
-	{
-		if(memcmp(&prevCfg, &newCfg, sizeof(T)) == 0) {
+	template <typename T>
+	[[nodiscard]] bool IsEqual(T& prevCfg, T& newCfg) {
+		if (memcmp(&prevCfg, &newCfg, sizeof(T)) == 0) {
 			return true;
 		}
 		memcpy(&prevCfg, &newCfg, sizeof(T));

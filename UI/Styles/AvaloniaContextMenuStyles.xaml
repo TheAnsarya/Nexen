@@ -1,7 +1,6 @@
 <Styles
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:sys="clr-namespace:System;assembly=netstandard"
 >
 	<Style Selector="ContextMenu">
 		<Setter Property="Template">
@@ -20,8 +19,8 @@
 							Width="24">
 							<Rectangle.Fill>
 								<LinearGradientBrush StartPoint="0,0" EndPoint="24,0">
-									<GradientStop Color="{DynamicResource MesenMenuMarginStartColor}" Offset="0.0" />
-									<GradientStop Color="{DynamicResource MesenMenuMarginEndColor}" Offset="1.0" />
+									<GradientStop Color="{DynamicResource NexenMenuMarginStartColor}" Offset="0.0" />
+									<GradientStop Color="{DynamicResource NexenMenuMarginEndColor}" Offset="1.0" />
 								</LinearGradientBrush>
 							</Rectangle.Fill>
 						</Rectangle>

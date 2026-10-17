@@ -1,56 +1,49 @@
+using System;
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using Mesen.Config;
-using Mesen.Debugger.Utilities;
-using Mesen.Debugger.ViewModels;
-using Mesen.Interop;
-using System;
-using System.ComponentModel;
+using Nexen.Config;
+using Nexen.Debugger.Utilities;
+using Nexen.Debugger.ViewModels;
+using Nexen.Interop;
 
-namespace Mesen.Debugger.Windows
-{
-	public class RegisterViewerWindow : MesenWindow, INotificationHandler
-	{
-		private RegisterViewerWindowViewModel _model;
+namespace Nexen.Debugger.Windows; 
+public partial class RegisterViewerWindow : NexenWindow, INotificationHandler {
+	private RegisterViewerWindowViewModel _model;
 
-		[Obsolete("For designer only")]
-		public RegisterViewerWindow() : this(new()) { }
+	[Obsolete("For designer only")]
+	public RegisterViewerWindow() : this(new()) { }
 
-		public RegisterViewerWindow(RegisterViewerWindowViewModel model)
-		{
-			InitializeComponent();
+	public RegisterViewerWindow(RegisterViewerWindowViewModel model) {
+		InitializeComponent();
 #if DEBUG
-			this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
-			_model = model;
-			DataContext = model;
+		_model = model;
+		DataContext = model;
 
-			if(Design.IsDesignMode) {
-				return;
-			}
-
-			_model.InitMenu(this);
-			_model.Config.LoadWindowSettings(this);
+		if (Design.IsDesignMode) {
+			return;
 		}
 
-		protected override void OnClosing(WindowClosingEventArgs e)
-		{
-			base.OnClosing(e);
-			_model.Config.SaveWindowSettings(this);
-			ConfigManager.Config.Debug.RegisterViewer = _model.Config;
-		}
+		_model.InitMenu(this);
+		_model.Config.LoadWindowSettings(this);
+	}
 
-		public void ProcessNotification(NotificationEventArgs e)
-		{
-			ToolRefreshHelper.ProcessNotification(this, e, _model.RefreshTiming, _model, _model.RefreshData);
-		}
+	protected override void OnClosing(WindowClosingEventArgs e) {
+		base.OnClosing(e);
+		_model.Config.SaveWindowSettings(this);
+		ConfigManager.Config.Debug.RegisterViewer = _model.Config;
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+	public void ProcessNotification(NotificationEventArgs e) {
+		ToolRefreshHelper.ProcessNotification(this, e, _model.RefreshTiming, _model, _model.RefreshData);
+	}
+
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
 	}
 }

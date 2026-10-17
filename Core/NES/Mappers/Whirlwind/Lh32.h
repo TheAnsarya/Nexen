@@ -2,8 +2,7 @@
 #include "pch.h"
 #include "NES/BaseMapper.h"
 
-class Lh32 : public BaseMapper
-{
+class Lh32 : public BaseMapper {
 private:
 	uint8_t _prgReg = 0;
 
@@ -13,8 +12,7 @@ protected:
 	uint16_t RegisterStartAddress() override { return 0x6000; }
 	uint16_t RegisterEndAddress() override { return 0x6000; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		_prgReg = 0;
 
 		SelectChrPage(0, 0);
@@ -26,23 +24,20 @@ protected:
 		UpdateState();
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		BaseMapper::Serialize(s);
 		SV(_prgReg);
 
-		if(!s.IsSaving()) {
+		if (!s.IsSaving()) {
 			UpdateState();
 		}
 	}
 
-	void UpdateState()
-	{
+	void UpdateState() {
 		SetCpuMemoryMapping(0x6000, 0x7FFF, _prgReg, PrgMemoryType::PrgRom);
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
+	void WriteRegister(uint16_t addr, uint8_t value) override {
 		_prgReg = value;
 		UpdateState();
 	}

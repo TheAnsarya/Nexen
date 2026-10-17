@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "NES/NesConstants.h"
 #include "Shared/MessageManager.h"
 #include "Utilities/PNGHelper.h"
@@ -9,20 +10,18 @@
 
 class BaseHdNesPack;
 
-struct HdTileKey
-{
+struct HdTileKey {
 	static constexpr int32_t NoTile = -1;
 
-	//Code depends on these 2 fields being one after the other
+	// Code depends on these 2 fields being one after the other
 	uint32_t PaletteColors = 0;
 	uint8_t TileData[16] = {};
 
 	int32_t TileIndex = 0;
 	bool IsChrRamTile = false;
 
-	HdTileKey GetKey(bool defaultKey)
-	{
-		if(defaultKey) {
+	HdTileKey GetKey(bool defaultKey) {
+		if (defaultKey) {
 			HdTileKey copy = *this;
 			copy.PaletteColors = 0xFFFFFFFF;
 			return copy;
@@ -31,32 +30,29 @@ struct HdTileKey
 		}
 	}
 
-	uint32_t GetHashCode() const
-	{
-		if(IsChrRamTile) {
+	uint32_t GetHashCode() const {
+		if (IsChrRamTile) {
 			return CalculateHash((uint8_t*)&PaletteColors, sizeof(PaletteColors) + sizeof(TileData));
 		} else {
 			return (uint32_t)TileIndex ^ PaletteColors;
 		}
 	}
 
-	size_t operator() (const HdTileKey &tile) const {
+	size_t operator()(const HdTileKey& tile) const {
 		return tile.GetHashCode();
 	}
 
-	bool operator==(const HdTileKey &other) const
-	{
-		if(IsChrRamTile) {
+	bool operator==(const HdTileKey& other) const {
+		if (IsChrRamTile) {
 			return memcmp((uint8_t*)&PaletteColors, (uint8_t*)&other.PaletteColors, sizeof(PaletteColors) + sizeof(TileData)) == 0;
 		} else {
 			return TileIndex == other.TileIndex && PaletteColors == other.PaletteColors;
 		}
 	}
 
-	uint32_t CalculateHash(const uint8_t* key, size_t len) const
-	{
+	uint32_t CalculateHash(const uint8_t* key, size_t len) const {
 		uint32_t result = 0;
-		for(size_t i = 0; i < len; i += 4) {
+		for (size_t i = 0; i < len; i += 4) {
 			uint32_t chunk;
 			memcpy(&chunk, key, sizeof(uint32_t));
 
@@ -67,30 +63,27 @@ struct HdTileKey
 		return result;
 	}
 
-	bool IsSpriteTile()
-	{
+	bool IsSpriteTile() {
 		return (PaletteColors & 0xFF000000) == 0xFF000000;
 	}
 };
 
 namespace std {
-	template <> struct hash<HdTileKey>
-	{
-		size_t operator()(const HdTileKey& x) const
-		{
-			return x.GetHashCode();
-		}
-	};
-}
+template <>
+struct hash<HdTileKey> {
+	size_t operator()(const HdTileKey& x) const {
+		return x.GetHashCode();
+	}
+};
+} // namespace std
 
-struct HdPpuTileInfo : public HdTileKey
-{
+struct HdPpuTileInfo : public HdTileKey {
 	uint8_t OffsetX = 0;
 	uint8_t OffsetY = 0;
 	bool HorizontalMirroring = false;
 	bool VerticalMirroring = false;
 	bool BackgroundPriority = false;
-	
+
 	uint8_t BgColorIndex = 0;
 	uint8_t SpriteColorIndex = 0;
 	uint8_t BgColor = 0;
@@ -99,11 +92,10 @@ struct HdPpuTileInfo : public HdTileKey
 	uint8_t PaletteOffset = 0;
 };
 
-struct HdPpuPixelInfo
-{
+struct HdPpuPixelInfo {
 	HdPpuTileInfo Tile = {};
 	HdPpuTileInfo Sprite[4] = {};
-	
+
 	uint16_t TmpVideoRamAddr = 0;
 	uint8_t XScroll = 0;
 	uint8_t EmphasisBits = 0;
@@ -111,38 +103,32 @@ struct HdPpuPixelInfo
 	uint8_t SpriteCount = 0;
 };
 
-struct HdScreenInfo
-{
-	HdPpuPixelInfo* ScreenTiles;
+struct HdScreenInfo {
+	std::unique_ptr<HdPpuPixelInfo[]> ScreenTiles;
 	unordered_map<uint32_t, uint8_t> WatchedAddressValues;
 	uint32_t FrameNumber = 0;
 
 	HdScreenInfo(const HdScreenInfo& that) = delete;
 
-	HdScreenInfo(bool isChrRamGame)
-	{
-		ScreenTiles = new HdPpuPixelInfo[NesConstants::ScreenPixelCount];
+	HdScreenInfo(bool isChrRamGame) {
+		ScreenTiles = std::make_unique<HdPpuPixelInfo[]>(NesConstants::ScreenPixelCount);
 
-		for(int i = 0; i < NesConstants::ScreenPixelCount; i++) {
+		for (int i = 0; i < NesConstants::ScreenPixelCount; i++) {
 			ScreenTiles[i].Tile.BackgroundPriority = false;
 			ScreenTiles[i].Tile.IsChrRamTile = isChrRamGame;
 			ScreenTiles[i].Tile.HorizontalMirroring = false;
 			ScreenTiles[i].Tile.VerticalMirroring = false;
 
-			for(int j = 0; j < 4; j++) {
+			for (int j = 0; j < 4; j++) {
 				ScreenTiles[i].Sprite[j].IsChrRamTile = isChrRamGame;
 			}
 		}
 	}
 
-	~HdScreenInfo()
-	{
-		delete[] ScreenTiles;
-	}
+	~HdScreenInfo() = default;
 };
 
-enum class HdPackConditionType
-{
+enum class HdPackConditionType {
 	HMirror,
 	VMirror,
 	BgPriority,
@@ -160,8 +146,7 @@ enum class HdPackConditionType
 	OriginPositionCheckY,
 };
 
-struct HdPackCondition
-{
+struct HdPackCondition {
 protected:
 	HdScreenInfo* _screenInfo = nullptr;
 	BaseHdNesPack* _hdPack = nullptr;
@@ -174,31 +159,28 @@ public:
 	virtual bool IsExcludedFromFile() { return Name.size() > 0 && Name[0] == '!'; }
 	virtual string ToString() = 0;
 
-	virtual ~HdPackCondition() { }
+	virtual ~HdPackCondition() {}
 
-	void Initialize(HdScreenInfo* screenInfo, BaseHdNesPack* hdPack)
-	{
+	void Initialize(HdScreenInfo* screenInfo, BaseHdNesPack* hdPack) {
 		_screenInfo = screenInfo;
 		_hdPack = hdPack;
 		_resultCache = -1;
 	}
 
-	bool CheckCondition(int x, int y, HdPpuTileInfo* tile)
-	{
-		if(_resultCache >= 0) {
+	bool CheckCondition(int x, int y, HdPpuTileInfo* tile) {
+		if (_resultCache >= 0) {
 			return (bool)_resultCache;
 		}
 
 		bool result = InternalCheckCondition(x, y, tile);
-		if(Name[0] == '!') {
+		if (Name[0] == '!') {
 			result = !result;
 		}
 
-		if(_useCache) {
+		if (_useCache) {
 			_resultCache = result ? 1 : 0;
 		}
 		return result;
-		
 	}
 
 protected:
@@ -208,8 +190,7 @@ protected:
 	virtual bool InternalCheckCondition(int x, int y, HdPpuTileInfo* tile) = 0;
 };
 
-struct HdPackBitmapInfo
-{
+struct HdPackBitmapInfo {
 private:
 	bool _initDone = false;
 	SimpleLock _lock;
@@ -221,20 +202,19 @@ public:
 	uint32_t Width;
 	uint32_t Height;
 
-	void Init()
-	{
-		if(_initDone) {
+	void Init() {
+		if (_initDone) {
 			return;
 		}
 
 		auto lock = _lock.AcquireSafe();
-		if(_initDone) {
+		if (_initDone) {
 			return;
 		}
 
-		//Timer tmr;
-		if(PNGHelper::ReadPNG(FileData, PixelData, Width, Height)) {
-			//MessageManager::Log("[HDPack] PNG file loaded: " + PngName + " (" + std::to_string(tmr.GetElapsedMS()) + ")");
+		// Timer tmr;
+		if (PNGHelper::ReadPNG(FileData, PixelData, Width, Height)) {
+			// MessageManager::Log("[HDPack] PNG file loaded: " + PngName + " (" + std::to_string(tmr.GetElapsedMS()) + ")");
 			PremultiplyAlpha();
 		} else {
 			MessageManager::Log("[HDPack] PNG file " + PngName + " is invalid.");
@@ -243,10 +223,9 @@ public:
 		_initDone = true;
 	}
 
-	void PremultiplyAlpha()
-	{
-		for(size_t i = 0; i < PixelData.size(); i++) {
-			if(PixelData[i] < 0xFF000000) {
+	void PremultiplyAlpha() {
+		for (size_t i = 0; i < PixelData.size(); i++) {
+			if (PixelData[i] < 0xFF000000) {
 				uint8_t* output = (uint8_t*)(PixelData.data() + i);
 				uint8_t alpha = output[3] + 1;
 				output[0] = (uint8_t)((alpha * output[0]) >> 8);
@@ -257,8 +236,7 @@ public:
 	}
 };
 
-struct HdPackTileInfo : public HdTileKey
-{
+struct HdPackTileInfo : public HdTileKey {
 private:
 	bool _needInit = true;
 
@@ -281,26 +259,25 @@ public:
 	vector<HdPackCondition*> Conditions;
 	bool ForceDisableCache;
 
-	bool MatchesCondition(int x, int y, HdPpuTileInfo* tile)
-	{
-		for(HdPackCondition* condition : Conditions) {
-			if(!condition->CheckCondition(x, y, tile)) {
+	bool MatchesCondition(int x, int y, HdPpuTileInfo* tile) {
+		for (HdPackCondition* condition : Conditions) {
+			if (!condition->CheckCondition(x, y, tile)) {
 				return false;
 			}
 		}
 		return true;
 	}
 
-	vector<uint32_t> ToRgb(uint32_t* palette)
-	{
+	vector<uint32_t> ToRgb(uint32_t* palette) {
 		vector<uint32_t> rgbBuffer;
-		for(uint8_t i = 0; i < 8; i++) {
+		rgbBuffer.reserve(64);
+		for (uint8_t i = 0; i < 8; i++) {
 			uint8_t lowByte = TileData[i];
 			uint8_t highByte = TileData[i + 8];
-			for(uint8_t j = 0; j < 8; j++) {
+			for (uint8_t j = 0; j < 8; j++) {
 				uint8_t color = ((lowByte >> (7 - j)) & 0x01) | (((highByte >> (7 - j)) & 0x01) << 1);
 				uint32_t rgbColor;
-				if(IsSpriteTile() || TransparencyRequired) {
+				if (IsSpriteTile() || TransparencyRequired) {
 					rgbColor = color == 0 ? 0x00FFFFFF : palette[(PaletteColors >> ((3 - color) * 8)) & 0x3F];
 				} else {
 					rgbColor = palette[(PaletteColors >> ((3 - color) * 8)) & 0x3F];
@@ -312,31 +289,28 @@ public:
 		return rgbBuffer;
 	}
 
-	void UpdateFlags()
-	{
+	void UpdateFlags() {
 		Blank = true;
 		HasTransparentPixels = false;
 		IsFullyTransparent = true;
-		for(size_t i = 0; i < HdTileData.size(); i++) {
-			if(HdTileData[i] != HdTileData[0]) {
+		for (size_t i = 0; i < HdTileData.size(); i++) {
+			if (HdTileData[i] != HdTileData[0]) {
 				Blank = false;
 			}
-			if((HdTileData[i] & 0xFF000000) != 0xFF000000) {
+			if ((HdTileData[i] & 0xFF000000) != 0xFF000000) {
 				HasTransparentPixels = true;
 			}
-			if(HdTileData[i] & 0xFF000000) {
+			if (HdTileData[i] & 0xFF000000) {
 				IsFullyTransparent = false;
 			}
 		}
 	}
 
-	__forceinline bool NeedInit()
-	{
+	__forceinline bool NeedInit() {
 		return _needInit;
 	}
 
-	__noinline void Init()
-	{
+	__noinline void Init() {
 		_needInit = false;
 		Bitmap->Init();
 
@@ -344,8 +318,8 @@ public:
 		uint32_t* pngData = Bitmap->PixelData.data();
 
 		HdTileData.resize(Width * Height);
-		if(Bitmap->PixelData.size() >= bitmapOffset + ((Height - 1) * Bitmap->Width) + Width) {
-			for(uint32_t y = 0; y < Height; y++) {
+		if (Bitmap->PixelData.size() >= bitmapOffset + ((Height - 1) * Bitmap->Width) + Width) {
+			for (uint32_t y = 0; y < Height; y++) {
 				memcpy(HdTileData.data() + (y * Width), pngData + bitmapOffset, Width * sizeof(uint32_t));
 				bitmapOffset += Bitmap->Width;
 			}
@@ -354,14 +328,13 @@ public:
 		UpdateFlags();
 	}
 
-	string ToString(int pngIndex)
-	{
+	string ToString(int pngIndex) {
 		stringstream out;
 
-		if(Conditions.size() > 0) {
+		if (Conditions.size() > 0) {
 			out << "[";
-			for(size_t i = 0; i < Conditions.size(); i++) {
-				if(i > 0) {
+			for (size_t i = 0; i < Conditions.size(); i++) {
+				if (i > 0) {
 					out << "&";
 				}
 				out << Conditions[i]->Name;
@@ -369,44 +342,28 @@ public:
 			out << "]";
 		}
 
-		if(IsChrRamTile) {
+		if (IsChrRamTile) {
 			out << "<tile>" << pngIndex << ",";
 
-			for(int i = 0; i < 16; i++) {
+			for (int i = 0; i < 16; i++) {
 				out << HexUtilities::ToHex(TileData[i]);
 			}
-			out << "," <<
-				HexUtilities::ToHex(PaletteColors, true) << "," <<
-				X << "," <<
-				Y << "," <<
-				(double)Brightness / 255 << "," <<
-				(DefaultTile ? "Y" : "N") << "," <<
-				ChrBankId << "," <<
-				TileIndex;
+			out << "," << HexUtilities::ToHex(PaletteColors, true) << "," << X << "," << Y << "," << (double)Brightness / 255 << "," << (DefaultTile ? "Y" : "N") << "," << ChrBankId << "," << TileIndex;
 		} else {
-			out << "<tile>" <<
-				pngIndex << "," <<
-				HexUtilities::ToHex(TileIndex) << "," <<
-				HexUtilities::ToHex(PaletteColors, true) << "," <<
-				X << "," <<
-				Y << "," <<
-				(double)Brightness / 255 << "," <<
-				(DefaultTile ? "Y" : "N");
+			out << "<tile>" << pngIndex << "," << HexUtilities::ToHex(TileIndex) << "," << HexUtilities::ToHex(PaletteColors, true) << "," << X << "," << Y << "," << (double)Brightness / 255 << "," << (DefaultTile ? "Y" : "N");
 		}
 
 		return out.str();
 	}
 };
 
-enum class HdPackBlendMode
-{
+enum class HdPackBlendMode {
 	Alpha,
 	Add,
 	Subtract
 };
 
-struct HdBackgroundInfo
-{
+struct HdBackgroundInfo {
 	HdPackBitmapInfo* Data;
 	int Brightness;
 	vector<HdPackCondition*> Conditions;
@@ -419,26 +376,24 @@ struct HdBackgroundInfo
 
 	HdPackBlendMode BlendMode;
 
-	uint32_t* data()
-	{
+	uint32_t* data() {
 		return Data->PixelData.data();
 	}
 
-	string ToString()
-	{
+	string ToString() {
 		stringstream out;
 
-		if(Conditions.size() > 0) {
+		if (Conditions.size() > 0) {
 			out << "[";
-			for(size_t i = 0; i < Conditions.size(); i++) {
-				if(i > 0) {
+			for (size_t i = 0; i < Conditions.size(); i++) {
+				if (i > 0) {
 					out << "&";
 				}
 				out << Conditions[i]->Name;
 			}
 			out << "]";
 		}
-		
+
 		out << "<background>";
 		out << Data->PngName << ",";
 		out << (Brightness / 255.0);
@@ -447,8 +402,7 @@ struct HdBackgroundInfo
 	}
 };
 
-struct HdPackAdditionalSpriteInfo
-{
+struct HdPackAdditionalSpriteInfo {
 	HdTileKey OriginalTile;
 	HdTileKey AdditionalTile;
 
@@ -457,20 +411,17 @@ struct HdPackAdditionalSpriteInfo
 	bool IgnorePalette;
 };
 
-struct FallbackTileInfo
-{
+struct FallbackTileInfo {
 	int32_t TileIndex;
 	int32_t FallbackTileIndex;
 };
 
-struct BgmTrackInfo
-{
+struct BgmTrackInfo {
 	string Filename;
 	uint32_t LoopPosition = 0;
 };
 
-struct HdPackData
-{
+struct HdPackData {
 private:
 	bool _cancelLoad = false;
 
@@ -498,36 +449,33 @@ public:
 	uint32_t Version = 0;
 	uint32_t OptionFlags = 0;
 
-	HdPackData() { }
-	~HdPackData() { }
+	HdPackData() {}
+	~HdPackData() {}
 
 	HdPackData(const HdPackData&) = delete;
 	HdPackData& operator=(const HdPackData&) = delete;
 
-	void LoadAsync()
-	{
-		for(auto& bitmap : BackgroundFileData) {
+	void LoadAsync() {
+		for (auto& bitmap : BackgroundFileData) {
 			bitmap->Init();
-			if(_cancelLoad) {
+			if (_cancelLoad) {
 				return;
 			}
 		}
-		for(auto& bitmap : ImageFileData) {
+		for (auto& bitmap : ImageFileData) {
 			bitmap->Init();
-			if(_cancelLoad) {
+			if (_cancelLoad) {
 				return;
 			}
 		}
 	}
 
-	void CancelLoad()
-	{
+	void CancelLoad() {
 		_cancelLoad = true;
 	}
 };
 
-enum class HdPackOptions
-{
+enum class HdPackOptions {
 	None = 0,
 	NoSpriteLimit = 1,
 	AlternateRegisterRange = 2,

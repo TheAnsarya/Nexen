@@ -1,8 +1,7 @@
 #pragma once
 #include "pch.h"
 
-class PceConstants
-{
+class PceConstants {
 public:
 	static constexpr uint32_t MasterClockRate = 21477270;
 
@@ -18,9 +17,8 @@ public:
 	static constexpr uint32_t InternalOutputWidth = (256 + PceConstants::RowOverscanSize * 2) * PceConstants::InternalResMultipler;
 	static constexpr uint32_t InternalOutputHeight = PceConstants::ScreenHeight * PceConstants::InternalResMultipler;
 
-	static constexpr uint32_t GetLeftOverscan(uint8_t vceClockDivider)
-	{
-		switch(vceClockDivider) {
+	static constexpr uint32_t GetLeftOverscan(uint8_t vceClockDivider) {
+		switch (vceClockDivider) {
 			case 2:
 				return 240 / 2 - (RowOverscanSize * 2);
 
@@ -33,14 +31,16 @@ public:
 		}
 	}
 
-	static constexpr uint32_t GetRowWidth(uint8_t vceClockDivider)
-	{
-		switch(vceClockDivider) {
-			case 2: return 64 * 8 + (PceConstants::RowOverscanSize * 2 * 2);
-			case 3: return 43 * 8 - 3 + (PceConstants::RowOverscanSize * 4 / 3 * 2);
+	static constexpr uint32_t GetRowWidth(uint8_t vceClockDivider) {
+		switch (vceClockDivider) {
+			case 2:
+				return 64 * 8 + (PceConstants::RowOverscanSize * 2 * 2);
+			case 3:
+				return 43 * 8 - 3 + (PceConstants::RowOverscanSize * 4 / 3 * 2);
 
 			default:
-			case 4: return 32 * 8 + PceConstants::RowOverscanSize * 2;
+			case 4:
+				return 32 * 8 + PceConstants::RowOverscanSize * 2;
 		}
 	}
 };

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "Debugger/DebugTypes.h"
 #include "Debugger/IDebugger.h"
@@ -25,8 +25,7 @@ class DummyWsCpu;
 
 enum class MemoryOperationType;
 
-class WsDebugger final : public IDebugger
-{
+class WsDebugger final : public IDebugger {
 	Debugger* _debugger = nullptr;
 	MemoryDumper* _memoryDumper = nullptr;
 	Emulator* _emu = nullptr;
@@ -63,11 +62,13 @@ public:
 	void Reset() override;
 
 	void ProcessInstruction();
-	
-	template<uint8_t accessWidth> void ProcessRead(uint32_t addr, uint16_t value, MemoryOperationType type);
-	template<uint8_t accessWidth> void ProcessWrite(uint32_t addr, uint16_t value, MemoryOperationType type);
 
-	template<MemoryOperationType opType, typename T>
+	template <uint8_t accessWidth>
+	void ProcessRead(uint32_t addr, uint16_t value, MemoryOperationType type);
+	template <uint8_t accessWidth>
+	void ProcessWrite(uint32_t addr, uint16_t value, MemoryOperationType type);
+
+	template <MemoryOperationType opType, typename T>
 	void ProcessMemoryAccess(uint32_t addr, T value, MemoryType memType);
 
 	void ProcessInterrupt(uint32_t originalPc, uint32_t currentPc, bool forNmi) override;
@@ -79,7 +80,7 @@ public:
 
 	void DrawPartialFrame() override;
 
-	bool SaveRomToDisk(string filename, bool saveAsIps, CdlStripOption stripOption);
+	bool SaveRomToDisk(const string& filename, bool saveAsIps, CdlStripOption stripOption) override;
 
 	void OnBeforeBreak(CpuType cpuType) override;
 

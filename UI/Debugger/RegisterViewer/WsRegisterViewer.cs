@@ -1,16 +1,14 @@
-﻿using Mesen.Config;
-using Mesen.Debugger.ViewModels;
-using Mesen.Interop;
 using System;
 using System.Collections.Generic;
-using static Mesen.Debugger.ViewModels.RegEntry;
+using Nexen.Config;
+using Nexen.Debugger.ViewModels;
+using Nexen.Interop;
+using static Nexen.Debugger.ViewModels.RegEntry;
 
-namespace Mesen.Debugger.RegisterViewer;
+namespace Nexen.Debugger.RegisterViewer;
 
-public class WsRegisterViewer
-{
-	public static List<RegisterViewerTab> GetTabs(ref WsState wsState)
-	{
+public sealed class WsRegisterViewer {
+	public static List<RegisterViewerTab> GetTabs(ref WsState wsState) {
 		List<RegisterViewerTab> tabs = new() {
 			GetPpuTab(ref wsState),
 			GetApuTab(ref wsState),
@@ -24,20 +22,19 @@ public class WsRegisterViewer
 		return tabs;
 	}
 
-	private static RegisterViewerTab GetPpuTab(ref WsState ws)
-	{
-		List<RegEntry> entries = new List<RegEntry>();
+	private static RegisterViewerTab GetPpuTab(ref WsState ws) {
+		List<RegEntry> entries = [];
 		WsPpuState ppu = ws.Ppu;
 
 		byte volumeLevel = 0;
-		if(ws.Model == WsModel.Monochrome) {
-			switch(ws.Apu.InternalMasterVolume) {
+		if (ws.Model == WsModel.Monochrome) {
+			switch (ws.Apu.InternalMasterVolume) {
 				default: case 0: volumeLevel = 0; break;
 				case 1: volumeLevel = 2; break;
 				case 2: volumeLevel = 3; break;
 			}
 		} else {
-			switch(ws.Apu.InternalMasterVolume) {
+			switch (ws.Apu.InternalMasterVolume) {
 				default: case 0: volumeLevel = 0; break;
 				case 1: volumeLevel = 2; break;
 				case 2: volumeLevel = 1; break;
@@ -47,9 +44,9 @@ public class WsRegisterViewer
 
 		bool headphoneIconVisible = false;
 		bool volumeIconVisible = false;
-		if(ppu.ShowVolumeIconFrame <= ppu.FrameCount && ppu.FrameCount - ppu.ShowVolumeIconFrame < 128) {
+		if (ppu.ShowVolumeIconFrame <= ppu.FrameCount && ppu.FrameCount - ppu.ShowVolumeIconFrame < 128) {
 			//Show speaker/headphone icons if sound button was pressed within the last 128 frames
-			if(ConfigManager.Config.Ws.AudioMode == WsAudioMode.Headphones) {
+			if (ConfigManager.Config.Ws.AudioMode == WsAudioMode.Headphones) {
 				headphoneIconVisible = true;
 			} else {
 				volumeIconVisible = true;
@@ -127,25 +124,24 @@ public class WsRegisterViewer
 		return new RegisterViewerTab("PPU", entries, CpuType.Ws, MemoryType.WsPort);
 	}
 
-	private static RegisterViewerTab GetApuTab(ref WsState ws)
-	{
-		List<RegEntry> entries = new List<RegEntry>();
+	private static RegisterViewerTab GetApuTab(ref WsState ws) {
+		List<RegEntry> entries = [];
 
 		WsApuState apu = ws.Apu;
 
-		int rightOutput = (
+		int rightOutput =
 			apu.Ch1.RightOutput +
 			apu.Ch2.RightOutput +
 			apu.Ch3.RightOutput +
 			apu.Ch4.RightOutput
-		);
+		;
 
-		int leftOutput = (
+		int leftOutput =
 			apu.Ch1.LeftOutput +
 			apu.Ch2.LeftOutput +
 			apu.Ch3.LeftOutput +
 			apu.Ch4.LeftOutput
-		);
+		;
 
 		entries.AddRange(new List<RegEntry>() {
 			new RegEntry("$8F", "Wave Table Address", apu.WaveTableAddress, Format.X16),
@@ -242,9 +238,8 @@ public class WsRegisterViewer
 		return new RegisterViewerTab("APU", entries, CpuType.Ws, MemoryType.WsPort);
 	}
 
-	private static RegisterViewerTab GetDmaTab(ref WsState ws)
-	{
-		List<RegEntry> entries = new List<RegEntry>();
+	private static RegisterViewerTab GetDmaTab(ref WsState ws) {
+		List<RegEntry> entries = [];
 
 		WsDmaControllerState dma = ws.DmaController;
 
@@ -275,9 +270,8 @@ public class WsRegisterViewer
 		return new RegisterViewerTab("DMA", entries, CpuType.Ws, MemoryType.WsPort);
 	}
 
-	private static RegisterViewerTab GetTimerTab(ref WsState ws)
-	{
-		List<RegEntry> entries = new List<RegEntry>();
+	private static RegisterViewerTab GetTimerTab(ref WsState ws) {
+		List<RegEntry> entries = [];
 
 		WsTimerState timer = ws.Timer;
 		entries.AddRange(new List<RegEntry>() {
@@ -294,9 +288,8 @@ public class WsRegisterViewer
 		return new RegisterViewerTab("Timer", entries, CpuType.Ws, MemoryType.WsPort);
 	}
 
-	private static RegisterViewerTab GetIrqTab(ref WsState ws)
-	{
-		List<RegEntry> entries = new List<RegEntry>();
+	private static RegisterViewerTab GetIrqTab(ref WsState ws) {
+		List<RegEntry> entries = [];
 
 		WsMemoryManagerState mm = ws.MemoryManager;
 		WsSerialState serial = ws.Serial;
@@ -305,23 +298,23 @@ public class WsRegisterViewer
 
 		//TODOWS cleanup
 		byte activeIrqs = mm.ActiveIrqs;
-		if(serial.Enabled && (mm.EnabledIrqs & (int)WsIrqSource.UartSendReady) != 0) {
+		if (serial.Enabled && (mm.EnabledIrqs & (int)WsIrqSource.UartSendReady) != 0) {
 			bool hasSendData = serial.HasSendData;
-			if(hasSendData) {
+			if (hasSendData) {
 				int cyclesPerByte = serial.HighSpeed ? 800 : 3200;
 				int cyclesElapsed = (int)(ws.Cpu.CycleCount - serial.SendClock);
-				if(cyclesElapsed > cyclesPerByte) {
+				if (cyclesElapsed > cyclesPerByte) {
 					hasSendData = false;
 				}
 			}
 
-			if(!hasSendData) {
+			if (!hasSendData) {
 				activeIrqs |= (int)WsIrqSource.UartSendReady;
 			}
 		}
 
-		for(int i = 7; i >= 0; i--) {
-			if((activeIrqs & mm.EnabledIrqs & (1 << i)) != 0) {
+		for (int i = 7; i >= 0; i--) {
+			if ((activeIrqs & mm.EnabledIrqs & (1 << i)) != 0) {
 				irqVector += (byte)i;
 				break;
 			}
@@ -358,9 +351,8 @@ public class WsRegisterViewer
 		return new RegisterViewerTab("IRQ", entries, CpuType.Ws, MemoryType.WsPort);
 	}
 
-	private static RegisterViewerTab GetCartTab(ref WsState ws)
-	{
-		List<RegEntry> entries = new List<RegEntry>();
+	private static RegisterViewerTab GetCartTab(ref WsState ws) {
+		List<RegEntry> entries = [];
 
 		WsCartState cart = ws.Cart;
 
@@ -371,7 +363,7 @@ public class WsRegisterViewer
 			new RegEntry("$C3", "ROM1 Bank", cart.SelectedBanks[3], Format.X8),
 		});
 
-		if(ws.CartEeprom.Size != WsEepromSize.Size0) {
+		if (ws.CartEeprom.Size != WsEepromSize.Size0) {
 			entries.AddRange(new List<RegEntry>() {
 				new RegEntry("", "Cart EEPROM"),
 				new RegEntry("$C4/C5", "Write Data", ws.CartEeprom.WriteBuffer, Format.X16),
@@ -386,9 +378,8 @@ public class WsRegisterViewer
 		return new RegisterViewerTab("Cart", entries, CpuType.Ws, MemoryType.WsPort);
 	}
 
-	private static RegisterViewerTab GetMiscTab(ref WsState ws)
-	{
-		List<RegEntry> entries = new List<RegEntry>();
+	private static RegisterViewerTab GetMiscTab(ref WsState ws) {
+		List<RegEntry> entries = [];
 
 		WsMemoryManagerState mm = ws.MemoryManager;
 		WsSerialState serial = ws.Serial;

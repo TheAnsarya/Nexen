@@ -1,326 +1,354 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Media;
-using Mesen.Config.Shortcuts;
-using Mesen.Interop;
-using Mesen.Utilities;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media;
+using Nexen.Config.Shortcuts;
+using Nexen.Interop;
+using Nexen.Utilities;
+using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.Config
-{
-	public partial class Configuration : ReactiveObject
-	{
-		private string _fileData = "";
+namespace Nexen.Config;
+public partial class Configuration : ReactiveObject {
+	private string _fileData = "";
 
-		public string Version { get; set; } = "2.1.1";
-		public int ConfigUpgrade { get; set; } = 0;
+	public string Version { get; set; } = "2.1.1";
+	public int ConfigUpgrade { get; set; } = 0;
 
-		[Reactive] public VideoConfig Video { get; set; } = new();
-		[Reactive] public AudioConfig Audio { get; set; } = new();
-		[Reactive] public InputConfig Input { get; set; } = new();
-		[Reactive] public EmulationConfig Emulation { get; set; } = new();
-		[Reactive] public SnesConfig Snes { get; set; } = new();
-		[Reactive] public NesConfig Nes { get; set; } = new();
-		[Reactive] public GameboyConfig Gameboy { get; set; } = new();
-		[Reactive] public PcEngineConfig PcEngine { get; set; } = new();
-		[Reactive] public SmsConfig Sms { get; set; } = new();
-		[Reactive] public CvConfig Cv { get; set; } = new();
-		[Reactive] public GbaConfig Gba { get; set; } = new();
-		[Reactive] public WsConfig Ws { get; set; } = new();
-		[Reactive] public PreferencesConfig Preferences { get; set; } = new();
-		[Reactive] public AudioPlayerConfig AudioPlayer { get; set; } = new();
-		[Reactive] public DebugConfig Debug { get; set; } = new();
-		[Reactive] public RecentItems RecentFiles { get; set; } = new();
-		[Reactive] public VideoRecordConfig VideoRecord { get; set; } = new();
-		[Reactive] public MovieRecordConfig MovieRecord { get; set; } = new();
-		[Reactive] public HdPackBuilderConfig HdPackBuilder { get; set; } = new();
-		[Reactive] public CheatWindowConfig Cheats { get; set; } = new();
-		[Reactive] public NetplayConfig Netplay { get; set; } = new();
-		[Reactive] public HistoryViewerConfig HistoryViewer { get; set; } = new();
-		[Reactive] public MainWindowConfig MainWindow { get; set; } = new();
-		
-		public DefaultKeyMappingType DefaultKeyMappings { get; set; } = DefaultKeyMappingType.Xbox | DefaultKeyMappingType.ArrowKeys;
+	[Reactive] public partial VideoConfig Video { get; set; } = new();
+	[Reactive] public partial AudioConfig Audio { get; set; } = new();
+	[Reactive] public partial InputConfig Input { get; set; } = new();
+	[Reactive] public partial EmulationConfig Emulation { get; set; } = new();
+	[Reactive] public partial SnesConfig Snes { get; set; } = new();
+	[Reactive] public partial NesConfig Nes { get; set; } = new();
+	[Reactive] public partial GameboyConfig Gameboy { get; set; } = new();
+	[Reactive] public partial PcEngineConfig PcEngine { get; set; } = new();
+	[Reactive] public partial SmsConfig Sms { get; set; } = new();
+	[Reactive] public partial GenesisConfig Genesis { get; set; } = new();
+	[Reactive] public partial CvConfig Cv { get; set; } = new();
+	[Reactive] public partial GbaConfig Gba { get; set; } = new();
+	[Reactive] public partial WsConfig Ws { get; set; } = new();
+	[Reactive] public partial LynxConfig Lynx { get; set; } = new();
+	[Reactive] public partial Atari2600Config Atari2600 { get; set; } = new();
+	[Reactive] public partial ChannelFConfig ChannelF { get; set; } = new();
+	[Reactive] public partial PreferencesConfig Preferences { get; set; } = new();
+	[Reactive] public partial AudioPlayerConfig AudioPlayer { get; set; } = new();
+	[Reactive] public partial DebugConfig Debug { get; set; } = new();
+	[Reactive] public partial RecentItems RecentFiles { get; set; } = new();
+	[Reactive] public partial VideoRecordConfig VideoRecord { get; set; } = new();
+	[Reactive] public partial MovieRecordConfig MovieRecord { get; set; } = new();
+	[Reactive] public partial HdPackBuilderConfig HdPackBuilder { get; set; } = new();
+	[Reactive] public partial CheatWindowConfig Cheats { get; set; } = new();
+	[Reactive] public partial NetplayConfig Netplay { get; set; } = new();
+	[Reactive] public partial HistoryViewerConfig HistoryViewer { get; set; } = new();
+	[Reactive] public partial ConfigWindowConfig ConfigWindow { get; set; } = new();
+	[Reactive] public partial MainWindowConfig MainWindow { get; set; } = new();
 
-		public Configuration()
-		{
-			//Used by JSON deserializer, don't call directly - use CreateConfig
+	public DefaultKeyMappingType DefaultKeyMappings { get; set; } = DefaultKeyMappingType.Xbox | DefaultKeyMappingType.ArrowKeys;
+
+	public Configuration() {
+		//Used by JSON deserializer, don't call directly - use CreateConfig
+	}
+
+	public static Configuration CreateConfig() {
+		Configuration cfg = new();
+		cfg.ConfigUpgrade = (int)ConfigUpgradeHint.FirstRun;
+		return cfg;
+	}
+
+	~Configuration() {
+		//Try to save before destruction if we were unable to save at a previous point in time
+		Save();
+	}
+
+	public void Save() {
+		if (ConfigManager.DisableSaveSettings) {
+			//Don't save to disk if command line option to disable setting updates was set
+			return;
 		}
 
-		public static Configuration CreateConfig()
-		{
-			Configuration cfg = new();
-			cfg.ConfigUpgrade = (int)ConfigUpgradeHint.FirstRun;
-			return cfg;
+		Serialize(ConfigManager.ConfigFile);
+	}
+
+	public void ApplyConfig() {
+		Video.ApplyConfig();
+		Audio.ApplyConfig();
+		Input.ApplyConfig();
+		Emulation.ApplyConfig();
+		Gameboy.ApplyConfig();
+		Gba.ApplyConfig();
+		PcEngine.ApplyConfig();
+		Nes.ApplyConfig();
+		Snes.ApplyConfig();
+		Sms.ApplyConfig();
+		Genesis.ApplyConfig();
+		Cv.ApplyConfig();
+		Ws.ApplyConfig();
+		Lynx.ApplyConfig();
+		Atari2600.ApplyConfig();
+		ChannelF.ApplyConfig();
+		Preferences.ApplyConfig();
+		AudioPlayer.ApplyConfig();
+		Debug.ApplyConfig();
+	}
+
+	public void InitializeFontDefaults() {
+		if (ConfigUpgrade == (int)ConfigUpgradeHint.FirstRun) {
+			Preferences.InitializeFontDefaults();
+
+			Debug.Fonts.DisassemblyFont = GetDefaultMonospaceFont();
+			Debug.Fonts.MemoryViewerFont = GetDefaultMonospaceFont();
+			Debug.Fonts.AssemblerFont = GetDefaultMonospaceFont();
+			Debug.Fonts.ScriptWindowFont = GetDefaultMonospaceFont();
+			Debug.Fonts.OtherMonoFont = GetDefaultMonospaceFont(true);
+			Debug.Fonts.ApplyConfig();
+		}
+	}
+
+	public void UpgradeConfig() {
+		if (ConfigUpgrade < (int)ConfigUpgradeHint.SmsInput) {
+			Sms.InitializeDefaults(DefaultKeyMappings);
 		}
 
-		~Configuration()
-		{
-			//Try to save before destruction if we were unable to save at a previous point in time
-			Save();
+		if (ConfigUpgrade < (int)ConfigUpgradeHint.GbaInput) {
+			Gba.InitializeDefaults(DefaultKeyMappings);
 		}
 
-		public void Save()
-		{
-			if(ConfigManager.DisableSaveSettings) {
-				//Don't save to disk if command line option to disable setting updates was set
-				return;
-			}
-
-			Serialize(ConfigManager.ConfigFile);
+		if (ConfigUpgrade < (int)ConfigUpgradeHint.CvInput) {
+			Cv.InitializeDefaults(DefaultKeyMappings);
 		}
 
-		public void ApplyConfig()
-		{
-			Video.ApplyConfig();
-			Audio.ApplyConfig();
-			Input.ApplyConfig();
-			Emulation.ApplyConfig();
-			Gameboy.ApplyConfig();
-			Gba.ApplyConfig();
-			PcEngine.ApplyConfig();
-			Nes.ApplyConfig();
-			Snes.ApplyConfig();
-			Sms.ApplyConfig();
-			Cv.ApplyConfig();
-			Ws.ApplyConfig();
-			Preferences.ApplyConfig();
-			AudioPlayer.ApplyConfig();
-			Debug.ApplyConfig();
+		if (ConfigUpgrade < (int)ConfigUpgradeHint.WsInput) {
+			Ws.InitializeDefaults(DefaultKeyMappings);
 		}
 
-		public void InitializeFontDefaults()
-		{
-			if(ConfigUpgrade == (int)ConfigUpgradeHint.FirstRun) {
-				Preferences.InitializeFontDefaults();
-
-				Debug.Fonts.DisassemblyFont = GetDefaultMonospaceFont();
-				Debug.Fonts.MemoryViewerFont = GetDefaultMonospaceFont();
-				Debug.Fonts.AssemblerFont = GetDefaultMonospaceFont();
-				Debug.Fonts.ScriptWindowFont = GetDefaultMonospaceFont();
-				Debug.Fonts.OtherMonoFont = GetDefaultMonospaceFont(true);
-				Debug.Fonts.ApplyConfig();
-			}
+		if (ConfigUpgrade < (int)ConfigUpgradeHint.LynxInput) {
+			Lynx.InitializeDefaults(DefaultKeyMappings);
 		}
 
-		public void UpgradeConfig()
-		{
-			if(ConfigUpgrade < (int)ConfigUpgradeHint.SmsInput) {
-				Sms.InitializeDefaults(DefaultKeyMappings);
-			} 
-			
-			if(ConfigUpgrade < (int)ConfigUpgradeHint.GbaInput) {
-				Gba.InitializeDefaults(DefaultKeyMappings);
-			}
+		// Ensure Pansy/CDL capture defaults remain enabled across upgraded configs.
+		if (ConfigUpgrade < (int)ConfigUpgradeHint.BackgroundCdlRecording) {
+			Debug.Integration.BackgroundCdlRecording = true;
+			Debug.Integration.AutoExportPansy = true;
+			Debug.Integration.SavePansyOnRomUnload = true;
+		}
 
-			if(ConfigUpgrade < (int)ConfigUpgradeHint.CvInput) {
-				Cv.InitializeDefaults(DefaultKeyMappings);
-			}
+		if (ConfigUpgrade < (int)ConfigUpgradeHint.ChannelFInput) {
+			ChannelF.InitializeDefaults(DefaultKeyMappings);
+		}
 
-			if(ConfigUpgrade < (int)ConfigUpgradeHint.WsInput) {
-				Ws.InitializeDefaults(DefaultKeyMappings);
-			}
+		if (ConfigUpgrade < (int)ConfigUpgradeHint.GenesisInput) {
+			Genesis.InitializeDefaults(DefaultKeyMappings);
+		}
 
+		if (ConfigUpgrade < (int)ConfigUpgradeHint.DisableStartupDebugStatsOverlay) {
+			Preferences.ShowDebugInfo = false;
+		}
+
+		ConfigUpgrade = (int)ConfigUpgradeHint.NextValue - 1;
+		Version = EmuApi.GetNexenVersion().ToString(3);
+	}
+
+	public void InitializeDefaults() {
+		if (ConfigUpgrade == (int)ConfigUpgradeHint.FirstRun) {
+			Snes.InitializeDefaults(DefaultKeyMappings);
+			Nes.InitializeDefaults(DefaultKeyMappings);
+			Gameboy.InitializeDefaults(DefaultKeyMappings);
+			Gba.InitializeDefaults(DefaultKeyMappings);
+			PcEngine.InitializeDefaults(DefaultKeyMappings);
+			Sms.InitializeDefaults(DefaultKeyMappings);
+			Genesis.InitializeDefaults(DefaultKeyMappings);
+			Cv.InitializeDefaults(DefaultKeyMappings);
+			Ws.InitializeDefaults(DefaultKeyMappings);
+			Lynx.InitializeDefaults(DefaultKeyMappings);
+			ChannelF.InitializeDefaults(DefaultKeyMappings);
 			ConfigUpgrade = (int)ConfigUpgradeHint.NextValue - 1;
-			Version = EmuApi.GetMesenVersion().ToString(3);
 		}
 
-		public void InitializeDefaults()
-		{
-			if(ConfigUpgrade == (int)ConfigUpgradeHint.FirstRun) {
-				Snes.InitializeDefaults(DefaultKeyMappings);
-				Nes.InitializeDefaults(DefaultKeyMappings);
-				Gameboy.InitializeDefaults(DefaultKeyMappings);
-				Gba.InitializeDefaults(DefaultKeyMappings);
-				PcEngine.InitializeDefaults(DefaultKeyMappings);
-				Sms.InitializeDefaults(DefaultKeyMappings);
-				Cv.InitializeDefaults(DefaultKeyMappings);
-				Ws.InitializeDefaults(DefaultKeyMappings);
-				ConfigUpgrade = (int)ConfigUpgradeHint.NextValue - 1;
-			}
-			Preferences.InitializeDefaultShortcuts();
-		}
+		Preferences.InitializeDefaultShortcuts();
+	}
 
-		private static HashSet<string>? _installedFonts = null;
-		private static List<string>? _sortedFonts = null;
+	private static HashSet<string>? _installedFonts = null;
+	private static List<string>? _sortedFonts = null;
 
-		[MemberNotNull(nameof(_installedFonts), nameof(_sortedFonts))]
-		private static void InitInstalledFonts()
-		{
-			_installedFonts = new();
-			_sortedFonts = new();
-			try {
-				int count = FontManager.Current.SystemFonts.Count;
-				for(int i = 0; i < count; i++) {
-					try {
-						string? fontName = FontManager.Current.SystemFonts[i]?.Name;
-						if(!string.IsNullOrWhiteSpace(fontName)) {
-							_installedFonts.Add(fontName);
-						}
-					} catch { }
-				}
-
-				_sortedFonts.AddRange(_installedFonts);
-				_sortedFonts.Sort();
-			} catch {
-			}
-		}
-
-		public static List<string> GetSortedFontList()
-		{
-			if(_sortedFonts == null) {
-				InitInstalledFonts();
-			}
-			return new List<string>(_sortedFonts);
-		}
-
-		private static string FindMatchingFont(string defaultFont, params string[] fontNames)
-		{
-			if(_installedFonts == null) {
-				InitInstalledFonts();
-			}
-
-			foreach(string name in fontNames) {
-				if(_installedFonts.Contains(name)) {
-					return name;
-				}
-			}
-
-			return defaultFont;
-		}
-
-		public static string GetValidFontFamily(string requestedFont, bool preferMonoFont)
-		{
-			if(_installedFonts == null) {
-				InitInstalledFonts();
-			}
-
-			if(_installedFonts.Contains(requestedFont)) {
-				return requestedFont;
-			}
-
-			foreach(string name in _installedFonts) {
-				if(preferMonoFont && name.Contains("Mono", StringComparison.InvariantCultureIgnoreCase)) {
-					return name;
-				} else if(!preferMonoFont && name.Contains("Sans", StringComparison.InvariantCultureIgnoreCase)) {
-					return name;
-				}
-			}
-
-			return _installedFonts.First();
-		}
-
-		public static FontConfig GetDefaultFont()
-		{
-			if(OperatingSystem.IsWindows()) {
-				return new FontConfig() { FontFamily = "Microsoft Sans Serif", FontSize = 11 };
-			} else if(OperatingSystem.IsMacOS()) {
-				return new FontConfig() { FontFamily = FindMatchingFont("Microsoft Sans Serif"), FontSize = 11 };
-			} else {
-				return new FontConfig() { FontFamily = FindMatchingFont("FreeSans", "DejaVu Sans", "Noto Sans"), FontSize = 11 };
-			}
-		}
-
-		public static FontConfig GetDefaultMenuFont()
-		{
-			if(OperatingSystem.IsWindows()) {
-				return new FontConfig() { FontFamily = "Segoe UI", FontSize = 12 };
-			} else if(OperatingSystem.IsMacOS()) {
-				return new FontConfig() { FontFamily = FindMatchingFont("Microsoft Sans Serif"), FontSize = 12 };
-			} else {
-				return new FontConfig() { FontFamily = FindMatchingFont("FreeSans", "DejaVu Sans", "Noto Sans"), FontSize = 12 };
-			}
-		}
-
-		public static FontConfig GetDefaultMonospaceFont(bool useSmallFont = false)
-		{
-			if(OperatingSystem.IsWindows()) {
-				return new FontConfig() { FontFamily = "Consolas", FontSize = useSmallFont ? 12 : 14 };
-			} else if(OperatingSystem.IsMacOS()) {
-				return new FontConfig() { FontFamily = FindMatchingFont("PT Mono"), FontSize = useSmallFont ? 11 : 12 };
-			} else {
-				return new FontConfig() { FontFamily = FindMatchingFont("FreeMono", "DejaVu Sans Mono", "Noto Sans Mono"), FontSize = 12 };
-			}
-		}
-
-		public static Configuration Deserialize(string configFile)
-		{
-			Configuration config;
-
-			try {
-				string fileData = File.ReadAllText(configFile);
-				config = (Configuration?)JsonSerializer.Deserialize(fileData, typeof(Configuration), MesenSerializerContext.Default) ?? Configuration.CreateConfig();
-				config._fileData = fileData;
-			} catch {
+	[MemberNotNull(nameof(_installedFonts), nameof(_sortedFonts))]
+	private static void InitInstalledFonts() {
+		_installedFonts = new();
+		_sortedFonts = new();
+		try {
+			int count = FontManager.Current.SystemFonts.Count;
+			for (int i = 0; i < count; i++) {
 				try {
-					//File exists but couldn't be loaded, make a backup of the old settings before we overwrite them
-					BackupSettings(configFile);
+					string? fontName = FontManager.Current.SystemFonts[i]?.Name;
+					if (!string.IsNullOrWhiteSpace(fontName)) {
+						_installedFonts.Add(fontName);
+					}
 				} catch { }
-
-				config = Configuration.CreateConfig();
 			}
 
-			return config;
+			_sortedFonts.AddRange(_installedFonts);
+			_sortedFonts.Sort();
+		} catch {
+		}
+	}
+
+	public static List<string> GetSortedFontList() {
+		if (_sortedFonts is null) {
+			InitInstalledFonts();
 		}
 
-		public static void BackupSettings(string configFile)
-		{
-			//File exists but couldn't be loaded, make a backup of the old settings before we overwrite them
-			string? folder = Path.GetDirectoryName(configFile);
-			if(folder != null) {
-				File.Copy(configFile, Path.Combine(folder, "settings." + DateTime.Now.ToString("yyyy-M-dd_HH-mm-ss") + ".bak"), true);
+		return new List<string>(_sortedFonts);
+	}
+
+	private static string FindMatchingFont(string defaultFont, params string[] fontNames) {
+		if (_installedFonts is null) {
+			InitInstalledFonts();
+		}
+
+		foreach (string name in fontNames) {
+			if (_installedFonts.Contains(name)) {
+				return name;
 			}
 		}
 
-		public void Serialize(string configFile)
-		{
+		return defaultFont;
+	}
+
+	public static string GetValidFontFamily(string requestedFont, bool preferMonoFont) {
+		if (_installedFonts is null) {
+			InitInstalledFonts();
+		}
+
+		if (_installedFonts.Contains(requestedFont)) {
+			return requestedFont;
+		}
+
+		foreach (string name in _installedFonts) {
+			if (preferMonoFont && name.Contains("Mono", StringComparison.InvariantCultureIgnoreCase)) {
+				return name;
+			} else if (!preferMonoFont && name.Contains("Sans", StringComparison.InvariantCultureIgnoreCase)) {
+				return name;
+			}
+		}
+
+		return _installedFonts.FirstOrDefault() ?? "Monospace";
+	}
+
+	public static FontConfig GetDefaultFont() {
+		if (OperatingSystem.IsWindows()) {
+			return new FontConfig() { FontFamily = "Microsoft Sans Serif", FontSize = 11 };
+		} else if (OperatingSystem.IsMacOS()) {
+			return new FontConfig() { FontFamily = FindMatchingFont("Microsoft Sans Serif"), FontSize = 11 };
+		} else {
+			return new FontConfig() { FontFamily = FindMatchingFont("FreeSans", "DejaVu Sans", "Noto Sans"), FontSize = 11 };
+		}
+	}
+
+	public static FontConfig GetDefaultMenuFont() {
+		if (OperatingSystem.IsWindows()) {
+			return new FontConfig() { FontFamily = "Segoe UI", FontSize = 12 };
+		} else if (OperatingSystem.IsMacOS()) {
+			return new FontConfig() { FontFamily = FindMatchingFont("Microsoft Sans Serif"), FontSize = 12 };
+		} else {
+			return new FontConfig() { FontFamily = FindMatchingFont("FreeSans", "DejaVu Sans", "Noto Sans"), FontSize = 12 };
+		}
+	}
+
+	public static FontConfig GetDefaultMonospaceFont(bool useSmallFont = false) {
+		if (OperatingSystem.IsWindows()) {
+			return new FontConfig() { FontFamily = "Consolas", FontSize = useSmallFont ? 12 : 14 };
+		} else if (OperatingSystem.IsMacOS()) {
+			return new FontConfig() { FontFamily = FindMatchingFont("PT Mono"), FontSize = useSmallFont ? 11 : 12 };
+		} else {
+			return new FontConfig() { FontFamily = FindMatchingFont("FreeMono", "DejaVu Sans Mono", "Noto Sans Mono"), FontSize = 12 };
+		}
+	}
+
+	public static Configuration Deserialize(string configFile) {
+		Configuration config;
+
+		try {
+			string fileData = File.ReadAllText(configFile);
+			config = (Configuration?)JsonSerializer.Deserialize(fileData, typeof(Configuration), NexenSerializerContext.Default) ?? Configuration.CreateConfig();
+			config._fileData = fileData;
+		} catch (Exception ex) {
+			System.Diagnostics.Debug.WriteLine($"Failed to deserialize configuration: {ex.Message}");
 			try {
-				string cfgData = JsonSerializer.Serialize(this, typeof(Configuration), MesenSerializerContext.Default);
-				if(_fileData != cfgData && !Design.IsDesignMode) {
-					FileHelper.WriteAllText(configFile, cfgData);
+				//File exists but couldn't be loaded, make a backup of the old settings before we overwrite them
+				BackupSettings(configFile);
+			} catch (Exception backupEx) {
+				System.Diagnostics.Debug.WriteLine($"Failed to backup settings: {backupEx.Message}");
+			}
+
+			config = Configuration.CreateConfig();
+		}
+
+		return config;
+	}
+
+	public static void BackupSettings(string configFile) {
+		//File exists but couldn't be loaded, make a backup of the old settings before we overwrite them
+		string? folder = Path.GetDirectoryName(configFile);
+		if (folder is not null) {
+			File.Copy(configFile, Path.Combine(folder, "settings." + DateTime.Now.ToString("yyyy-M-dd_HH-mm-ss") + ".bak"), true);
+		}
+	}
+
+	public void Serialize(string configFile) {
+		try {
+			string cfgData = JsonSerializer.Serialize(this, typeof(Configuration), NexenSerializerContext.Default);
+			if (_fileData != cfgData && !Design.IsDesignMode) {
+				bool writeSucceeded = FileHelper.WriteAllText(configFile, cfgData);
+				if (writeSucceeded) {
 					_fileData = cfgData;
-				}
-			} catch {
-				//This can sometime fail due to the file being used by another Mesen instance, etc.
-			}
-		}
-
-		public void RemoveObsoleteConfig()
-		{
-			//Clean up configuration to remove any obsolete values that existed in older versions
-			for(int i = Preferences.ShortcutKeys.Count - 1; i >= 0; i--) {
-				if(Preferences.ShortcutKeys[i].Shortcut >= EmulatorShortcut.LastValidValue) {
-					Preferences.ShortcutKeys.RemoveAt(i);
+				} else {
+					System.Diagnostics.Debug.WriteLine($"Failed to write configuration file: {configFile}");
+					EmuApi.WriteLogEntry("[UI] Failed to save settings to disk: " + configFile);
 				}
 			}
+		} catch (Exception ex) {
+			//This can sometimes fail due to the file being used by another Nexen instance, etc.
+			System.Diagnostics.Debug.WriteLine($"Failed to serialize configuration: {ex.Message}");
+			EmuApi.WriteLogEntry("[UI] Failed to serialize settings: " + ex.Message);
 		}
 	}
 
-	[Flags]
-	public enum DefaultKeyMappingType
-	{
-		None = 0,
-		Xbox = 1,
-		Ps4 = 2,
-		WasdKeys = 4,
-		ArrowKeys = 8
+	public void RemoveObsoleteConfig() {
+		//Clean up configuration to remove any obsolete values that existed in older versions
+		for (int i = Preferences.ShortcutKeys.Count - 1; i >= 0; i--) {
+			if (Preferences.ShortcutKeys[i].Shortcut >= EmulatorShortcut.LastValidValue) {
+				Preferences.ShortcutKeys.RemoveAt(i);
+			}
+		}
 	}
+}
 
-	public enum ConfigUpgradeHint
-	{
-		Uninitialized = 0,
-		FirstRun,
-		SmsInput,
-		GbaInput,
-		CvInput,
-		WsInput,
-		NextValue,
-	}
+[Flags]
+public enum DefaultKeyMappingType {
+	None = 0,
+	Xbox = 1,
+	Ps4 = 2,
+	WasdKeys = 4,
+	ArrowKeys = 8
+}
+
+public enum ConfigUpgradeHint {
+	Uninitialized = 0,
+	FirstRun,
+	SmsInput,
+	GbaInput,
+	CvInput,
+	WsInput,
+	BackgroundCdlRecording,
+	LynxInput,
+	ChannelFInput,
+	GenesisInput,
+	DisableStartupDebugStatsOverlay,
+	NextValue,
 }

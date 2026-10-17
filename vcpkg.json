@@ -1,0 +1,15 @@
+﻿{
+	"$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+	"name": "nexen",
+	"version": "2.0.0",
+	"description": "Nexen multi-system emulator",
+	"dependencies": [
+		"gtest",
+		"benchmark",
+		"magic-enum",
+		"lua",
+		"libspng",
+		"kissfft",
+		"miniz"
+	]
+}

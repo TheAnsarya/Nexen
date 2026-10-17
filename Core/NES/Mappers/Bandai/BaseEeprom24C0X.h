@@ -5,11 +5,9 @@
 
 class Emulator;
 
-class BaseEeprom24C0X : public ISerializable
-{
+class BaseEeprom24C0X : public ISerializable {
 protected:
-	enum class Mode
-	{
+	enum class Mode {
 		Idle = 0,
 		Address = 1,
 		Read = 2,
@@ -32,8 +30,7 @@ protected:
 	uint8_t _prevSda = 0;
 	uint8_t _romData[256] = {};
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		SVArray(_romData, 256);
 		SV(_mode);
 		SV(_nextMode);
@@ -51,20 +48,16 @@ public:
 
 	virtual void Write(uint8_t scl, uint8_t sda) = 0;
 	virtual void SaveBattery() = 0;
-	
-	uint8_t Read()
-	{
+
+	uint8_t Read() {
 		return _output;
 	}
 
-	void WriteScl(uint8_t scl)
-	{
+	void WriteScl(uint8_t scl) {
 		Write(scl, _prevSda);
 	}
 
-	void WriteSda(uint8_t sda)
-	{
+	void WriteSda(uint8_t sda) {
 		Write(_prevScl, sda);
 	}
 };
-

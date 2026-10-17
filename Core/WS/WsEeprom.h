@@ -6,8 +6,7 @@
 class WsConsole;
 class Emulator;
 
-enum class WsEepromCommand
-{
+enum class WsEepromCommand {
 	Read,
 	Write,
 	Erase,
@@ -18,8 +17,7 @@ enum class WsEepromCommand
 	Unknown
 };
 
-class WsEeprom final : public ISerializable
-{
+class WsEeprom final : public ISerializable {
 private:
 	WsEepromState _state = {};
 	WsConsole* _console = nullptr;
@@ -27,13 +25,14 @@ private:
 	uint8_t* _data = nullptr;
 	bool _isInternal = false;
 
-	WsEepromCommand GetCommand();
-	WsEepromSize GetSize();
-	uint16_t GetCommandAddress();
+	[[nodiscard]] WsEepromCommand GetCommand();
+	[[nodiscard]] WsEepromSize GetSize();
+	[[nodiscard]] uint16_t GetCommandAddress();
+	[[nodiscard]] uint32_t GetCommandDelay(WsEepromCommand cmd) const;
 
 	void WriteValue(uint16_t addr, uint16_t value);
 
-	string ConvertToEepromString(string in);
+	[[nodiscard]] string ConvertToEepromString(string in);
 	void InitInternalEepromData();
 
 public:
@@ -42,7 +41,7 @@ public:
 	WsEepromState& GetState() { return _state; }
 
 	void WritePort(uint8_t port, uint8_t value);
-	uint8_t ReadPort(uint8_t port);
+	[[nodiscard]] uint8_t ReadPort(uint8_t port);
 
 	void Run();
 

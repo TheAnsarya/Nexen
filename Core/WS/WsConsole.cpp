@@ -4,6 +4,7 @@
 #include "WS/WsPpu.h"
 #include "WS/WsTimer.h"
 #include "WS/Carts/WsCart.h"
+#include "WS/WsRtc.h"
 #include "WS/WsControlManager.h"
 #include "WS/WsMemoryManager.h"
 #include "WS/WsDmaController.h"
@@ -17,13 +18,12 @@
 #include "Shared/FirmwareHelper.h"
 #include "Shared/BatteryManager.h"
 
-WsConsole::WsConsole(Emulator* emu)
-{
+// Initialize Bandai WonderSwan / WonderSwan Color console emulator
+WsConsole::WsConsole(Emulator* emu) {
 	_emu = emu;
 }
 
-WsConsole::~WsConsole()
-{
+WsConsole::~WsConsole() {
 	delete[] _workRam;
 	delete[] _saveRam;
 	delete[] _prgRom;
@@ -32,18 +32,17 @@ WsConsole::~WsConsole()
 	delete[] _cartEepromData;
 }
 
-LoadRomResult WsConsole::LoadRom(VirtualFile& romFile)
-{
+LoadRomResult WsConsole::LoadRom(VirtualFile& romFile) {
 	vector<uint8_t> romData;
-	romFile.ReadFile(romData);
+	(void)romFile.ReadFile(romData);
 
-	if(romData.size() < 0x10000) {
+	if (romData.size() < 0x10000) {
 		return LoadRomResult::Failure;
 	}
 
 	uint32_t power = (uint32_t)std::log2(romData.size());
-	if(romData.size() > ((uint64_t)1 << power)) {
-		//If size isn't a power of 2, pad the beginning of the ROM to the next power of 2
+	if (romData.size() > ((uint64_t)1 << power)) {
+		// If size isn't a power of 2, pad the beginning of the ROM to the next power of 2
 		uint32_t newSize = 1 << (power + 1);
 		romData.insert(romData.begin(), newSize - romData.size(), 0);
 	}
@@ -56,46 +55,68 @@ LoadRomResult WsConsole::LoadRom(VirtualFile& romFile)
 	_emu->RegisterMemory(MemoryType::WsPrgRom, _prgRom, _prgRomSize);
 
 	uint8_t sramType = _prgRom[_prgRomSize - 5];
-	switch(sramType) {
-		case 0x00: _saveRamSize = 0; break;
-		case 0x01: _saveRamSize = 32 * 1024; break;
-		case 0x02: _saveRamSize = 32 * 1024; break;
-		case 0x03: _saveRamSize = 128 * 1024; break;
-		case 0x04: _saveRamSize = 256 * 1024; break;
-		case 0x05: _saveRamSize = 512 * 1024; break;
+	switch (sramType) {
+		case 0x00:
+			_saveRamSize = 0;
+			break;
+		case 0x01:
+			_saveRamSize = 32 * 1024;
+			break;
+		case 0x02:
+			_saveRamSize = 32 * 1024;
+			break;
+		case 0x03:
+			_saveRamSize = 128 * 1024;
+			break;
+		case 0x04:
+			_saveRamSize = 256 * 1024;
+			break;
+		case 0x05:
+			_saveRamSize = 512 * 1024;
+			break;
 
-		case 0x10: _cartEepromSize = 0x80; break;
-		case 0x20: _cartEepromSize = 0x800; break;
-		case 0x50: _cartEepromSize = 0x400; break;
-		
-		default: MessageManager::Log("Save RAM: unrecognized value"); break;
+		case 0x10:
+			_cartEepromSize = 0x80;
+			break;
+		case 0x20:
+			_cartEepromSize = 0x800;
+			break;
+		case 0x50:
+			_cartEepromSize = 0x400;
+			break;
+
+		default:
+			MessageManager::Log("Save RAM: unrecognized value");
+			break;
 	}
 
 	bool hasColorSupport = (_prgRom[_prgRomSize - 9] & 0x01) || romFile.GetFileExtension() == ".wsc";
 	uint8_t mapperType = _prgRom[_prgRomSize - 3];
+	bool hasRtc = (_prgRom[_prgRomSize - 4] & 0x01) != 0;
 
 	MessageManager::Log(string("Color supported: ") + (hasColorSupport ? "Yes" : "No"));
-	MessageManager::Log("Save RAM size: " + std::to_string(_saveRamSize / 1024) + " KB");
-	MessageManager::Log("Cart EEPROM size: " + std::to_string(_cartEepromSize) + " bytes");
-	MessageManager::Log(string("Mapper: ") + (mapperType == 0 ? "Bandai 2001 / KARNAK" : (mapperType == 1 ? "Bandai 2003" : ("Unknown: " + std::to_string(mapperType)))));
-	
+	MessageManager::Log(std::format("Save RAM size: {} KB", _saveRamSize / 1024));
+	MessageManager::Log(std::format("Cart EEPROM size: {} bytes", _cartEepromSize));
+	MessageManager::Log(std::format("Mapper: {}", mapperType == 0 ? "Bandai 2001 / KARNAK" : (mapperType == 1 ? "Bandai 2003" : std::format("Unknown: {}", mapperType))));
+	MessageManager::Log(string("RTC: ") + (hasRtc ? "Yes" : "No"));
+
 	MessageManager::Log("------------------------------");
 
-	if(_saveRamSize > 0) {
+	if (_saveRamSize > 0) {
 		_saveRam = new uint8_t[_saveRamSize];
 		memset(_saveRam, 0, _saveRamSize);
 		_emu->RegisterMemory(MemoryType::WsCartRam, _saveRam, _saveRamSize);
 	}
-	
-	if(_cartEepromSize > 0) {
+
+	if (_cartEepromSize > 0) {
 		_cartEepromData = new uint8_t[_cartEepromSize];
 		memset(_cartEepromData, 0, _cartEepromSize);
 		_emu->RegisterMemory(MemoryType::WsCartEeprom, _cartEepromData, _cartEepromSize);
-		_cartEeprom.reset(new WsEeprom(_emu, this, (WsEepromSize)_cartEepromSize, _cartEepromData, false));
+		_cartEeprom = std::make_unique<WsEeprom>(_emu, this, (WsEepromSize)_cartEepromSize, _cartEepromData, false);
 	}
 
 	_model = _emu->GetSettings()->GetWsConfig().Model;
-	if(_model == WsModel::Auto) {
+	if (_model == WsModel::Auto) {
 		_model = hasColorSupport ? WsModel::Color : WsModel::Monochrome;
 	}
 
@@ -105,7 +126,7 @@ LoadRomResult WsConsole::LoadRom(VirtualFile& romFile)
 	_emu->RegisterMemory(MemoryType::WsWorkRam, _workRam, _workRamSize);
 
 	vector<uint8_t> bootRom;
-	if(_emu->GetSettings()->GetWsConfig().UseBootRom && FirmwareHelper::LoadWsBootRom(_emu, bootRom, _model)) {
+	if (_emu->GetSettings()->GetWsConfig().UseBootRom && FirmwareHelper::LoadWsBootRom(_emu, bootRom, _model)) {
 		_bootRomSize = (uint32_t)bootRom.size();
 		_bootRom = new uint8_t[_bootRomSize];
 		memcpy(_bootRom, bootRom.data(), _bootRomSize);
@@ -117,24 +138,25 @@ LoadRomResult WsConsole::LoadRom(VirtualFile& romFile)
 	memset(_internalEepromData, 0, _internalEepromSize);
 	_emu->RegisterMemory(MemoryType::WsInternalEeprom, _internalEepromData, _internalEepromSize);
 
-	_internalEeprom.reset(new WsEeprom(_emu, this, (WsEepromSize)_internalEepromSize, _internalEepromData, true));
+	_internalEeprom = std::make_unique<WsEeprom>(_emu, this, (WsEepromSize)_internalEepromSize, _internalEepromData, true);
 
-	_controlManager.reset(new WsControlManager(_emu, this));
-	_memoryManager.reset(new WsMemoryManager());
-	_cpu.reset(new WsCpu(_emu, this, _memoryManager.get()));
-	_timer.reset(new WsTimer());
-	_serial.reset(new WsSerial(this));
-	_dmaController.reset(new WsDmaController());
-	_ppu.reset(new WsPpu(_emu, this, _memoryManager.get(), _timer.get(), _workRam));
-	_apu.reset(new WsApu(_emu, this, _memoryManager.get(), _dmaController.get()));
-	_cart.reset(new WsCart());
-	
-	_cart->Init(_memoryManager.get(), _cartEeprom.get());
+	_controlManager = std::make_unique<WsControlManager>(_emu, this);
+	_memoryManager = std::make_unique<WsMemoryManager>();
+	_cpu = std::make_unique<WsCpu>(_emu, this, _memoryManager.get());
+	_timer = std::make_unique<WsTimer>();
+	_serial = std::make_unique<WsSerial>(this);
+	_dmaController = std::make_unique<WsDmaController>();
+	_ppu = std::make_unique<WsPpu>(_emu, this, _memoryManager.get(), _timer.get(), _workRam);
+	_apu = std::make_unique<WsApu>(_emu, this, _memoryManager.get(), _dmaController.get());
+	_cart = std::make_unique<WsCart>();
+
+	bool hasFlash = _emu->GetSettings()->GetWsConfig().ForceFlash;
+	_cart->Init(_emu, _memoryManager.get(), _cartEeprom.get(), _prgRom, _prgRomSize, hasFlash, hasRtc);
 	_memoryManager->Init(_emu, this, _cpu.get(), _ppu.get(), _controlManager.get(), _cart.get(), _timer.get(), _dmaController.get(), _internalEeprom.get(), _apu.get(), _serial.get());
 	_timer->Init(_memoryManager.get());
 	_dmaController->Init(_memoryManager.get(), _apu.get());
 
-	if(!_bootRom) {
+	if (!_bootRom) {
 		InitPostBootRomState();
 	}
 
@@ -143,31 +165,29 @@ LoadRomResult WsConsole::LoadRom(VirtualFile& romFile)
 	return LoadRomResult::Success;
 }
 
-void WsConsole::RunFrame()
-{
+void WsConsole::RunFrame() {
 	uint32_t frameCount = _ppu->GetFrameCount();
-	while(frameCount == _ppu->GetFrameCount()) {
+	while (frameCount == _ppu->GetFrameCount()) {
 		_cpu->Exec();
 	}
-	
+
 	_apu->PlayQueuedAudio();
 
-	//Make sure to process writes to EEPROM once a frame at least (so that the update is visible in the memory viewer)
+	// Make sure to process writes to EEPROM once a frame at least (so that the update is visible in the memory viewer)
 	_internalEeprom->Run();
-	if(_cartEeprom) {
+	if (_cartEeprom) {
 		_cartEeprom->Run();
 	}
 
 	_verticalMode |= _ppu->GetState().Icons.Vertical;
-	if(_ppu->GetState().Icons.Horizontal) {
+	if (_ppu->GetState().Icons.Horizontal) {
 		_verticalMode = false;
 	}
 }
 
-void WsConsole::GetScreenRotationOverride(uint32_t& rotation)
-{
-	if(_emu->GetSettings()->GetWsConfig().AutoRotate) {
-		if(_verticalMode) {
+void WsConsole::GetScreenRotationOverride(uint32_t& rotation) {
+	if (_emu->GetSettings()->GetWsConfig().AutoRotate) {
+		if (_verticalMode) {
 			rotation = 270;
 		} else {
 			rotation = 0;
@@ -175,55 +195,48 @@ void WsConsole::GetScreenRotationOverride(uint32_t& rotation)
 	}
 }
 
-bool WsConsole::IsColorMode()
-{
+bool WsConsole::IsColorMode() {
 	return _memoryManager->GetState().ColorEnabled;
 }
 
-bool WsConsole::IsPowerOff()
-{
+bool WsConsole::IsPowerOff() {
 	return _cpu->IsPowerOff();
 }
 
-bool WsConsole::IsVerticalMode()
-{
+bool WsConsole::IsVerticalMode() {
 	return _verticalMode;
 }
 
-WsModel WsConsole::GetModel()
-{
+WsModel WsConsole::GetModel() {
 	return _model;
 }
 
-void WsConsole::ProcessEndOfFrame()
-{
+void WsConsole::ProcessEndOfFrame() {
 	_controlManager->UpdateControlDevices();
 	_controlManager->UpdateInputState();
 }
 
-void WsConsole::Reset()
-{
-	//The WS has no reset button, behave like power cycle
+void WsConsole::Reset() {
+	// The WS has no reset button, behave like power cycle
 	_emu->ReloadRom(true);
 }
 
-void WsConsole::InitPostBootRomState()
-{
-	//Init work ram
-	if(_model == WsModel::Monochrome) {
+void WsConsole::InitPostBootRomState() {
+	// Init work ram
+	if (_model == WsModel::Monochrome) {
 		memset(_workRam, 0, _workRamSize);
 	} else {
 		memset(_workRam, 0, 0xFE00);
 		memset(_workRam + 0xFE00, 0xFF, 0x200);
 	}
 
-	//Init port state
+	// Init port state
 	WsCpuState& cpu = _cpu->GetState();
 	cpu.DS = 0xFE00;
 	cpu.CS = 0xFFFF;
 	cpu.SP = 0x2000;
 
-	if(_model == WsModel::Monochrome) {
+	if (_model == WsModel::Monochrome) {
 		cpu.AX = 0xFF85;
 		cpu.BX = 0x0040;
 		cpu.DX = 0x0005;
@@ -242,18 +255,78 @@ void WsConsole::InitPostBootRomState()
 
 	WsPpuState& ppu = _ppu->GetState();
 	ppu.LcdEnabled = true;
-	if(_model == WsModel::Monochrome) {
+	if (_model == WsModel::Monochrome) {
 		ppu.Scanline = 26;
 		ppu.Cycle = 53;
 
 		constexpr static uint8_t defaultBwPalette[] = {
-			0,0,0,7,0,0,0,5,0,0,0,4,0,0,0,3,
-			0,0,0,2,0,0,0,1,0,0,0,0,0,0,0,0,
-			0,3,5,7,0,0,0,0,0,0,0,0,0,0,0,0,
-			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+		    0,
+		    0,
+		    0,
+		    7,
+		    0,
+		    0,
+		    0,
+		    5,
+		    0,
+		    0,
+		    0,
+		    4,
+		    0,
+		    0,
+		    0,
+		    3,
+		    0,
+		    0,
+		    0,
+		    2,
+		    0,
+		    0,
+		    0,
+		    1,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    3,
+		    5,
+		    7,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
+		    0,
 		};
 
-		constexpr static uint8_t defaultShades[] = { 0,2,4,6,8,10,12,15 };
+		constexpr static uint8_t defaultShades[] = {0, 2, 4, 6, 8, 10, 12, 15};
 
 		memcpy(ppu.BwPalettes, defaultBwPalette, sizeof(defaultBwPalette));
 		memcpy(ppu.BwShades, defaultShades, sizeof(defaultShades));
@@ -267,13 +340,14 @@ void WsConsole::InitPostBootRomState()
 	WsMemoryManagerState& mm = _memoryManager->GetState();
 	mm.BootRomDisabled = true;
 	mm.CartWordBus = true;
-	if(_model != WsModel::Monochrome) {
+	mm.OpenBus = _model == WsModel::Monochrome ? 0x90 : 0x00;
+	if (_model != WsModel::Monochrome) {
 		mm.SlowSram = true;
 		mm.SlowPort = true;
 	}
 
 	WsApuState& apu = _apu->GetState();
-	if(_model == WsModel::Monochrome) {
+	if (_model == WsModel::Monochrome) {
 		apu.Ch1.Frequency = 0x7E6;
 		apu.Ch2.Frequency = 0x7E6;
 	} else {
@@ -286,13 +360,13 @@ void WsConsole::InitPostBootRomState()
 	eeprom.Idle = true;
 	eeprom.InternalEepromWriteProtected = true;
 
-	//Copy data from rom header to internal eeprom, like the boot rom would
-	for(int i = 0; i < 3; i++) {
+	// Copy data from rom header to internal eeprom, like the boot rom would
+	for (int i = 0; i < 3; i++) {
 		_internalEepromData[0x76 + i] = _prgRom[_prgRomSize - 0x10 + 6 + i];
 
 		bool supportsColor = _prgRom[_prgRomSize - 0x10 + 7] & 0x01;
-		if(_model != WsModel::Monochrome && supportsColor) {
-			//For games that support color & color models, copy 76-78 to 80-82
+		if (_model != WsModel::Monochrome && supportsColor) {
+			// For games that support color & color models, copy 76-78 to 80-82
 			_internalEepromData[0x80 + i] = _internalEepromData[0x76 + i];
 		}
 	}
@@ -300,84 +374,92 @@ void WsConsole::InitPostBootRomState()
 	_memoryManager->RefreshMappings();
 }
 
-void WsConsole::LoadBattery()
-{
+void WsConsole::LoadBattery() {
 	_internalEeprom->LoadBattery();
-	if(_cartEeprom) {
+	if (_cartEeprom) {
 		_cartEeprom->LoadBattery();
 	}
 
-	if(_saveRam) {
-		_emu->GetBatteryManager()->LoadBattery(".sav", _saveRam, _saveRamSize);
+	if (_saveRam) {
+		_emu->GetBatteryManager()->LoadBattery(".sav", std::span<uint8_t>(_saveRam, _saveRamSize));
+	}
+
+	if (_cart->HasFlash()) {
+		_emu->GetBatteryManager()->LoadBattery(".flash", std::span<uint8_t>(_prgRom, _prgRomSize));
+		_cart->ClearFlashDirty();
+	}
+
+	if (_cart->GetRtc()) {
+		_cart->GetRtc()->LoadBattery();
 	}
 }
 
-void WsConsole::SaveBattery()
-{
+void WsConsole::SaveBattery() {
 	_internalEeprom->SaveBattery();
-	if(_cartEeprom) {
+	if (_cartEeprom) {
 		_cartEeprom->SaveBattery();
 	}
 
-	if(_saveRam) {
-		_emu->GetBatteryManager()->SaveBattery(".sav", _saveRam, _saveRamSize);
+	if (_saveRam) {
+		_emu->GetBatteryManager()->SaveBattery(".sav", std::span<const uint8_t>(_saveRam, _saveRamSize));
+	}
+
+	if (_cart->HasFlash() && _cart->IsFlashDirty()) {
+		_emu->GetBatteryManager()->SaveBattery(".flash", std::span<const uint8_t>(_prgRom, _prgRomSize));
+		_cart->ClearFlashDirty();
+	}
+
+	if (_cart->GetRtc()) {
+		_cart->GetRtc()->SaveBattery();
 	}
 }
 
-BaseControlManager* WsConsole::GetControlManager()
-{
+BaseControlManager* WsConsole::GetControlManager() {
 	return _controlManager.get();
 }
 
-ConsoleRegion WsConsole::GetRegion()
-{
+ConsoleRegion WsConsole::GetRegion() {
 	return ConsoleRegion::Ntsc;
 }
 
-ConsoleType WsConsole::GetConsoleType()
-{
+ConsoleType WsConsole::GetConsoleType() {
 	return ConsoleType::Ws;
 }
 
-vector<CpuType> WsConsole::GetCpuTypes()
-{
-	return { CpuType::Ws };
+vector<CpuType> WsConsole::GetCpuTypes() {
+	return {CpuType::Ws};
 }
 
-uint64_t WsConsole::GetMasterClock()
-{
+uint64_t WsConsole::GetMasterClock() {
 	return _cpu->GetCycleCount();
 }
 
-uint32_t WsConsole::GetMasterClockRate()
-{
+uint32_t WsConsole::GetMasterClockRate() {
 	return 12288000 / 4;
 }
 
-double WsConsole::GetFps()
-{
+double WsConsole::GetFps() {
 	return 12000.0 / _ppu->GetScanlineCount();
 }
 
-BaseVideoFilter* WsConsole::GetVideoFilter(bool getDefaultFilter)
-{
-	if(getDefaultFilter) {
+BaseVideoFilter* WsConsole::GetVideoFilter(bool getDefaultFilter) {
+	if (getDefaultFilter) {
 		return new WsDefaultVideoFilter(_emu, this, false);
 	}
 
 	VideoFilterType filterType = _emu->GetSettings()->GetVideoConfig().VideoFilter;
 
-	switch(filterType) {
+	switch (filterType) {
 		case VideoFilterType::NtscBisqwit:
 		case VideoFilterType::NtscBlargg:
 			return new WsDefaultVideoFilter(_emu, this, true);
 
-		default: return new WsDefaultVideoFilter(_emu, this, false);
+		default:
+			return new WsDefaultVideoFilter(_emu, this, false);
 	}
 }
 
-PpuFrameInfo WsConsole::GetPpuFrame()
-{
+PpuFrameInfo WsConsole::GetPpuFrame() {
 	PpuFrameInfo frame = {};
 	frame.FirstScanline = 0;
 	frame.FrameCount = _ppu->GetFrameCount();
@@ -390,39 +472,74 @@ PpuFrameInfo WsConsole::GetPpuFrame()
 	return frame;
 }
 
-RomFormat WsConsole::GetRomFormat()
-{
+RomFormat WsConsole::GetRomFormat() {
 	return RomFormat::Ws;
 }
 
-AudioTrackInfo WsConsole::GetAudioTrackInfo()
-{
-	//TODOWS
-	return AudioTrackInfo();
+AudioTrackInfo WsConsole::GetAudioTrackInfo() {
+	WsApuState& apu = _apu->GetState();
+
+	int activeChannels = 0;
+	string channelInfo;
+
+	if (apu.Ch1.Enabled) {
+		activeChannels++;
+		channelInfo += "CH1(f=" + std::to_string(apu.Ch1.Frequency) + ") ";
+	}
+	if (apu.Ch2.Enabled) {
+		activeChannels++;
+		channelInfo += apu.Ch2.PcmEnabled ? "CH2(PCM) " : "CH2(f=" + std::to_string(apu.Ch2.Frequency) + ") ";
+	}
+	if (apu.Ch3.Enabled) {
+		activeChannels++;
+		channelInfo += "CH3(f=" + std::to_string(apu.Ch3.Frequency);
+		if (apu.Ch3.SweepEnabled) {
+			channelInfo += ",sweep=" + std::to_string(apu.Ch3.SweepValue);
+		}
+		channelInfo += ") ";
+	}
+	if (apu.Ch4.Enabled) {
+		activeChannels++;
+		channelInfo += apu.Ch4.NoiseEnabled ? "CH4(noise) " : "CH4(f=" + std::to_string(apu.Ch4.Frequency) + ") ";
+	}
+	if (apu.Voice.Enabled) {
+		activeChannels++;
+		channelInfo += "HyperVoice ";
+	}
+
+	AudioTrackInfo info = {};
+	info.GameTitle = _model == WsModel::Monochrome ? "WonderSwan" : "WonderSwan Color";
+	info.SongTitle = std::to_string(activeChannels) + " active channel" + (activeChannels != 1 ? "s" : "");
+	info.Comment = channelInfo.empty() ? "silent" : channelInfo;
+	info.Position = _ppu->GetFrameCount() / GetFps();
+	info.Length = 0;
+	info.FadeLength = 0;
+	info.TrackNumber = 1;
+	info.TrackCount = 1;
+	return info;
 }
 
-void WsConsole::ProcessAudioPlayerAction(AudioPlayerActionParams p)
-{
-	//TODOWS
+void WsConsole::ProcessAudioPlayerAction(AudioPlayerActionParams p) {
+	// WonderSwan has no multi-track audio format; no-op
 }
 
-AddressInfo WsConsole::GetAbsoluteAddress(uint32_t relAddress)
-{
+AddressInfo WsConsole::GetAbsoluteAddress(uint32_t relAddress) {
 	return _memoryManager->GetAbsoluteAddress(relAddress);
 }
 
-AddressInfo WsConsole::GetAbsoluteAddress(AddressInfo& relAddress)
-{
+AddressInfo WsConsole::GetAbsoluteAddress(AddressInfo& relAddress) {
 	return GetAbsoluteAddress(relAddress.Address);
 }
 
-AddressInfo WsConsole::GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType)
-{
-	return { _memoryManager->GetRelativeAddress(absAddress), MemoryType::WsMemory };
+AddressInfo WsConsole::GetPcAbsoluteAddress() {
+	return _memoryManager->GetAbsoluteAddress(_cpu->GetProgramCounter());
 }
 
-WsState WsConsole::GetState()
-{
+AddressInfo WsConsole::GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) {
+	return {_memoryManager->GetRelativeAddress(absAddress), MemoryType::WsMemory};
+}
+
+WsState WsConsole::GetState() {
 	WsState state = {};
 	state.Model = _model;
 	state.Cpu = _cpu->GetState();
@@ -435,22 +552,20 @@ WsState WsConsole::GetState()
 	state.Serial = _serial->GetState();
 	state.InternalEeprom = _internalEeprom->GetState();
 	state.Cart = _cart->GetState();
-	if(_cartEeprom) {
+	if (_cartEeprom) {
 		state.CartEeprom = _cartEeprom->GetState();
 	}
 	return state;
 }
 
-void WsConsole::GetConsoleState(BaseState& state, ConsoleType consoleType)
-{
+void WsConsole::GetConsoleState(BaseState& state, ConsoleType consoleType) {
 	(WsState&)state = GetState();
 }
 
-void WsConsole::Serialize(Serializer& s)
-{
+void WsConsole::Serialize(Serializer& s) {
 	WsModel model = _model;
 	SV(model);
-	if(!s.IsSaving() && (model == WsModel::Monochrome) != (_model == WsModel::Monochrome)) {
+	if (!s.IsSaving() && (model == WsModel::Monochrome) != (_model == WsModel::Monochrome)) {
 		bool isMono = _model == WsModel::Monochrome;
 		MessageManager::DisplayMessage("SaveStates", isMono ? "Can't load WSC state in WS mode." : "Can't load WS state in WSC mode.");
 		s.SetErrorFlag();
@@ -460,8 +575,8 @@ void WsConsole::Serialize(Serializer& s)
 	SV(_cpu);
 	SV(_ppu);
 	SV(_apu);
-	
-	//Process cart before memory manager to ensure mappings are updated properly
+
+	// Process cart before memory manager to ensure mappings are updated properly
 	SV(_cart);
 	SV(_memoryManager);
 
@@ -472,19 +587,19 @@ void WsConsole::Serialize(Serializer& s)
 	SV(_internalEeprom);
 
 	SV(_verticalMode);
-	
+
 	SVArray(_workRam, _workRamSize);
-	if(_saveRam && _saveRamSize) {
+	if (_saveRam && _saveRamSize) {
 		SVArray(_saveRam, _saveRamSize);
 	}
-	if(_internalEepromData && _internalEepromSize) {
+	if (_internalEepromData && _internalEepromSize) {
 		SVArray(_internalEepromData, _internalEepromSize);
 	}
-	if(_cartEepromData && _cartEepromSize) {
+	if (_cartEepromData && _cartEepromSize) {
 		SVArray(_cartEepromData, _cartEepromSize);
 	}
 
-	if(_cartEeprom) {
+	if (_cartEeprom) {
 		SV(_cartEeprom);
 	}
 }

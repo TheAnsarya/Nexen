@@ -7,32 +7,28 @@
 #include "Shared/NotificationManager.h"
 #include "Utilities/Socket.h"
 
-GameClient::GameClient(Emulator* emu)
-{
+GameClient::GameClient(Emulator* emu) {
 	_emu = emu;
 	_stop = false;
 	_connected = false;
 }
 
-GameClient::~GameClient()
-{
+GameClient::~GameClient() {
 }
 
-bool GameClient::Connected()
-{
+bool GameClient::Connected() {
 	return _connected;
 }
 
-void GameClient::Connect(ClientConnectionData &connectionData)
-{
+void GameClient::Connect(ClientConnectionData& connectionData) {
 	Disconnect();
 
 	_stop = false;
-	unique_ptr<Socket> socket(new Socket());
-	if(socket->Connect(connectionData.Host.c_str(), connectionData.Port)) {
-		_connection.reset(new GameClientConnection(_emu, std::move(socket), connectionData));
+	auto socket = std::make_unique<Socket>();
+	if (socket->Connect(connectionData.Host.c_str(), connectionData.Port)) {
+		_connection = std::make_unique<GameClientConnection>(_emu, std::move(socket), connectionData);
 		_connected = true;
-		_clientThread.reset(new thread(&GameClient::Exec, this));
+		_clientThread = std::make_unique<thread>(&GameClient::Exec, this);
 		_emu->GetNotificationManager()->RegisterNotificationListener(shared_from_this());
 	} else {
 		MessageManager::DisplayMessage("NetPlay", "CouldNotConnect");
@@ -40,21 +36,19 @@ void GameClient::Connect(ClientConnectionData &connectionData)
 	}
 }
 
-void GameClient::Disconnect()
-{
+void GameClient::Disconnect() {
 	_stop = true;
 	_connected = false;
-	if(_clientThread) {
+	if (_clientThread) {
 		_clientThread->join();
 		_clientThread.reset();
 	}
 }
 
-void GameClient::Exec()
-{
-	if(_connected) {
-		while(!_stop) {
-			if(!_connection->ConnectionError()) {
+void GameClient::Exec() {
+	if (_connected) {
+		while (!_stop) {
+			if (!_connection->ConnectionError()) {
 				_connection->ProcessMessages();
 				_connection->SendInput();
 			} else {
@@ -67,39 +61,34 @@ void GameClient::Exec()
 	}
 }
 
-void GameClient::ProcessNotification(ConsoleNotificationType type, void* parameter)
-{
-	if(!_connected) {
+void GameClient::ProcessNotification(ConsoleNotificationType type, void* parameter) {
+	if (!_connected) {
 		return;
 	}
 
-	if(type == ConsoleNotificationType::GameLoaded &&
-		std::this_thread::get_id() != _clientThread->get_id() && 
-		!_emu->IsEmulationThread()
-	) {
-		//Disconnect if the client tried to manually load a game
-		//A deadlock occurs if this is called from the emulation thread while a network message is being processed
+	if (type == ConsoleNotificationType::GameLoaded &&
+	    std::this_thread::get_id() != _clientThread->get_id() &&
+	    !_emu->IsEmulationThread()) {
+		// Disconnect if the client tried to manually load a game
+		// A deadlock occurs if this is called from the emulation thread while a network message is being processed
 		Disconnect();
 	}
-	
-	if(_connection) {
+
+	if (_connection) {
 		_connection->ProcessNotification(type, parameter);
 	}
 }
 
-void GameClient::SelectController(NetplayControllerInfo controller)
-{
-	if(_connection) {
+void GameClient::SelectController(NetplayControllerInfo controller) {
+	if (_connection) {
 		_connection->SelectController(controller);
 	}
 }
 
-vector<NetplayControllerUsageInfo> GameClient::GetControllerList()
-{
+vector<NetplayControllerUsageInfo> GameClient::GetControllerList() {
 	return _connection ? _connection->GetControllerList() : vector<NetplayControllerUsageInfo>();
 }
 
-NetplayControllerInfo GameClient::GetControllerPort()
-{
-	return _connection ? _connection->GetControllerPort() : NetplayControllerInfo { GameConnection::SpectatorPort, 0 };
+NetplayControllerInfo GameClient::GetControllerPort() {
+	return _connection ? _connection->GetControllerPort() : NetplayControllerInfo{GameConnection::SpectatorPort, 0};
 }

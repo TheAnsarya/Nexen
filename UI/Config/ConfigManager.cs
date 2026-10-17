@@ -1,285 +1,491 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Reflection;
-using Mesen.Interop;
 using System.Diagnostics;
-using Mesen.Utilities;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Avalonia.Controls;
+using Nexen.Interop;
+using Nexen.Utilities;
 
-namespace Mesen.Config
-{
-	public static class ConfigManager
-	{
-		private static Configuration? _config;
-		private static string? _homeFolder = null;
-		private static object _initLock = new object();
+namespace Nexen.Config;
 
-		public static string DefaultPortableFolder { get { return Path.GetDirectoryName(Program.ExePath) ?? "./"; } }
-		public static string DefaultDocumentsFolder
-		{
-			get
-			{
-				Environment.SpecialFolder folder = OperatingSystem.IsWindows() ? Environment.SpecialFolder.MyDocuments : Environment.SpecialFolder.ApplicationData;
-				return Path.Combine(Environment.GetFolderPath(folder, Environment.SpecialFolderOption.Create), "Mesen2");
-			}
+/// <summary>
+/// Central configuration management for the Nexen emulator.
+/// Handles configuration loading, saving, folder paths, and command-line switch processing.
+/// </summary>
+/// <remarks>
+/// <para>
+/// ConfigManager supports two installation modes:
+/// <list type="bullet">
+/// <item><description>Portable mode: Configuration stored alongside the executable</description></item>
+/// <item><description>Documents mode: Configuration stored in user's Documents/AppData folder</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// The configuration file (settings.json) is automatically loaded on first access and
+/// saved when modified. Thread-safe initialization is ensured via double-checked locking.
+/// </para>
+/// </remarks>
+public static partial class ConfigManager {
+	/// <summary>
+	/// The loaded configuration instance. Lazily initialized on first access.
+	/// </summary>
+	private static Configuration? _config;
+
+	/// <summary>
+	/// Lock object for thread-safe configuration initialization.
+	/// </summary>
+	private static readonly object _initLock = new();
+
+	/// <summary>
+	/// Gets the default folder path for portable installation (same directory as executable).
+	/// </summary>
+	public static string DefaultPortableFolder => Path.GetDirectoryName(Program.ExePath) ?? "./";
+
+	/// <summary>
+	/// Gets the default folder path for documents-based installation.
+	/// On Windows, uses MyDocuments; on other platforms, uses ApplicationData.
+	/// </summary>
+	public static string DefaultDocumentsFolder {
+		get {
+			Environment.SpecialFolder folder = OperatingSystem.IsWindows() ? Environment.SpecialFolder.MyDocuments : Environment.SpecialFolder.ApplicationData;
+			return Path.Combine(Environment.GetFolderPath(folder, Environment.SpecialFolderOption.Create), "Nexen");
 		}
+	}
 
-		public static string DefaultAviFolder { get { return Path.Combine(HomeFolder, "Avi"); } }
-		public static string DefaultMovieFolder { get { return Path.Combine(HomeFolder, "Movies"); } }
-		public static string DefaultSaveDataFolder { get { return Path.Combine(HomeFolder, "Saves"); } }
-		public static string DefaultSaveStateFolder { get { return Path.Combine(HomeFolder, "SaveStates"); } }
-		public static string DefaultScreenshotFolder { get { return Path.Combine(HomeFolder, "Screenshots"); } }
-		public static string DefaultWaveFolder { get { return Path.Combine(HomeFolder, "Wave"); } }
+	/// <summary>Gets the default folder path for AVI video recordings.</summary>
+	public static string DefaultAviFolder => Path.Combine(HomeFolder, "Avi");
 
-		public static bool DisableSaveSettings { get; internal set; }
+	/// <summary>Gets the default folder path for movie/input recordings.</summary>
+	public static string DefaultMovieFolder => Path.Combine(HomeFolder, "Movies");
 
-		public static string GetConfigFile()
-		{
-			return Path.Combine(HomeFolder, "settings.json");
-		}
+	/// <summary>Gets the default folder path for save data (battery saves, SRAM).</summary>
+	public static string DefaultSaveDataFolder => Path.Combine(HomeFolder, "Saves");
 
-		public static void CreateConfig(bool portable)
-		{
-			string homeFolder;
-			if(portable) {
-				homeFolder = DefaultPortableFolder;
-			} else {
-				homeFolder = DefaultDocumentsFolder;
-			}
-			DependencyHelper.ExtractNativeDependencies(homeFolder);
-			_homeFolder = homeFolder;
-			Config.Save();
-		}
-		
-		public static void LoadConfig()
-		{
-			if(_config == null) {
-				lock(_initLock) {
-					if(_config == null) {
-						if(File.Exists(ConfigFile) && !Design.IsDesignMode) {
-							_config = Configuration.Deserialize(ConfigFile);
-						} else {
-							_config = Configuration.CreateConfig();
-						}
-						ConfigManager.ActiveTheme = _config.Preferences.Theme;
-					}
+	/// <summary>Gets the default folder path for save states.</summary>
+	public static string DefaultSaveStateFolder => Path.Combine(HomeFolder, "SaveStates");
+
+	/// <summary>Gets the default folder path for screenshots.</summary>
+	public static string DefaultScreenshotFolder => Path.Combine(HomeFolder, "Screenshots");
+
+	/// <summary>Gets the default folder path for WAV audio recordings.</summary>
+	public static string DefaultWaveFolder => Path.Combine(HomeFolder, "Wave");
+
+	/// <summary>
+	/// Gets or sets whether settings saving is disabled.
+	/// Used during testing or when running with restricted permissions.
+	/// </summary>
+	public static bool DisableSaveSettings { get; internal set; }
+
+	/// <summary>
+	/// Gets the full path to the configuration file.
+	/// </summary>
+	/// <returns>The absolute path to settings.json in the home folder.</returns>
+	public static string GetConfigFile() => Path.Combine(HomeFolder, "settings.json");
+
+	/// <summary>
+	/// Creates a new configuration file in either portable or documents mode.
+	/// Extracts native dependencies and initializes the home folder.
+	/// </summary>
+	/// <param name="portable">
+	/// If <c>true</c>, creates configuration in the portable folder (same as executable).
+	/// If <c>false</c>, creates configuration in the documents folder.
+	/// </param>
+	public static void CreateConfig(bool portable) {
+		string homeFolder = portable ? DefaultPortableFolder : DefaultDocumentsFolder;
+		DependencyHelper.ExtractNativeDependencies(homeFolder);
+		HomeFolder = homeFolder;
+		// Now that HomeFolder is set, enable file logging
+		Log.InitializeFileLogging();
+		Config.Save();
+	}
+
+	/// <summary>
+	/// Loads the configuration from disk. Thread-safe with double-checked locking.
+	/// If no configuration file exists, creates a default configuration.
+	/// </summary>
+	/// <remarks>
+	/// This method is automatically called when accessing <see cref="Config"/>.
+	/// In Avalonia design mode, always creates a default configuration.
+	/// </remarks>
+	public static void LoadConfig() {
+		if (_config is null) {
+			lock (_initLock) {
+				if (_config is null) {
+					_config = File.Exists(ConfigFile) && !Design.IsDesignMode ? Configuration.Deserialize(ConfigFile) : Configuration.CreateConfig();
+					ActiveTheme = _config.Preferences.Theme;
 				}
 			}
 		}
+	}
 
-		public static MesenTheme ActiveTheme { get; set; }
+	/// <summary>
+	/// Gets or sets the currently active UI theme.
+	/// </summary>
+	public static NexenTheme ActiveTheme { get; set; }
 
-		private static bool ApplySetting(object instance, PropertyInfo property, string value)
-		{
-			Type t = property.PropertyType;
-			try {
-				if(!property.CanWrite) {
-					return false;
-				}
+	/// <summary>
+	/// Applies a setting value to a property using reflection.
+	/// Handles type conversion and validation via MinMax and ValidValues attributes.
+	/// </summary>
+	/// <param name="instance">The object instance containing the property.</param>
+	/// <param name="property">The property to set.</param>
+	/// <param name="value">The string value to parse and apply.</param>
+	/// <returns><c>true</c> if the setting was applied successfully; otherwise, <c>false</c>.</returns>
+	private static bool ApplySetting(object instance, PropertyInfo property, string value) {
+		Type t = property.PropertyType;
+		try {
+			if (!property.CanWrite) {
+				return false;
+			}
 
-				if(t == typeof(int) || t == typeof(uint) || t == typeof(double)) {
-					if(property.GetCustomAttribute<MinMaxAttribute>() is MinMaxAttribute minMaxAttribute) {
-						if(t == typeof(int)) {
-							if(int.TryParse(value, out int result)) {
-								if(result >= (int)minMaxAttribute.Min && result <= (int)minMaxAttribute.Max) {
-									property.SetValue(instance, result);
-								} else {
-									return false;
-								}
-							}
-						} else if(t == typeof(uint)) {
-							if(uint.TryParse(value, out uint result)) {
-								if(result >= (uint)(int)minMaxAttribute.Min && result <= (uint)(int)minMaxAttribute.Max) {
-									property.SetValue(instance, result);
-								} else {
-									return false;
-								}
-							}
-						} else if(t == typeof(double)) {
-							if(double.TryParse(value, out double result)) {
-								if(result >= (double)minMaxAttribute.Min && result <= (double)minMaxAttribute.Max) {
-									property.SetValue(instance, result);
-								} else {
-									return false;
-								}
-							}
-						}
-					}
-				} else if(t == typeof(bool)) {
-					if(bool.TryParse(value, out bool boolValue)) {
-						property.SetValue(instance, boolValue);
-					} else {
-						return false;
-					}
-				} else if(t.IsEnum) {
-					if(Enum.TryParse(t, value, true, out object? enumValue)) {
-						if(property.GetCustomAttribute<ValidValuesAttribute>() is ValidValuesAttribute validValuesAttribute) {
-							if(validValuesAttribute.ValidValues.Contains(enumValue)) {
-								property.SetValue(instance, enumValue);
+			if (t == typeof(int) || t == typeof(uint) || t == typeof(double)) {
+				if (property.GetCustomAttribute<MinMaxAttribute>() is MinMaxAttribute minMaxAttribute) {
+					if (t == typeof(int)) {
+						if (int.TryParse(value, out int result)) {
+							if (result >= (int)minMaxAttribute.Min && result <= (int)minMaxAttribute.Max) {
+								property.SetValue(instance, result);
 							} else {
 								return false;
 							}
-						} else {
-							property.SetValue(instance, enumValue);
 						}
-					} else {
-						return false;
+					} else if (t == typeof(uint)) {
+						if (uint.TryParse(value, out uint result)) {
+							if (result >= (uint)(int)minMaxAttribute.Min && result <= (uint)(int)minMaxAttribute.Max) {
+								property.SetValue(instance, result);
+							} else {
+								return false;
+							}
+						}
+					} else if (t == typeof(double)) {
+						if (double.TryParse(value, out double result)) {
+							if (result >= (double)minMaxAttribute.Min && result <= (double)minMaxAttribute.Max) {
+								property.SetValue(instance, result);
+							} else {
+								return false;
+							}
+						}
 					}
 				}
-			} catch {
-				return false;
-			}
-			return true;
-		}
-
-		public static bool ProcessSwitch(string switchArg)
-		{
-			Regex regex = new Regex("([a-z0-9_A-Z.]+)=([a-z0-9_A-Z.\\-]+)");
-			Match match = regex.Match(switchArg);
-			if(match.Success) {
-				string[] switchPath = match.Groups[1].Value.Split(".");
-				string switchValue = match.Groups[2].Value;
-
-				object? cfg = ConfigManager.Config;
-				PropertyInfo? property;
-				for(int i = 0; i < switchPath.Length; i++) {
-					property = cfg.GetType().GetProperty(switchPath[i], BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-					if(property == null) {
-						//Invalid switch name
-						return false;
-					}
-
-					if(i < switchPath.Length - 1) {
-						cfg = property.GetValue(cfg);
-						if(cfg == null) {
-							//Invalid
+			} else if (t == typeof(bool)) {
+				if (bool.TryParse(value, out bool boolValue)) {
+					property.SetValue(instance, boolValue);
+				} else {
+					return false;
+				}
+			} else if (t.IsEnum) {
+				if (Enum.TryParse(t, value, true, out object? enumValue)) {
+					if (property.GetCustomAttribute<ValidValuesAttribute>() is ValidValuesAttribute validValuesAttribute) {
+						if (validValuesAttribute.ValidValues.Contains(enumValue)) {
+							property.SetValue(instance, enumValue);
+						} else {
 							return false;
 						}
 					} else {
-						return ApplySetting(cfg, property, switchValue);
+						property.SetValue(instance, enumValue);
 					}
+				} else {
+					return false;
 				}
 			}
-
+		} catch (Exception ex) {
+			Debug.WriteLine($"ConfigManager.ApplySetting failed for property '{property.Name}': {ex.Message}");
 			return false;
 		}
 
-		public static void ResetHomeFolder()
-		{
-			_homeFolder = null;
-		}
+		return true;
+	}
 
-		public static string HomeFolder {
-			get
-			{
-				if(_homeFolder == null) {
-					string portableFolder = DefaultPortableFolder;
-					string documentsFolder = DefaultDocumentsFolder;
+	[GeneratedRegex("([a-z0-9_A-Z.]+)=([a-z0-9_A-Z.\\-]+)")]
+	private static partial Regex SwitchRegex();
 
-					string portableConfig = Path.Combine(portableFolder, "settings.json");
-					if(File.Exists(portableConfig)) {
-						_homeFolder = portableFolder;
-					} else {
-						_homeFolder = documentsFolder;
+	/// <summary>
+	/// Processes a command-line switch argument in the format "path.to.setting=value".
+	/// Navigates the configuration object graph and applies the value.
+	/// </summary>
+	/// <param name="switchArg">The switch argument string (e.g., "Video.Scale=3").</param>
+	/// <returns><c>true</c> if the switch was processed successfully; otherwise, <c>false</c>.</returns>
+	/// <example>
+	/// <code>
+	/// ConfigManager.ProcessSwitch("Video.Scale=3");
+	/// ConfigManager.ProcessSwitch("Audio.Volume=75");
+	/// </code>
+	/// </example>
+	[RequiresUnreferencedCode("Uses reflection to access properties dynamically")]
+	public static bool ProcessSwitch(string switchArg) {
+		Match match = SwitchRegex().Match(switchArg);
+		if (match.Success) {
+			string[] switchPath = match.Groups[1].Value.Split(".");
+			string switchValue = match.Groups[2].Value;
+
+			object? cfg = Config;
+			PropertyInfo? property;
+			for (int i = 0; i < switchPath.Length; i++) {
+				property = cfg.GetType().GetProperty(switchPath[i], BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+				if (property is null) {
+					//Invalid switch name
+					return false;
+				}
+
+				if (i < switchPath.Length - 1) {
+					cfg = property.GetValue(cfg);
+					if (cfg is null) {
+						//Invalid
+						return false;
 					}
-
-					Directory.CreateDirectory(_homeFolder);
+				} else {
+					return ApplySetting(cfg, property, switchValue);
 				}
-
-				return _homeFolder;
 			}
 		}
 
-		public static string GetFolder(string defaultFolderName, string? overrideFolder, bool useOverride)
-		{
-			string folder;
-			if(useOverride && overrideFolder != null) {
-				folder = overrideFolder;
-			} else {
-				folder = defaultFolderName;
+		return false;
+	}
+
+	/// <summary>
+	/// Resets the home folder cache, forcing it to be re-detected on next access.
+	/// </summary>
+	public static void ResetHomeFolder() {
+		HomeFolder = null!;
+	}
+
+	internal static bool IsFolderWritable(string folder) {
+		try {
+			Directory.CreateDirectory(folder);
+			string probe = Path.Combine(folder, $".nexen-write-probe-{Guid.NewGuid():N}.tmp");
+			using(FileStream stream = File.Open(probe, FileMode.CreateNew, FileAccess.Write, FileShare.None)) {
+				stream.WriteByte(0);
 			}
 
-			try {
-				if(!Directory.Exists(folder)) {
-					Directory.CreateDirectory(folder);
+			File.Delete(probe);
+			return true;
+		} catch (Exception ex) {
+			Debug.WriteLine($"ConfigManager.IsFolderWritable: '{folder}' is not writable: {ex.Message}");
+			return false;
+		}
+	}
+
+	internal static bool TryMigrateSettingsFile(string sourceConfigFile, string destinationConfigFile) {
+		try {
+			string? destinationFolder = Path.GetDirectoryName(destinationConfigFile);
+			if (destinationFolder is null) {
+				return false;
+			}
+
+			Directory.CreateDirectory(destinationFolder);
+			File.Copy(sourceConfigFile, destinationConfigFile, false);
+			return true;
+		} catch (Exception ex) {
+			Debug.WriteLine($"ConfigManager.TryMigrateSettingsFile failed: {ex.Message}");
+			return false;
+		}
+	}
+
+	internal static string ResolveHomeFolderPath(
+		string portableFolder,
+		string documentsFolder,
+		Func<string, bool>? isFolderWritable = null,
+		Func<string, string, bool>? migrateSettingsFile = null
+	) {
+		isFolderWritable ??= IsFolderWritable;
+		migrateSettingsFile ??= TryMigrateSettingsFile;
+
+		string portableConfig = Path.Combine(portableFolder, "settings.json");
+		string documentsConfig = Path.Combine(documentsFolder, "settings.json");
+
+		if (!File.Exists(portableConfig)) {
+			return documentsFolder;
+		}
+
+		if (isFolderWritable(portableFolder)) {
+			return portableFolder;
+		}
+
+		if (!isFolderWritable(documentsFolder)) {
+			Debug.WriteLine($"ConfigManager.ResolveHomeFolderPath: portable and documents folders are not writable, using portable: {portableFolder}");
+			return portableFolder;
+		}
+
+		if (!File.Exists(documentsConfig)) {
+			bool migrated = migrateSettingsFile(portableConfig, documentsConfig);
+			if (!migrated) {
+				Debug.WriteLine($"ConfigManager.ResolveHomeFolderPath: failed to migrate settings from '{portableConfig}' to '{documentsConfig}'");
+			}
+		}
+
+		return documentsFolder;
+	}
+
+	/// <summary>
+	/// Gets or sets the home folder path where all Nexen data is stored.
+	/// Auto-detects portable vs documents mode on first access based on presence of settings.json.
+	/// </summary>
+	/// <remarks>
+	/// The home folder is determined by checking if a portable configuration exists.
+	/// If settings.json exists in the executable directory, portable mode is used.
+	/// Otherwise, the documents folder is used.
+	/// </remarks>
+	public static string HomeFolder {
+		get {
+			if (field is null) {
+				string portableFolder = DefaultPortableFolder;
+				string documentsFolder = DefaultDocumentsFolder;
+				field = ResolveHomeFolderPath(portableFolder, documentsFolder);
+
+				try {
+					Directory.CreateDirectory(field);
+				} catch (Exception ex) {
+					Debug.WriteLine($"ConfigManager.HomeFolder: Failed to create '{field}': {ex.Message}");
+					if (!string.Equals(field, documentsFolder, StringComparison.OrdinalIgnoreCase)) {
+						field = documentsFolder;
+						Directory.CreateDirectory(field);
+					} else {
+						throw;
+					}
 				}
-			} catch {
-				//If the folder doesn't exist and we couldn't create it, use the default folder
-				EmuApi.WriteLogEntry("[UI] Folder could not be created: " + folder);
-				folder = defaultFolderName;
 			}
-			return folder;
+
+			return field;
 		}
 
-		public static string AviFolder { get { return GetFolder(DefaultAviFolder, Config.Preferences.AviFolder, Config.Preferences.OverrideAviFolder); } }
-		public static string MovieFolder { get { return GetFolder(DefaultMovieFolder, Config.Preferences.MovieFolder, Config.Preferences.OverrideMovieFolder); } }
-		public static string SaveFolder { get { return GetFolder(DefaultSaveDataFolder, Config.Preferences.SaveDataFolder, Config.Preferences.OverrideSaveDataFolder); } }
-		public static string SaveStateFolder { get { return GetFolder(DefaultSaveStateFolder, Config.Preferences.SaveStateFolder, Config.Preferences.OverrideSaveStateFolder); } }
-		public static string ScreenshotFolder { get { return GetFolder(DefaultScreenshotFolder, Config.Preferences.ScreenshotFolder, Config.Preferences.OverrideScreenshotFolder); } }
-		public static string WaveFolder { get { return GetFolder(DefaultWaveFolder, Config.Preferences.WaveFolder, Config.Preferences.OverrideWaveFolder); } }
+		private set;
+	} = null!;
 
-		public static string CheatFolder { get { return GetFolder(Path.Combine(ConfigManager.HomeFolder, "Cheats"), null, false); } }
-		public static string GameConfigFolder { get { return GetFolder(Path.Combine(ConfigManager.HomeFolder, "GameConfig"), null, false); } }
-		public static string SatellaviewFolder { get { return GetFolder(Path.Combine(ConfigManager.HomeFolder, "Satellaview"), null, false); } }
-
-		public static string DebuggerFolder { get { return GetFolder(Path.Combine(ConfigManager.HomeFolder, "Debugger"), null, false); } }
-		public static string FirmwareFolder { get { return GetFolder(Path.Combine(ConfigManager.HomeFolder, "Firmware"), null, false); } }
-		public static string BackupFolder { get { return GetFolder(Path.Combine(ConfigManager.HomeFolder, "Backups"), null, false); } }
-		public static string TestFolder { get { return GetFolder(Path.Combine(ConfigManager.HomeFolder, "Tests"), null, false); } }
-		public static string HdPackFolder { get { return GetFolder(Path.Combine(ConfigManager.HomeFolder, "HdPacks"), null, false); } }
-		public static string RecentGamesFolder { get { return GetFolder(Path.Combine(ConfigManager.HomeFolder, "RecentGames"), null, false); } }
-
-		public static string ConfigFile
-		{
-			get
-			{
-				if(!Directory.Exists(HomeFolder)) {
-					Directory.CreateDirectory(HomeFolder);
-				}
-
-				return Path.Combine(HomeFolder, "settings.json");
+	/// <summary>
+	/// Gets a folder path, creating it if necessary. Falls back to default if creation fails.
+	/// </summary>
+	/// <param name="defaultFolderName">The default folder path to use.</param>
+	/// <param name="overrideFolder">An optional override folder path.</param>
+	/// <param name="useOverride">Whether to use the override folder if specified.</param>
+	/// <returns>The resolved folder path (guaranteed to exist or fall back to default).</returns>
+	public static string GetFolder(string defaultFolderName, string? overrideFolder, bool useOverride) {
+		string folder = useOverride && overrideFolder is not null ? overrideFolder : defaultFolderName;
+		try {
+			if (!Directory.Exists(folder)) {
+				Directory.CreateDirectory(folder);
 			}
+		} catch (Exception ex) {
+			//If the folder doesn't exist and we couldn't create it, use the default folder
+			Debug.WriteLine($"ConfigManager.GetFolder: Failed to create '{folder}': {ex.Message}");
+			EmuApi.WriteLogEntry("[UI] Folder could not be created: " + folder);
+			folder = defaultFolderName;
 		}
 
-		public static Configuration Config
-		{
-			get 
-			{
-				LoadConfig();
-				return _config!;
+		return folder;
+	}
+
+	/// <summary>Gets the AVI folder, respecting user override settings.</summary>
+	public static string AviFolder => GetFolder(DefaultAviFolder, Config.Preferences.AviFolder, Config.Preferences.OverrideAviFolder);
+
+	/// <summary>Gets the movie folder, respecting user override settings.</summary>
+	public static string MovieFolder => GetFolder(DefaultMovieFolder, Config.Preferences.MovieFolder, Config.Preferences.OverrideMovieFolder);
+
+	/// <summary>Gets the save data folder, respecting user override settings.</summary>
+	public static string SaveFolder => GetFolder(DefaultSaveDataFolder, Config.Preferences.SaveDataFolder, Config.Preferences.OverrideSaveDataFolder);
+
+	/// <summary>Gets the save state folder, respecting user override settings.</summary>
+	public static string SaveStateFolder => GetFolder(DefaultSaveStateFolder, Config.Preferences.SaveStateFolder, Config.Preferences.OverrideSaveStateFolder);
+
+	/// <summary>Gets the screenshot folder, respecting user override settings.</summary>
+	public static string ScreenshotFolder => GetFolder(DefaultScreenshotFolder, Config.Preferences.ScreenshotFolder, Config.Preferences.OverrideScreenshotFolder);
+
+	/// <summary>Gets the wave folder, respecting user override settings.</summary>
+	public static string WaveFolder => GetFolder(DefaultWaveFolder, Config.Preferences.WaveFolder, Config.Preferences.OverrideWaveFolder);
+
+	/// <summary>Gets the cheat codes folder.</summary>
+	public static string CheatFolder => GetFolder(Path.Combine(HomeFolder, "Cheats"), null, false);
+
+	/// <summary>Gets the per-game configuration folder.</summary>
+	public static string GameConfigFolder => GetFolder(Path.Combine(HomeFolder, "GameConfig"), null, false);
+
+	/// <summary>Gets the Satellaview data folder (SNES BS-X).</summary>
+	public static string SatellaviewFolder => GetFolder(Path.Combine(HomeFolder, "Satellaview"), null, false);
+
+	/// <summary>Gets the debugger data folder (labels, CDL files, Pansy exports).</summary>
+	public static string DebuggerFolder => GetFolder(Path.Combine(HomeFolder, "Debugger"), null, false);
+
+	/// <summary>Gets the firmware/BIOS folder.</summary>
+	public static string FirmwareFolder => GetFolder(Path.Combine(HomeFolder, "Firmware"), null, false);
+
+	/// <summary>Gets the backup folder for ROM modifications.</summary>
+	public static string BackupFolder => GetFolder(Path.Combine(HomeFolder, "Backups"), null, false);
+
+	/// <summary>Gets the test folder for automated testing.</summary>
+	public static string TestFolder => GetFolder(Path.Combine(HomeFolder, "Tests"), null, false);
+
+	/// <summary>Gets the HD pack folder for NES HD graphics packs.</summary>
+	public static string HdPackFolder => GetFolder(Path.Combine(HomeFolder, "HdPacks"), null, false);
+
+	/// <summary>Gets the recent games thumbnail folder.</summary>
+	public static string RecentGamesFolder => GetFolder(Path.Combine(HomeFolder, "RecentGames"), null, false);
+
+	/// <summary>
+	/// Gets the full path to the configuration file, creating the home folder if needed.
+	/// </summary>
+	public static string ConfigFile {
+		get {
+			if (!Directory.Exists(HomeFolder)) {
+				Directory.CreateDirectory(HomeFolder);
 			}
+
+			return Path.Combine(HomeFolder, "settings.json");
+		}
+	}
+
+	/// <summary>
+	/// Gets the loaded configuration instance. Automatically loads from disk on first access.
+	/// </summary>
+	/// <remarks>
+	/// Thread-safe. Will create a default configuration if settings.json doesn't exist.
+	/// </remarks>
+	public static Configuration Config {
+		get {
+			LoadConfig();
+			return _config!;
+		}
+	}
+
+	/// <summary>
+	/// Resets all settings to defaults, preserving default key mappings.
+	/// </summary>
+	/// <param name="initDefaults">
+	/// If <c>true</c>, initializes system-specific defaults and marks config as upgraded.
+	/// </param>
+	public static void ResetSettings(bool initDefaults = true) {
+		DefaultKeyMappingType defaultMappings = Config.DefaultKeyMappings;
+		if (defaultMappings == DefaultKeyMappingType.None) {
+			defaultMappings = DefaultKeyMappingType.Xbox | DefaultKeyMappingType.ArrowKeys;
 		}
 
-		public static void ResetSettings(bool initDefaults = true)
-		{
-			DefaultKeyMappingType defaultMappings = Config.DefaultKeyMappings;
-			if(defaultMappings == DefaultKeyMappingType.None) {
-				defaultMappings = DefaultKeyMappingType.Xbox | DefaultKeyMappingType.ArrowKeys;
-			}
-
-			_config = Configuration.CreateConfig();
-			Config.DefaultKeyMappings = defaultMappings;
-			if(initDefaults) {
-				Config.InitializeDefaults();
-				Config.ConfigUpgrade = (int)ConfigUpgradeHint.NextValue - 1;
-			}
-			Config.Save();
-			Config.ApplyConfig();
+		_config = Configuration.CreateConfig();
+		Config.DefaultKeyMappings = defaultMappings;
+		if (initDefaults) {
+			Config.InitializeDefaults();
+			Config.ConfigUpgrade = (int)ConfigUpgradeHint.NextValue - 1;
 		}
 
-		public static void RestartMesen()
-		{
-			ProcessModule? mainModule = Process.GetCurrentProcess().MainModule;
-			if(mainModule?.FileName == null) {
-				return;
-			}
-			SingleInstance.Instance.Dispose();
-			Process.Start(mainModule.FileName);
+		Config.Save();
+		Config.ApplyConfig();
+	}
+
+	/// <summary>
+	/// Restarts the Nexen application by launching a new process and disposing the current instance.
+	/// </summary>
+	/// <remarks>
+	/// Used after major configuration changes that require a full restart.
+	/// </remarks>
+	public static void RestartNexen() {
+		ProcessModule? mainModule = Process.GetCurrentProcess().MainModule;
+		if (mainModule?.FileName is null) {
+			return;
 		}
+
+		SingleInstance.Instance.Dispose();
+		Process.Start(mainModule.FileName);
 	}
 }

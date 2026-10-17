@@ -6,8 +6,7 @@
 
 class LabelManager;
 
-class NesAssembler final : public Base6502Assembler<NesAddrMode>
-{
+class NesAssembler final : public Base6502Assembler<NesAddrMode> {
 private:
 	string GetOpName(uint8_t opcode) override;
 	bool IsOfficialOp(uint8_t opcode) override;

@@ -7,15 +7,14 @@
 
 class Emulator;
 
-class ShortcutKeyHandler final : public INotificationListener, public std::enable_shared_from_this<ShortcutKeyHandler>
-{
+class ShortcutKeyHandler final : public INotificationListener, public std::enable_shared_from_this<ShortcutKeyHandler> {
 private:
 	Emulator* _emu = nullptr;
 
 	thread _thread;
 	atomic<bool> _stopThread;
 	SimpleLock _lock;
-	
+
 	int _keySetIndex = 0;
 	vector<uint16_t> _pressedKeys;
 	vector<uint16_t> _lastPressedKeys;
@@ -29,9 +28,9 @@ private:
 
 	unordered_set<uint32_t> _keysDown[2];
 	unordered_set<uint32_t> _prevKeysDown[2];
-	
+
 	void CheckMappedKeys();
-	
+
 	bool IsKeyPressed(EmulatorShortcut key);
 	bool IsKeyPressed(KeyCombination comb, bool blockKeyboardKeys);
 	bool IsKeyPressed(uint16_t keyCode, bool mergeCtrlAltShift, bool blockKeyboardKeys);
@@ -48,7 +47,7 @@ public:
 	ShortcutKeyHandler(Emulator* emu);
 	virtual ~ShortcutKeyHandler();
 
-	bool IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t shortcutParam);
+	[[nodiscard]] bool IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t shortcutParam);
 	void ProcessKeys();
 
 	void ProcessNotification(ConsoleNotificationType type, void* parameter) override;

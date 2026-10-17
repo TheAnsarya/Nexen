@@ -4,8 +4,7 @@
 
 class IMemoryHandler;
 
-class MemoryMappings
-{
+class MemoryMappings {
 private:
 	IMemoryHandler* _handlers[0x100 * 0x10] = {};
 
@@ -19,7 +18,7 @@ public:
 
 	uint8_t Peek(uint32_t addr);
 	uint16_t PeekWord(uint32_t addr);
-	void PeekBlock(uint32_t addr, uint8_t * dest);
+	void PeekBlock(uint32_t addr, uint8_t* dest);
 
 	void DebugWrite(uint32_t addr, uint8_t value);
 };

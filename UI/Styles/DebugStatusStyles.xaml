@@ -1,8 +1,7 @@
 <Styles
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:sys="clr-namespace:System;assembly=netstandard"	
-	xmlns:c="using:Mesen.Controls"
+	xmlns:c="using:Nexen.Controls"
 >
 	<Style Selector="TextBlock">
 		<Setter Property="VerticalAlignment" Value="Center" />
@@ -36,8 +35,8 @@
 	</Style>
 
 	<Style Selector="TextBox">
-		<Setter Property="FontFamily" Value="{DynamicResource MesenMonospaceFont}" />
-		<Setter Property="FontSize" Value="{DynamicResource MesenMonospaceFontSize}" />
+		<Setter Property="FontFamily" Value="{DynamicResource NexenMonospaceFont}" />
+		<Setter Property="FontSize" Value="{DynamicResource NexenMonospaceFontSize}" />
 		<Setter Property="MinWidth" Value="19" />
 
 		<Setter Property="Height" Value="16" />

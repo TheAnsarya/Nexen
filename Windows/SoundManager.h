@@ -5,34 +5,32 @@
 
 class Emulator;
 
-struct SoundDeviceInfo
-{
+struct SoundDeviceInfo {
 	string description;
 	GUID guid;
 };
 
-class SoundManager : public BaseSoundManager
-{
+class SoundManager : public BaseSoundManager {
 public:
 	SoundManager(Emulator* emu, HWND hWnd);
 	~SoundManager();
 
 	void Release();
 	void ProcessEndOfFrame();
-	void PlayBuffer(int16_t *soundBuffer, uint32_t bufferSize, uint32_t sampleRate, bool isStereo);
-	void Play();	
+	void PlayBuffer(int16_t* soundBuffer, uint32_t bufferSize, uint32_t sampleRate, bool isStereo);
+	void Play();
 	void Pause();
 	void Stop();
 
 	string GetAvailableDevices();
-	void SetAudioDevice(string deviceName);
+	void SetAudioDevice(const string& deviceName);
 
 private:
 	vector<SoundDeviceInfo> GetAvailableDeviceInfo();
 	static bool CALLBACK DirectSoundEnumProc(LPGUID lpGUID, LPCWSTR lpszDesc, LPCSTR lpszDrvName, LPVOID lpContext);
 	bool InitializeDirectSound(uint32_t sampleRate, bool isStereo);
 	void ClearSecondaryBuffer();
-	void CopyToSecondaryBuffer(uint8_t *data, uint32_t size);
+	void CopyToSecondaryBuffer(uint8_t* data, uint32_t size);
 	void ValidateWriteCursor(DWORD safeWriteCursor);
 
 private:

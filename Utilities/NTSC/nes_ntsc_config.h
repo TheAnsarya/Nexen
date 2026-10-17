@@ -19,7 +19,7 @@ if you enable emphasis above. */
 
 /* Each raw pixel input value is passed through this. You might want to mask
 the pixel index if you use the high bits as flags, etc. */
-#define NES_NTSC_ADJ_IN( in ) in
+#define NES_NTSC_ADJ_IN(in) in
 
 /* For each pixel, this is the basic operation:
 output_color = color_palette [NES_NTSC_ADJ_IN( NES_NTSC_IN_T )] */

@@ -1,21 +1,16 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Mesen.Utilities;
-using Mesen.Config;
+using Nexen.Config;
+using Nexen.Utilities;
 
-namespace Mesen.Views
-{
-	public class InputConfigView : UserControl
-	{
-		public InputConfigView()
-		{
-			InitializeComponent();
-		}
+namespace Nexen.Views; 
+public partial class InputConfigView : UserControl {
+	public InputConfigView() {
+		InitializeComponent();
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
 	}
 }

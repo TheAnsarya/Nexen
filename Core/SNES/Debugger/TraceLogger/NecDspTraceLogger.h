@@ -8,12 +8,11 @@ class Debugger;
 class SnesPpu;
 class SnesMemoryManager;
 
-class NecDspTraceLogger : public BaseTraceLogger<NecDspTraceLogger, NecDspState>
-{
+class NecDspTraceLogger : public BaseTraceLogger<NecDspTraceLogger, NecDspState> {
 private:
 	SnesPpu* _ppu = nullptr;
 	SnesMemoryManager* _memoryManager = nullptr;
-	
+
 protected:
 	RowDataType GetFormatTagType(string& tag) override;
 
@@ -21,7 +20,7 @@ protected:
 
 public:
 	NecDspTraceLogger(Debugger* debugger, IDebugger* cpuDebugger, SnesPpu* ppu, SnesMemoryManager* memoryManager);
-	
+
 	void GetTraceRow(string& output, NecDspState& cpuState, TraceLogPpuState& ppuState, DisassemblyInfo& disassemblyInfo);
 	void LogPpuState();
 

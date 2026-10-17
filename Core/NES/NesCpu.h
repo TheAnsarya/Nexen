@@ -16,52 +16,89 @@ class NesMemoryManager;
 class DummyNesCpu;
 class Emulator;
 
-class NesCpu : public ISerializable
-{
+/// <summary>
+/// NES CPU emulator - Ricoh 2A03/2A07 (6502 variant) implementation.
+/// Cycle-accurate emulation including DMA, IRQ timing, and all undocumented opcodes.
+/// </summary>
+/// <remarks>
+/// The 2A03 (NTSC) / 2A07 (PAL) is a modified MOS 6502:
+/// - 8-bit data bus, 16-bit address space (64KB)
+/// - 6 8-bit registers: A (accumulator), X, Y (index), S (stack), P (status), PC (16-bit)
+/// - 256-byte stack at $0100-$01FF
+/// - Decimal mode disabled (BCD flag ignored)
+/// - Integrated APU (Audio Processing Unit)
+///
+/// **Memory Map:**
+/// - $0000-$07FF: 2KB internal RAM (mirrored 4x to $1FFF)
+/// - $2000-$2007: PPU registers (mirrored every 8 bytes to $3FFF)
+/// - $4000-$4017: APU and I/O registers
+/// - $4018-$FFFF: Cartridge space (PRG ROM/RAM)
+///
+/// **Interrupts:**
+/// - NMI ($FFFA): Non-maskable, triggered by PPU V-blank
+/// - RESET ($FFFC): Power-on/reset vector
+/// - IRQ/BRK ($FFFE): Maskable interrupt / software breakpoint
+///
+/// **DMA:**
+/// - Sprite DMA ($4014): Copies 256 bytes to OAM, halts CPU for 513-514 cycles
+/// - DMC DMA: APU delta modulation fetches, halts CPU for 4 cycles each
+///
+/// **Timing:**
+/// - NTSC: 1.789773 MHz (341 PPU dots per 113.67 CPU cycles)
+/// - PAL: 1.662607 MHz (341 PPU dots per 106.56 CPU cycles)
+/// - Dendy: 1.773448 MHz
+///
+/// **Undocumented Opcodes:**
+/// All unofficial opcodes are emulated for compatibility with unlicensed games.
+/// </remarks>
+class NesCpu : public ISerializable {
 public:
-	static constexpr uint16_t NMIVector = 0xFFFA;
-	static constexpr uint16_t ResetVector = 0xFFFC;
-	static constexpr uint16_t IRQVector = 0xFFFE;
+	static constexpr uint16_t NMIVector = 0xFFFA;    ///< Non-maskable interrupt vector
+	static constexpr uint16_t ResetVector = 0xFFFC; ///< Reset/power-on vector
+	static constexpr uint16_t IRQVector = 0xFFFE;   ///< IRQ/BRK vector
 
 private:
-	typedef void(NesCpu::*Func)();
+	typedef void (NesCpu::*Func)();  ///< Instruction handler function pointer
 
-	uint64_t _masterClock;
-	uint8_t _ppuOffset;
-	uint8_t _startClockCount;
-	uint8_t _endClockCount;
-	uint16_t _operand;
+	uint64_t _masterClock;        ///< Master clock counter
+	uint8_t _ppuOffset;           ///< PPU alignment offset (NTSC/PAL timing)
+	uint8_t _startClockCount;     ///< Cycles at instruction start
+	uint8_t _endClockCount;       ///< Cycles at instruction end
+	uint16_t _operand;            ///< Current instruction operand address
 
-	Func _opTable[256];
-	NesAddrMode _addrMode[256];
-	NesAddrMode _instAddrMode;
+	Func _opTable[256];                ///< Opcode handler table (all 256 opcodes)
+	NesAddrMode _addrMode[256];        ///< Addressing mode per opcode
+	NesAddrMode _instAddrMode;         ///< Current instruction's addressing mode
 
-	bool _needHalt = false;
-	bool _spriteDmaTransfer = false;
-	bool _dmcDmaRunning = false;
-	bool _abortDmcDma = false;
-	bool _needDummyRead = false;
-	uint8_t _spriteDmaOffset;
+	// DMA state
+	bool _needHalt = false;            ///< CPU halt requested (DMA pending)
+	bool _spriteDmaTransfer = false;   ///< Sprite OAM DMA in progress
+	bool _dmcDmaRunning = false;       ///< DMC sample fetch in progress
+	bool _abortDmcDma = false;         ///< Cancel DMC DMA (register write)
+	bool _needDummyRead = false;       ///< DMA alignment dummy read needed
+	uint8_t _spriteDmaOffset;          ///< Current OAM DMA byte offset
 
-	bool _cpuWrite = false;
+	bool _cpuWrite = false;            ///< Currently in write cycle (for DMC DMA timing)
 
-	uint8_t _irqMask;
+	uint8_t _irqMask;                  ///< IRQ source enable mask
 
-	NesCpuState _state;
-	NesConsole* _console;
-	NesMemoryManager* _memoryManager;
-	Emulator* _emu;
+	NesCpuState _state;                ///< CPU registers (A, X, Y, SP, PC, P)
+	NesConsole* _console;              ///< Parent console
+	NesMemoryManager* _memoryManager;  ///< Memory bus interface
+	Emulator* _emu;                    ///< Emulator for debugger hooks
 
-	bool _prevRunIrq = false;
-	bool _runIrq = false;
-	
-	bool _prevNmiFlag = false;
-	bool _prevNeedNmi = false;
-	bool _needNmi = false;
+	// Interrupt edge detection
+	bool _prevRunIrq = false;          ///< Previous IRQ state
+	bool _runIrq = false;              ///< IRQ pending this cycle
 
-	uint64_t _hideCrashWarning = 0;
-	bool _isDmcDmaRead = false;
+	bool _prevNmiFlag = false;         ///< Previous NMI line state
+	bool _prevNeedNmi = false;         ///< Previous NMI pending
+	bool _needNmi = false;             ///< NMI pending
 
+	uint64_t _hideCrashWarning = 0;    ///< Suppress crash warning until this cycle
+	bool _isDmcDmaRead = false;        ///< Current read is DMC DMA
+
+	// Cycle-accurate execution helpers
 	__forceinline void StartCpuCycle(bool forRead);
 	__forceinline void ProcessPendingDma(uint16_t readAddress, MemoryOperationType opType);
 	uint8_t ProcessDmaRead(uint16_t addr, uint16_t& prevReadAddress, bool enableInternalRegReads, bool isNesBehavior);
@@ -69,63 +106,53 @@ private:
 	__forceinline void EndCpuCycle(bool forRead);
 	void IRQ();
 
-	uint8_t GetOPCode()
-	{
+	/// Fetch opcode at PC and increment PC
+	uint8_t GetOPCode() {
 		uint8_t opCode = MemoryRead(_state.PC, MemoryOperationType::ExecOpCode);
 		_state.PC++;
 		return opCode;
 	}
 
-	void DummyRead()
-	{
+	/// Perform dummy read at PC (consumed cycle, value discarded)
+	void DummyRead() {
 		MemoryRead(_state.PC, MemoryOperationType::DummyRead);
 	}
-	
-	uint8_t ReadByte()
-	{
+
+	uint8_t ReadByte() {
 		uint8_t value = MemoryRead(_state.PC, MemoryOperationType::ExecOperand);
 		_state.PC++;
 		return value;
 	}
 
-	uint16_t ReadWord()
-	{
+	uint16_t ReadWord() {
 		uint8_t low = ReadByte();
 		uint8_t high = ReadByte();
 		return (high << 8) | low;
 	}
 
-	void ClearFlags(uint8_t flags)
-	{
+	void ClearFlags(uint8_t flags) {
 		_state.PS &= ~flags;
 	}
 
-	void SetFlags(uint8_t flags)
-	{
+	void SetFlags(uint8_t flags) {
 		_state.PS |= flags;
 	}
 
-	bool CheckFlag(uint8_t flag)
-	{
+	bool CheckFlag(uint8_t flag) {
 		return (_state.PS & flag) == flag;
 	}
 
-	void SetZeroNegativeFlags(uint8_t value)
-	{
-		if(value == 0) {
-			SetFlags(PSFlags::Zero);
-		} else if(value & 0x80) {
-			SetFlags(PSFlags::Negative);
-		}
+	void SetZeroNegativeFlags(uint8_t value) {
+		// Branchless: PSFlags::Negative = 0x80 maps directly to bit 7 of value
+		_state.PS |= (value == 0) ? PSFlags::Zero : 0;
+		_state.PS |= (value & 0x80); // Negative flag
 	}
 
-	bool CheckPageCrossed(uint16_t valA, int8_t valB)
-	{
+	bool CheckPageCrossed(uint16_t valA, int8_t valB) {
 		return ((valA + valB) & 0xFF00) != (valA & 0xFF00);
 	}
 
-	bool CheckPageCrossed(uint16_t valA, uint8_t valB)
-	{
+	bool CheckPageCrossed(uint16_t valA, uint8_t valB) {
 		return ((valA + valB) & 0xFF00) != (valA & 0xFF00);
 	}
 
@@ -138,7 +165,7 @@ private:
 		return lo | hi << 8;
 	}
 
-	void SetRegister(uint8_t &reg, uint8_t value) {
+	void SetRegister(uint8_t& reg, uint8_t value) {
 		ClearFlags(PSFlags::Zero | PSFlags::Negative);
 		SetZeroNegativeFlags(value);
 		reg = value;
@@ -162,7 +189,7 @@ private:
 	uint16_t PopWord() {
 		uint8_t lo = Pop();
 		uint8_t hi = Pop();
-		
+
 		return lo | hi << 8;
 	}
 
@@ -179,14 +206,12 @@ private:
 	uint16_t PC() { return _state.PC; }
 	void SetPC(uint16_t value) { _state.PC = value; }
 
-	uint16_t GetOperand()
-	{
+	uint16_t GetOperand() {
 		return _operand;
 	}
 
-	uint8_t GetOperandValue()
-	{
-		if(_instAddrMode >= NesAddrMode::Zero) {
+	uint8_t GetOperandValue() {
+		if (_instAddrMode >= NesAddrMode::Zero) {
 			return MemoryRead(GetOperand());
 		} else {
 			return (uint8_t)GetOperand();
@@ -196,44 +221,44 @@ private:
 	uint16_t GetIndAddr() { return ReadWord(); }
 	uint8_t GetImmediate() { return ReadByte(); }
 	uint8_t GetZeroAddr() { return ReadByte(); }
-	uint8_t GetZeroXAddr() { 
+	uint8_t GetZeroXAddr() {
 		uint8_t value = ReadByte();
-		MemoryRead(value, MemoryOperationType::DummyRead); //Dummy read
+		MemoryRead(value, MemoryOperationType::DummyRead); // Dummy read
 		return value + X();
 	}
-	uint8_t GetZeroYAddr() { 
+	uint8_t GetZeroYAddr() {
 		uint8_t value = ReadByte();
-		MemoryRead(value, MemoryOperationType::DummyRead); //Dummy read
+		MemoryRead(value, MemoryOperationType::DummyRead); // Dummy read
 		return value + Y();
 	}
 	uint16_t GetAbsAddr() { return ReadWord(); }
 
-	uint16_t GetAbsXAddr(bool dummyRead = true) { 
+	uint16_t GetAbsXAddr(bool dummyRead = true) {
 		uint16_t baseAddr = ReadWord();
 		bool pageCrossed = CheckPageCrossed(baseAddr, X());
 
-		if(pageCrossed || dummyRead) {
-			//Dummy read done by the processor (only when page is crossed for READ instructions)
+		if (pageCrossed || dummyRead) {
+			// Dummy read done by the processor (only when page is crossed for READ instructions)
 			MemoryRead(baseAddr + X() - (pageCrossed ? 0x100 : 0), MemoryOperationType::DummyRead);
 		}
-		return baseAddr + X(); 
+		return baseAddr + X();
 	}
 
-	uint16_t GetAbsYAddr(bool dummyRead = true) { 
+	uint16_t GetAbsYAddr(bool dummyRead = true) {
 		uint16_t baseAddr = ReadWord();
 		bool pageCrossed = CheckPageCrossed(baseAddr, Y());
-		
-		if(pageCrossed || dummyRead) {
-			//Dummy read done by the processor (only when page is crossed for READ instructions)
+
+		if (pageCrossed || dummyRead) {
+			// Dummy read done by the processor (only when page is crossed for READ instructions)
 			MemoryRead(baseAddr + Y() - (pageCrossed ? 0x100 : 0), MemoryOperationType::DummyRead);
 		}
 
-		return baseAddr + Y(); 
+		return baseAddr + Y();
 	}
 
-	uint16_t GetInd() { 
+	uint16_t GetInd() {
 		uint16_t addr = GetOperand();
-		if((addr & 0xFF) == 0xFF) {
+		if ((addr & 0xFF) == 0xFF) [[unlikely]] {
 			uint8_t lo = MemoryRead(addr);
 			uint8_t hi = MemoryRead(addr - 0xFF);
 			return (lo | hi << 8);
@@ -244,14 +269,14 @@ private:
 
 	uint16_t GetIndXAddr() {
 		uint8_t zero = ReadByte();
-		
-		//Dummy read
+
+		// Dummy read
 		MemoryRead(zero, MemoryOperationType::DummyRead);
 
 		zero += X();
-		
+
 		uint16_t addr;
-		if(zero == 0xFF) {
+		if (zero == 0xFF) [[unlikely]] {
 			uint8_t lo = MemoryRead(0xFF);
 			uint8_t hi = MemoryRead(0x00);
 			addr = lo | hi << 8;
@@ -263,9 +288,9 @@ private:
 
 	uint16_t GetIndYAddr(bool dummyRead = true) {
 		uint8_t zero = ReadByte();
-		
+
 		uint16_t addr;
-		if(zero == 0xFF) {
+		if (zero == 0xFF) [[unlikely]] {
 			uint8_t lo = MemoryRead(0xFF);
 			uint8_t hi = MemoryRead(0x00);
 			addr = lo | hi << 8;
@@ -274,8 +299,8 @@ private:
 		}
 
 		bool pageCrossed = CheckPageCrossed(addr, Y());
-		if(pageCrossed || dummyRead) {
-			//Dummy read done by the processor (only when page is crossed for READ instructions)
+		if (pageCrossed || dummyRead) {
+			// Dummy read done by the processor (only when page is crossed for READ instructions)
 			MemoryRead(addr + Y() - (pageCrossed ? 0x100 : 0), MemoryOperationType::DummyRead);
 		}
 		return addr + Y();
@@ -285,76 +310,61 @@ private:
 	void EOR() { SetA(A() ^ GetOperandValue()); }
 	void ORA() { SetA(A() | GetOperandValue()); }
 
-	void ADD(uint8_t value)
-	{
+	void ADD(uint8_t value) {
 		uint16_t result = (uint16_t)A() + (uint16_t)value + (CheckFlag(PSFlags::Carry) ? PSFlags::Carry : 0x00);
-		
+
 		ClearFlags(PSFlags::Carry | PSFlags::Negative | PSFlags::Overflow | PSFlags::Zero);
 		SetZeroNegativeFlags((uint8_t)result);
-		if(~(A() ^ value) & (A() ^ result) & 0x80) {
-			SetFlags(PSFlags::Overflow);
-		}
-		if(result > 0xFF) {
-			SetFlags(PSFlags::Carry);
-		}
+		if (~(A() ^ value) & (A() ^ result) & 0x80) _state.PS |= PSFlags::Overflow;
+		if (result > 0xff) _state.PS |= PSFlags::Carry;
 		SetA((uint8_t)result);
 	}
 
 	void ADC() { ADD(GetOperandValue()); }
 	void SBC() { ADD(GetOperandValue() ^ 0xFF); }
 
-	void CMP(uint8_t reg, uint8_t value) 
-	{
+	void CMP(uint8_t reg, uint8_t value) {
 		ClearFlags(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
 
 		auto result = reg - value;
 
-		if(reg >= value) {
-			SetFlags(PSFlags::Carry);
-		}
-		if(reg == value) {
-			SetFlags(PSFlags::Zero);
-		}
-		if((result & 0x80) == 0x80) {
-			SetFlags(PSFlags::Negative);
-		}
+		// Branchless flag setting
+		_state.PS |= (reg >= value) ? PSFlags::Carry : 0;
+		_state.PS |= ((uint8_t)result == 0) ? PSFlags::Zero : 0;
+		_state.PS |= (result & 0x80); // Negative=0x80 maps directly to bit 7
 	}
 
 	void CPA() { CMP(A(), GetOperandValue()); }
 	void CPX() { CMP(X(), GetOperandValue()); }
 	void CPY() { CMP(Y(), GetOperandValue()); }
 
-	void INC() 
-	{
+	void INC() {
 		uint16_t addr = GetOperand();
 		ClearFlags(PSFlags::Negative | PSFlags::Zero);
-		uint8_t value = MemoryRead(addr);		
-		
-		MemoryWrite(addr, value, MemoryOperationType::DummyWrite); //Dummy write
-		
+		uint8_t value = MemoryRead(addr);
+
+		MemoryWrite(addr, value, MemoryOperationType::DummyWrite); // Dummy write
+
 		value++;
 		SetZeroNegativeFlags(value);
 		MemoryWrite(addr, value);
 	}
 
-	void DEC() 
-	{
+	void DEC() {
 		uint16_t addr = GetOperand();
 		ClearFlags(PSFlags::Negative | PSFlags::Zero);
 		uint8_t value = MemoryRead(addr);
-		MemoryWrite(addr, value, MemoryOperationType::DummyWrite); //Dummy write
-		
+		MemoryWrite(addr, value, MemoryOperationType::DummyWrite); // Dummy write
+
 		value--;
 		SetZeroNegativeFlags(value);
 		MemoryWrite(addr, value);
 	}
 
-	uint8_t ASL(uint8_t value)
-	{
+	uint8_t ASL(uint8_t value) {
 		ClearFlags(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
-		if(value & 0x80) {
-			SetFlags(PSFlags::Carry);
-		}
+		// Branchless: bit 7 shifted to Carry position (Carry=0x01)
+		_state.PS |= (value >> 7); // PSFlags::Carry = 0x01
 
 		uint8_t result = value << 1;
 		SetZeroNegativeFlags(result);
@@ -363,9 +373,8 @@ private:
 
 	uint8_t LSR(uint8_t value) {
 		ClearFlags(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
-		if(value & 0x01) {
-			SetFlags(PSFlags::Carry);
-		}
+		// Branchless: bit 0 maps directly to Carry (Carry=0x01)
+		_state.PS |= (value & 0x01);
 
 		uint8_t result = value >> 1;
 		SetZeroNegativeFlags(result);
@@ -376,9 +385,8 @@ private:
 		bool carryFlag = CheckFlag(PSFlags::Carry);
 		ClearFlags(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
 
-		if(value & 0x80) {
-			SetFlags(PSFlags::Carry);
-		}
+		// Branchless: bit 7 shifted to Carry position (Carry=0x01)
+		_state.PS |= (value >> 7);
 
 		uint8_t result = (value << 1 | (carryFlag ? 0x01 : 0x00));
 		SetZeroNegativeFlags(result);
@@ -388,9 +396,8 @@ private:
 	uint8_t ROR(uint8_t value) {
 		bool carryFlag = CheckFlag(PSFlags::Carry);
 		ClearFlags(PSFlags::Carry | PSFlags::Negative | PSFlags::Zero);
-		if(value & 0x01) {
-			SetFlags(PSFlags::Carry);
-		}
+		// Branchless: bit 0 maps directly to Carry (Carry=0x01)
+		_state.PS |= (value & 0x01);
 
 		uint8_t result = (value >> 1 | (carryFlag ? 0x80 : 0x00));
 		SetZeroNegativeFlags(result);
@@ -400,28 +407,28 @@ private:
 	void ASLAddr() {
 		uint16_t addr = GetOperand();
 		uint8_t value = MemoryRead(addr);
-		MemoryWrite(addr, value, MemoryOperationType::DummyWrite); //Dummy write
+		MemoryWrite(addr, value, MemoryOperationType::DummyWrite); // Dummy write
 		MemoryWrite(addr, ASL(value));
 	}
 
 	void LSRAddr() {
 		uint16_t addr = GetOperand();
 		uint8_t value = MemoryRead(addr);
-		MemoryWrite(addr, value, MemoryOperationType::DummyWrite); //Dummy write
+		MemoryWrite(addr, value, MemoryOperationType::DummyWrite); // Dummy write
 		MemoryWrite(addr, LSR(value));
 	}
 
 	void ROLAddr() {
 		uint16_t addr = GetOperand();
 		uint8_t value = MemoryRead(addr);
-		MemoryWrite(addr, value, MemoryOperationType::DummyWrite); //Dummy write
+		MemoryWrite(addr, value, MemoryOperationType::DummyWrite); // Dummy write
 		MemoryWrite(addr, ROL(value));
 	}
 
 	void RORAddr() {
 		uint16_t addr = GetOperand();
 		uint8_t value = MemoryRead(addr);
-		MemoryWrite(addr, value, MemoryOperationType::DummyWrite); //Dummy write
+		MemoryWrite(addr, value, MemoryOperationType::DummyWrite); // Dummy write
 		MemoryWrite(addr, ROR(value));
 	}
 
@@ -431,15 +438,15 @@ private:
 
 	void BranchRelative(bool branch) {
 		int8_t offset = (int8_t)GetOperand();
-		if(branch) {
+		if (branch) {
 			//"a taken non-page-crossing branch ignores IRQ/NMI during its last clock, so that next instruction executes before the IRQ"
-			//Fixes "branch_delays_irq" test
-			if(_runIrq && !_prevRunIrq) {
+			// Fixes "branch_delays_irq" test
+			if (_runIrq && !_prevRunIrq) {
 				_runIrq = false;
 			}
 			DummyRead();
 
-			if(CheckPageCrossed(PC(), offset)) {
+			if (CheckPageCrossed(PC(), offset)) [[unlikely]] {
 				DummyRead();
 			}
 
@@ -450,18 +457,13 @@ private:
 	void BIT() {
 		uint8_t value = GetOperandValue();
 		ClearFlags(PSFlags::Zero | PSFlags::Overflow | PSFlags::Negative);
-		if((A() & value) == 0) {
-			SetFlags(PSFlags::Zero);
-		}
-		if(value & 0x40) {
-			SetFlags(PSFlags::Overflow);
-		}
-		if(value & 0x80) {
-			SetFlags(PSFlags::Negative);
-		}
+		// Branchless: Overflow=0x40 and Negative=0x80 map directly to bits 6 and 7
+		_state.PS |= ((A() & value) == 0) ? PSFlags::Zero : 0;
+		_state.PS |= (value & 0x40); // Overflow=0x40 maps directly
+		_state.PS |= (value & 0x80); // Negative=0x80 maps directly
 	}
 
-	//OP Codes
+	// OP Codes
 	void LDA() { SetA(GetOperandValue()); }
 	void LDX() { SetX(GetOperandValue()); }
 	void LDY() { SetY(GetOperandValue()); }
@@ -482,13 +484,13 @@ private:
 		uint8_t flags = PS() | PSFlags::Break | PSFlags::Reserved;
 		Push((uint8_t)flags);
 	}
-	void PLA() { 
+	void PLA() {
 		DummyRead();
-		SetA(Pop()); 
+		SetA(Pop());
 	}
-	void PLP() { 
+	void PLP() {
 		DummyRead();
-		SetPS(Pop()); 
+		SetPS(Pop());
 	}
 
 	void INX() { SetX(X() + 1); }
@@ -570,7 +572,7 @@ private:
 	void SEI() { SetFlags(PSFlags::Interrupt); }
 
 	void BRK();
-	
+
 	void RTI() {
 		DummyRead();
 		SetPS(Pop());
@@ -578,153 +580,138 @@ private:
 	}
 
 	void NOP() {
-		//Make sure the nop operation takes as many cycles as meant to
+		// Make sure the nop operation takes as many cycles as meant to
 		GetOperandValue();
 	}
 
-	
-	//Unofficial OpCodes
-	void SLO()
-	{
-		//ASL & ORA
+	// Unofficial OpCodes
+	void SLO() {
+		// ASL & ORA
 		uint8_t value = GetOperandValue();
-		MemoryWrite(GetOperand(), value, MemoryOperationType::DummyWrite); //Dummy write
+		MemoryWrite(GetOperand(), value, MemoryOperationType::DummyWrite); // Dummy write
 		uint8_t shiftedValue = ASL(value);
 		SetA(A() | shiftedValue);
 		MemoryWrite(GetOperand(), shiftedValue);
 	}
-	
-	void SRE()
-	{
-		//ROL & AND
+
+	void SRE() {
+		// ROL & AND
 		uint8_t value = GetOperandValue();
-		MemoryWrite(GetOperand(), value, MemoryOperationType::DummyWrite); //Dummy write
+		MemoryWrite(GetOperand(), value, MemoryOperationType::DummyWrite); // Dummy write
 		uint8_t shiftedValue = LSR(value);
 		SetA(A() ^ shiftedValue);
 		MemoryWrite(GetOperand(), shiftedValue);
 	}
-	
-	void RLA()
-	{
-		//LSR & EOR
+
+	void RLA() {
+		// LSR & EOR
 		uint8_t value = GetOperandValue();
-		MemoryWrite(GetOperand(), value, MemoryOperationType::DummyWrite); //Dummy write
+		MemoryWrite(GetOperand(), value, MemoryOperationType::DummyWrite); // Dummy write
 		uint8_t shiftedValue = ROL(value);
 		SetA(A() & shiftedValue);
 		MemoryWrite(GetOperand(), shiftedValue);
 	}
 
-	void RRA()
-	{
-		//ROR & ADC
+	void RRA() {
+		// ROR & ADC
 		uint8_t value = GetOperandValue();
-		MemoryWrite(GetOperand(), value, MemoryOperationType::DummyWrite); //Dummy write
+		MemoryWrite(GetOperand(), value, MemoryOperationType::DummyWrite); // Dummy write
 		uint8_t shiftedValue = ROR(value);
 		ADD(shiftedValue);
 		MemoryWrite(GetOperand(), shiftedValue);
 	}
 
-	void SAX()
-	{
-		//STA & STX
+	void SAX() {
+		// STA & STX
 		MemoryWrite(GetOperand(), A() & X());
 	}
 
-	void LAX()
-	{
-		//LDA & LDX
+	void LAX() {
+		// LDA & LDX
 		uint8_t value = GetOperandValue();
 		SetX(value);
 		SetA(value);
 	}
 
-	void DCP()
-	{
-		//DEC & CMP
+	void DCP() {
+		// DEC & CMP
 		uint8_t value = GetOperandValue();
-		MemoryWrite(GetOperand(), value, MemoryOperationType::DummyWrite); //Dummy write
+		MemoryWrite(GetOperand(), value, MemoryOperationType::DummyWrite); // Dummy write
 		value--;
 		CMP(A(), value);
 		MemoryWrite(GetOperand(), value);
 	}
 
-	void ISB()
-	{
-		//INC & SBC
+	void ISB() {
+		// INC & SBC
 		uint8_t value = GetOperandValue();
-		MemoryWrite(GetOperand(), value, MemoryOperationType::DummyWrite); //Dummy write
+		MemoryWrite(GetOperand(), value, MemoryOperationType::DummyWrite); // Dummy write
 		value++;
 		ADD(value ^ 0xFF);
 		MemoryWrite(GetOperand(), value);
 	}
 
-	void AAC()
-	{
+	void AAC() {
 		SetA(A() & GetOperandValue());
 
 		ClearFlags(PSFlags::Carry);
-		if(CheckFlag(PSFlags::Negative)) {
+		if (CheckFlag(PSFlags::Negative)) {
 			SetFlags(PSFlags::Carry);
 		}
 	}
 
-	void ASR()
-	{
+	void ASR() {
 		ClearFlags(PSFlags::Carry);
 		SetA(A() & GetOperandValue());
-		if(A() & 0x01) {
+		if (A() & 0x01) {
 			SetFlags(PSFlags::Carry);
 		}
 		SetA(A() >> 1);
 	}
 
-	void ARR()
-	{
+	void ARR() {
 		SetA(((A() & GetOperandValue()) >> 1) | (CheckFlag(PSFlags::Carry) ? 0x80 : 0x00));
 		ClearFlags(PSFlags::Carry | PSFlags::Overflow);
-		if(A() & 0x40) {
+		if (A() & 0x40) {
 			SetFlags(PSFlags::Carry);
 		}
-		if((CheckFlag(PSFlags::Carry) ? 0x01 : 0x00) ^ ((A() >> 5) & 0x01)) {
+		if ((CheckFlag(PSFlags::Carry) ? 0x01 : 0x00) ^ ((A() >> 5) & 0x01)) {
 			SetFlags(PSFlags::Overflow);
 		}
 	}
 
-	void ATX()
-	{
-		//LDA & TAX
+	void ATX() {
+		// LDA & TAX
 		uint8_t value = GetOperandValue();
-		SetA(value); //LDA
-		SetX(A()); //TAX
-		SetA(A()); //Update flags based on A
+		SetA(value); // LDA
+		SetX(A());   // TAX
+		SetA(A());   // Update flags based on A
 	}
 
-	void AXS()
-	{
-		//CMP & DEX
+	void AXS() {
+		// CMP & DEX
 		uint8_t opValue = GetOperandValue();
 		uint8_t value = (A() & X()) - opValue;
-		
+
 		ClearFlags(PSFlags::Carry);
-		if((A() & X()) >= opValue) {
+		if ((A() & X()) >= opValue) {
 			SetFlags(PSFlags::Carry);
 		}
 
 		SetX(value);
 	}
 
-	void SyaSxaAxa(uint16_t baseAddr, uint8_t indexReg, uint8_t valueReg)
-	{
-		//See thread/test rom: https://forums.nesdev.org/viewtopic.php?p=297765
+	void SyaSxaAxa(uint16_t baseAddr, uint8_t indexReg, uint8_t valueReg) {
+		// See thread/test rom: https://forums.nesdev.org/viewtopic.php?p=297765
 		bool pageCrossed = CheckPageCrossed(baseAddr, indexReg);
 
-		//Dummy read
+		// Dummy read
 		uint64_t cyc = _state.CycleCount;
 		MemoryRead(baseAddr + indexReg - (pageCrossed ? 0x100 : 0), MemoryOperationType::DummyRead);
 
 		bool hadDma = false;
-		if(_state.CycleCount - cyc > 1) {
-			//Dummy read took more than 1 cycle, so it was interrupted by a DMA
+		if (_state.CycleCount - cyc > 1) {
+			// Dummy read took more than 1 cycle, so it was interrupted by a DMA
 			hadDma = true;
 		}
 
@@ -732,39 +719,35 @@ private:
 
 		uint8_t addrHigh = operand >> 8;
 		uint8_t addrLow = operand & 0xFF;
-		if(pageCrossed) {
-			//When a page is crossed, the address written to is ANDed with the register
+		if (pageCrossed) {
+			// When a page is crossed, the address written to is ANDed with the register
 			addrHigh &= valueReg;
 		}
 
-		//When a DMA interrupts the instruction right before the dummy read cycle,
-		//the value written is not ANDed with the MSB of the address
+		// When a DMA interrupts the instruction right before the dummy read cycle,
+		// the value written is not ANDed with the MSB of the address
 		uint8_t value = hadDma ? valueReg : (valueReg & ((baseAddr >> 8) + 1));
 
 		MemoryWrite((addrHigh << 8) | addrLow, value);
 	}
 
-	void SHY()
-	{
+	void SHY() {
 		SyaSxaAxa(ReadWord(), X(), Y());
 	}
 
-	void SHX()
-	{
+	void SHX() {
 		SyaSxaAxa(ReadWord(), Y(), X());
 	}
 
-	void SHAA()
-	{
+	void SHAA() {
 		SyaSxaAxa(ReadWord(), Y(), X() & A());
 	}
 
-	void SHAZ()
-	{
+	void SHAZ() {
 		uint8_t zero = ReadByte();
 
 		uint16_t baseAddr;
-		if(zero == 0xFF) {
+		if (zero == 0xFF) {
 			uint8_t lo = MemoryRead(0xFF);
 			uint8_t hi = MemoryRead(0x00);
 			baseAddr = lo | hi << 8;
@@ -775,24 +758,21 @@ private:
 		SyaSxaAxa(baseAddr, Y(), X() & A());
 	}
 
-	void TAS()
-	{
-		//Same as "SHA abs, y", but also sets SP = A & X
+	void TAS() {
+		// Same as "SHA abs, y", but also sets SP = A & X
 		SHAA();
 		SetSP(X() & A());
 	}
 
-	//Unimplemented/Incorrect Unofficial OP codes
+	// Unimplemented/Incorrect Unofficial OP codes
 	void HLT();
 
-	void ANE()
-	{
+	void ANE() {
 		uint8_t imm = GetOperandValue();
 		SetA((A() | 0xEE) & X() & imm);
 	}
 
-	void LAS()
-	{
+	void LAS() {
 		//"AND memory with stack pointer, transfer result to accumulator, X register and stack pointer."
 		uint8_t value = GetOperandValue();
 		SetA(value & SP());
@@ -801,40 +781,38 @@ private:
 	}
 
 protected:
-	void Serialize(Serializer &s) override;
+	void Serialize(Serializer& s) override;
 
 public:
 	NesCpu(NesConsole* console);
 	virtual ~NesCpu() = default;
-	
-	uint64_t GetCycleCount() { return _state.CycleCount; }
+
+	[[nodiscard]] uint64_t GetCycleCount() { return _state.CycleCount; }
 	void SetMasterClockDivider(ConsoleRegion region);
 	void SetNmiFlag() { _state.NmiFlag = true; }
 	void ClearNmiFlag() { _state.NmiFlag = false; }
 	void SetIrqMask(uint8_t mask) { _irqMask = mask; }
 	void SetIrqSource(IRQSource source) { _state.IrqFlag |= (int)source; }
-	bool HasIrqSource(IRQSource source) { return (_state.IrqFlag & (int)source) != 0; }
+	[[nodiscard]] bool HasIrqSource(IRQSource source) { return (_state.IrqFlag & (int)source) != 0; }
 	void ClearIrqSource(IRQSource source) { _state.IrqFlag &= ~(int)source; }
 
 	void RunDMATransfer(uint8_t offsetValue);
 	void StartDmcTransfer();
 	void StopDmcTransfer();
 
-	bool IsCpuWrite() { return _cpuWrite; }
-	bool IsDmcDma() { return _isDmcDmaRead; }
+	[[nodiscard]] bool IsCpuWrite() { return _cpuWrite; }
+	[[nodiscard]] bool IsDmcDma() { return _isDmcDmaRead; }
 
 	void Reset(bool softReset, ConsoleRegion region);
 	void Exec();
 
-	NesCpuState& GetState()
-	{ 
+	NesCpuState& GetState() {
 		return _state;
 	}
 
-	uint16_t GetPC() { return _state.PC; }
+	[[nodiscard]] uint16_t GetPC() { return _state.PC; }
 
-	void SetState(NesCpuState state)
-	{
+	void SetState(NesCpuState state) {
 		uint16_t originalPc = state.PC;
 		_state = state;
 		state.PC = originalPc;

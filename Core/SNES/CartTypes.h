@@ -2,8 +2,7 @@
 #include "pch.h"
 #include "Utilities/VirtualFile.h"
 
-struct SnesCartInformation
-{
+struct SnesCartInformation {
 	uint8_t MakerCode[2];
 	uint8_t GameCode[4];
 	uint8_t Reserved[7];
@@ -26,8 +25,7 @@ struct SnesCartInformation
 	uint8_t CpuVectors[0x20];
 };
 
-enum class CoprocessorType
-{
+enum class CoprocessorType {
 	None,
 	DSP1,
 	DSP1B,
@@ -48,16 +46,14 @@ enum class CoprocessorType
 	SGB
 };
 
-namespace CartFlags
-{
-	enum CartFlags
-	{
-		None = 0,
-		LoRom = 1,
-		HiRom = 2,
-		FastRom = 4,
-		ExLoRom = 8,
-		ExHiRom = 16,
-		CopierHeader = 32
-	};
-}
+namespace CartFlags {
+enum CartFlags {
+	None = 0,
+	LoRom = 1,
+	HiRom = 2,
+	FastRom = 4,
+	ExLoRom = 8,
+	ExHiRom = 16,
+	CopierHeader = 32
+};
+} // namespace CartFlags

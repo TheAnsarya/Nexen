@@ -20,20 +20,59 @@ class GbaSerial;
 class VirtualFile;
 class BaseControlManager;
 
-class GbaConsole final : public IConsole
-{
+/// <summary>
+/// Game Boy Advance console emulator.
+/// Implements the complete GBA hardware: ARM7TDMI CPU, PPU, APU, and subsystems.
+/// </summary>
+/// <remarks>
+/// **Hardware Specifications:**
+/// - **CPU**: ARM7TDMI @ 16.78 MHz (ARM/Thumb instruction sets)
+/// - **Display**: 240×160 pixels, 15-bit color (32768 colors)
+/// - **Memory**: 32KB internal + 256KB external WRAM, 96KB VRAM
+/// - **Audio**: 4 Game Boy channels + 2 Direct Sound (PCM) channels
+///
+/// **Display Features:**
+/// - 4 background layers (modes 0-5)
+/// - 128 sprites (64×64 max, 128 per scanline)
+/// - Affine transformation (rotation/scaling) for BG2/BG3 and sprites
+/// - Alpha blending and brightness control
+///
+/// **Memory Map:**
+/// - $00000000-$00003FFF: BIOS (16KB)
+/// - $02000000-$0203FFFF: External WRAM (256KB)
+/// - $03000000-$03007FFF: Internal WRAM (32KB)
+/// - $04000000-$040003FF: I/O Registers
+/// - $05000000-$050003FF: Palette RAM (1KB)
+/// - $06000000-$06017FFF: VRAM (96KB)
+/// - $07000000-$070003FF: OAM (1KB)
+/// - $08000000-$09FFFFFF: ROM (32MB max)
+///
+/// **DMA Features:**
+/// - 4 DMA channels with different priorities
+/// - Sound DMA (channels 1-2)
+/// - Video capture DMA (channel 3)
+/// </remarks>
+class GbaConsole final : public IConsole {
 public:
+	/// <summary>BIOS ROM size (16KB).</summary>
 	static constexpr int BootRomSize = 0x4000;
 
+	/// <summary>Video RAM size (96KB).</summary>
 	static constexpr int VideoRamSize = 0x18000;
+
+	/// <summary>Sprite/OAM RAM size (1KB).</summary>
 	static constexpr int SpriteRamSize = 0x400;
+
+	/// <summary>Palette RAM size (1KB).</summary>
 	static constexpr int PaletteRamSize = 0x400;
 
+	/// <summary>Internal work RAM size (32KB).</summary>
 	static constexpr int IntWorkRamSize = 0x8000;
+
+	/// <summary>External work RAM size (256KB).</summary>
 	static constexpr int ExtWorkRamSize = 0x40000;
 
 private:
-
 	Emulator* _emu = nullptr;
 
 	unique_ptr<GbaCpu> _cpu;
@@ -73,8 +112,8 @@ public:
 	GbaConsole(Emulator* emu);
 	~GbaConsole();
 
-	static vector<string> GetSupportedExtensions() { return { ".gba" }; }
-	static vector<string> GetSupportedSignatures() { return { }; }
+	static vector<string> GetSupportedExtensions() { return {".gba"}; }
+	static vector<string> GetSupportedSignatures() { return {}; }
 
 	void LoadBattery();
 	void SaveBattery() override;
@@ -106,6 +145,7 @@ public:
 	vector<CpuType> GetCpuTypes() override;
 
 	AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) override;
+	AddressInfo GetPcAbsoluteAddress() override;
 	AddressInfo GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) override;
 
 	uint64_t GetMasterClock() override;

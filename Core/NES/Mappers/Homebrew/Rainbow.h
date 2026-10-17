@@ -6,26 +6,22 @@
 class RainbowAudio;
 class FlashS29;
 
-class Rainbow : public BaseMapper, public IExtModeMapperDebug
-{
+class Rainbow : public BaseMapper, public IExtModeMapperDebug {
 private:
-	struct NtControl
-	{
+	struct NtControl {
 		bool AttrExtMode;
 		bool BgExtMode;
 		uint8_t FpgaRamSrc;
 		bool FillMode;
 		uint8_t Source;
 
-		uint8_t ToByte()
-		{
+		uint8_t ToByte() {
 			return (
-				((uint8_t)AttrExtMode << 0) |
-				((uint8_t)BgExtMode << 1) |
-				(FpgaRamSrc << 2) |
-				((uint8_t)FillMode << 5) |
-				(Source << 6)
-			);
+			    ((uint8_t)AttrExtMode << 0) |
+			    ((uint8_t)BgExtMode << 1) |
+			    (FpgaRamSrc << 2) |
+			    ((uint8_t)FillMode << 5) |
+			    (Source << 6));
 		}
 	};
 
@@ -55,7 +51,7 @@ private:
 
 	uint8_t _fillModeTileIndex = 0;
 	uint8_t _fillModeAttrIndex = 0;
-	
+
 	NtControl _windowControl = {};
 	uint8_t _windowBank = 0;
 	uint8_t _windowX1 = 0;
@@ -65,7 +61,7 @@ private:
 	uint8_t _windowScrollX = 0;
 	uint8_t _windowScrollY = 0;
 	bool _inWindow = false;
-	
+
 	bool _slIrqEnabled = false;
 	bool _slIrqPending = false;
 	uint8_t _slIrqScanline = 0;
@@ -161,15 +157,21 @@ protected:
 public:
 	Rainbow();
 
+	/// <summary>
+	/// Destructor defined out-of-line where RainbowAudio and FlashS29 are complete.
+	/// </summary>
+	~Rainbow();
+
 	void WriteRam(uint16_t addr, uint8_t value) override;
 	uint8_t ReadRam(uint16_t addr) override;
-	
+	bool EnableCustomReadRam() override { return true; }
+
 	void ProcessCpuClock() override;
 
 	uint8_t ReadRegister(uint16_t addr) override;
 	void WriteRegister(uint16_t addr, uint8_t value) override;
 
-	//Debugger
+	// Debugger
 	vector<MapperStateEntry> GetMapperStateEntries() override;
 	bool HasExtendedAttributes(ExtModeConfig& cfg, uint8_t ntIndex) override;
 	bool HasExtendedBackground(ExtModeConfig& cfg, uint8_t ntIndex) override;

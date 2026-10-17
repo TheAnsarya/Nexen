@@ -6,8 +6,7 @@
 class Emulator;
 class GbaRtc;
 
-class GbaGpio final : public ISerializable
-{
+class GbaGpio final : public ISerializable {
 private:
 	GbaGpioState _state = {};
 	GbaRtc* _rtc = nullptr;

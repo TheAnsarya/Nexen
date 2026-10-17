@@ -5,8 +5,7 @@
 
 class PceConsole;
 
-class PceAudioFader : public ISerializable
-{
+class PceAudioFader : public ISerializable {
 private:
 	PceConsole* _console = nullptr;
 	PceAudioFaderState _state = {};

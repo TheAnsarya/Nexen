@@ -1,8 +1,5 @@
-﻿using Avalonia;
+using Avalonia;
 
-namespace Mesen.Config
-{
-	public class DebugLogConfig : BaseWindowConfig<DebugLogConfig>
-	{
-	}
+namespace Nexen.Config; 
+public sealed class DebugLogConfig : BaseWindowConfig<DebugLogConfig> {
 }

@@ -1,16 +1,18 @@
-<UserControl 
+<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:u="using:Mesen.Utilities"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:u="using:Nexen.Utilities"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	mc:Ignorable="d"
 	MinWidth="120"
 	x:Name="root"
+	x:DataType="dc:HexInput"
 	HorizontalAlignment="Stretch"
-	x:Class="Mesen.Debugger.Controls.HexInput"
+	x:Class="Nexen.Debugger.Controls.HexInput"
 >
 	<UserControl.Resources>
 		<StreamGeometry x:Key="FirstButton">M7,0 L2,5 7,10 M0,0 L0,10</StreamGeometry>
@@ -54,7 +56,7 @@
 			<Path Data="{StaticResource NextSmallButton}" />
 		</RepeatButton>
 
-		<c:MesenNumericTextBox
+		<c:NexenNumericTextBox
 			Hex="True"
 			Value="{Binding Value}"
 			Max="{Binding Maximum}"

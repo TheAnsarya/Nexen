@@ -3,15 +3,15 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="550"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:VideoConfigViewModel"
-	x:Class="Mesen.Views.VideoConfigView"
+	x:Class="Nexen.Views.VideoConfigView"
 >
 	<Design.DataContext>
 		<vm:VideoConfigViewModel />
@@ -41,7 +41,7 @@
 
 							<StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" IsVisible="{Binding ShowCustomRatio}">
 								<TextBlock Text="{l:Translate lblCustomRatio}" VerticalAlignment="Center" />
-								<c:MesenNumericUpDown
+								<c:NexenNumericUpDown
 									Value="{Binding Config.CustomAspectRatio}"
 									FormatString="0.0000"
 									Minimum="0.1"
@@ -97,11 +97,11 @@
 				<Grid ColumnDefinitions="1*,1*" RowDefinitions="Auto,*" Margin="0 2 0 0" MinWidth="350">
 					<c:GroupBox Grid.Column="0" Header="{l:Translate lblPictureSettings}" Margin="0 0 1 0">
 						<StackPanel>
-							<c:MesenSlider Value="{Binding Config.Brightness}" Text="{l:Translate trkBrightness}" Margin="5 3" Minimum="-100" Maximum="100"  />
-							<c:MesenSlider Value="{Binding Config.Contrast}" Text="{l:Translate trkContrast}" Margin="5 3" Minimum="-100" Maximum="100" />
-							<c:MesenSlider Value="{Binding Config.Hue}" Text="{l:Translate trkHue}" Margin="5 3" Minimum="-100" Maximum="100" />
-							<c:MesenSlider Value="{Binding Config.Saturation}" Text="{l:Translate trkSaturation}" Margin="5 3" Minimum="-100" Maximum="100" />
-							<c:MesenSlider Value="{Binding Config.ScanlineIntensity}" Text="{l:Translate trkScanlines}" Margin="5 3" Minimum="0" Maximum="100" />
+							<c:NexenSlider Value="{Binding Config.Brightness}" Text="{l:Translate trkBrightness}" Margin="5 3" Minimum="-100" Maximum="100"  />
+							<c:NexenSlider Value="{Binding Config.Contrast}" Text="{l:Translate trkContrast}" Margin="5 3" Minimum="-100" Maximum="100" />
+							<c:NexenSlider Value="{Binding Config.Hue}" Text="{l:Translate trkHue}" Margin="5 3" Minimum="-100" Maximum="100" />
+							<c:NexenSlider Value="{Binding Config.Saturation}" Text="{l:Translate trkSaturation}" Margin="5 3" Minimum="-100" Maximum="100" />
+							<c:NexenSlider Value="{Binding Config.ScanlineIntensity}" Text="{l:Translate trkScanlines}" Margin="5 3" Minimum="0" Maximum="100" />
 							<CheckBox IsChecked="{Binding Config.UseBilinearInterpolation}" Content="{l:Translate chkBilinearInterpolation}" />
 							<CheckBox
 								Margin="15 0 0 0"
@@ -131,7 +131,7 @@
 					<c:GroupBox Grid.Column="1" Grid.RowSpan="2" Header="{l:Translate lblFilterSettings}" Margin="1 0 0 0">
 						<StackPanel>
 							<StackPanel.Styles>
-								<Style Selector="c|MesenSlider">
+								<Style Selector="c|NexenSlider">
 									<Setter Property="Margin" Value="0 3 10 3" />
 									<Setter Property="Minimum" Value="-100" />
 									<Setter Property="Maximum" Value="100" />
@@ -144,12 +144,12 @@
 							</Grid>
 
 							<c:OptionSection Header="{l:Translate lblNtscBlarggSettings}" IsVisible="{Binding ShowNtscBlarggSettings}">
-								<c:MesenSlider Value="{Binding Config.NtscArtifacts}" Text="{l:Translate trkArtifacts}" />
-								<c:MesenSlider Value="{Binding Config.NtscBleed}" Text="{l:Translate trkBleed}" />
-								<c:MesenSlider Value="{Binding Config.NtscFringing}" Text="{l:Translate trkFringing}" />
-								<c:MesenSlider Value="{Binding Config.NtscGamma}" Text="{l:Translate trkGamma}" />
-								<c:MesenSlider Value="{Binding Config.NtscResolution}" Text="{l:Translate trkResolution}" />
-								<c:MesenSlider Value="{Binding Config.NtscSharpness}" Text="{l:Translate trkSharpness}" />
+								<c:NexenSlider Value="{Binding Config.NtscArtifacts}" Text="{l:Translate trkArtifacts}" />
+								<c:NexenSlider Value="{Binding Config.NtscBleed}" Text="{l:Translate trkBleed}" />
+								<c:NexenSlider Value="{Binding Config.NtscFringing}" Text="{l:Translate trkFringing}" />
+								<c:NexenSlider Value="{Binding Config.NtscGamma}" Text="{l:Translate trkGamma}" />
+								<c:NexenSlider Value="{Binding Config.NtscResolution}" Text="{l:Translate trkResolution}" />
+								<c:NexenSlider Value="{Binding Config.NtscSharpness}" Text="{l:Translate trkSharpness}" />
 								<CheckBox IsChecked="{Binding Config.NtscMergeFields}" Content="{l:Translate chkMergeFields}" />
 							</c:OptionSection>
 
@@ -159,16 +159,16 @@
 									<c:EnumComboBox Grid.Column="1" SelectedItem="{Binding Config.NtscScale}" />
 								</Grid>
 
-								<c:MesenSlider Value="{Binding Config.NtscYFilterLength}" Text="{l:Translate trkNtscYFilterLength}" Minimum="-46" Maximum="400" TickFrequency="20" />
-								<c:MesenSlider Value="{Binding Config.NtscIFilterLength}" Text="{l:Translate trkNtscIFilterLength}" Minimum="0" Maximum="400" TickFrequency="20" />
-								<c:MesenSlider Value="{Binding Config.NtscQFilterLength}" Text="{l:Translate trkNtscQFilterLength}" Minimum="0" Maximum="400" TickFrequency="20" />
+								<c:NexenSlider Value="{Binding Config.NtscYFilterLength}" Text="{l:Translate trkNtscYFilterLength}" Minimum="-46" Maximum="400" TickFrequency="20" />
+								<c:NexenSlider Value="{Binding Config.NtscIFilterLength}" Text="{l:Translate trkNtscIFilterLength}" Minimum="0" Maximum="400" TickFrequency="20" />
+								<c:NexenSlider Value="{Binding Config.NtscQFilterLength}" Text="{l:Translate trkNtscQFilterLength}" Minimum="0" Maximum="400" TickFrequency="20" />
 							</c:OptionSection>
 
 							<c:OptionSection Header="{l:Translate lblLcdGridSettings}" IsVisible="{Binding ShowLcdGridSettings}">
-								<c:MesenSlider Value="{Binding Config.LcdGridTopLeftBrightness}" Text="{l:Translate trkLcdGridTopLeftBrightness}" Minimum="0" Maximum="100" TickFrequency="10" />
-								<c:MesenSlider Value="{Binding Config.LcdGridTopRightBrightness}" Text="{l:Translate trkLcdGridTopRightBrightness}" Minimum="0" Maximum="100" TickFrequency="10" />
-								<c:MesenSlider Value="{Binding Config.LcdGridBottomLeftBrightness}" Text="{l:Translate trkLcdGridBottomLeftBrightness}" Minimum="0" Maximum="100" TickFrequency="10" />
-								<c:MesenSlider Value="{Binding Config.LcdGridBottomRightBrightness}" Text="{l:Translate trkLcdGridBottomRightBrightness}" Minimum="0" Maximum="100" TickFrequency="10" />
+								<c:NexenSlider Value="{Binding Config.LcdGridTopLeftBrightness}" Text="{l:Translate trkLcdGridTopLeftBrightness}" Minimum="0" Maximum="100" TickFrequency="10" />
+								<c:NexenSlider Value="{Binding Config.LcdGridTopRightBrightness}" Text="{l:Translate trkLcdGridTopRightBrightness}" Minimum="0" Maximum="100" TickFrequency="10" />
+								<c:NexenSlider Value="{Binding Config.LcdGridBottomLeftBrightness}" Text="{l:Translate trkLcdGridBottomLeftBrightness}" Minimum="0" Maximum="100" TickFrequency="10" />
+								<c:NexenSlider Value="{Binding Config.LcdGridBottomRightBrightness}" Text="{l:Translate trkLcdGridBottomRightBrightness}" Minimum="0" Maximum="100" TickFrequency="10" />
 							</c:OptionSection>
 						</StackPanel>
 					</c:GroupBox>

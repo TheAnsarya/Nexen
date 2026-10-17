@@ -6,8 +6,7 @@
 class WsMemoryManager;
 class WsApu;
 
-class WsDmaController final : public ISerializable
-{
+class WsDmaController final : public ISerializable {
 private:
 	WsMemoryManager* _memoryManager = nullptr;
 	WsDmaControllerState _state = {};
@@ -15,7 +14,7 @@ private:
 
 public:
 	void Init(WsMemoryManager* memoryManager, WsApu* apu);
-	
+
 	void RunGeneralDma();
 	void ProcessSoundDma();
 

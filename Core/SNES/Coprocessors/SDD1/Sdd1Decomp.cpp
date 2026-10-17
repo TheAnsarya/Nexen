@@ -1,4 +1,4 @@
-//Altered to integrate with Mesen's code
+// Altered to integrate with Nexen's code
 
 /************************************************************************
 
@@ -34,8 +34,7 @@ understood.
 #include "SNES/Coprocessors/SDD1/Sdd1Mmc.h"
 #include "Utilities/Serializer.h"
 
-void SDD1_IM::prepareDecomp(Sdd1Mmc *mmc, uint32_t readAddr)
-{
+void SDD1_IM::prepareDecomp(Sdd1Mmc* mmc, uint32_t readAddr) {
 	_sdd1Mmc = mmc;
 	_readAddr = readAddr;
 	bit_count = 4;
@@ -43,21 +42,19 @@ void SDD1_IM::prepareDecomp(Sdd1Mmc *mmc, uint32_t readAddr)
 
 ////////////////////////////////////////////////////
 
-
-uint8_t SDD1_IM::getCodeword(uint8_t code_len)
-{
+uint8_t SDD1_IM::getCodeword(uint8_t code_len) {
 	uint8_t codeword;
 
 	codeword = _sdd1Mmc->ReadRom(_readAddr) << bit_count;
 
 	++bit_count;
 
-	if(codeword & 0x80) {
+	if (codeword & 0x80) {
 		codeword |= _sdd1Mmc->ReadRom(_readAddr + 1) >> (9 - bit_count);
 		bit_count += code_len;
 	}
 
-	if(bit_count & 0x08) {
+	if (bit_count & 0x08) {
 		_readAddr++;
 		bit_count &= 0x07;
 	}
@@ -65,98 +62,307 @@ uint8_t SDD1_IM::getCodeword(uint8_t code_len)
 	return codeword;
 }
 
-void SDD1_IM::Serialize(Serializer &s)
-{
-	SV(_readAddr); SV(bit_count);
+void SDD1_IM::Serialize(Serializer& s) {
+	SV(_readAddr);
+	SV(bit_count);
 }
 
-SDD1_GCD::SDD1_GCD(SDD1_IM *associatedIM) :
-	IM(associatedIM)
-{
+SDD1_GCD::SDD1_GCD(SDD1_IM* associatedIM) : IM(associatedIM) {
 }
 
 //////////////////////////////////////////////////////
 
-
-void SDD1_GCD::getRunCount(uint8_t code_num, uint8_t *MPScount, bool *LPSind)
-{
-
+void SDD1_GCD::getRunCount(uint8_t code_num, uint8_t* MPScount, bool* LPSind) {
 	const uint8_t run_count[] = {
-	  0x00, 0x00, 0x01, 0x00, 0x03, 0x01, 0x02, 0x00,
-	  0x07, 0x03, 0x05, 0x01, 0x06, 0x02, 0x04, 0x00,
-	  0x0f, 0x07, 0x0b, 0x03, 0x0d, 0x05, 0x09, 0x01,
-	  0x0e, 0x06, 0x0a, 0x02, 0x0c, 0x04, 0x08, 0x00,
-	  0x1f, 0x0f, 0x17, 0x07, 0x1b, 0x0b, 0x13, 0x03,
-	  0x1d, 0x0d, 0x15, 0x05, 0x19, 0x09, 0x11, 0x01,
-	  0x1e, 0x0e, 0x16, 0x06, 0x1a, 0x0a, 0x12, 0x02,
-	  0x1c, 0x0c, 0x14, 0x04, 0x18, 0x08, 0x10, 0x00,
-	  0x3f, 0x1f, 0x2f, 0x0f, 0x37, 0x17, 0x27, 0x07,
-	  0x3b, 0x1b, 0x2b, 0x0b, 0x33, 0x13, 0x23, 0x03,
-	  0x3d, 0x1d, 0x2d, 0x0d, 0x35, 0x15, 0x25, 0x05,
-	  0x39, 0x19, 0x29, 0x09, 0x31, 0x11, 0x21, 0x01,
-	  0x3e, 0x1e, 0x2e, 0x0e, 0x36, 0x16, 0x26, 0x06,
-	  0x3a, 0x1a, 0x2a, 0x0a, 0x32, 0x12, 0x22, 0x02,
-	  0x3c, 0x1c, 0x2c, 0x0c, 0x34, 0x14, 0x24, 0x04,
-	  0x38, 0x18, 0x28, 0x08, 0x30, 0x10, 0x20, 0x00,
-	  0x7f, 0x3f, 0x5f, 0x1f, 0x6f, 0x2f, 0x4f, 0x0f,
-	  0x77, 0x37, 0x57, 0x17, 0x67, 0x27, 0x47, 0x07,
-	  0x7b, 0x3b, 0x5b, 0x1b, 0x6b, 0x2b, 0x4b, 0x0b,
-	  0x73, 0x33, 0x53, 0x13, 0x63, 0x23, 0x43, 0x03,
-	  0x7d, 0x3d, 0x5d, 0x1d, 0x6d, 0x2d, 0x4d, 0x0d,
-	  0x75, 0x35, 0x55, 0x15, 0x65, 0x25, 0x45, 0x05,
-	  0x79, 0x39, 0x59, 0x19, 0x69, 0x29, 0x49, 0x09,
-	  0x71, 0x31, 0x51, 0x11, 0x61, 0x21, 0x41, 0x01,
-	  0x7e, 0x3e, 0x5e, 0x1e, 0x6e, 0x2e, 0x4e, 0x0e,
-	  0x76, 0x36, 0x56, 0x16, 0x66, 0x26, 0x46, 0x06,
-	  0x7a, 0x3a, 0x5a, 0x1a, 0x6a, 0x2a, 0x4a, 0x0a,
-	  0x72, 0x32, 0x52, 0x12, 0x62, 0x22, 0x42, 0x02,
-	  0x7c, 0x3c, 0x5c, 0x1c, 0x6c, 0x2c, 0x4c, 0x0c,
-	  0x74, 0x34, 0x54, 0x14, 0x64, 0x24, 0x44, 0x04,
-	  0x78, 0x38, 0x58, 0x18, 0x68, 0x28, 0x48, 0x08,
-	  0x70, 0x30, 0x50, 0x10, 0x60, 0x20, 0x40, 0x00,
+	    0x00,
+	    0x00,
+	    0x01,
+	    0x00,
+	    0x03,
+	    0x01,
+	    0x02,
+	    0x00,
+	    0x07,
+	    0x03,
+	    0x05,
+	    0x01,
+	    0x06,
+	    0x02,
+	    0x04,
+	    0x00,
+	    0x0f,
+	    0x07,
+	    0x0b,
+	    0x03,
+	    0x0d,
+	    0x05,
+	    0x09,
+	    0x01,
+	    0x0e,
+	    0x06,
+	    0x0a,
+	    0x02,
+	    0x0c,
+	    0x04,
+	    0x08,
+	    0x00,
+	    0x1f,
+	    0x0f,
+	    0x17,
+	    0x07,
+	    0x1b,
+	    0x0b,
+	    0x13,
+	    0x03,
+	    0x1d,
+	    0x0d,
+	    0x15,
+	    0x05,
+	    0x19,
+	    0x09,
+	    0x11,
+	    0x01,
+	    0x1e,
+	    0x0e,
+	    0x16,
+	    0x06,
+	    0x1a,
+	    0x0a,
+	    0x12,
+	    0x02,
+	    0x1c,
+	    0x0c,
+	    0x14,
+	    0x04,
+	    0x18,
+	    0x08,
+	    0x10,
+	    0x00,
+	    0x3f,
+	    0x1f,
+	    0x2f,
+	    0x0f,
+	    0x37,
+	    0x17,
+	    0x27,
+	    0x07,
+	    0x3b,
+	    0x1b,
+	    0x2b,
+	    0x0b,
+	    0x33,
+	    0x13,
+	    0x23,
+	    0x03,
+	    0x3d,
+	    0x1d,
+	    0x2d,
+	    0x0d,
+	    0x35,
+	    0x15,
+	    0x25,
+	    0x05,
+	    0x39,
+	    0x19,
+	    0x29,
+	    0x09,
+	    0x31,
+	    0x11,
+	    0x21,
+	    0x01,
+	    0x3e,
+	    0x1e,
+	    0x2e,
+	    0x0e,
+	    0x36,
+	    0x16,
+	    0x26,
+	    0x06,
+	    0x3a,
+	    0x1a,
+	    0x2a,
+	    0x0a,
+	    0x32,
+	    0x12,
+	    0x22,
+	    0x02,
+	    0x3c,
+	    0x1c,
+	    0x2c,
+	    0x0c,
+	    0x34,
+	    0x14,
+	    0x24,
+	    0x04,
+	    0x38,
+	    0x18,
+	    0x28,
+	    0x08,
+	    0x30,
+	    0x10,
+	    0x20,
+	    0x00,
+	    0x7f,
+	    0x3f,
+	    0x5f,
+	    0x1f,
+	    0x6f,
+	    0x2f,
+	    0x4f,
+	    0x0f,
+	    0x77,
+	    0x37,
+	    0x57,
+	    0x17,
+	    0x67,
+	    0x27,
+	    0x47,
+	    0x07,
+	    0x7b,
+	    0x3b,
+	    0x5b,
+	    0x1b,
+	    0x6b,
+	    0x2b,
+	    0x4b,
+	    0x0b,
+	    0x73,
+	    0x33,
+	    0x53,
+	    0x13,
+	    0x63,
+	    0x23,
+	    0x43,
+	    0x03,
+	    0x7d,
+	    0x3d,
+	    0x5d,
+	    0x1d,
+	    0x6d,
+	    0x2d,
+	    0x4d,
+	    0x0d,
+	    0x75,
+	    0x35,
+	    0x55,
+	    0x15,
+	    0x65,
+	    0x25,
+	    0x45,
+	    0x05,
+	    0x79,
+	    0x39,
+	    0x59,
+	    0x19,
+	    0x69,
+	    0x29,
+	    0x49,
+	    0x09,
+	    0x71,
+	    0x31,
+	    0x51,
+	    0x11,
+	    0x61,
+	    0x21,
+	    0x41,
+	    0x01,
+	    0x7e,
+	    0x3e,
+	    0x5e,
+	    0x1e,
+	    0x6e,
+	    0x2e,
+	    0x4e,
+	    0x0e,
+	    0x76,
+	    0x36,
+	    0x56,
+	    0x16,
+	    0x66,
+	    0x26,
+	    0x46,
+	    0x06,
+	    0x7a,
+	    0x3a,
+	    0x5a,
+	    0x1a,
+	    0x6a,
+	    0x2a,
+	    0x4a,
+	    0x0a,
+	    0x72,
+	    0x32,
+	    0x52,
+	    0x12,
+	    0x62,
+	    0x22,
+	    0x42,
+	    0x02,
+	    0x7c,
+	    0x3c,
+	    0x5c,
+	    0x1c,
+	    0x6c,
+	    0x2c,
+	    0x4c,
+	    0x0c,
+	    0x74,
+	    0x34,
+	    0x54,
+	    0x14,
+	    0x64,
+	    0x24,
+	    0x44,
+	    0x04,
+	    0x78,
+	    0x38,
+	    0x58,
+	    0x18,
+	    0x68,
+	    0x28,
+	    0x48,
+	    0x08,
+	    0x70,
+	    0x30,
+	    0x50,
+	    0x10,
+	    0x60,
+	    0x20,
+	    0x40,
+	    0x00,
 	};
 
 	uint8_t codeword = IM->getCodeword(code_num);
 
-	if(codeword & 0x80) {
+	if (codeword & 0x80) {
 		*LPSind = 1;
 		*MPScount = run_count[codeword >> (code_num ^ 0x07)];
 	} else {
 		*MPScount = (1 << code_num);
 	}
-
 }
 
 ///////////////////////////////////////////////////////
 
-SDD1_BG::SDD1_BG(SDD1_GCD *associatedGCD, uint8_t code) :
-	code_num(code), GCD(associatedGCD)
-{
-
+SDD1_BG::SDD1_BG(SDD1_GCD* associatedGCD, uint8_t code) : code_num(code), GCD(associatedGCD) {
 }
 
 ///////////////////////////////////////////////
 
-
-void SDD1_BG::prepareDecomp(void)
-{
-
+void SDD1_BG::prepareDecomp(void) {
 	MPScount = 0;
 	LPSind = 0;
-
 }
 
 //////////////////////////////////////////////
 
-
-uint8_t SDD1_BG::getBit(bool *endOfRun)
-{
-
+uint8_t SDD1_BG::getBit(bool* endOfRun) {
 	uint8_t bit;
 
-	if(!(MPScount || LPSind)) GCD->getRunCount(code_num, &MPScount, &LPSind);
+	if (!(MPScount || LPSind))
+		GCD->getRunCount(code_num, &MPScount, &LPSind);
 
-	if(MPScount) {
+	if (MPScount) {
 		bit = 0;
 		MPScount--;
 	} else {
@@ -164,27 +370,25 @@ uint8_t SDD1_BG::getBit(bool *endOfRun)
 		LPSind = 0;
 	}
 
-	if(MPScount || LPSind) (*endOfRun) = 0;
-	else (*endOfRun) = 1;
+	if (MPScount || LPSind)
+		(*endOfRun) = 0;
+	else
+		(*endOfRun) = 1;
 
 	return bit;
-
 }
 
-void SDD1_BG::Serialize(Serializer &s)
-{
-	SV(MPScount); SV(LPSind);
+void SDD1_BG::Serialize(Serializer& s) {
+	SV(MPScount);
+	SV(LPSind);
 }
 
 /////////////////////////////////////////////////
 
-
-SDD1_PEM::SDD1_PEM(SDD1_BG *associatedBG0, SDD1_BG *associatedBG1,
-	SDD1_BG *associatedBG2, SDD1_BG *associatedBG3,
-	SDD1_BG *associatedBG4, SDD1_BG *associatedBG5,
-	SDD1_BG *associatedBG6, SDD1_BG *associatedBG7)
-{
-
+SDD1_PEM::SDD1_PEM(SDD1_BG* associatedBG0, SDD1_BG* associatedBG1,
+                   SDD1_BG* associatedBG2, SDD1_BG* associatedBG3,
+                   SDD1_BG* associatedBG4, SDD1_BG* associatedBG5,
+                   SDD1_BG* associatedBG6, SDD1_BG* associatedBG7) {
 	BG[0] = associatedBG0;
 	BG[1] = associatedBG1;
 	BG[2] = associatedBG2;
@@ -193,79 +397,72 @@ SDD1_PEM::SDD1_PEM(SDD1_BG *associatedBG0, SDD1_BG *associatedBG1,
 	BG[5] = associatedBG5;
 	BG[6] = associatedBG6;
 	BG[7] = associatedBG7;
-
 }
 
 /////////////////////////////////////////////////////////
 
-
 const SDD1_PEM::state SDD1_PEM::evolution_table[] = {
-	 { 0,25,25},
-	 { 0, 2, 1},
-	 { 0, 3, 1},
-	 { 0, 4, 2},
-	 { 0, 5, 3},
-	 { 1, 6, 4},
-	 { 1, 7, 5},
-	 { 1, 8, 6},
-	 { 1, 9, 7},
-	 { 2,10, 8},
-	 { 2,11, 9},
-	 { 2,12,10},
-	 { 2,13,11},
-	 { 3,14,12},
-	 { 3,15,13},
-	 { 3,16,14},
-	 { 3,17,15},
-	 { 4,18,16},
-	 { 4,19,17},
-	 { 5,20,18},
-	 { 5,21,19},
-	 { 6,22,20},
-	 { 6,23,21},
-	 { 7,24,22},
-	 { 7,24,23},
-	 { 0,26, 1},
-	 { 1,27, 2},
-	 { 2,28, 4},
-	 { 3,29, 8},
-	 { 4,30,12},
-	 { 5,31,16},
-	 { 6,32,18},
-	 { 7,24,22}
+    {0, 25, 25},
+    {0, 2,  1 },
+    {0, 3,  1 },
+    {0, 4,  2 },
+    {0, 5,  3 },
+    {1, 6,  4 },
+    {1, 7,  5 },
+    {1, 8,  6 },
+    {1, 9,  7 },
+    {2, 10, 8 },
+    {2, 11, 9 },
+    {2, 12, 10},
+    {2, 13, 11},
+    {3, 14, 12},
+    {3, 15, 13},
+    {3, 16, 14},
+    {3, 17, 15},
+    {4, 18, 16},
+    {4, 19, 17},
+    {5, 20, 18},
+    {5, 21, 19},
+    {6, 22, 20},
+    {6, 23, 21},
+    {7, 24, 22},
+    {7, 24, 23},
+    {0, 26, 1 },
+    {1, 27, 2 },
+    {2, 28, 4 },
+    {3, 29, 8 },
+    {4, 30, 12},
+    {5, 31, 16},
+    {6, 32, 18},
+    {7, 24, 22}
 };
 
 //////////////////////////////////////////////////////
 
-
-void SDD1_PEM::prepareDecomp(void)
-{
-
-	for(uint8_t i = 0; i < 32; i++) {
+void SDD1_PEM::prepareDecomp(void) {
+	for (uint8_t i = 0; i < 32; i++) {
 		contextInfo[i].status = 0;
 		contextInfo[i].MPS = 0;
 	}
-
 }
 
 /////////////////////////////////////////////////////////
 
-
-uint8_t SDD1_PEM::getBit(uint8_t context)
-{
+uint8_t SDD1_PEM::getBit(uint8_t context) {
 	bool endOfRun;
 	uint8_t bit;
 
-	SDD1_ContextInfo *pContInfo = &contextInfo[context];
+	SDD1_ContextInfo* pContInfo = &contextInfo[context];
 	uint8_t currStatus = pContInfo->status;
-	const state *pState = &SDD1_PEM::evolution_table[currStatus];
+	const state* pState = &SDD1_PEM::evolution_table[currStatus];
 	uint8_t currentMPS = pContInfo->MPS;
 
 	bit = (BG[pState->code_num])->getBit(&endOfRun);
 
-	if(endOfRun) {
-		if(bit) {
-			if(!(currStatus & 0xfe)) (pContInfo->MPS) ^= 0x01;
+	if (endOfRun) {
+		if (bit) {
+			if (!(currStatus & 0xfe))
+				(pContInfo->MPS) ^= 0x01;
 			(pContInfo->status) = pState->nextIfLPS;
 		} else {
 			(pContInfo->status) = pState->nextIfMPS;
@@ -275,9 +472,8 @@ uint8_t SDD1_PEM::getBit(uint8_t context)
 	return bit ^ currentMPS;
 }
 
-void SDD1_PEM::Serialize(Serializer &s)
-{
-	for(int i = 0; i < 32; i++) {
+void SDD1_PEM::Serialize(Serializer& s) {
+	for (int i = 0; i < 32; i++) {
 		SVI(contextInfo[i].status);
 		SVI(contextInfo[i].MPS);
 	}
@@ -285,23 +481,18 @@ void SDD1_PEM::Serialize(Serializer &s)
 
 //////////////////////////////////////////////////////////////
 
-
-SDD1_CM::SDD1_CM(SDD1_PEM *associatedPEM) :
-	PEM(associatedPEM)
-{
-
+SDD1_CM::SDD1_CM(SDD1_PEM* associatedPEM) : PEM(associatedPEM) {
 }
 
 //////////////////////////////////////////////////////////////
 
-
-void SDD1_CM::prepareDecomp(uint8_t firstByte)
-{
+void SDD1_CM::prepareDecomp(uint8_t firstByte) {
 	bitplanesInfo = firstByte & 0xc0;
 	contextBitsInfo = firstByte & 0x30;
 	bit_number = 0;
-	for(int i = 0; i < 8; i++) prevBitplaneBits[i] = 0;
-	switch(bitplanesInfo) {
+	for (int i = 0; i < 8; i++)
+		prevBitplaneBits[i] = 0;
+	switch (bitplanesInfo) {
 		case 0x00:
 			currBitplane = 1;
 			break;
@@ -315,24 +506,23 @@ void SDD1_CM::prepareDecomp(uint8_t firstByte)
 
 /////////////////////////////////////////////////////////////
 
-
-uint8_t SDD1_CM::getBit(void)
-{
-
+uint8_t SDD1_CM::getBit(void) {
 	uint8_t currContext;
-	uint16_t *context_bits;
+	uint16_t* context_bits;
 
-	switch(bitplanesInfo) {
+	switch (bitplanesInfo) {
 		case 0x00:
 			currBitplane ^= 0x01;
 			break;
 		case 0x40:
 			currBitplane ^= 0x01;
-			if(!(bit_number & 0x7f)) currBitplane = ((currBitplane + 2) & 0x07);
+			if (!(bit_number & 0x7f))
+				currBitplane = ((currBitplane + 2) & 0x07);
 			break;
 		case 0x80:
 			currBitplane ^= 0x01;
-			if(!(bit_number & 0x7f)) currBitplane ^= 0x02;
+			if (!(bit_number & 0x7f))
+				currBitplane ^= 0x02;
 			break;
 		case 0xc0:
 			currBitplane = bit_number & 0x07;
@@ -341,7 +531,7 @@ uint8_t SDD1_CM::getBit(void)
 	context_bits = &prevBitplaneBits[currBitplane];
 
 	currContext = (currBitplane & 0x01) << 4;
-	switch(contextBitsInfo) {
+	switch (contextBitsInfo) {
 		case 0x00:
 			currContext |= ((*context_bits & 0x01c0) >> 5) | (*context_bits & 0x0001);
 			break;
@@ -363,43 +553,36 @@ uint8_t SDD1_CM::getBit(void)
 	bit_number++;
 
 	return bit;
-
 }
 
-void SDD1_CM::Serialize(Serializer &s)
-{
-	SV(bitplanesInfo); SV(contextBitsInfo); SV(bit_number); SV(currBitplane);
+void SDD1_CM::Serialize(Serializer& s) {
+	SV(bitplanesInfo);
+	SV(contextBitsInfo);
+	SV(bit_number);
+	SV(currBitplane);
 	SVArray(prevBitplaneBits, 8);
 }
 
 //////////////////////////////////////////////////
 
-
-SDD1_OL::SDD1_OL(SDD1_CM *associatedCM) :
-	CM(associatedCM)
-{
-
+SDD1_OL::SDD1_OL(SDD1_CM* associatedCM) : CM(associatedCM) {
 }
 
 ///////////////////////////////////////////////////
 
-
-void SDD1_OL::prepareDecomp(uint8_t firstByte)
-{
+void SDD1_OL::prepareDecomp(uint8_t firstByte) {
 	bitplanesInfo = firstByte & 0xc0;
 	_regs[0] = 1;
 }
 
 ///////////////////////////////////////////////////
 
-
-uint8_t SDD1_OL::decompressByte()
-{
-	switch(bitplanesInfo) {
+uint8_t SDD1_OL::decompressByte() {
+	switch (bitplanesInfo) {
 		case 0x00:
 		case 0x40:
 		case 0x80:
-			if(_regs[0] == 0) {
+			if (_regs[0] == 0) {
 				_regs[0] = ~_regs[0];
 				return _regs[2];
 			} else {
@@ -407,15 +590,15 @@ uint8_t SDD1_OL::decompressByte()
 				_regs[2] = 0;
 				_regs[0] = 0x80;
 
-				while(_regs[0]) {
-					if(CM->getBit()) {
+				while (_regs[0]) {
+					if (CM->getBit()) {
 						_regs[1] |= _regs[0];
 					}
 
-					if(CM->getBit()) {
+					if (CM->getBit()) {
 						_regs[2] |= _regs[0];
 					}
-					
+
 					_regs[0] >>= 1;
 				}
 				return _regs[1];
@@ -425,8 +608,8 @@ uint8_t SDD1_OL::decompressByte()
 		case 0xC0:
 			_regs[1] = 0;
 			_regs[0] = 0x01;
-			while(_regs[0]) {
-				if(CM->getBit()) {
+			while (_regs[0]) {
+				if (CM->getBit()) {
 					_regs[1] |= _regs[0];
 				}
 				_regs[0] <<= 1;
@@ -434,17 +617,15 @@ uint8_t SDD1_OL::decompressByte()
 			return _regs[1];
 	}
 
-	throw std::runtime_error("SDD1_OL::decompressByte: Unexpected value");
+	[[unlikely]] throw std::runtime_error("SDD1_OL::decompressByte: Unexpected value");
 }
 
-void SDD1_OL::Serialize(Serializer &s)
-{
+void SDD1_OL::Serialize(Serializer& s) {
 	SV(bitplanesInfo);
 	SVArray(_regs, 3);
 }
 
-void Sdd1Decomp::Init(Sdd1Mmc *mmc, uint32_t readAddr)
-{
+void Sdd1Decomp::Init(Sdd1Mmc* mmc, uint32_t readAddr) {
 	uint8_t firstByte = mmc->ReadRom(readAddr);
 	IM.prepareDecomp(mmc, readAddr);
 	BG0.prepareDecomp();
@@ -460,13 +641,11 @@ void Sdd1Decomp::Init(Sdd1Mmc *mmc, uint32_t readAddr)
 	OL.prepareDecomp(firstByte);
 }
 
-uint8_t Sdd1Decomp::GetDecompressedByte()
-{
+uint8_t Sdd1Decomp::GetDecompressedByte() {
 	return OL.decompressByte();
 }
 
-void Sdd1Decomp::Serialize(Serializer &s)
-{
+void Sdd1Decomp::Serialize(Serializer& s) {
 	SV(IM);
 	SV(BG0);
 	SV(BG1);
@@ -481,13 +660,10 @@ void Sdd1Decomp::Serialize(Serializer &s)
 	SV(OL);
 }
 
-Sdd1Decomp::Sdd1Decomp() :
-	GCD(&IM),
-	BG0(&GCD, 0), BG1(&GCD, 1), BG2(&GCD, 2), BG3(&GCD, 3),
-	BG4(&GCD, 4), BG5(&GCD, 5), BG6(&GCD, 6), BG7(&GCD, 7),
-	PEM(&BG0, &BG1, &BG2, &BG3, &BG4, &BG5, &BG6, &BG7),
-	CM(&PEM),
-	OL(&CM)
-{
-
+Sdd1Decomp::Sdd1Decomp() : GCD(&IM),
+                           BG0(&GCD, 0), BG1(&GCD, 1), BG2(&GCD, 2), BG3(&GCD, 3),
+                           BG4(&GCD, 4), BG5(&GCD, 5), BG6(&GCD, 6), BG7(&GCD, 7),
+                           PEM(&BG0, &BG1, &BG2, &BG3, &BG4, &BG5, &BG6, &BG7),
+                           CM(&PEM),
+                           OL(&CM) {
 }

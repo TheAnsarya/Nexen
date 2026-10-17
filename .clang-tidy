@@ -1,0 +1,72 @@
+# Nexen clang-tidy Configuration
+# Run with: clang-tidy --config-file=.clang-tidy <source-files>
+
+---
+# Enable modern C++ checks
+Checks: >
+	-*,
+	modernize-*,
+	cppcoreguidelines-*,
+	performance-*,
+	readability-*,
+	bugprone-*,
+	clang-analyzer-*,
+	-modernize-use-trailing-return-type,
+	-cppcoreguidelines-pro-bounds-pointer-arithmetic,
+	-cppcoreguidelines-pro-type-reinterpret-cast,
+	-cppcoreguidelines-pro-bounds-constant-array-index,
+	-cppcoreguidelines-avoid-magic-numbers,
+	-readability-magic-numbers,
+	-readability-identifier-length,
+	-readability-function-cognitive-complexity,
+	-cppcoreguidelines-avoid-do-while
+
+# Warnings as errors for critical checks
+WarningsAsErrors: >
+	bugprone-use-after-move,
+	bugprone-dangling-handle,
+	modernize-use-nullptr,
+	modernize-loop-convert
+
+# Header filter - check headers in our project
+HeaderFilterRegex: '.*/(Core|Utilities|Windows|InteropDLL|Lua|Sdl)/.*\.h$'
+
+# Format style
+FormatStyle: file
+
+# Check options
+CheckOptions:
+	# Naming conventions
+	- key: readability-identifier-naming.ClassCase
+	  value: CamelCase
+	- key: readability-identifier-naming.FunctionCase
+	  value: CamelCase
+	- key: readability-identifier-naming.VariableCase
+	  value: camelBack
+	- key: readability-identifier-naming.PrivateMemberPrefix
+	  value: '_'
+	- key: readability-identifier-naming.ConstantCase
+	  value: UPPER_CASE
+	- key: readability-identifier-naming.EnumConstantCase
+	  value: CamelCase
+
+	# Modern C++ preferences
+	- key: modernize-use-auto.MinTypeNameLength
+	  value: '5'
+	- key: modernize-loop-convert.MaxCopySize
+	  value: '16'
+	- key: modernize-use-override.AllowOverrideAndFinal
+	  value: 'false'
+
+	# Performance tweaks
+	- key: performance-move-const-arg.CheckTriviallyCopyableMove
+	  value: 'true'
+	- key: performance-unnecessary-value-param.AllowedTypes
+	  value: 'std::shared_ptr;std::unique_ptr'
+
+	# Emulator-specific allowances
+	- key: cppcoreguidelines-pro-type-member-init.IgnoreArrays
+	  value: 'true'
+	- key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+	  value: 'true'
+...

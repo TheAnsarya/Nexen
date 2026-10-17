@@ -2,8 +2,7 @@
 #include "pch.h"
 #include "NES/BaseMapper.h"
 
-class Mapper221 : public BaseMapper
-{
+class Mapper221 : public BaseMapper {
 private:
 	uint16_t _mode = 0;
 	uint8_t _prgReg = 0;
@@ -12,8 +11,7 @@ protected:
 	uint16_t GetPrgPageSize() override { return 0x4000; }
 	uint16_t GetChrPageSize() override { return 0x2000; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		_prgReg = 0;
 		_mode = 0;
 
@@ -22,18 +20,16 @@ protected:
 		UpdateState();
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		BaseMapper::Serialize(s);
 		SV(_mode);
 		SV(_prgReg);
 	}
 
-	void UpdateState()
-	{
+	void UpdateState() {
 		uint16_t outerBank = (_mode & 0xFC) >> 2;
-		if(_mode & 0x02) {
-			if(_mode & 0x0100) {
+		if (_mode & 0x02) {
+			if (_mode & 0x0100) {
 				SelectPrgPage(0, outerBank | _prgReg);
 				SelectPrgPage(1, outerBank | 0x07);
 			} else {
@@ -47,9 +43,8 @@ protected:
 		SetMirroringType(_mode & 0x01 ? MirroringType::Horizontal : MirroringType::Vertical);
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
-		switch(addr & 0xC000) {
+	void WriteRegister(uint16_t addr, uint8_t value) override {
+		switch (addr & 0xC000) {
 			case 0x8000:
 				_mode = addr;
 				UpdateState();

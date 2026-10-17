@@ -1,25 +1,25 @@
-<UserControl
+﻿<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:v="using:Mesen.Views"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:v="using:Nexen.Views"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="350"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:OtherConsolesConfigViewModel"
-	x:Class="Mesen.Views.OtherConsolesConfigView"
+	x:Class="Nexen.Views.OtherConsolesConfigView"
 >
 	<Design.DataContext>
 		<vm:OtherConsolesConfigViewModel />
 	</Design.DataContext>
 
-	<TabControl TabStripPlacement="Top" SelectedIndex="{Binding SelectedTab}">
+	<TabControl TabStripPlacement="Top" SelectedIndex="{ReflectionBinding SelectedTab}">
 		<TabItem Header="{l:Translate tabColecoVision}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>

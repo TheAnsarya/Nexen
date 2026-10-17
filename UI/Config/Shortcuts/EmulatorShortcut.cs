@@ -1,164 +1,205 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mesen.Config.Shortcuts
-{
-	public enum EmulatorShortcut
-	{
-		FastForward,
-		Rewind,
-		RewindTenSecs,
-		RewindOneMin,
+namespace Nexen.Config.Shortcuts;
+public enum EmulatorShortcut {
+	FastForward,
+	Rewind,
+	RewindTenSecs,
+	RewindOneMin,
 
-		SelectSaveSlot1,
-		SelectSaveSlot2,
-		SelectSaveSlot3,
-		SelectSaveSlot4,
-		SelectSaveSlot5,
-		SelectSaveSlot6,
-		SelectSaveSlot7,
-		SelectSaveSlot8,
-		SelectSaveSlot9,
-		SelectSaveSlot10,
-		MoveToNextStateSlot,
-		MoveToPreviousStateSlot,
-		SaveState,
-		LoadState,
+	// Legacy slot system - kept for binary compatibility, no longer functional
+	[Obsolete("Slot-based saves removed. Use QuickSaveTimestamped/OpenSaveStatePicker instead.")]
+	SelectSaveSlot1,
+	[Obsolete] SelectSaveSlot2,
+	[Obsolete] SelectSaveSlot3,
+	[Obsolete] SelectSaveSlot4,
+	[Obsolete] SelectSaveSlot5,
+	[Obsolete] SelectSaveSlot6,
+	[Obsolete] SelectSaveSlot7,
+	[Obsolete] SelectSaveSlot8,
+	[Obsolete] SelectSaveSlot9,
+	[Obsolete] SelectSaveSlot10,
+	[Obsolete] MoveToNextStateSlot,
+	[Obsolete] MoveToPreviousStateSlot,
+	[Obsolete] SaveState,
+	[Obsolete] LoadState,
 
-		ToggleCheats,
-		ToggleFastForward,
-		ToggleRewind,
+	ToggleCheats,
+	ToggleFastForward,
+	ToggleRewind,
 
-		RunSingleFrame,
+	RunSingleFrame,
 
-		TakeScreenshot,
+	TakeScreenshot,
 
-		ToggleRecordVideo,
-		ToggleRecordAudio,
-		ToggleRecordMovie,
+	ToggleRecordVideo,
+	ToggleRecordAudio,
+	ToggleRecordMovie,
 
-		IncreaseSpeed,
-		DecreaseSpeed,
-		MaxSpeed,
+	IncreaseSpeed,
+	DecreaseSpeed,
+	MaxSpeed,
 
-		Pause,
-		Reset,
-		PowerCycle,
-		ReloadRom,
-		PowerOff,
-		Exit,
+	Pause,
+	Reset,
+	PowerCycle,
+	ReloadRom,
+	PowerOff,
+	Exit,
 
-		ExecReset,
-		ExecPowerCycle,
-		ExecReloadRom,
-		ExecPowerOff,
+	ExecReset,
+	ExecPowerCycle,
+	ExecReloadRom,
+	ExecPowerOff,
 
-		SetScale1x,
-		SetScale2x,
-		SetScale3x,
-		SetScale4x,
-		SetScale5x,
-		SetScale6x,
-		SetScale7x,
-		SetScale8x,
-		SetScale9x,
-		SetScale10x,
-		ToggleFullscreen,
-		ToggleFps,
-		ToggleGameTimer,
-		ToggleFrameCounter,
-		ToggleLagCounter,
-		ToggleOsd,
-		ToggleAlwaysOnTop,
-		ToggleDebugInfo,
+	SetScale1x,
+	SetScale2x,
+	SetScale3x,
+	SetScale4x,
+	SetScale5x,
+	SetScale6x,
+	SetScale7x,
+	SetScale8x,
+	SetScale9x,
+	SetScale10x,
+	ToggleFullscreen,
+	ToggleFps,
+	ToggleGameTimer,
+	ToggleFrameCounter,
+	ToggleLagCounter,
+	ToggleOsd,
+	ToggleAlwaysOnTop,
+	ToggleDebugInfo,
 
-		ToggleAudio,
-		IncreaseVolume,
-		DecreaseVolume,
+	ToggleAudio,
+	IncreaseVolume,
+	DecreaseVolume,
 
-		PreviousTrack,
-		NextTrack,
+	PreviousTrack,
+	NextTrack,
 
-		ToggleBgLayer1,
-		ToggleBgLayer2,
-		ToggleBgLayer3,
-		ToggleBgLayer4,
-		ToggleSprites1,
-		ToggleSprites2,
-		EnableAllLayers,
+	ToggleBgLayer1,
+	ToggleBgLayer2,
+	ToggleBgLayer3,
+	ToggleBgLayer4,
+	ToggleSprites1,
+	ToggleSprites2,
+	EnableAllLayers,
 
-		ResetLagCounter,
+	ResetLagCounter,
 
-		SaveStateSlot1,
-		SaveStateSlot2,
-		SaveStateSlot3,
-		SaveStateSlot4,
-		SaveStateSlot5,
-		SaveStateSlot6,
-		SaveStateSlot7,
-		SaveStateSlot8,
-		SaveStateSlot9,
-		SaveStateSlot10,
-		SaveStateToFile,
-		SaveStateDialog,
+	// Legacy slot system - kept for binary compatibility, no longer functional
+	[Obsolete("Slot-based saves removed. Use QuickSaveTimestamped/OpenSaveStatePicker instead.")]
+	SaveStateSlot1,
+	[Obsolete] SaveStateSlot2,
+	[Obsolete] SaveStateSlot3,
+	[Obsolete] SaveStateSlot4,
+	[Obsolete] SaveStateSlot5,
+	[Obsolete] SaveStateSlot6,
+	[Obsolete] SaveStateSlot7,
+	[Obsolete] SaveStateSlot8,
+	[Obsolete] SaveStateSlot9,
+	[Obsolete] SaveStateSlot10,
+	SaveStateToFile,
+	SaveStateDialog,
 
-		LoadStateSlot1,
-		LoadStateSlot2,
-		LoadStateSlot3,
-		LoadStateSlot4,
-		LoadStateSlot5,
-		LoadStateSlot6,
-		LoadStateSlot7,
-		LoadStateSlot8,
-		LoadStateSlot9,
-		LoadStateSlot10,
-		LoadStateSlotAuto,
-		LoadStateFromFile,
-		LoadStateDialog,
-		LoadLastSession,
+	[Obsolete("Slot-based saves removed. Use QuickSaveTimestamped/OpenSaveStatePicker instead.")]
+	LoadStateSlot1,
+	[Obsolete] LoadStateSlot2,
+	[Obsolete] LoadStateSlot3,
+	[Obsolete] LoadStateSlot4,
+	[Obsolete] LoadStateSlot5,
+	[Obsolete] LoadStateSlot6,
+	[Obsolete] LoadStateSlot7,
+	[Obsolete] LoadStateSlot8,
+	[Obsolete] LoadStateSlot9,
+	[Obsolete] LoadStateSlot10,
+	[Obsolete] LoadStateSlotAuto,
+	LoadStateFromFile,
+	LoadStateDialog,
+	LoadLastSession,
 
-		OpenFile,
+	/// <summary>
+	/// Quick save to a timestamped save state file (infinite saves)
+	/// </summary>
+	QuickSaveTimestamped,
 
-		InputBarcode,
-		LoadTape,
-		RecordTape,
-		StopRecordTape,
+	/// <summary>
+	/// Open the save state picker to browse all timestamped saves
+	/// </summary>
+	OpenSaveStatePicker,
 
-		//NES
-		FdsSwitchDiskSide,
-		FdsEjectDisk,
-		FdsInsertDiskNumber,
-		FdsInsertNextDisk,
-		VsServiceButton,
-		VsServiceButton2,
-		VsInsertCoin1,
-		VsInsertCoin2,
-		VsInsertCoin3,
-		VsInsertCoin4,
-		StartRecordHdPack,
-		StopRecordHdPack,
+	/// <summary>
+	/// Save to designated slot 1 (F2 quick access)
+	/// </summary>
+	SaveDesignatedSlot,
 
-		LastValidValue,
-		[Obsolete] LoadRandomGame,
-	}
+	/// <summary>
+	/// Load from designated slot 1 (Shift+F2 quick access)
+	/// </summary>
+	LoadDesignatedSlot,
 
-	public static class EmulatorShortcutExtensions
-	{
-		public static KeyCombination? GetShortcutKeys(this EmulatorShortcut shortcut)
-		{
-			PreferencesConfig cfg = ConfigManager.Config.Preferences;
-			int keyIndex = cfg.ShortcutKeys.FindIndex((ShortcutKeyInfo shortcutInfo) => shortcutInfo.Shortcut == shortcut);
-			if(keyIndex >= 0) {
-				if(!cfg.ShortcutKeys[keyIndex].KeyCombination.IsEmpty) {
-					return cfg.ShortcutKeys[keyIndex].KeyCombination;
-				} else if(!cfg.ShortcutKeys[keyIndex].KeyCombination2.IsEmpty) {
-					return cfg.ShortcutKeys[keyIndex].KeyCombination2;
-				}
+	/// <summary>
+	/// Save to designated slot 2 (F3 quick access)
+	/// </summary>
+	SaveDesignatedSlot2,
+
+	/// <summary>
+	/// Load from designated slot 2 (Shift+F3 quick access)
+	/// </summary>
+	LoadDesignatedSlot2,
+
+	/// <summary>
+	/// Save to designated slot 3 (F4 quick access)
+	/// </summary>
+	SaveDesignatedSlot3,
+
+	/// <summary>
+	/// Load from designated slot 3 (Shift+F4 quick access)
+	/// </summary>
+	LoadDesignatedSlot3,
+
+	OpenFile,
+
+	InputBarcode,
+	LoadTape,
+	RecordTape,
+	StopRecordTape,
+
+	//NES
+	FdsSwitchDiskSide,
+	FdsEjectDisk,
+	FdsInsertDiskNumber,
+	FdsInsertNextDisk,
+	VsServiceButton,
+	VsServiceButton2,
+	VsInsertCoin1,
+	VsInsertCoin2,
+	VsInsertCoin3,
+	VsInsertCoin4,
+	StartRecordHdPack,
+	StopRecordHdPack,
+
+	LastValidValue,
+	[Obsolete] LoadRandomGame,
+}
+
+public static class EmulatorShortcutExtensions {
+	public static KeyCombination? GetShortcutKeys(this EmulatorShortcut shortcut) {
+		PreferencesConfig cfg = ConfigManager.Config.Preferences;
+		int keyIndex = cfg.ShortcutKeys.FindIndex((ShortcutKeyInfo shortcutInfo) => shortcutInfo.Shortcut == shortcut);
+		if (keyIndex >= 0) {
+			if (!cfg.ShortcutKeys[keyIndex].KeyCombination.IsEmpty) {
+				return cfg.ShortcutKeys[keyIndex].KeyCombination;
+			} else if (!cfg.ShortcutKeys[keyIndex].KeyCombination2.IsEmpty) {
+				return cfg.ShortcutKeys[keyIndex].KeyCombination2;
 			}
-			return null;
 		}
+
+		return null;
 	}
 }

@@ -2,16 +2,13 @@
 #include "pch.h"
 #include "Shared/MessageManager.h"
 
-class BaseLoader
-{
+class BaseLoader {
 protected:
-	void Log(string message)
-	{
+	void Log(const string& message) {
 		MessageManager::Log(message);
 	}
 
 public:
-	BaseLoader()
-	{
+	BaseLoader() {
 	}
 };

@@ -9,8 +9,7 @@
 #include "Utilities/FolderUtilities.h"
 #include "Utilities/Serializer.h"
 
-EmuSettings::EmuSettings(Emulator* emu)
-{
+EmuSettings::EmuSettings(Emulator* emu) {
 	_emu = emu;
 	_flags = 0;
 	_debuggerFlags = 0;
@@ -19,8 +18,7 @@ EmuSettings::EmuSettings(Emulator* emu)
 	_mt = std::mt19937(rd());
 }
 
-void EmuSettings::CopySettings(EmuSettings& src)
-{
+void EmuSettings::CopySettings(EmuSettings& src) {
 	SetVideoConfig(src._video);
 	SetAudioConfig(src._audio);
 	SetInputConfig(src._input);
@@ -34,51 +32,80 @@ void EmuSettings::CopySettings(EmuSettings& src)
 	SetNesConfig(src._nes);
 	SetPcEngineConfig(src._pce);
 	SetSmsConfig(src._sms);
+	SetCvConfig(src._cv);
 	SetGbaConfig(src._gba);
+	SetWsConfig(src._ws);
+	SetLynxConfig(src._lynx);
+	SetGenesisConfig(src._genesis);
+	SetAtari2600Config(src._atari2600);
+	SetChannelFConfig(src._channelF);
 }
 
-void EmuSettings::Serialize(Serializer& s)
-{
-	//Save/load settings that have an impact on emulation (for movies), netplay, etc.)
-	//TODOv2: These should probably not be loaded except for movie playback and netplay clients
-	//TODOv2: Desyncs are possible when random state options are turned on
+void EmuSettings::Serialize(Serializer& s) {
+	// Save/load settings that have an impact on emulation (for movies), netplay, etc.)
+	// TODO(#1281): These should probably not be loaded except for movie playback and netplay clients
+	// TODO(#1281): Desyncs are possible when random state options are turned on
 	SV(_video.IntegerFpsMode);
 	SV(_emulation.RunAheadFrames);
 	SV(_game.DipSwitches);
 
-	switch(_emu->GetConsoleType()) {
+	switch (_emu->GetConsoleType()) {
 		case ConsoleType::Nes:
 			SV(_nes.ConsoleType);
 			SV(_nes.RamPowerOnState);
 			SV(_nes.RandomizeMapperPowerOnState);
 			SV(_nes.RandomizeCpuPpuAlignment);
-			SV(_nes.DisableOamAddrBug); SV(_nes.DisablePaletteRead); SV(_nes.DisablePpu2004Reads);
-			SV(_nes.DisableGameGenieBusConflicts); SV(_nes.DisablePpuReset); SV(_nes.EnableOamDecay);
-			SV(_nes.EnablePpu2000ScrollGlitch); SV(_nes.EnablePpu2006ScrollGlitch); SV(_nes.EnablePpuOamRowCorruption);
+			SV(_nes.DisableOamAddrBug);
+			SV(_nes.DisablePaletteRead);
+			SV(_nes.DisablePpu2004Reads);
+			SV(_nes.DisableGameGenieBusConflicts);
+			SV(_nes.DisablePpuReset);
+			SV(_nes.EnableOamDecay);
+			SV(_nes.EnablePpu2000ScrollGlitch);
+			SV(_nes.EnablePpu2006ScrollGlitch);
+			SV(_nes.EnablePpuOamRowCorruption);
 			SV(_nes.RestrictPpuAccessOnFirstFrame);
 			SV(_nes.EnableCpuTestMode);
 			SV(_nes.EnableDmcSampleDuplicationGlitch);
 			SV(_nes.EnablePpuSpriteEvalBug);
-			SV(_nes.PpuExtraScanlinesAfterNmi); SV(_nes.PpuExtraScanlinesBeforeNmi);
+			SV(_nes.PpuExtraScanlinesAfterNmi);
+			SV(_nes.PpuExtraScanlinesBeforeNmi);
 			SV(_nes.Region);
 			SV(_nes.LightDetectionRadius);
-			SV(_nes.Port1.Type); SV(_nes.Port1SubPorts[0].Type); SV(_nes.Port1SubPorts[1].Type); SV(_nes.Port1SubPorts[2].Type); SV(_nes.Port1SubPorts[3].Type);
+			SV(_nes.Port1.Type);
+			SV(_nes.Port1SubPorts[0].Type);
+			SV(_nes.Port1SubPorts[1].Type);
+			SV(_nes.Port1SubPorts[2].Type);
+			SV(_nes.Port1SubPorts[3].Type);
 			SV(_nes.Port2.Type);
-			SV(_nes.ExpPort.Type); SV(_nes.ExpPortSubPorts[0].Type); SV(_nes.ExpPortSubPorts[1].Type); SV(_nes.ExpPortSubPorts[2].Type); SV(_nes.ExpPortSubPorts[3].Type);
+			SV(_nes.ExpPort.Type);
+			SV(_nes.ExpPortSubPorts[0].Type);
+			SV(_nes.ExpPortSubPorts[1].Type);
+			SV(_nes.ExpPortSubPorts[2].Type);
+			SV(_nes.ExpPortSubPorts[3].Type);
 			break;
 
 		case ConsoleType::Snes:
 			SV(_snes.RamPowerOnState);
 			SV(_snes.EnableRandomPowerOnState);
 			SV(_snes.GsuClockSpeed);
-			SV(_snes.PpuExtraScanlinesAfterNmi); SV(_snes.PpuExtraScanlinesBeforeNmi);
+			SV(_snes.PpuExtraScanlinesAfterNmi);
+			SV(_snes.PpuExtraScanlinesBeforeNmi);
 			SV(_snes.Region);
-			SV(_snes.Port1.Type); SV(_snes.Port1SubPorts[0].Type); SV(_snes.Port1SubPorts[1].Type); SV(_snes.Port1SubPorts[2].Type); SV(_snes.Port1SubPorts[3].Type);
-			SV(_snes.Port2.Type); SV(_snes.Port2SubPorts[0].Type); SV(_snes.Port2SubPorts[1].Type); SV(_snes.Port2SubPorts[2].Type); SV(_snes.Port2SubPorts[3].Type);
+			SV(_snes.Port1.Type);
+			SV(_snes.Port1SubPorts[0].Type);
+			SV(_snes.Port1SubPorts[1].Type);
+			SV(_snes.Port1SubPorts[2].Type);
+			SV(_snes.Port1SubPorts[3].Type);
+			SV(_snes.Port2.Type);
+			SV(_snes.Port2SubPorts[0].Type);
+			SV(_snes.Port2SubPorts[1].Type);
+			SV(_snes.Port2SubPorts[2].Type);
+			SV(_snes.Port2SubPorts[3].Type);
 			SV(_snes.BsxCustomDate);
 			SV(_snes.SpcClockSpeedAdjustment);
-			
-			if(_emu->GetRomInfo().Format == RomFormat::Gb) {
+
+			if (_emu->GetRomInfo().Format == RomFormat::Gb) {
 				SV(_gameboy.RamPowerOnState);
 				SV(_gameboy.Controller.Type);
 				SV(_gameboy.Model);
@@ -124,33 +151,54 @@ void EmuSettings::Serialize(Serializer& s)
 			break;
 
 		case ConsoleType::Ws:
-			//TODOWS
+			SV(_ws.Model);
+			SV(_ws.ControllerHorizontal.Type);
+			SV(_ws.ControllerVertical.Type);
+			break;
+
+		case ConsoleType::Lynx:
+			break;
+
+		case ConsoleType::Atari2600:
+			SV(_atari2600.RamPowerOnState);
+			SV(_atari2600.P0DifficultyB);
+			SV(_atari2600.P1DifficultyB);
+			SV(_atari2600.ColorMode);
+			SV(_atari2600.Port1.Type);
+			SV(_atari2600.Port2.Type);
+			break;
+
+		case ConsoleType::Genesis:
+			SV(_genesis.RamPowerOnState);
+			SV(_genesis.Port1.Type);
+			SV(_genesis.Port2.Type);
+			SV(_genesis.Region);
+			break;
+
+		case ConsoleType::ChannelF:
 			break;
 
 		default:
-			throw std::runtime_error("unsupported console type");
+			[[unlikely]] throw std::runtime_error("unsupported console type");
 	}
 }
 
-uint32_t EmuSettings::GetVersion()
-{
-	//Version 2.1.1
+uint32_t EmuSettings::GetVersion() {
+	// Version 2.3.0
 	uint16_t major = 2;
-	uint8_t minor = 1;
-	uint8_t revision = 1;
+	uint8_t minor = 3;
+	uint8_t revision = 0;
 	return (major << 16) | (minor << 8) | revision;
 }
 
-string EmuSettings::GetVersionString()
-{
+string EmuSettings::GetVersionString() {
 	uint32_t version = GetVersion();
-	return std::to_string(version >> 16) + "." + std::to_string((version >> 8) & 0xFF) + "." + std::to_string(version & 0xFF);
+	return std::format("{}.{}.{}", version >> 16, (version >> 8) & 0xFF, version & 0xFF);
 }
 
-void EmuSettings::ProcessString(string & str, const char ** strPointer)
-{
-	//Make a copy of the string and keep it (the original pointer will not be valid after the call is over)
-	if(*strPointer) {
+void EmuSettings::ProcessString(string& str, const char** strPointer) {
+	// Make a copy of the string and keep it (the original pointer will not be valid after the call is over)
+	if (*strPointer) {
 		str = *strPointer;
 	} else {
 		str.clear();
@@ -158,139 +206,144 @@ void EmuSettings::ProcessString(string & str, const char ** strPointer)
 	*strPointer = str.c_str();
 }
 
-void EmuSettings::SetVideoConfig(VideoConfig& config)
-{
+void EmuSettings::SetVideoConfig(VideoConfig& config) {
 	_video = config;
 }
 
-VideoConfig& EmuSettings::GetVideoConfig()
-{
+VideoConfig& EmuSettings::GetVideoConfig() {
 	return _video;
 }
 
-void EmuSettings::SetAudioConfig(AudioConfig& config)
-{
+void EmuSettings::SetAudioConfig(AudioConfig& config) {
 	_audio = config;
 	ProcessString(_audioDevice, &_audio.AudioDevice);
 }
 
-AudioConfig& EmuSettings::GetAudioConfig()
-{
+AudioConfig& EmuSettings::GetAudioConfig() {
 	return _audio;
 }
 
-void EmuSettings::SetInputConfig(InputConfig& config)
-{
+void EmuSettings::SetInputConfig(InputConfig& config) {
 	_input = config;
 }
 
-InputConfig& EmuSettings::GetInputConfig()
-{
+InputConfig& EmuSettings::GetInputConfig() {
 	return _input;
 }
 
-void EmuSettings::SetEmulationConfig(EmulationConfig& config)
-{
+void EmuSettings::SetEmulationConfig(EmulationConfig& config) {
 	_emulation = config;
 }
 
-EmulationConfig& EmuSettings::GetEmulationConfig()
-{
+EmulationConfig& EmuSettings::GetEmulationConfig() {
 	return _emulation;
 }
 
-void EmuSettings::SetSnesConfig(SnesConfig& config)
-{
+void EmuSettings::SetSnesConfig(SnesConfig& config) {
 	_snes = config;
 }
 
-SnesConfig& EmuSettings::GetSnesConfig()
-{
+SnesConfig& EmuSettings::GetSnesConfig() {
 	return _snes;
 }
 
-void EmuSettings::SetNesConfig(NesConfig& config)
-{
+void EmuSettings::SetNesConfig(NesConfig& config) {
 	_nes = config;
 }
 
-NesConfig& EmuSettings::GetNesConfig()
-{
+NesConfig& EmuSettings::GetNesConfig() {
 	return _nes;
 }
 
-void EmuSettings::SetGameboyConfig(GameboyConfig& config)
-{
+void EmuSettings::SetGameboyConfig(GameboyConfig& config) {
 	_gameboy = config;
 }
 
-GameboyConfig& EmuSettings::GetGameboyConfig()
-{
+GameboyConfig& EmuSettings::GetGameboyConfig() {
 	return _gameboy;
 }
 
-void EmuSettings::SetGbaConfig(GbaConfig& config)
-{
+void EmuSettings::SetGbaConfig(GbaConfig& config) {
 	_gba = config;
 }
 
-GbaConfig& EmuSettings::GetGbaConfig()
-{
+GbaConfig& EmuSettings::GetGbaConfig() {
 	return _gba;
 }
 
-void EmuSettings::SetPcEngineConfig(PcEngineConfig& config)
-{
+void EmuSettings::SetPcEngineConfig(PcEngineConfig& config) {
 	_pce = config;
 }
 
-PcEngineConfig& EmuSettings::GetPcEngineConfig()
-{
+PcEngineConfig& EmuSettings::GetPcEngineConfig() {
 	return _pce;
 }
 
-void EmuSettings::SetSmsConfig(SmsConfig& config)
-{
+void EmuSettings::SetSmsConfig(SmsConfig& config) {
 	_sms = config;
 }
 
-SmsConfig& EmuSettings::GetSmsConfig()
-{
+SmsConfig& EmuSettings::GetSmsConfig() {
 	return _sms;
 }
 
-void EmuSettings::SetCvConfig(CvConfig& config)
-{
+void EmuSettings::SetCvConfig(CvConfig& config) {
 	_cv = config;
 }
 
-CvConfig& EmuSettings::GetCvConfig()
-{
+CvConfig& EmuSettings::GetCvConfig() {
 	return _cv;
 }
 
-void EmuSettings::SetWsConfig(WsConfig& config)
-{
+void EmuSettings::SetWsConfig(WsConfig& config) {
 	_ws = config;
 }
 
-WsConfig& EmuSettings::GetWsConfig()
-{
+WsConfig& EmuSettings::GetWsConfig() {
 	return _ws;
 }
 
-void EmuSettings::SetGameConfig(GameConfig& config)
-{
+void EmuSettings::SetLynxConfig(LynxConfig& config) {
+	_lynx = config;
+}
+
+LynxConfig& EmuSettings::GetLynxConfig() {
+	return _lynx;
+}
+
+void EmuSettings::SetGenesisConfig(GenesisConfig& config) {
+	_genesis = config;
+}
+
+GenesisConfig& EmuSettings::GetGenesisConfig() {
+	return _genesis;
+}
+
+void EmuSettings::SetAtari2600Config(Atari2600Config& config) {
+	_atari2600 = config;
+}
+
+Atari2600Config& EmuSettings::GetAtari2600Config() {
+	return _atari2600;
+}
+
+void EmuSettings::SetChannelFConfig(ChannelFConfig& config) {
+	_channelF = config;
+}
+
+ChannelFConfig& EmuSettings::GetChannelFConfig() {
+	return _channelF;
+}
+
+void EmuSettings::SetGameConfig(GameConfig& config) {
 	_game = config;
 }
 
-GameConfig& EmuSettings::GetGameConfig()
-{
+GameConfig& EmuSettings::GetGameConfig() {
 	return _game;
 }
 
-void EmuSettings::SetPreferences(PreferencesConfig& config)
-{
+void EmuSettings::SetPreferences(PreferencesConfig& config) {
 	MessageManager::SetOptions(!config.DisableOsd, CheckFlag(EmulationFlags::OutputToStdout));
 
 	_preferences = config;
@@ -300,46 +353,39 @@ void EmuSettings::SetPreferences(PreferencesConfig& config)
 	ProcessString(_screenshotFolder, &_preferences.ScreenshotFolderOverride);
 
 	FolderUtilities::SetFolderOverrides(
-		_saveFolder,
-		_saveStateFolder,
-		_screenshotFolder,
-		""
-	);
+	    _saveFolder,
+	    _saveStateFolder,
+	    _screenshotFolder,
+	    "");
 }
 
-PreferencesConfig& EmuSettings::GetPreferences()
-{
+PreferencesConfig& EmuSettings::GetPreferences() {
 	return _preferences;
 }
 
-void EmuSettings::SetAudioPlayerConfig(AudioPlayerConfig& config)
-{
+void EmuSettings::SetAudioPlayerConfig(AudioPlayerConfig& config) {
 	_audioPlayer = config;
 }
 
-AudioPlayerConfig& EmuSettings::GetAudioPlayerConfig()
-{
+AudioPlayerConfig& EmuSettings::GetAudioPlayerConfig() {
 	return _audioPlayer;
 }
 
-void EmuSettings::SetDebugConfig(DebugConfig& config)
-{
+void EmuSettings::SetDebugConfig(DebugConfig& config) {
 	_debug = config;
-	
+
 	DebuggerRequest req = _emu->GetDebugger(false);
 	Debugger* dbg = req.GetDebugger();
-	if(dbg) {
+	if (dbg) {
 		dbg->ProcessConfigChange();
 	}
 }
 
-DebugConfig& EmuSettings::GetDebugConfig()
-{
+DebugConfig& EmuSettings::GetDebugConfig() {
 	return _debug;
 }
 
-void EmuSettings::ClearShortcutKeys()
-{
+void EmuSettings::ClearShortcutKeys() {
 	_emulatorKeys[0].clear();
 	_emulatorKeys[1].clear();
 	_emulatorKeys[2].clear();
@@ -347,35 +393,33 @@ void EmuSettings::ClearShortcutKeys()
 	_shortcutSupersets[1].clear();
 	_shortcutSupersets[2].clear();
 
-	//Add Alt-F4 as a fake shortcut to prevent Alt-F4 from triggering Alt or F4 key bindings. (e.g load save state 4)
+	// Add Alt-F4 as a fake shortcut to prevent Alt-F4 from triggering Alt or F4 key bindings. (e.g load save state 4)
 	KeyCombination keyComb;
 	keyComb.Key1 = KeyManager::GetKeyCode("Left Alt");
 	keyComb.Key2 = KeyManager::GetKeyCode("F4");
 	SetShortcutKey(EmulatorShortcut::Exit, keyComb, 2);
 }
 
-void EmuSettings::SetShortcutKey(EmulatorShortcut shortcut, KeyCombination keyCombination, int keySetIndex)
-{
+void EmuSettings::SetShortcutKey(EmulatorShortcut shortcut, KeyCombination keyCombination, int keySetIndex) {
 	_emulatorKeys[keySetIndex][(uint32_t)shortcut] = keyCombination;
 
-	for(int i = 0; i < 3; i++) {
-		for(std::pair<const uint32_t, KeyCombination> &kvp : _emulatorKeys[i]) {
-			if(keyCombination.IsSubsetOf(kvp.second)) {
+	for (int i = 0; i < 3; i++) {
+		for (std::pair<const uint32_t, KeyCombination>& kvp : _emulatorKeys[i]) {
+			if (keyCombination.IsSubsetOf(kvp.second)) {
 				_shortcutSupersets[keySetIndex][(uint32_t)shortcut].push_back(kvp.second);
-			} else if(kvp.second.IsSubsetOf(keyCombination)) {
+			} else if (kvp.second.IsSubsetOf(keyCombination)) {
 				_shortcutSupersets[i][kvp.first].push_back(keyCombination);
 			}
 		}
 	}
 }
 
-void EmuSettings::SetShortcutKeys(vector<ShortcutKeyInfo> shortcuts)
-{
+void EmuSettings::SetShortcutKeys(const vector<ShortcutKeyInfo>& shortcuts) {
 	auto lock = _updateShortcutsLock.AcquireSafe();
 	ClearShortcutKeys();
 
-	for(ShortcutKeyInfo &shortcut : shortcuts) {
-		if(_emulatorKeys[0][(uint32_t)shortcut.Shortcut].GetKeys().empty()) {
+	for (const ShortcutKeyInfo& shortcut : shortcuts) {
+		if (_emulatorKeys[0][(uint32_t)shortcut.Shortcut].GetKeys().empty()) {
 			SetShortcutKey(shortcut.Shortcut, shortcut.Keys, 0);
 		} else {
 			SetShortcutKey(shortcut.Shortcut, shortcut.Keys, 1);
@@ -383,38 +427,35 @@ void EmuSettings::SetShortcutKeys(vector<ShortcutKeyInfo> shortcuts)
 	}
 }
 
-KeyCombination EmuSettings::GetShortcutKey(EmulatorShortcut shortcut, int keySetIndex)
-{
+KeyCombination EmuSettings::GetShortcutKey(EmulatorShortcut shortcut, int keySetIndex) {
 	auto lock = _updateShortcutsLock.AcquireSafe();
 	auto result = _emulatorKeys[keySetIndex].find((int)shortcut);
-	if(result != _emulatorKeys[keySetIndex].end()) {
+	if (result != _emulatorKeys[keySetIndex].end()) {
 		return result->second;
 	}
 	return {};
 }
 
-vector<KeyCombination> EmuSettings::GetShortcutSupersets(EmulatorShortcut shortcut, int keySetIndex)
-{
+vector<KeyCombination> EmuSettings::GetShortcutSupersets(EmulatorShortcut shortcut, int keySetIndex) {
 	auto lock = _updateShortcutsLock.AcquireSafe();
 	return _shortcutSupersets[keySetIndex][(uint32_t)shortcut];
 }
 
-OverscanDimensions EmuSettings::GetOverscan()
-{
+OverscanDimensions EmuSettings::GetOverscan() {
 	RomFormat romFormat = _emu->GetRomInfo().Format;
-	switch(romFormat) {
+	switch (romFormat) {
 		case RomFormat::Spc:
 		case RomFormat::Gbs:
 		case RomFormat::Nsf:
 		case RomFormat::PceHes:
-			//No overscan for music players
-			return OverscanDimensions {};
+			// No overscan for music players
+			return OverscanDimensions{};
 
 		case RomFormat::Gb:
-			if(_emu->GetConsoleType() == ConsoleType::Snes && _emu->GetSettings()->GetGameboyConfig().HideSgbBorders) {
-				//Override overscan dimensions to hide SGB borders
+			if (_emu->GetConsoleType() == ConsoleType::Snes && _emu->GetSettings()->GetGameboyConfig().HideSgbBorders) {
+				// Override overscan dimensions to hide SGB borders
 				OverscanDimensions overscan = {};
-				overscan.Top =  46;
+				overscan.Top = 46;
 				overscan.Bottom = 49;
 				overscan.Left = 48;
 				overscan.Right = 48;
@@ -422,152 +463,171 @@ OverscanDimensions EmuSettings::GetOverscan()
 			}
 	}
 
-	if(_game.OverrideOverscan) {
+	if (_game.OverrideOverscan) {
 		return _game.Overscan;
 	}
 
-	switch(_emu->GetConsoleType()) {
-		case ConsoleType::Snes: return _snes.Overscan;
-		case ConsoleType::Nes: return _emu->GetRegion() == ConsoleRegion::Ntsc ? _nes.NtscOverscan : _nes.PalOverscan;
-		case ConsoleType::PcEngine: return _pce.Overscan;
+	switch (_emu->GetConsoleType()) {
+		case ConsoleType::Snes:
+			return _snes.Overscan;
+		case ConsoleType::Nes:
+			return _emu->GetRegion() == ConsoleRegion::Ntsc ? _nes.NtscOverscan : _nes.PalOverscan;
+		case ConsoleType::PcEngine:
+			return _pce.Overscan;
 		case ConsoleType::Sms:
-			if(romFormat == RomFormat::ColecoVision) {
-				return { 0, 0, 24, 24 };
-			} else if(romFormat == RomFormat::GameGear) {
+			if (romFormat == RomFormat::ColecoVision) {
+				return {0, 0, 24, 24};
+			} else if (romFormat == RomFormat::GameGear) {
 				return _sms.GameGearOverscan;
 			} else {
-				return  _emu->GetRegion() == ConsoleRegion::Ntsc ? _sms.NtscOverscan : _sms.PalOverscan;
+				return _emu->GetRegion() == ConsoleRegion::Ntsc ? _sms.NtscOverscan : _sms.PalOverscan;
 			}
 
 		case ConsoleType::Gameboy:
 		case ConsoleType::Gba:
 		case ConsoleType::Ws:
+		case ConsoleType::Lynx:
+		case ConsoleType::Atari2600:
+		case ConsoleType::Genesis:
+		case ConsoleType::ChannelF:
 			break;
 	}
 
-	return OverscanDimensions {};
+	return OverscanDimensions{};
 }
 
-uint32_t EmuSettings::GetEmulationSpeed()
-{
-	if(CheckFlag(EmulationFlags::MaximumSpeed)) {
+uint32_t EmuSettings::GetEmulationSpeed() {
+	if (CheckFlag(EmulationFlags::MaximumSpeed)) {
 		return 0;
-	} else if(CheckFlag(EmulationFlags::Turbo)) {
+	} else if (CheckFlag(EmulationFlags::Turbo)) {
 		return _emulation.TurboSpeed;
-	} else if(CheckFlag(EmulationFlags::Rewind)) {
+	} else if (CheckFlag(EmulationFlags::Rewind)) {
 		return _emulation.RewindSpeed;
 	} else {
 		return _emulation.EmulationSpeed;
 	}
 }
 
-double EmuSettings::GetAspectRatio(ConsoleRegion region, FrameInfo baseFrameSize)
-{
+double EmuSettings::GetAspectRatio(ConsoleRegion region, FrameInfo baseFrameSize) {
 	double screenAspectRatio = (double)baseFrameSize.Width / baseFrameSize.Height;
 
-	switch(_video.AspectRatio) {
-		case VideoAspectRatio::NoStretching: return screenAspectRatio;
-		
-		//For auto, ntsc and pal, these are PAR ratios, so multiply them with the base screen's aspect ratio to get the expected screen aspect ratio
+	switch (_video.AspectRatio) {
+		case VideoAspectRatio::NoStretching:
+			return screenAspectRatio;
+
+		// For auto, ntsc and pal, these are PAR ratios, so multiply them with the base screen's aspect ratio to get the expected screen aspect ratio
 		case VideoAspectRatio::Auto:
-			if(_emu->GetConsoleType() == ConsoleType::Gameboy || _emu->GetConsoleType() == ConsoleType::Gba || _emu->GetConsoleType() == ConsoleType::Ws) {
-				//GB/GBA/WS shouldn't use NTSC/PAL aspect ratio when in auto mode
+			if (_emu->GetConsoleType() == ConsoleType::Gameboy || _emu->GetConsoleType() == ConsoleType::Gba || _emu->GetConsoleType() == ConsoleType::Ws || _emu->GetConsoleType() == ConsoleType::Lynx || _emu->GetConsoleType() == ConsoleType::Atari2600 || _emu->GetConsoleType() == ConsoleType::Genesis || _emu->GetConsoleType() == ConsoleType::ChannelF) {
+				// GB/GBA/WS/Lynx/Atari2600 shouldn't use NTSC/PAL aspect ratio when in auto mode
 				return screenAspectRatio;
-			} else if(_emu->GetRomInfo().Format == RomFormat::GameGear) {
-				//GG has a 6:5 PAR
+			} else if (_emu->GetRomInfo().Format == RomFormat::GameGear) {
+				// GG has a 6:5 PAR
 				return screenAspectRatio * (6.0 / 5.0);
 			}
 			return screenAspectRatio * ((region == ConsoleRegion::Pal || region == ConsoleRegion::Dendy) ? (11.0 / 8.0) : (8.0 / 7.0));
 
-		case VideoAspectRatio::NTSC: return screenAspectRatio * 8.0 / 7.0;
-		case VideoAspectRatio::PAL: return screenAspectRatio * 11.0 / 8.0;
+		case VideoAspectRatio::NTSC:
+			return screenAspectRatio * 8.0 / 7.0;
+		case VideoAspectRatio::PAL:
+			return screenAspectRatio * 11.0 / 8.0;
 
-		case VideoAspectRatio::Standard: return 4.0 / 3.0;
-		case VideoAspectRatio::Widescreen: return 16.0 / 9.0;
-		case VideoAspectRatio::Custom: return _video.CustomAspectRatio;
+		case VideoAspectRatio::Standard:
+			return 4.0 / 3.0;
+		case VideoAspectRatio::Widescreen:
+			return 16.0 / 9.0;
+		case VideoAspectRatio::Custom:
+			return _video.CustomAspectRatio;
 	}
 	return 0.0;
 }
 
-void EmuSettings::SetFlag(EmulationFlags flag)
-{
-	if((_flags & (int)flag) == 0) {
+void EmuSettings::SetFlag(EmulationFlags flag) {
+	if ((_flags & (int)flag) == 0) {
 		_flags |= (int)flag;
 	}
 }
 
-void EmuSettings::SetFlagState(EmulationFlags flag, bool enabled)
-{
-	if(enabled) {
+void EmuSettings::SetFlagState(EmulationFlags flag, bool enabled) {
+	if (enabled) {
 		SetFlag(flag);
 	} else {
 		ClearFlag(flag);
 	}
 }
 
-void EmuSettings::ClearFlag(EmulationFlags flag)
-{
-	if((_flags & (int)flag) != 0) {
+void EmuSettings::ClearFlag(EmulationFlags flag) {
+	if ((_flags & (int)flag) != 0) {
 		_flags &= ~(int)flag;
 	}
 }
 
-bool EmuSettings::CheckFlag(EmulationFlags flag)
-{
+bool EmuSettings::CheckFlag(EmulationFlags flag) {
 	return (_flags & (int)flag) != 0;
 }
 
-void EmuSettings::SetDebuggerFlag(DebuggerFlags flag, bool enabled)
-{
-	if(enabled) {
-		if((_debuggerFlags & (uint64_t)flag) == 0) {
+void EmuSettings::SetDebuggerFlag(DebuggerFlags flag, bool enabled) {
+	if (enabled) {
+		if ((_debuggerFlags & (uint64_t)flag) == 0) {
 			_debuggerFlags |= (uint64_t)flag;
 		}
 	} else {
-		if((_debuggerFlags & (uint64_t)flag) != 0) {
+		if ((_debuggerFlags & (uint64_t)flag) != 0) {
 			_debuggerFlags &= ~(uint64_t)flag;
 		}
 	}
 
 	DebuggerRequest req = _emu->GetDebugger(false);
 	Debugger* dbg = req.GetDebugger();
-	if(dbg) {
+	if (dbg) {
 		dbg->ProcessConfigChange();
 	}
 }
 
-bool EmuSettings::CheckDebuggerFlag(DebuggerFlags flag)
-{
+bool EmuSettings::CheckDebuggerFlag(DebuggerFlags flag) {
 	return (_debuggerFlags & (uint64_t)flag) != 0;
 }
 
-bool EmuSettings::HasRandomPowerOnState(ConsoleType consoleType)
-{
-	switch(consoleType) {
-		case ConsoleType::Snes: return _snes.RamPowerOnState == RamState::Random || _snes.EnableRandomPowerOnState;
-		case ConsoleType::Gameboy: return _gameboy.RamPowerOnState == RamState::Random;
-		case ConsoleType::Nes: return _nes.RamPowerOnState == RamState::Random || _nes.RandomizeCpuPpuAlignment || _nes.RandomizeMapperPowerOnState;
-		case ConsoleType::PcEngine: return _pce.RamPowerOnState == RamState::Random || _pce.EnableRandomPowerOnState;
-		case ConsoleType::Sms: return _sms.RamPowerOnState == RamState::Random;
-		case ConsoleType::Gba: return _gba.RamPowerOnState == RamState::Random;
+bool EmuSettings::HasRandomPowerOnState(ConsoleType consoleType) {
+	switch (consoleType) {
+		case ConsoleType::Snes:
+			return _snes.RamPowerOnState == RamState::Random || _snes.EnableRandomPowerOnState;
+		case ConsoleType::Gameboy:
+			return _gameboy.RamPowerOnState == RamState::Random;
+		case ConsoleType::Nes:
+			return _nes.RamPowerOnState == RamState::Random || _nes.RandomizeCpuPpuAlignment || _nes.RandomizeMapperPowerOnState;
+		case ConsoleType::PcEngine:
+			return _pce.RamPowerOnState == RamState::Random || _pce.EnableRandomPowerOnState;
+		case ConsoleType::Sms:
+			return _sms.RamPowerOnState == RamState::Random;
+		case ConsoleType::Gba:
+			return _gba.RamPowerOnState == RamState::Random;
+		case ConsoleType::Atari2600:
+			return _atari2600.RamPowerOnState == RamState::Random;
+		case ConsoleType::Genesis:
+			return _genesis.RamPowerOnState == RamState::Random;
+		case ConsoleType::ChannelF:
+			return false;
 	}
 
 	return false;
 }
 
-void EmuSettings::InitializeRam(RamState state, void* data, uint32_t length)
-{
-	switch(state) {
+void EmuSettings::InitializeRam(RamState state, void* data, uint32_t length) {
+	switch (state) {
 		default:
-		case RamState::AllZeros: memset(data, 0, length); break;
-		case RamState::AllOnes: memset(data, 0xFF, length); break;
+		case RamState::AllZeros:
+			memset(data, 0, length);
+			break;
+		case RamState::AllOnes:
+			memset(data, 0xFF, length);
+			break;
 		case RamState::Random:
 			std::uniform_int_distribution<uint64_t> dist(0, std::numeric_limits<uint64_t>::max());
 			uint32_t i = 0;
-			while(i < length) {
+			while (i < length) {
 				uint64_t randomData = dist(_mt);
-				for(int j = 0; j < 8 && i < length; j++) {
-					((uint8_t*)data)[i] = (uint8_t)(randomData >> (8*j));
+				for (int j = 0; j < 8 && i < length; j++) {
+					((uint8_t*)data)[i] = (uint8_t)(randomData >> (8 * j));
 					i++;
 				}
 			}
@@ -575,30 +635,31 @@ void EmuSettings::InitializeRam(RamState state, void* data, uint32_t length)
 	}
 }
 
-int EmuSettings::GetRandomValue(int maxValue)
-{
+int EmuSettings::GetRandomValue(int maxValue) {
 	std::uniform_int_distribution<> dist(0, maxValue);
 	return dist(_mt);
 }
 
-bool EmuSettings::GetRandomBool()
-{ 
-	return GetRandomValue(1) == 1; 
+bool EmuSettings::GetRandomBool() {
+	return GetRandomValue(1) == 1;
 }
 
-bool EmuSettings::IsInputEnabled()
-{
+bool EmuSettings::IsInputEnabled() {
 	return !CheckFlag(EmulationFlags::InBackground) || _preferences.AllowBackgroundInput;
 }
 
-double EmuSettings::GetControllerDeadzoneRatio()
-{
-	switch(_input.ControllerDeadzoneSize) {
-		case 0: return 0.5;
-		case 1: return 0.75;
-		case 2: return 1;
-		case 3: return 1.25;
-		case 4: return 1.5;
+double EmuSettings::GetControllerDeadzoneRatio() {
+	switch (_input.ControllerDeadzoneSize) {
+		case 0:
+			return 0.5;
+		case 1:
+			return 0.75;
+		case 2:
+			return 1;
+		case 3:
+			return 1.25;
+		case 4:
+			return 1.5;
 	}
 	return 1;
 }

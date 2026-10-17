@@ -1,42 +1,40 @@
-﻿using Mesen.Debugger.ViewModels;
-using Mesen.Interop;
 using System;
 using System.Collections.Generic;
-using static Mesen.Debugger.ViewModels.RegEntry;
+using Nexen.Debugger.ViewModels;
+using Nexen.Interop;
+using static Nexen.Debugger.ViewModels.RegEntry;
 
-namespace Mesen.Debugger.RegisterViewer;
+namespace Nexen.Debugger.RegisterViewer;
 
-public class PceRegisterViewer
-{
-	public static List<RegisterViewerTab> GetTabs(ref PceState pceState)
-	{
+public sealed class PceRegisterViewer {
+	public static List<RegisterViewerTab> GetTabs(ref PceState pceState) {
 		List<RegisterViewerTab> tabs = new List<RegisterViewerTab>() {
 			GetPceCpuTab(ref pceState)
 		};
 
-		if(pceState.IsSuperGrafx) {
+		if (pceState.IsSuperGrafx) {
 			tabs.Add(GetPceVdcTab(ref pceState.Video.Vdc, "1"));
 			tabs.Add(GetPceVdcTab(ref pceState.Video.Vdc2, "2"));
 			tabs.Add(GetPceVpcTab(ref pceState));
 		} else {
 			tabs.Add(GetPceVdcTab(ref pceState.Video.Vdc));
 		}
+
 		tabs.Add(GetPceVceTab(ref pceState));
 		tabs.Add(GetPcePsgTab(ref pceState));
 
-		if(pceState.HasCdRom) {
+		if (pceState.HasCdRom) {
 			tabs.Add(GetPceCdRomTab(ref pceState));
 		}
 
-		if(pceState.HasArcadeCard) {
+		if (pceState.HasArcadeCard) {
 			tabs.Add(GetPceArcadeCardTab(ref pceState));
 		}
 
 		return tabs;
 	}
 
-	private static RegisterViewerTab GetPceVceTab(ref PceState state)
-	{
+	private static RegisterViewerTab GetPceVceTab(ref PceState state) {
 		ref PceVceState vce = ref state.Video.Vce;
 
 		List<RegEntry> entries = new List<RegEntry>() {
@@ -49,8 +47,7 @@ public class PceRegisterViewer
 		return new RegisterViewerTab("VCE", entries, CpuType.Pce, MemoryType.PceMemory);
 	}
 
-	private static RegisterViewerTab GetPceVpcTab(ref PceState state)
-	{
+	private static RegisterViewerTab GetPceVpcTab(ref PceState state) {
 		ref PceVpcState vpc = ref state.Video.Vpc;
 
 		List<RegEntry> entries = new List<RegEntry>() {
@@ -85,8 +82,7 @@ public class PceRegisterViewer
 		return new RegisterViewerTab("VPC", entries, CpuType.Pce, MemoryType.PceMemory);
 	}
 
-	private static RegisterViewerTab GetPceVdcTab(ref PceVdcState vdc, string suffix = "")
-	{
+	private static RegisterViewerTab GetPceVdcTab(ref PceVdcState vdc, string suffix = "") {
 		List<RegEntry> entries = new List<RegEntry>() {
 			new RegEntry("", "State"),
 			new RegEntry("", "HClock (H)", vdc.HClock, Format.X16),
@@ -104,7 +100,7 @@ public class PceRegisterViewer
 			new RegEntry("$00.3", "SATB Transfer Completed", vdc.SatbTransferDone),
 			new RegEntry("$00.4", "VRAM Transfer Completed", vdc.VramTransferDone),
 			new RegEntry("$00.5", "Vertical Blank", vdc.VerticalBlank),
-			//TODOv2
+			//TODO(#1281)
 			//new RegEntry("$00.6", "Busy", ...),
 
 			new RegEntry("", "VRAM Address/Data"),
@@ -170,8 +166,7 @@ public class PceRegisterViewer
 		return new RegisterViewerTab("VDC" + suffix, entries);
 	}
 
-	private static RegisterViewerTab GetPceCpuTab(ref PceState state)
-	{
+	private static RegisterViewerTab GetPceCpuTab(ref PceState state) {
 		ref PceMemoryManagerState mem = ref state.MemoryManager;
 		ref PceTimerState timer = ref state.Timer;
 
@@ -208,8 +203,7 @@ public class PceRegisterViewer
 		return new RegisterViewerTab("CPU", entries, CpuType.Pce, MemoryType.PceMemory);
 	}
 
-	private static RegisterViewerTab GetPcePsgTab(ref PceState pceState)
-	{
+	private static RegisterViewerTab GetPcePsgTab(ref PceState pceState) {
 		List<RegEntry> entries = new List<RegEntry>() {
 			new RegEntry("$800.0-2", "Channel Select", pceState.Psg.ChannelSelect, Format.X8),
 			new RegEntry("$801.0-3", "Right Amplitude", pceState.Psg.RightVolume, Format.X8),
@@ -218,7 +212,7 @@ public class PceRegisterViewer
 			new RegEntry("$809", "LFO Control", pceState.Psg.LfoControl, Format.X8),
 		};
 
-		for(int i = 0; i < 6; i++) {
+		for (int i = 0; i < 6; i++) {
 			ref PcePsgChannelState ch = ref pceState.PsgChannels[i];
 
 			entries.AddRange(new List<RegEntry>() {
@@ -233,7 +227,7 @@ public class PceRegisterViewer
 				new RegEntry("", "Timer", ch.Timer),
 			});
 
-			if(i >= 4) {
+			if (i >= 4) {
 				entries.Add(new RegEntry("$807.7", "Noise Enabled", ch.NoiseEnabled));
 				entries.Add(new RegEntry("$807.0-4", "Noise Frequency", ch.NoiseFrequency, Format.X8));
 				entries.Add(new RegEntry("", "Noise Timer", ch.NoiseTimer));
@@ -245,8 +239,7 @@ public class PceRegisterViewer
 		return new RegisterViewerTab("PSG", entries, CpuType.Pce, MemoryType.PceMemory);
 	}
 
-	private static RegisterViewerTab GetPceCdRomTab(ref PceState pceState)
-	{
+	private static RegisterViewerTab GetPceCdRomTab(ref PceState pceState) {
 		ref PceCdRomState cdrom = ref pceState.CdRom;
 		ref PceCdAudioPlayerState player = ref pceState.CdPlayer;
 		ref PceAudioFaderState fader = ref pceState.AudioFader;
@@ -277,7 +270,7 @@ public class PceRegisterViewer
 			new RegEntry("$180D.6", "Auto-stop on length = 0", (adpcm.Control & 0x40) != 0),
 			new RegEntry("$180D.7", "Reset", (adpcm.Control & 0x80) != 0),
 			new RegEntry("$180E", "Value", adpcm.PlaybackRate),
-			new RegEntry("$180E.0-3", "Playback Rate", Math.Round(32000.0 / (16 - adpcm.PlaybackRate)) + " Hz", (adpcm.PlaybackRate & 0xF)),
+			new RegEntry("$180E.0-3", "Playback Rate", Math.Round(32000.0 / (16 - adpcm.PlaybackRate)) + " Hz", adpcm.PlaybackRate & 0xF),
 			new RegEntry("", "Half Reached", adpcm.HalfReached),
 			new RegEntry("", "ADPCM Length", adpcm.AdpcmLength, Format.X16),
 			new RegEntry("", "Read Address", adpcm.ReadAddress, Format.X16),
@@ -304,13 +297,13 @@ public class PceRegisterViewer
 			new RegEntry("$1801", "Data Port (Read)", scsi.ReadDataPort),
 			new RegEntry("", "SCSI Phase", scsi.Phase),
 			new RegEntry("", "SCSI Signals"),
-			new RegEntry("$1800.3-7", "Status", (
+			new RegEntry("$1800.3-7", "Status",
 				(scsi.Signals[4] != 0 ? 0x08 : 0) |
 				(scsi.Signals[3] != 0 ? 0x10 : 0) |
 				(scsi.Signals[5] != 0 ? 0x20 : 0) |
 				(scsi.Signals[6] != 0 ? 0x40 : 0) |
 				(scsi.Signals[2] != 0 ? 0x80 : 0)
-			)),
+			),
 			new RegEntry("", "ACK", scsi.Signals[0] != 0),
 			//new RegEntry("", "ATN", scsi.Signals[1] != 0), //unused
 			new RegEntry("$1800.7", "BSY", scsi.Signals[2] != 0),
@@ -339,8 +332,7 @@ public class PceRegisterViewer
 		return new RegisterViewerTab("CD-ROM", entries, CpuType.Pce, MemoryType.PceMemory);
 	}
 
-	private static RegisterViewerTab GetPceArcadeCardTab(ref PceState pceState)
-	{
+	private static RegisterViewerTab GetPceArcadeCardTab(ref PceState pceState) {
 		ref PceArcadeCardState state = ref pceState.ArcadeCard;
 
 		List<RegEntry> entries = new List<RegEntry>() {
@@ -349,7 +341,7 @@ public class PceRegisterViewer
 			new RegEntry("$1AE5", "Rotate Value", state.RotateReg, Format.X8),
 		};
 
-		for(int i = 0; i < 4; i++) {
+		for (int i = 0; i < 4; i++) {
 			ref PceArcadeCardPortConfig port = ref state.Port[i];
 
 			entries.AddRange(new List<RegEntry>() {

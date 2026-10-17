@@ -7,39 +7,33 @@
 #undef WsCpu
 #undef DUMMYCPU
 
-void DummyWsCpu::SetDummyState(WsCpuState& state)
-{
+void DummyWsCpu::SetDummyState(WsCpuState& state) {
 	_memOpCounter = 0;
 	_state = state;
 	_state.Halted = false;
 	_state.Flags.Trap = false;
 }
 
-uint32_t DummyWsCpu::GetOperationCount()
-{
+uint32_t DummyWsCpu::GetOperationCount() {
 	return _memOpCounter;
 }
 
-void DummyWsCpu::LogMemoryOperation(uint32_t addr, uint16_t value, MemoryOperationType type, MemoryType memType, bool isWordAccess)
-{
-	if(_memOpCounter < 32) {
+void DummyWsCpu::LogMemoryOperation(uint32_t addr, uint16_t value, MemoryOperationType type, MemoryType memType, bool isWordAccess) {
+	if (_memOpCounter < 32) {
 		_memOperations[_memOpCounter] = {
-			addr,
-			(int32_t)value,
-			type,
-			memType
-		};
+		    addr,
+		    (int32_t)value,
+		    type,
+		    memType};
 		_memWordAccess[_memOpCounter] = isWordAccess;
 		_memOpCounter++;
 	}
 }
 
-MemoryOperationInfo DummyWsCpu::GetOperationInfo(uint32_t index)
-{
+MemoryOperationInfo DummyWsCpu::GetOperationInfo(uint32_t index) {
 	return _memOperations[index];
 }
 
-bool DummyWsCpu::IsWordAccess(uint32_t index)
-{
+bool DummyWsCpu::IsWordAccess(uint32_t index) {
 	return _memWordAccess[index];
 }

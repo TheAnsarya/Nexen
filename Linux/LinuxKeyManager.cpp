@@ -13,13 +13,13 @@ LinuxKeyManager::LinuxKeyManager(Emulator* emu)
 
 	_keyDefinitions = KeyDefinition::GetSharedKeyDefinitions();
 
-	vector<string> buttonNames = { 
-		"A", "B", "C", "X", "Y", "Z", "L1", "R1", "L2", "R2", "Select", "Start", "L3", "R3", 
-		"X+", "X-", "Y+", "Y-", "Z+", "Z-", 
-		"X2+", "X2-", "Y2+", "Y2-", "Z2+", "Z2-", 
-		"Right", "Left", "Down", "Up", 
-		"Right 2", "Left 2", "Down 2", "Up 2", 
-		"Right 3", "Left 3", "Down 3", "Up 3", 
+	vector<string> buttonNames = {
+		"A", "B", "C", "X", "Y", "Z", "L1", "R1", "L2", "R2", "Select", "Start", "L3", "R3",
+		"X+", "X-", "Y+", "Y-", "Z+", "Z-",
+		"X2+", "X2-", "Y2+", "Y2-", "Z2+", "Z2-",
+		"Right", "Left", "Down", "Up",
+		"Right 2", "Left 2", "Down 2", "Up 2",
+		"Right 3", "Left 3", "Down 3", "Up 3",
 		"Right 4", "Left 4", "Down 4", "Up 4",
 		"Trigger", "Thumb", "Thumb2", "Top", "Top2",
 		"Pinkie", "Base", "Base2", "Base3", "Base4",
@@ -42,7 +42,7 @@ LinuxKeyManager::LinuxKeyManager(Emulator* emu)
 
 	_disableAllKeys = false;
 	_stopUpdateDeviceThread = false;
-	StartUpdateDeviceThread();	
+	StartUpdateDeviceThread();
 }
 
 LinuxKeyManager::~LinuxKeyManager()
@@ -67,6 +67,7 @@ bool LinuxKeyManager::IsKeyPressed(uint16_t key)
 	if(key >= LinuxKeyManager::BaseGamepadIndex) {
 		uint8_t gamepadPort = (key - LinuxKeyManager::BaseGamepadIndex) / 0x100;
 		uint8_t gamepadButton = (key - LinuxKeyManager::BaseGamepadIndex) % 0x100;
+		std::lock_guard<std::mutex> lock(_controllerMutex);
 		if(_controllers.size() > gamepadPort) {
 			return _controllers[gamepadPort]->IsButtonPressed(gamepadButton);
 		}
@@ -81,7 +82,10 @@ optional<int16_t> LinuxKeyManager::GetAxisPosition(uint16_t key)
 	if(key >= LinuxKeyManager::BaseGamepadIndex) {
 		uint8_t port = (key - LinuxKeyManager::BaseGamepadIndex) / 0x100;
 		uint8_t button = (key - LinuxKeyManager::BaseGamepadIndex) % 0x100;
-		return _controllers[port]->GetAxisPosition(button);
+		std::lock_guard<std::mutex> lock(_controllerMutex);
+		if(_controllers.size() > port) {
+			return _controllers[port]->GetAxisPosition(button);
+		}
 	}
 	return std::nullopt;
 }
@@ -94,10 +98,13 @@ bool LinuxKeyManager::IsMouseButtonPressed(MouseButton button)
 vector<uint16_t> LinuxKeyManager::GetPressedKeys()
 {
 	vector<uint16_t> pressedKeys;
-	for(size_t i = 0; i < _controllers.size(); i++) {
-		for(int j = 0; j <= 54; j++) {
-			if(_controllers[i]->IsButtonPressed(j)) {
-				pressedKeys.push_back(LinuxKeyManager::BaseGamepadIndex + i * 0x100 + j);
+	{
+		std::lock_guard<std::mutex> lock(_controllerMutex);
+		for(size_t i = 0; i < _controllers.size(); i++) {
+			for(int j = 0; j <= 54; j++) {
+				if(_controllers[i]->IsButtonPressed(j)) {
+						pressedKeys.push_back(LinuxKeyManager::BaseGamepadIndex + i * 0x100 + j);
+				}
 			}
 		}
 	}
@@ -119,7 +126,7 @@ string LinuxKeyManager::GetKeyName(uint16_t key)
 	return "";
 }
 
-uint16_t LinuxKeyManager::GetKeyCode(string keyName)
+uint16_t LinuxKeyManager::GetKeyCode(const string& keyName)
 {
 	auto keyDef = _keyCodes.find(keyName);
 	if(keyDef != _keyCodes.end()) {
@@ -136,10 +143,13 @@ void LinuxKeyManager::UpdateDevices()
 
 void LinuxKeyManager::CheckForGamepads(bool logInformation)
 {
-	vector<int> connectedIDs; 
-	for(int i = _controllers.size() - 1; i >= 0; i--) {
-		if(!_controllers[i]->IsDisconnected()) {
-			connectedIDs.push_back(_controllers[i]->GetDeviceID());
+	vector<int> connectedIDs;
+	{
+		std::lock_guard<std::mutex> lock(_controllerMutex);
+		for(int i = _controllers.size() - 1; i >= 0; i--) {
+			if(!_controllers[i]->IsDisconnected()) {
+				connectedIDs.push_back(_controllers[i]->GetDeviceID());
+			}
 		}
 	}
 
@@ -157,6 +167,7 @@ void LinuxKeyManager::CheckForGamepads(bool logInformation)
 			if(std::find(connectedIDs.begin(), connectedIDs.end(), deviceId) == connectedIDs.end()) {
 				std::shared_ptr<LinuxGameController> controller = LinuxGameController::GetController(_emu, deviceId, logInformation);
 				if(controller) {
+					std::lock_guard<std::mutex> lock(_controllerMutex);
 					_controllers.push_back(controller);
 				}
 			}
@@ -166,34 +177,34 @@ void LinuxKeyManager::CheckForGamepads(bool logInformation)
 
 void LinuxKeyManager::StartUpdateDeviceThread()
 {
-	_updateDeviceThread = std::thread([=]() {
+	_updateDeviceThread = std::thread([this]() {
 		while(!_stopUpdateDeviceThread) {
 			//Check for newly plugged in controllers every 5 secs
-			vector<shared_ptr<LinuxGameController>> controllersToAdd; 
 			vector<int> indexesToRemove;
-			for(int i = _controllers.size() - 1; i >= 0; i--) {
-				if(_controllers[i]->IsDisconnected()) {
-					indexesToRemove.push_back(i);
+			{
+				std::lock_guard<std::mutex> lock(_controllerMutex);
+				for(int i = _controllers.size() - 1; i >= 0; i--) {
+					if(_controllers[i]->IsDisconnected()) {
+						indexesToRemove.push_back(i);
+					}
 				}
 			}
 
 			CheckForGamepads(false);
 
-			if(!indexesToRemove.empty() || !controllersToAdd.empty()) {
+			if(!indexesToRemove.empty()) {
 				_emu->Pause();
+				std::lock_guard<std::mutex> lock(_controllerMutex);
 				for(int index : indexesToRemove) {
 					_controllers.erase(_controllers.begin()+index);
 				}
-				for(std::shared_ptr<LinuxGameController> controller : controllersToAdd) {
-					_controllers.push_back(controller);
-				} 
 				_emu->Resume();
 			}
 
 			_stopSignal.Wait(5000);
 		}
 	});
-}	
+}
 
 bool LinuxKeyManager::SetKeyState(uint16_t scanCode, bool state)
 {
@@ -216,6 +227,7 @@ void LinuxKeyManager::SetDisabled(bool disabled)
 
 void LinuxKeyManager::SetForceFeedback(uint16_t magnitudeRight, uint16_t magnitudeLeft)
 {
+	std::lock_guard<std::mutex> lock(_controllerMutex);
 	for(auto& controller : _controllers) {
 		controller->SetForceFeedback(magnitudeRight, magnitudeLeft);
 	}

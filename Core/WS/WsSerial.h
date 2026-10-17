@@ -5,8 +5,7 @@
 
 class WsConsole;
 
-class WsSerial final : public ISerializable
-{
+class WsSerial final : public ISerializable {
 private:
 	WsSerialState _state = {};
 	WsConsole* _console = nullptr;
@@ -19,6 +18,7 @@ public:
 	WsSerialState& GetState() { return _state; }
 
 	uint8_t Read(uint16_t port);
+	uint8_t Peek(uint16_t port) const;
 	void Write(uint16_t port, uint8_t value);
 
 	bool HasSendIrq();

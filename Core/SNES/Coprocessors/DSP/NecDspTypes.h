@@ -2,8 +2,7 @@
 #include "pch.h"
 #include "Shared/BaseState.h"
 
-struct NecDspAccFlags
-{
+struct NecDspAccFlags {
 	bool Carry;
 	bool Zero;
 	bool Overflow0;
@@ -12,24 +11,21 @@ struct NecDspAccFlags
 	bool Sign1;
 };
 
-namespace NecDspStatusFlags
-{
-	enum NecDspStatusFlags
-	{
-		RequestForMaster = 0x8000,
-		UserFlag1 = 0x4000,
-		UserFlag0 = 0x2000,
-		DataRegStatus = 0x1000,
-		Dma = 0x0800,
-		DataRegControl = 0x0400,
-		SerialOutControl = 0x0200,
-		SerialInControl = 0x0100,
-		EnableInterrupt = 0x0080,
-	};
-}
+namespace NecDspStatusFlags {
+enum NecDspStatusFlags {
+	RequestForMaster = 0x8000,
+	UserFlag1 = 0x4000,
+	UserFlag0 = 0x2000,
+	DataRegStatus = 0x1000,
+	Dma = 0x0800,
+	DataRegControl = 0x0400,
+	SerialOutControl = 0x0200,
+	SerialInControl = 0x0100,
+	EnableInterrupt = 0x0080,
+};
+} // namespace NecDspStatusFlags
 
-struct NecDspState : BaseState
-{
+struct NecDspState : BaseState {
 	uint64_t CycleCount;
 
 	/* Accumulator A */

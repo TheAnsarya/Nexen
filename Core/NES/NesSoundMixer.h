@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "Utilities/ISerializable.h"
 #include "Utilities/Audio/blip_buf.h"
 #include "Utilities/Audio/StereoDelayFilter.h"
@@ -12,15 +13,14 @@ class SoundMixer;
 class EmuSettings;
 enum class ConsoleRegion;
 
-class NesSoundMixer : public ISerializable
-{
+class NesSoundMixer : public ISerializable {
 public:
 	static constexpr uint32_t CycleLength = 10000;
 	static constexpr uint32_t BitsPerSample = 16;
 
 private:
 	static constexpr uint32_t MaxSampleRate = 96000;
-	static constexpr uint32_t MaxSamplesPerFrame = MaxSampleRate / 60 * 4 * 2; //x4 to allow CPU overclocking up to 10x, x2 for panning stereo
+	static constexpr uint32_t MaxSamplesPerFrame = MaxSampleRate / 60 * 4 * 2; // x4 to allow CPU overclocking up to 10x, x2 for panning stereo
 	static constexpr uint32_t MaxChannelCount = 11;
 
 	NesConsole* _console = nullptr;
@@ -34,12 +34,13 @@ private:
 	int16_t _previousOutputRight = 0;
 
 	vector<uint32_t> _timestamps;
+	bool _usedTimestamp[CycleLength] = {};
 	int16_t _channelOutput[MaxChannelCount][CycleLength] = {};
 	int16_t _currentOutput[MaxChannelCount] = {};
 
 	blip_t* _blipBufLeft = nullptr;
 	blip_t* _blipBufRight = nullptr;
-	int16_t* _outputBuffer = nullptr;
+	std::unique_ptr<int16_t[]> _outputBuffer;
 	size_t _sampleCount = 0;
 	double _volumes[MaxChannelCount] = {};
 	double _panning[MaxChannelCount] = {};
@@ -56,7 +57,7 @@ private:
 	void ProcessVsDualSystemAudio();
 
 	void UpdateRates(bool forceUpdate);
-	
+
 public:
 	NesSoundMixer(NesConsole* console);
 	virtual ~NesSoundMixer();

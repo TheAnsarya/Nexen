@@ -17,38 +17,35 @@
 
 #include <memory>
 
+namespace DirectX {
+class CommonStates {
+public:
+	explicit CommonStates(_In_ ID3D11Device* device);
+	CommonStates(CommonStates&& moveFrom) noexcept;
+	CommonStates& operator=(CommonStates&& moveFrom) noexcept;
 
-namespace DirectX
-{
-    class CommonStates
-    {
-    public:
-        explicit CommonStates(_In_ ID3D11Device* device);
-        CommonStates(CommonStates&& moveFrom) noexcept;
-        CommonStates& operator= (CommonStates&& moveFrom) noexcept;
+	CommonStates(CommonStates const&) = delete;
+	CommonStates& operator=(CommonStates const&) = delete;
 
-        CommonStates(CommonStates const&) = delete;
-        CommonStates& operator= (CommonStates const&) = delete;
+	virtual ~CommonStates();
 
-        virtual ~CommonStates();
+	// Blend states.
+	ID3D11BlendState* __cdecl AlphaBlend() const;
 
-        // Blend states.
-        ID3D11BlendState* __cdecl AlphaBlend() const;
+	// Depth stencil states.
+	ID3D11DepthStencilState* __cdecl DepthNone() const;
 
-        // Depth stencil states.
-        ID3D11DepthStencilState* __cdecl DepthNone() const;
+	// Rasterizer states.
+	ID3D11RasterizerState* __cdecl CullCounterClockwise() const;
 
-        // Rasterizer states.
-        ID3D11RasterizerState* __cdecl CullCounterClockwise() const;
+	// Sampler states.
+	ID3D11SamplerState* __cdecl PointClamp() const;
+	ID3D11SamplerState* __cdecl LinearClamp() const;
 
-        // Sampler states.
-		  ID3D11SamplerState* __cdecl PointClamp() const;
-		  ID3D11SamplerState* __cdecl LinearClamp() const;
+private:
+	// Private implementation.
+	class Impl;
 
-    private:
-        // Private implementation.
-        class Impl;
-
-        std::shared_ptr<Impl> pImpl;
-    };
-}
+	std::shared_ptr<Impl> pImpl;
+};
+} // namespace DirectX

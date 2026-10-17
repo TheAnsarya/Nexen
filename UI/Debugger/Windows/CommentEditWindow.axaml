@@ -1,12 +1,12 @@
-<Window
+﻿<Window
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
+	xmlns:l="using:Nexen.Localization"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d" d:DesignWidth="350" d:DesignHeight="50"
-	x:Class="Mesen.Debugger.Windows.CommentEditWindow"
+	x:Class="Nexen.Debugger.Windows.CommentEditWindow"
 	x:DataType="vm:CommentEditViewModel"
 	Icon="/Assets/EditLabel.png"
 	Width="350"
@@ -27,13 +27,13 @@
 
 		<TextBox
 			Name="txtComment"
-			FontFamily="{DynamicResource MesenMonospaceFont}"
-			FontSize="{DynamicResource MesenMonospaceFontSize}"
+			FontFamily="{DynamicResource NexenMonospaceFont}"
+			FontSize="{DynamicResource NexenMonospaceFontSize}"
 			AcceptsReturn="True"
 			ScrollViewer.HorizontalScrollBarVisibility="Auto"
 			Height="NaN"
-			MinHeight="21"
-			MaxHeight="200"
+			MinHeight="36"
+			MaxHeight="260"
 			VerticalContentAlignment="Top"
 			Text="{Binding Label.Comment, Converter={StaticResource NullTextConverter}}"
 		/>

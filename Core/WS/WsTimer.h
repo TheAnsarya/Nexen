@@ -5,8 +5,7 @@
 
 class WsMemoryManager;
 
-class WsTimer final : public ISerializable
-{
+class WsTimer final : public ISerializable {
 private:
 	WsMemoryManager* _memoryManager = nullptr;
 	WsTimerState _state = {};

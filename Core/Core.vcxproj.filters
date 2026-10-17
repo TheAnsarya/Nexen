@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <None Include="Core.ruleset" />
@@ -43,6 +43,12 @@
     <ClCompile Include="Debugger\Debugger.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="Mcp\McpHookManager.cpp">
+      <Filter>Mcp</Filter>
+    </ClCompile>
+    <ClInclude Include="Mcp\McpHookManager.h">
+      <Filter>Mcp</Filter>
+    </ClInclude>
     <ClInclude Include="Debugger\Debugger.h">
       <Filter>Debugger</Filter>
     </ClInclude>
@@ -118,7 +124,13 @@
     <ClCompile Include="Debugger\LuaCallHelper.cpp">
       <Filter>Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="Debugger\LuaWatchdogCompat.cpp">
+      <Filter>Debugger</Filter>
+    </ClCompile>
     <ClInclude Include="Debugger\LuaCallHelper.h">
+      <Filter>Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\LuaInterop.h">
       <Filter>Debugger</Filter>
     </ClInclude>
     <ClCompile Include="Debugger\MemoryAccessCounter.cpp">
@@ -1030,10 +1042,10 @@
     <ClInclude Include="Shared\Interfaces\IRenderingDevice.h">
       <Filter>Shared\Interfaces</Filter>
     </ClInclude>
-    <ClCompile Include="Shared\Movies\MesenMovie.cpp">
+    <ClCompile Include="Shared\Movies\NexenMovie.cpp">
       <Filter>Shared\Movies</Filter>
     </ClCompile>
-    <ClInclude Include="Shared\Movies\MesenMovie.h">
+    <ClInclude Include="Shared\Movies\NexenMovie.h">
       <Filter>Shared\Movies</Filter>
     </ClInclude>
     <ClCompile Include="Shared\Movies\MovieManager.cpp">
@@ -2886,6 +2898,9 @@
     <ClInclude Include="WS\Carts\WsCart.h">
       <Filter>WS\Carts</Filter>
     </ClInclude>
+    <ClInclude Include="WS\WsRtc.h">
+      <Filter>WS</Filter>
+    </ClInclude>
     <ClInclude Include="WS\WsTimer.h">
       <Filter>WS</Filter>
     </ClInclude>
@@ -3296,6 +3311,9 @@
     <ClCompile Include="WS\Carts\WsCart.cpp">
       <Filter>WS\Carts</Filter>
     </ClCompile>
+    <ClCompile Include="WS\WsRtc.cpp">
+      <Filter>WS</Filter>
+    </ClCompile>
     <ClCompile Include="WS\WsTimer.cpp">
       <Filter>WS</Filter>
     </ClCompile>
@@ -3477,6 +3495,9 @@
     </Filter>
     <Filter Include="SNES\Coprocessors\SufamiTurbo">
       <UniqueIdentifier>{bfdd4bb9-41c2-4255-a8c3-0176c990cbf3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mcp">
+      <UniqueIdentifier>{c711e055-350c-4e8c-8eb4-a231748095c4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -1,18 +1,14 @@
-﻿using Mesen.Interop;
-using ReactiveUI.Fody.Helpers;
+using Nexen.Interop;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.Config
-{
-	public class PaletteViewerConfig : BaseWindowConfig<PaletteViewerConfig>
-	{
-		[Reactive] public bool ShowSettingsPanel { get; set; } = true;
-		[Reactive] public bool ShowPaletteIndexes { get; set; } = false;
-		[Reactive] public int Zoom { get; set; } = 3;
+namespace Nexen.Config; 
+public sealed partial class PaletteViewerConfig : BaseWindowConfig<PaletteViewerConfig> {
+	[Reactive] public partial bool ShowSettingsPanel { get; set; } = true;
+	[Reactive] public partial bool ShowPaletteIndexes { get; set; } = false;
+	[Reactive] public partial int Zoom { get; set; } = 3;
 
-		[Reactive] public RefreshTimingConfig RefreshTiming { get; set; } = new();
+	[Reactive] public partial RefreshTimingConfig RefreshTiming { get; set; } = new();
 
-		public PaletteViewerConfig()
-		{
-		}
+	public PaletteViewerConfig() {
 	}
 }

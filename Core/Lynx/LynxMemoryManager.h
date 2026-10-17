@@ -1,0 +1,111 @@
+#pragma once
+#include "pch.h"
+#include "Lynx/LynxTypes.h"
+#include "Debugger/AddressInfo.h"
+#include "Shared/Emulator.h"
+#include "Shared/MemoryOperationType.h"
+#include "Utilities/ISerializable.h"
+
+class LynxConsole;
+class LynxCpu;
+class LynxMikey;
+class LynxSuzy;
+class Emulator;
+
+/// <summary>
+/// Lynx memory manager — handles the 64KB flat address space with
+/// MAPCTL-based overlays for Suzy, Mikey, ROM, and vector space.
+///
+/// Memory map (all addresses 16-bit, flat):
+///   $0000-$FBFF  — always RAM
+///   $FC00-$FCFF  — Suzy registers (when MAPCTL bit 0 = 0) or RAM
+///   $FD00-$FDFF  — Mikey registers (when MAPCTL bit 1 = 0) or RAM
+///   $FE00-$FFF7  — Boot ROM (when MAPCTL bit 2 = 0) or RAM
+///   $FFF8         — reserved
+///   $FFF9         — MAPCTL register (always writable)
+///   $FFFA-$FFFF  — ROM vectors (when MAPCTL bit 3 = 0) or RAM
+///
+/// MAPCTL ($FFF9) bits:
+///   Bit 0: 0 = Suzy space visible, 1 = RAM at $FC00-$FCFF
+///   Bit 1: 0 = Mikey space visible, 1 = RAM at $FD00-$FDFF
+///   Bit 2: 0 = ROM space visible, 1 = RAM at $FE00-$FFF7
+///   Bit 3: 0 = Vector space (ROM) visible, 1 = RAM at $FFFA-$FFFF
+///   Bit 4: Sequential cart access disable
+///   Bit 5: CPU bus request held until next timer expire
+/// </summary>
+class LynxMemoryManager final : public ISerializable {
+private:
+	LynxConsole* _console = nullptr;
+	Emulator* _emu = nullptr;
+
+	// Component pointers (set via Init)
+	LynxMikey* _mikey = nullptr;
+	LynxSuzy* _suzy = nullptr;
+
+	// Memory regions (owned by LynxConsole)
+	uint8_t* _workRam = nullptr;
+	uint32_t _workRamSize = 0;
+	uint8_t* _bootRom = nullptr;
+	uint32_t _bootRomSize = 0;
+
+	LynxMemoryManagerState _state = {};
+
+public:
+	LynxMemoryManager() {}
+
+	void Init(Emulator* emu, LynxConsole* console, uint8_t* workRam, uint8_t* bootRom, uint32_t bootRomSize);
+
+	void SetMikey(LynxMikey* mikey) { _mikey = mikey; }
+	void SetSuzy(LynxSuzy* suzy) { _suzy = suzy; }
+
+	[[nodiscard]] LynxMemoryManagerState& GetState() { return _state; }
+
+	/// <summary>CPU read — fast path for RAM, slow path for overlays</summary>
+	[[nodiscard]] __forceinline uint8_t Read(uint16_t addr, MemoryOperationType opType = MemoryOperationType::Read) {
+		if (addr < 0xfc00) [[likely]] {
+			uint8_t value = _workRam[addr];
+			_emu->ProcessMemoryRead<CpuType::Lynx>(addr, value, opType);
+			return value;
+		}
+		return ReadSlow(addr, opType);
+	}
+
+	/// <summary>CPU write — fast path for RAM, slow path for overlays</summary>
+	__forceinline void Write(uint16_t addr, uint8_t value, MemoryOperationType opType = MemoryOperationType::Write) {
+		if (!_emu->ProcessMemoryWrite<CpuType::Lynx>(addr, value, opType)) {
+			return;
+		}
+		if (addr < 0xfc00) [[likely]] {
+			_workRam[addr] = value;
+			return;
+		}
+		WriteSlow(addr, value);
+	}
+
+	/// <summary>Debug read — no side effects</summary>
+	[[nodiscard]] uint8_t DebugRead(uint16_t addr);
+
+	/// <summary>Debug write — no side effects</summary>
+	void DebugWrite(uint16_t addr, uint8_t value);
+
+	/// <summary>Get absolute address for debugger</summary>
+	[[nodiscard]] AddressInfo GetAbsoluteAddress(uint16_t relAddr);
+
+	/// <summary>Get relative address for debugger</summary>
+	[[nodiscard]] int32_t GetRelativeAddress(AddressInfo& absAddress);
+
+	// Diagnostic accessor
+	[[nodiscard]] uint8_t GetMapctl() const { return _state.Mapctl; }
+
+	void Serialize(Serializer& s) override;
+
+private:
+	/// <summary>Update derived MAPCTL state from raw register value</summary>
+	void UpdateMapctl(uint8_t value);
+
+	/// <summary>Slow path for reads to overlay region ($FC00+)</summary>
+	[[nodiscard]] uint8_t ReadSlow(uint16_t addr, MemoryOperationType opType);
+
+	/// <summary>Slow path for writes to overlay region ($FC00+)</summary>
+	void WriteSlow(uint16_t addr, uint8_t value);
+};

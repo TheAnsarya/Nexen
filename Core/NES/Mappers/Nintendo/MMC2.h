@@ -2,11 +2,9 @@
 #include "pch.h"
 #include "NES/BaseMapper.h"
 
-class MMC2 : public BaseMapper
-{
+class MMC2 : public BaseMapper {
 private:
-	enum class MMC2Registers
-	{
+	enum class MMC2Registers {
 		RegA000 = 0xA,
 		RegB000 = 0xB,
 		RegC000 = 0xC,
@@ -27,8 +25,7 @@ protected:
 	uint16_t GetChrPageSize() override { return 0x1000; }
 	bool EnableVramAddressHook() override { return true; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		_leftLatch = 1;
 		_rightLatch = 1;
 		_leftChrPage[0] = GetPowerOnByte() & 0x1F;
@@ -42,8 +39,7 @@ protected:
 		SelectPrgPage(3, -1);
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		BaseMapper::Serialize(s);
 		SV(_prgPage);
 		SV(_leftLatch);
@@ -55,9 +51,8 @@ protected:
 		SV(_rightChrPage[1]);
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
-		switch((MMC2Registers)(addr >> 12)) {
+	void WriteRegister(uint16_t addr, uint8_t value) override {
+		switch ((MMC2Registers)(addr >> 12)) {
 			case MMC2Registers::RegA000:
 				_prgPage = value & 0x0F;
 				SelectPrgPage(0, _prgPage);
@@ -89,43 +84,47 @@ protected:
 		}
 	}
 
-	vector<MapperStateEntry> GetMapperStateEntries() override
-	{
+	vector<MapperStateEntry> GetMapperStateEntries() override {
 		vector<MapperStateEntry> entries;
 		string mirroringType;
 		int64_t mirValue = 0;
-		switch(GetMirroringType()) {
-			case MirroringType::Vertical: mirroringType = "Vertical"; mirValue = 0; break;
-			case MirroringType::Horizontal: mirroringType = "Horizontal"; mirValue = 1; break;
+		switch (GetMirroringType()) {
+			case MirroringType::Vertical:
+				mirroringType = "Vertical";
+				mirValue = 0;
+				break;
+			case MirroringType::Horizontal:
+				mirroringType = "Horizontal";
+				mirValue = 1;
+				break;
 		}
-		entries.push_back(MapperStateEntry("$A000.0-3", "PRG Bank", _prgPage, MapperStateValueType::Number8));
-		entries.push_back(MapperStateEntry("$B000.0-4", "CHR Bank ($0000) ($FD)", _leftChrPage[0], MapperStateValueType::Number8));
-		entries.push_back(MapperStateEntry("$C000.0-4", "CHR Bank ($0000) ($FE)", _leftChrPage[1], MapperStateValueType::Number8));
-		entries.push_back(MapperStateEntry("$D000.0-4", "CHR Bank ($1000) ($FD)", _rightChrPage[0], MapperStateValueType::Number8));
-		entries.push_back(MapperStateEntry("$E000.0-4", "CHR Bank ($1000) ($FE)", _rightChrPage[1], MapperStateValueType::Number8));
-		entries.push_back(MapperStateEntry("$F000.0", "Mirroring", mirroringType, mirValue));
+		entries.emplace_back("$A000.0-3", "PRG Bank", _prgPage, MapperStateValueType::Number8);
+		entries.emplace_back("$B000.0-4", "CHR Bank ($0000) ($FD)", _leftChrPage[0], MapperStateValueType::Number8);
+		entries.emplace_back("$C000.0-4", "CHR Bank ($0000) ($FE)", _leftChrPage[1], MapperStateValueType::Number8);
+		entries.emplace_back("$D000.0-4", "CHR Bank ($1000) ($FD)", _rightChrPage[0], MapperStateValueType::Number8);
+		entries.emplace_back("$E000.0-4", "CHR Bank ($1000) ($FE)", _rightChrPage[1], MapperStateValueType::Number8);
+		entries.emplace_back("$F000.0", "Mirroring", mirroringType, mirValue);
 		return entries;
 	}
 
 public:
-	void NotifyVramAddressChange(uint16_t addr) override
-	{
-		if(_needChrUpdate) {
+	void NotifyVramAddressChange(uint16_t addr) override {
+		if (_needChrUpdate) {
 			SelectChrPage(0, _leftChrPage[_leftLatch]);
 			SelectChrPage(1, _rightChrPage[_rightLatch]);
 			_needChrUpdate = false;
 		}
 
-		if(addr == 0x0FD8) {
+		if (addr == 0x0FD8) {
 			_leftLatch = 0;
 			_needChrUpdate = true;
-		} else if(addr == 0x0FE8) {
+		} else if (addr == 0x0FE8) {
 			_leftLatch = 1;
 			_needChrUpdate = true;
-		} else if(addr >= 0x1FD8 && addr <= 0x1FDF) {
+		} else if (addr >= 0x1FD8 && addr <= 0x1FDF) {
 			_rightLatch = 0;
 			_needChrUpdate = true;
-		} else if(addr >= 0x1FE8 && addr <= 0x1FEF) {
+		} else if (addr >= 0x1FE8 && addr <= 0x1FEF) {
 			_rightLatch = 1;
 			_needChrUpdate = true;
 		}

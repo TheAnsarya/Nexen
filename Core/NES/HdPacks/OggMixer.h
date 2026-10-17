@@ -4,8 +4,7 @@
 
 class OggReader;
 
-class OggMixer : public IAudioProvider
-{
+class OggMixer : public IAudioProvider {
 private:
 	shared_ptr<OggReader> _bgm;
 	vector<shared_ptr<OggReader>> _sfx;
@@ -21,9 +20,9 @@ public:
 	virtual ~OggMixer() = default;
 
 	void SetSampleRate(int sampleRate);
-	
+
 	void Reset(uint32_t sampleRate);
-	bool Play(string filename, bool isSfx, uint32_t startOffset, uint32_t loopPosition);
+	[[nodiscard]] bool Play(const string& filename, bool isSfx, uint32_t startOffset, uint32_t loopPosition);
 	void SetPlaybackOptions(uint8_t options);
 	void SetPausedFlag(bool paused);
 	void StopBgm();

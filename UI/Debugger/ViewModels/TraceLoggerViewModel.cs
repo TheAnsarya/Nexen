@@ -1,756 +1,1100 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Media;
-using Avalonia.Threading;
-using Mesen.Config;
-using Mesen.Debugger.Controls;
-using Mesen.Debugger.Disassembly;
-using Mesen.Debugger.Utilities;
-using Mesen.Debugger.Windows;
-using Mesen.Interop;
-using Mesen.Localization;
-using Mesen.Utilities;
-using Mesen.ViewModels;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input.Platform;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Nexen.Config;
+using Nexen.Debugger.Controls;
+using Nexen.Debugger.Disassembly;
+using Nexen.Debugger.Utilities;
+using Nexen.Debugger.Windows;
+using Nexen.Interop;
+using Nexen.Localization;
+using Nexen.Utilities;
+using Nexen.ViewModels;
+using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.Debugger.ViewModels
-{
-	public class TraceLoggerViewModel : DisposableViewModel, ISelectableModel
-	{
-		public TraceLoggerConfig Config { get; }
-		[Reactive] public TraceLoggerStyleProvider StyleProvider { get; set; }
-		[Reactive] public CodeLineData[] TraceLogLines { get; set; } = Array.Empty<CodeLineData>();
-		[Reactive] public int VisibleRowCount { get; set; } = 100;
-		[Reactive] public int ScrollPosition { get; set; } = 0;
-		[Reactive] public int MinScrollPosition { get; set; } = 0;
-		[Reactive] public int MaxScrollPosition { get; set; } = DebugApi.TraceLogBufferSize;
-		[Reactive] public bool IsLoggingToFile { get; set; } = false;
+namespace Nexen.Debugger.ViewModels;
+/// <summary>
+/// View model for the trace logger window that displays CPU execution history.
+/// </summary>
+/// <remarks>
+/// The trace logger provides a scrollable view of recently executed instructions
+/// with customizable formatting options per CPU type. It supports multiple CPUs
+/// for systems with coprocessors (SNES SA-1, GSU, etc.) and can log to files.
+/// Features include searching, selection, copying, and configurable display options.
+/// </remarks>
+public sealed partial class TraceLoggerViewModel : DisposableViewModel, ISelectableModel {
+	/// <summary>
+	/// Gets the trace logger configuration settings.
+	/// </summary>
+	public TraceLoggerConfig Config { get; }
 
-		[Reactive] public List<TraceLoggerOptionTab> Tabs { get; set; } = new();
-		[Reactive] public TraceLoggerOptionTab SelectedTab { get; set; } = null!;
+	/// <summary>
+	/// Gets or sets the style provider for rendering trace log lines.
+	/// </summary>
+	[Reactive] public partial TraceLoggerStyleProvider StyleProvider { get; set; }
 
-		[Reactive] public string? TraceFile { get; set; } = null;
-		[Reactive] public bool AllowOpenTraceFile { get; private set; } = false;
-		[Reactive] public bool IsStartLoggingEnabled { get; set; }
-		
-		[Reactive] public bool ShowByteCode { get; private set; }
+	/// <summary>
+	/// Gets or sets the array of trace log lines to display.
+	/// </summary>
+	[Reactive] public partial CodeLineData[] TraceLogLines { get; set; } = [];
 
-		[Reactive] public int SelectionStart { get; private set; }
-		[Reactive] public int SelectionEnd { get; private set; }
-		[Reactive] public int SelectionAnchor { get; private set; }
-		[Reactive] public int SelectedRow { get; private set; }
+	/// <summary>
+	/// Gets or sets the number of visible rows in the view.
+	/// </summary>
+	[Reactive] public partial int VisibleRowCount { get; set; } = 100;
 
-		[Reactive] public List<ContextMenuAction> ToolbarItems { get; private set; } = new();
+	/// <summary>
+	/// Gets or sets the current scroll position in the trace buffer.
+	/// </summary>
+	[Reactive] public partial int ScrollPosition { get; set; } = 0;
 
-		[Reactive] public List<ContextMenuAction> FileMenuItems { get; private set; } = new();
-		[Reactive] public List<ContextMenuAction> DebugMenuItems { get; private set; } = new();
-		[Reactive] public List<ContextMenuAction> SearchMenuItems { get; private set; } = new();
-		[Reactive] public List<ContextMenuAction> ViewMenuItems { get; private set; } = new();
+	/// <summary>
+	/// Gets or sets the minimum scroll position (based on trace buffer size).
+	/// </summary>
+	[Reactive] public partial int MinScrollPosition { get; set; } = 0;
 
-		public QuickSearchViewModel QuickSearch { get; } = new();
-		
-		private DisassemblyViewer? _viewer = null;
+	/// <summary>
+	/// Gets or sets the maximum scroll position (trace buffer size).
+	/// </summary>
+	[Reactive] public partial int MaxScrollPosition { get; set; } = DebugApi.TraceLogBufferSize;
 
-		public TraceLoggerViewModel()
-		{
-			Config = ConfigManager.Config.Debug.TraceLogger;
-			StyleProvider = new TraceLoggerStyleProvider(this);
+	/// <summary>
+	/// Gets or sets whether logging to a file is currently active.
+	/// </summary>
+	[Reactive] public partial bool IsLoggingToFile { get; set; } = false;
 
-			if(Design.IsDesignMode) {
-				Tabs = new() { new TraceLoggerOptionTab(this, CpuType.Nes, Config.GetCpuConfig(CpuType.Nes), true) };
-				SelectedTab = Tabs[0];
-				return;
-			}
+	/// <summary>
+	/// Gets or sets the list of option tabs for each CPU type.
+	/// </summary>
+	[Reactive] public partial List<TraceLoggerOptionTab> Tabs { get; set; } = new();
 
-			QuickSearch.OnFind += QuickSearch_OnFind;
+	/// <summary>
+	/// Gets or sets the currently selected CPU option tab.
+	/// </summary>
+	[Reactive] public partial TraceLoggerOptionTab SelectedTab { get; set; } = null!;
 
-			AddDisposable(this.WhenAnyValue(x => x.QuickSearch.IsSearchBoxVisible).Subscribe(x => {
-				if(!QuickSearch.IsSearchBoxVisible) {
-					_viewer?.Focus();
-				}
-			}));
+	/// <summary>
+	/// Gets or sets the path to the trace log file.
+	/// </summary>
+	[Reactive] public partial string? TraceFile { get; set; } = null;
 
-			UpdateAvailableTabs();
+	/// <summary>
+	/// Gets whether the user can open the trace file (not currently logging).
+	/// </summary>
+	[Reactive] public partial bool AllowOpenTraceFile { get; private set; } = false;
 
-			AddDisposable(this.WhenAnyValue(x => x.ScrollPosition).Subscribe(x => {
-				ScrollPosition = Math.Max(MinScrollPosition, Math.Min(x, MaxScrollPosition));
-				UpdateLog();
-			}));
+	/// <summary>
+	/// Gets or sets whether the start logging button is enabled.
+	/// </summary>
+	[Reactive] public partial bool IsStartLoggingEnabled { get; set; }
 
-			AddDisposable(this.WhenAnyValue(x => x.MinScrollPosition).Subscribe(x => {
-				ScrollPosition = Math.Max(MinScrollPosition, Math.Min(x, MaxScrollPosition));
-			}));
+	/// <summary>
+	/// Gets whether byte code display is enabled for any CPU.
+	/// </summary>
+	[Reactive] public partial bool ShowByteCode { get; private set; }
 
-			AddDisposable(this.WhenAnyValue(x => x.MaxScrollPosition).Subscribe(x => {
-				ScrollPosition = Math.Max(MinScrollPosition, Math.Min(x, MaxScrollPosition));
-			}));
+	/// <summary>
+	/// Gets or sets the start row of the current selection.
+	/// </summary>
+	[Reactive] public partial int SelectionStart { get; private set; }
 
-			AddDisposable(this.WhenAnyValue(x => x.IsLoggingToFile).Subscribe(x => {
-				AllowOpenTraceFile = !IsLoggingToFile && TraceFile != null;
-			}));
+	/// <summary>
+	/// Gets or sets the end row of the current selection.
+	/// </summary>
+	[Reactive] public partial int SelectionEnd { get; private set; }
 
-			AddDisposable(this.WhenAnyValue(x => x.SelectionStart, x => x.SelectionEnd, x => x.SelectedRow, x => x.SelectionAnchor).Subscribe(x => {
-				SelectionStart = Math.Max(MinScrollPosition, Math.Min(DebugApi.TraceLogBufferSize - 1, SelectionStart));
-				SelectionEnd = Math.Max(MinScrollPosition, Math.Min(DebugApi.TraceLogBufferSize - 1, SelectionEnd));
-				SelectedRow = Math.Max(MinScrollPosition, Math.Min(DebugApi.TraceLogBufferSize - 1, SelectedRow));
-				SelectionAnchor = Math.Max(MinScrollPosition, Math.Min(DebugApi.TraceLogBufferSize - 1, SelectionAnchor));
-			}));
+	/// <summary>
+	/// Gets or sets the anchor point for extending selections.
+	/// </summary>
+	[Reactive] public partial int SelectionAnchor { get; private set; }
+
+	/// <summary>
+	/// Gets or sets the currently selected row number.
+	/// </summary>
+	[Reactive] public partial int SelectedRow { get; private set; }
+
+	/// <summary>
+	/// Gets or sets the toolbar context menu items.
+	/// </summary>
+	[Reactive] public partial List<ContextMenuAction> ToolbarItems { get; private set; } = new();
+
+	/// <summary>
+	/// Gets or sets the File menu items.
+	/// </summary>
+	[Reactive] public partial List<ContextMenuAction> FileMenuItems { get; private set; } = new();
+
+	/// <summary>
+	/// Gets or sets the Debug menu items.
+	/// </summary>
+	[Reactive] public partial List<ContextMenuAction> DebugMenuItems { get; private set; } = new();
+
+	/// <summary>
+	/// Gets or sets the Search menu items.
+	/// </summary>
+	[Reactive] public partial List<ContextMenuAction> SearchMenuItems { get; private set; } = new();
+
+	/// <summary>
+	/// Gets or sets the View menu items.
+	/// </summary>
+	[Reactive] public partial List<ContextMenuAction> ViewMenuItems { get; private set; } = new();
+
+	/// <summary>
+	/// Gets the quick search view model for finding text in the trace log.
+	/// </summary>
+	public QuickSearchViewModel QuickSearch { get; } = new();
+
+	/// <summary>
+	/// Reference to the disassembly viewer control for focus management.
+	/// </summary>
+	private DisassemblyViewer? _viewer = null;
+
+	/// <summary>
+	/// Initializes a new instance of the trace logger view model.
+	/// </summary>
+	/// <remarks>
+	/// Sets up reactive subscriptions for scroll position, selection, and logging state.
+	/// Creates CPU-specific option tabs based on the current ROM's CPU types.
+	/// </remarks>
+	public TraceLoggerViewModel() {
+		Config = ConfigManager.Config.Debug.TraceLogger;
+		StyleProvider = new TraceLoggerStyleProvider(this);
+
+		if (Design.IsDesignMode) {
+			Tabs = new() { new TraceLoggerOptionTab(this, CpuType.Nes, Config.GetCpuConfig(CpuType.Nes), true) };
+			SelectedTab = Tabs[0];
+			return;
 		}
 
-		public void SetViewer(DisassemblyViewer viewer)
-		{
-			_viewer = viewer;
-		}
+		QuickSearch.OnFind += QuickSearch_OnFind;
 
-		private void QuickSearch_OnFind(OnFindEventArgs e)
-		{
-			CodeLineData[] lines = GetCodeLines(0, DebugApi.TraceLogBufferSize);
-			string needle = e.SearchString.ToLowerInvariant();
-			
-			int startRow = SelectedRow;
-			if(e.Direction == SearchDirection.Backward) {
-				startRow--;
-			} else if(e.SkipCurrent) {
-				startRow++;
+		AddDisposable(this.WhenAnyValue(x => x.QuickSearch.IsSearchBoxVisible).Subscribe(x => {
+			if (!QuickSearch.IsSearchBoxVisible) {
+				_viewer?.Focus();
 			}
-			int sign = e.Direction == SearchDirection.Backward ? -1 : 1;
+		}));
 
-			for(int i = 0; i < lines.Length; i++) {
-				int lineIndex = (i * sign + startRow) % lines.Length;
-				if(lineIndex < 0) {
-					lineIndex += lines.Length;
-				}
-				if(lines[lineIndex].Text.Contains(needle, StringComparison.OrdinalIgnoreCase)) {
-					Dispatcher.UIThread.Post(() => {
-						ScrollToRowNumber(lineIndex);
-						SelectedRow = lineIndex;
-						SelectionStart = lineIndex;
-						SelectionEnd = lineIndex;
-						InvalidateVisual();
-					});
-					e.Success = true;
-					return;
-				}
-			}
-			e.Success = false;
-		}
+		UpdateAvailableTabs();
 
-		public void InitializeMenu(Window wnd)
-		{
-			FileMenuItems = AddDisposables(new List<ContextMenuAction>() {
-				new ContextMenuAction() {
-					ActionType = ActionType.Exit,
-					OnClick = () => wnd.Close()
-				}
-			});
-
-			DebugMenuItems.AddRange(AddDisposables(DebugSharedActions.GetStepActions(wnd, () => MainWindowViewModel.Instance.RomInfo.ConsoleType.GetMainCpuType())));
-			ToolbarItems.AddRange(AddDisposables(DebugSharedActions.GetStepActions(wnd, () => MainWindowViewModel.Instance.RomInfo.ConsoleType.GetMainCpuType())));
-
-			ViewMenuItems = AddDisposables(new List<ContextMenuAction>() {
-				new ContextMenuAction() {
-					ActionType = ActionType.Refresh,
-					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.Refresh),
-					OnClick = () => UpdateLog()
-				},
-				new ContextMenuSeparator(),
-				new ContextMenuAction() {
-					ActionType = ActionType.EnableAutoRefresh,
-					IsSelected = () => Config.AutoRefresh,
-					OnClick = () => Config.AutoRefresh = !Config.AutoRefresh
-				},
-				new ContextMenuAction() {
-					ActionType = ActionType.RefreshOnBreakPause,
-					IsSelected = () => Config.RefreshOnBreakPause,
-					OnClick = () => Config.RefreshOnBreakPause = !Config.RefreshOnBreakPause
-				},
-				new ContextMenuSeparator(),
-				new ContextMenuAction() {
-					ActionType = ActionType.ShowToolbar,
-					IsSelected = () => Config.ShowToolbar,
-					OnClick = () => Config.ShowToolbar = !Config.ShowToolbar
-				}
-			});
-
-			SearchMenuItems = AddDisposables(new List<ContextMenuAction>() {
-				new ContextMenuAction() {
-					ActionType = ActionType.Find,
-					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.Find),
-					OnClick = () => QuickSearch.Open()
-				},
-				new ContextMenuAction() {
-					ActionType = ActionType.FindPrev,
-					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.FindPrev),
-					OnClick = () => QuickSearch.FindPrev()
-				},
-				new ContextMenuAction() {
-					ActionType = ActionType.FindNext,
-					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.FindNext),
-					OnClick = () => QuickSearch.FindNext()
-				},
-			});
-
-			DebugShortcutManager.RegisterActions(wnd, FileMenuItems);
-			DebugShortcutManager.RegisterActions(wnd, DebugMenuItems);
-			DebugShortcutManager.RegisterActions(wnd, ViewMenuItems);
-			DebugShortcutManager.RegisterActions(wnd, SearchMenuItems);
-		}
-
-		public void InvalidateVisual()
-		{
-			TraceLogLines = (CodeLineData[])TraceLogLines.Clone();
-		}
-
-		public void UpdateAvailableTabs()
-		{
-			foreach(TraceLoggerOptionTab tab in Tabs) {
-				tab.Dispose();
-			}
-
-			List<TraceLoggerOptionTab> tabs = new();
-			RomInfo romInfo = EmuApi.GetRomInfo();
-			bool showEnableButton = romInfo.CpuTypes.Count > 1;
-			StyleProvider.SetConsoleType(romInfo.ConsoleType);
-			foreach(CpuType type in romInfo.CpuTypes) {
-				tabs.Add(AddDisposable(new TraceLoggerOptionTab(this, type, Config.GetCpuConfig(type), showEnableButton)));
-			}
-
-			Tabs = tabs;
-			SelectedTab = tabs[0];
-
-			UpdateOptions();
-		}
-
-		public void UpdateOptions()
-		{
-			bool forceEnable = Tabs.Count == 1;
-			bool isStartLoggingEnabled = forceEnable;
-			bool showByteCode = false;
-
-			RomInfo romInfo = EmuApi.GetRomInfo();
-			foreach(CpuType cpuType in romInfo.CpuTypes) {
-				showByteCode |= Config.GetCpuConfig(cpuType).ShowByteCode;
-				isStartLoggingEnabled |= Config.GetCpuConfig(cpuType).Enabled;
-			}
-
-			UpdateCoreOptions();
-
-			IsStartLoggingEnabled = isStartLoggingEnabled;
-			ShowByteCode = showByteCode;
+		AddDisposable(this.WhenAnyValue(x => x.ScrollPosition).Subscribe(x => {
+			ScrollPosition = Math.Max(MinScrollPosition, Math.Min(x, MaxScrollPosition));
 			UpdateLog();
+		}));
+
+		AddDisposable(this.WhenAnyValue(x => x.MinScrollPosition).Subscribe(x => ScrollPosition = Math.Max(MinScrollPosition, Math.Min(x, MaxScrollPosition))));
+
+		AddDisposable(this.WhenAnyValue(x => x.MaxScrollPosition).Subscribe(x => ScrollPosition = Math.Max(MinScrollPosition, Math.Min(x, MaxScrollPosition))));
+
+		AddDisposable(this.WhenAnyValue(x => x.IsLoggingToFile).Subscribe(x => AllowOpenTraceFile = !IsLoggingToFile && TraceFile is not null));
+
+		AddDisposable(this.WhenAnyValue(x => x.SelectionStart, x => x.SelectionEnd, x => x.SelectedRow, x => x.SelectionAnchor).Subscribe(x => {
+			SelectionStart = Math.Max(MinScrollPosition, Math.Min(DebugApi.TraceLogBufferSize - 1, SelectionStart));
+			SelectionEnd = Math.Max(MinScrollPosition, Math.Min(DebugApi.TraceLogBufferSize - 1, SelectionEnd));
+			SelectedRow = Math.Max(MinScrollPosition, Math.Min(DebugApi.TraceLogBufferSize - 1, SelectedRow));
+			SelectionAnchor = Math.Max(MinScrollPosition, Math.Min(DebugApi.TraceLogBufferSize - 1, SelectionAnchor));
+		}));
+	}
+
+	/// <summary>
+	/// Sets the disassembly viewer reference for focus management.
+	/// </summary>
+	/// <param name="viewer">The disassembly viewer control.</param>
+	public void SetViewer(DisassemblyViewer viewer) {
+		_viewer = viewer;
+	}
+
+	/// <summary>
+	/// Handles quick search find requests by searching the trace log.
+	/// </summary>
+	/// <param name="e">The find event arguments containing search string and direction.</param>
+	private void QuickSearch_OnFind(OnFindEventArgs e) {
+		CodeLineData[] lines = GetCodeLines(0, DebugApi.TraceLogBufferSize);
+		string needle = e.SearchString.ToLowerInvariant();
+
+		int startRow = SelectedRow;
+		if (e.Direction == SearchDirection.Backward) {
+			startRow--;
+		} else if (e.SkipCurrent) {
+			startRow++;
 		}
 
-		public void UpdateCoreOptions()
-		{
-			RomInfo romInfo = EmuApi.GetRomInfo();
-			foreach(CpuType cpuType in romInfo.CpuTypes) {
-				TraceLoggerCpuConfig cfg = Config.GetCpuConfig(cpuType);
-				InteropTraceLoggerOptions options = new InteropTraceLoggerOptions() {
-					Enabled = romInfo.CpuTypes.Count == 1 || cfg.Enabled,
-					UseLabels = cfg.UseLabels,
-					IndentCode = cfg.IndentCode,
-					Format = Encoding.UTF8.GetBytes(cfg.UseCustomFormat ? cfg.Format : TraceLoggerOptionTab.GetAutoFormat(cfg, cpuType)),
-					Condition = Encoding.UTF8.GetBytes(cfg.Condition)
-				};
+		int sign = e.Direction == SearchDirection.Backward ? -1 : 1;
 
-				Array.Resize(ref options.Condition, 1000);
-				Array.Resize(ref options.Format, 1000);
+		for (int i = 0; i < lines.Length; i++) {
+			int lineIndex = ((i * sign) + startRow) % lines.Length;
+			if (lineIndex < 0) {
+				lineIndex += lines.Length;
+			}
 
-				DebugApi.SetTraceOptions(cpuType, options);
+			if (lines[lineIndex].Text.Contains(needle, StringComparison.OrdinalIgnoreCase)) {
+				Dispatcher.UIThread.Post(() => {
+					ScrollToRowNumber(lineIndex);
+					SelectedRow = lineIndex;
+					SelectionStart = lineIndex;
+					SelectionEnd = lineIndex;
+					InvalidateVisual();
+				});
+				e.Success = true;
+				return;
 			}
 		}
 
-		public void UpdateLog(bool scrollToBottom = false)
-		{
-			int traceSize = (int)DebugApi.GetExecutionTraceSize();
-			CodeLineData[] lines = GetCodeLines(ScrollPosition, VisibleRowCount);
+		e.Success = false;
+	}
 
-			Dispatcher.UIThread.Post(() => {
-				MinScrollPosition = Math.Min(MaxScrollPosition, DebugApi.TraceLogBufferSize - traceSize);
-				TraceLogLines = lines;
+	/// <summary>
+	/// Initializes the window menus with actions and keyboard shortcuts.
+	/// </summary>
+	/// <param name="wnd">The window to register shortcuts with.</param>
+	public void InitializeMenu(Window wnd) {
+		FileMenuItems = AddDisposables(new List<ContextMenuAction>() {
+			new ContextMenuAction() {
+				ActionType = ActionType.Exit,
+				OnClick = () => wnd.Close()
+			}
+		});
 
-				if(scrollToBottom) {
-					ScrollToBottom(false);
-				}
+		DebugMenuItems.AddRange(AddDisposables(DebugSharedActions.GetStepActions(wnd, () => MainWindowViewModel.Instance.RomInfo.ConsoleType.GetMainCpuType())));
+		ToolbarItems.AddRange(AddDisposables(DebugSharedActions.GetStepActions(wnd, () => MainWindowViewModel.Instance.RomInfo.ConsoleType.GetMainCpuType())));
+
+		ViewMenuItems = AddDisposables(new List<ContextMenuAction>() {
+			new ContextMenuAction() {
+				ActionType = ActionType.Refresh,
+				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.Refresh),
+				OnClick = () => UpdateLog()
+			},
+			new ContextMenuSeparator(),
+			new ContextMenuAction() {
+				ActionType = ActionType.EnableAutoRefresh,
+				IsSelected = () => Config.AutoRefresh,
+				OnClick = () => Config.AutoRefresh = !Config.AutoRefresh
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.RefreshOnBreakPause,
+				IsSelected = () => Config.RefreshOnBreakPause,
+				OnClick = () => Config.RefreshOnBreakPause = !Config.RefreshOnBreakPause
+			},
+			new ContextMenuSeparator(),
+			new ContextMenuAction() {
+				ActionType = ActionType.ShowToolbar,
+				IsSelected = () => Config.ShowToolbar,
+				OnClick = () => Config.ShowToolbar = !Config.ShowToolbar
+			}
+		});
+
+		SearchMenuItems = AddDisposables(new List<ContextMenuAction>() {
+			new ContextMenuAction() {
+				ActionType = ActionType.Find,
+				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.Find),
+				OnClick = () => QuickSearch.Open()
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.FindPrev,
+				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.FindPrev),
+				OnClick = () => QuickSearch.FindPrev()
+			},
+			new ContextMenuAction() {
+				ActionType = ActionType.FindNext,
+				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.FindNext),
+				OnClick = () => QuickSearch.FindNext()
+			},
+		});
+
+		DebugShortcutManager.RegisterActions(wnd, FileMenuItems);
+		DebugShortcutManager.RegisterActions(wnd, DebugMenuItems);
+		DebugShortcutManager.RegisterActions(wnd, ViewMenuItems);
+		DebugShortcutManager.RegisterActions(wnd, SearchMenuItems);
+	}
+
+	/// <summary>
+	/// Forces a visual refresh of the trace log display.
+	/// </summary>
+	public void InvalidateVisual() {
+		TraceLogLines = (CodeLineData[])TraceLogLines.Clone();
+	}
+
+	/// <summary>
+	/// Updates the available CPU tabs based on the current ROM.
+	/// </summary>
+	/// <remarks>
+	/// Creates one tab per CPU type supported by the current ROM.
+	/// Shows enable buttons when multiple CPUs are available.
+	/// </remarks>
+	public void UpdateAvailableTabs() {
+		foreach (TraceLoggerOptionTab tab in Tabs) {
+			tab.Dispose();
+		}
+
+		List<TraceLoggerOptionTab> tabs = new();
+		RomInfo romInfo = EmuApi.GetRomInfo();
+		bool showEnableButton = romInfo.CpuTypes.Count > 1;
+		StyleProvider.SetConsoleType(romInfo.ConsoleType);
+		foreach (CpuType type in romInfo.CpuTypes) {
+			tabs.Add(AddDisposable(new TraceLoggerOptionTab(this, type, Config.GetCpuConfig(type), showEnableButton)));
+		}
+
+		Tabs = tabs;
+		SelectedTab = tabs[0];
+
+		UpdateOptions();
+	}
+
+	/// <summary>
+	/// Updates logging options from the current tab configurations.
+	/// </summary>
+	/// <remarks>
+	/// Aggregates settings across all CPU tabs to determine global state
+	/// such as whether logging is enabled and byte code display.
+	/// </remarks>
+	public void UpdateOptions() {
+		bool forceEnable = Tabs.Count == 1;
+		bool isStartLoggingEnabled = forceEnable;
+		bool showByteCode = false;
+
+		RomInfo romInfo = EmuApi.GetRomInfo();
+		foreach (CpuType cpuType in romInfo.CpuTypes) {
+			showByteCode |= Config.GetCpuConfig(cpuType).ShowByteCode;
+			isStartLoggingEnabled |= Config.GetCpuConfig(cpuType).Enabled;
+		}
+
+		UpdateCoreOptions();
+
+		IsStartLoggingEnabled = isStartLoggingEnabled;
+		ShowByteCode = showByteCode;
+		UpdateLog();
+	}
+
+	/// <summary>
+	/// Sends the trace logger options to the emulator core for each CPU type.
+	/// </summary>
+	public void UpdateCoreOptions() {
+		RomInfo romInfo = EmuApi.GetRomInfo();
+		foreach (CpuType cpuType in romInfo.CpuTypes) {
+			TraceLoggerCpuConfig cfg = Config.GetCpuConfig(cpuType);
+			InteropTraceLoggerOptions options = new InteropTraceLoggerOptions() {
+				Enabled = romInfo.CpuTypes.Count == 1 || cfg.Enabled,
+				UseLabels = cfg.UseLabels,
+				IndentCode = cfg.IndentCode,
+				Format = Encoding.UTF8.GetBytes(cfg.UseCustomFormat ? cfg.Format : TraceLoggerOptionTab.GetAutoFormat(cfg, cpuType)),
+				Condition = Encoding.UTF8.GetBytes(cfg.Condition)
+			};
+
+			Array.Resize(ref options.Condition, 1000);
+			Array.Resize(ref options.Format, 1000);
+
+			DebugApi.SetTraceOptions(cpuType, options);
+		}
+	}
+
+	/// <summary>
+	/// Refreshes the trace log display with current execution data.
+	/// </summary>
+	/// <param name="scrollToBottom">Whether to scroll to the most recent entries.</param>
+	public void UpdateLog(bool scrollToBottom = false) {
+		int traceSize = (int)DebugApi.GetExecutionTraceSize();
+		CodeLineData[] lines = GetCodeLines(ScrollPosition, VisibleRowCount);
+
+		Dispatcher.UIThread.Post(() => {
+			MinScrollPosition = Math.Min(MaxScrollPosition, DebugApi.TraceLogBufferSize - traceSize);
+			TraceLogLines = lines;
+
+			if (scrollToBottom) {
+				ScrollToBottom(false);
+			}
+		});
+	}
+
+	/// <summary>
+	/// Sets the selected row and clears the selection range.
+	/// </summary>
+	/// <param name="rowNumber">The row number relative to the scroll position.</param>
+	public void SetSelectedRow(int rowNumber) {
+		rowNumber += ScrollPosition;
+		SelectionStart = rowNumber;
+		SelectionEnd = rowNumber;
+		SelectedRow = rowNumber;
+		SelectionAnchor = rowNumber;
+		InvalidateVisual();
+	}
+
+	/// <summary>
+	/// Determines if a row is within the current selection range.
+	/// </summary>
+	/// <param name="rowNumber">The row number relative to the scroll position.</param>
+	/// <returns>True if the row is selected.</returns>
+	public bool IsSelected(int rowNumber) {
+		rowNumber += ScrollPosition;
+		return rowNumber >= SelectionStart && rowNumber <= SelectionEnd;
+	}
+
+	/// <summary>
+	/// Moves the cursor by a row offset, optionally extending selection.
+	/// </summary>
+	/// <param name="rowOffset">Number of rows to move (negative for up).</param>
+	/// <param name="extendSelection">Whether to extend the selection to the new position.</param>
+	public void MoveCursor(int rowOffset, bool extendSelection) {
+		int rowNumber = SelectedRow + rowOffset - ScrollPosition;
+		if (extendSelection) {
+			ResizeSelectionTo(rowNumber);
+		} else {
+			SetSelectedRow(rowNumber);
+			ScrollToRowNumber(rowNumber + ScrollPosition, rowOffset < 0 ? ScrollDisplayPosition.Top : ScrollDisplayPosition.Bottom);
+		}
+	}
+
+	/// <summary>
+	/// Extends or shrinks the selection to include the specified row.
+	/// </summary>
+	/// <param name="rowNumber">The row number relative to the scroll position.</param>
+	public void ResizeSelectionTo(int rowNumber) {
+		rowNumber += ScrollPosition;
+
+		if (SelectedRow == rowNumber) {
+			return;
+		}
+
+		bool anchorTop = SelectionAnchor == SelectionStart;
+		if (anchorTop) {
+			if (rowNumber < SelectionStart) {
+				SelectionEnd = SelectionStart;
+				SelectionStart = rowNumber;
+			} else {
+				SelectionEnd = rowNumber;
+			}
+		} else {
+			if (rowNumber < SelectionEnd) {
+				SelectionStart = rowNumber;
+			} else {
+				SelectionStart = SelectionEnd;
+				SelectionEnd = rowNumber;
+			}
+		}
+
+		ScrollDisplayPosition displayPos = SelectedRow < rowNumber ? ScrollDisplayPosition.Bottom : ScrollDisplayPosition.Top;
+		SelectedRow = rowNumber;
+		ScrollToRowNumber(rowNumber, displayPos);
+
+		InvalidateVisual();
+	}
+
+	/// <summary>
+	/// Scrolls the view by the specified offset.
+	/// </summary>
+	/// <param name="offset">Number of rows to scroll (positive = down).</param>
+	public void Scroll(int offset) {
+		ScrollPosition += offset;
+	}
+
+	/// <summary>
+	/// Scrolls to the top of the trace buffer.
+	/// </summary>
+	/// <param name="extendSelection">Whether to extend selection to the top.</param>
+	public void ScrollToTop(bool extendSelection) {
+		if (extendSelection) {
+			ResizeSelectionTo(-ScrollPosition);
+		} else {
+			ScrollPosition = 0;
+			SetSelectedRow(0);
+		}
+	}
+
+	/// <summary>
+	/// Scrolls to the bottom of the trace buffer (most recent entries).
+	/// </summary>
+	/// <param name="extendSelection">Whether to extend selection to the bottom.</param>
+	public void ScrollToBottom(bool extendSelection) {
+		if (extendSelection) {
+			ResizeSelectionTo(DebugApi.TraceLogBufferSize - 1 - ScrollPosition);
+		} else {
+			ScrollPosition = MaxScrollPosition;
+			SetSelectedRow(DebugApi.TraceLogBufferSize - 1);
+		}
+	}
+
+	/// <summary>
+	/// Selects all rows in the trace buffer.
+	/// </summary>
+	public void SelectAll() {
+		SelectionStart = 0;
+		SelectionEnd = DebugApi.TraceLogBufferSize - 1;
+		InvalidateVisual();
+	}
+
+	/// <summary>
+	/// Copies the selected trace log lines to the clipboard.
+	/// </summary>
+	public void CopySelection() {
+		StringBuilder sb = new();
+
+		int len = SelectionEnd - SelectionStart + 1;
+		CodeLineData[] lines = GetCodeLines(SelectionStart, len);
+
+		for (int i = 0; i < len; i++) {
+			string addrFormat = "X" + lines[i].CpuType.GetAddressSize();
+			sb.AppendLine(lines[i].GetAddressText(AddressDisplayType.CpuAddress, addrFormat).PadRight(6) + " " + lines[i].Text);
+		}
+
+		ApplicationHelper.GetMainWindow()?.Clipboard?.SetTextAsync(sb.ToString());
+	}
+
+	/// <summary>
+	/// Checks if a row is currently visible in the view.
+	/// </summary>
+	/// <param name="rowNumber">The absolute row number in the buffer.</param>
+	/// <returns>True if the row is visible.</returns>
+	private bool IsRowVisible(int rowNumber) {
+		return rowNumber > ScrollPosition && rowNumber < ScrollPosition + VisibleRowCount;
+	}
+
+	/// <summary>
+	/// Scrolls to make the specified row visible.
+	/// </summary>
+	/// <param name="rowNumber">The row number to scroll to.</param>
+	/// <param name="position">Where to position the row in the view.</param>
+	private void ScrollToRowNumber(int rowNumber, ScrollDisplayPosition position = ScrollDisplayPosition.Center) {
+		if (IsRowVisible(rowNumber)) {
+			//Row is already visible, don't scroll
+			return;
+		}
+
+		switch (position) {
+			case ScrollDisplayPosition.Top: ScrollPosition = rowNumber; break;
+			case ScrollDisplayPosition.Center: ScrollPosition = rowNumber - (VisibleRowCount / 2) + 1; break;
+			case ScrollDisplayPosition.Bottom: ScrollPosition = rowNumber - VisibleRowCount + 1; break;
+		}
+	}
+
+	/// <summary>
+	/// Retrieves code line data from the execution trace buffer.
+	/// </summary>
+	/// <param name="startIndex">The starting index in the buffer.</param>
+	/// <param name="rowCount">The number of rows to retrieve.</param>
+	/// <returns>Array of code line data for display.</returns>
+	private CodeLineData[] GetCodeLines(int startIndex, int rowCount) {
+		TraceRow[] rows = DebugApi.GetExecutionTrace((uint)(DebugApi.TraceLogBufferSize - startIndex - rowCount), (uint)rowCount);
+
+		List<CodeLineData> lines = new(rowCount);
+
+		CodeLineData emptyLine = new CodeLineData(CpuType.Snes);
+		int emptyLineCount = rowCount - rows.Length;
+		for (int i = 0; i < emptyLineCount; i++) {
+			lines.Add(emptyLine);
+		}
+
+		for (int i = rows.Length - 1; i >= 0; i--) {
+			lines.Add(new CodeLineData(rows[i].Type) {
+				Address = (int)rows[i].ProgramCounter,
+				AbsoluteAddress = new() { Address = -1 },
+				Text = rows[i].GetOutput(),
+				OpSize = rows[i].ByteCodeSize,
+				ByteCode = rows[i].GetByteCode()
 			});
 		}
 
-		public void SetSelectedRow(int rowNumber)
-		{
-			rowNumber += ScrollPosition;
-			SelectionStart = rowNumber;
-			SelectionEnd = rowNumber;
-			SelectedRow = rowNumber;
-			SelectionAnchor = rowNumber;
-			InvalidateVisual();
+		return lines.ToArray();
+	}
+
+	/// <summary>
+	/// Gets the address information for the currently selected row.
+	/// </summary>
+	/// <returns>Address info for the selected row, or null if invalid.</returns>
+	public AddressInfo? GetSelectedRowAddress() {
+		TraceRow[] rows = DebugApi.GetExecutionTrace(DebugApi.TraceLogBufferSize - (uint)SelectedRow - 1, 1);
+		if (rows.Length > 0) {
+			return new AddressInfo() {
+				Address = (int)rows[0].ProgramCounter,
+				Type = rows[0].Type.ToMemoryType()
+			};
 		}
 
-		public bool IsSelected(int rowNumber)
-		{
-			rowNumber += ScrollPosition;
-			return rowNumber >= SelectionStart && rowNumber <= SelectionEnd;
+		return null;
+	}
+}
+
+/// <summary>
+/// View model for a CPU-specific tab in the trace logger options panel.
+/// </summary>
+/// <remarks>
+/// Each tab controls the logging options for a specific CPU type,
+/// including format customization, register display, and condition filters.
+/// </remarks>
+public sealed partial class TraceLoggerOptionTab : DisposableViewModel {
+	/// <summary>
+	/// Gets or sets the display name for the tab.
+	/// </summary>
+	public string TabName { get; set; } = "";
+
+	/// <summary>
+	/// Gets the help tooltip for the condition expression editor.
+	/// </summary>
+	public Control HelpTooltip => ExpressionTooltipHelper.GetHelpTooltip(CpuType, false);
+
+	/// <summary>
+	/// Gets the tooltip explaining format tags and their usage.
+	/// </summary>
+	public Control FormatTooltip => GetFormatTooltip();
+
+	/// <summary>
+	/// Gets or sets the CPU type for this tab.
+	/// </summary>
+	public CpuType CpuType { get; set; } = CpuType.Snes;
+
+	/// <summary>
+	/// Gets the title for the log options group box.
+	/// </summary>
+	public string LogOptionsTitle { get; }
+
+	/// <summary>
+	/// Gets whether to show the enable/disable button for this CPU.
+	/// </summary>
+	public bool ShowEnableButton { get; }
+
+	/// <summary>
+	/// Gets whether to show status format options for this CPU.
+	/// </summary>
+	public bool ShowStatusFormat { get; }
+
+	/// <summary>
+	/// Gets whether to show the indent code option for this CPU.
+	/// </summary>
+	public bool ShowIndentCode { get; }
+
+	/// <summary>
+	/// Gets the configuration options for this CPU's trace logging.
+	/// </summary>
+	public TraceLoggerCpuConfig Options { get; }
+
+	/// <summary>
+	/// Gets or sets the current format string (auto-generated or custom).
+	/// </summary>
+	[Reactive] public partial string Format { get; set; } = "";
+
+	/// <summary>
+	/// Gets or sets whether the condition expression is valid.
+	/// </summary>
+	[Reactive] public partial bool IsConditionValid { get; set; } = true;
+
+	/// <summary>
+	/// Reference to the parent trace logger view model.
+	/// </summary>
+	private TraceLoggerViewModel _traceLogger;
+
+	/// <summary>
+	/// Creates a new trace logger option tab for a CPU type.
+	/// </summary>
+	/// <param name="traceLogger">The parent trace logger view model.</param>
+	/// <param name="cpuType">The CPU type for this tab.</param>
+	/// <param name="options">The configuration options for this CPU.</param>
+	/// <param name="showEnableButton">Whether to show the enable button.</param>
+	public TraceLoggerOptionTab(TraceLoggerViewModel traceLogger, CpuType cpuType, TraceLoggerCpuConfig options, bool showEnableButton) {
+		_traceLogger = traceLogger;
+		CpuType = cpuType;
+		Options = options;
+
+		ShowEnableButton = showEnableButton;
+		ShowStatusFormat = cpuType is not CpuType.Cx4 and not CpuType.NecDsp;
+		ShowIndentCode = cpuType != CpuType.Gsu;
+
+		AddDisposable(ReactiveHelper.RegisterRecursiveObserver(options, OnOptionsChanged));
+		UpdateFormat();
+
+		if (string.IsNullOrWhiteSpace(Options.Format)) {
+			//Set custom format to the default if it's empty
+			Options.Format = GetAutoFormat(Options, CpuType);
 		}
 
-		public void MoveCursor(int rowOffset, bool extendSelection)
-		{
-			int rowNumber = SelectedRow + rowOffset - ScrollPosition;
-			if(extendSelection) {
-				ResizeSelectionTo(rowNumber);
-			} else {
-				SetSelectedRow(rowNumber);
-				ScrollToRowNumber(rowNumber + ScrollPosition, rowOffset < 0 ? ScrollDisplayPosition.Top : ScrollDisplayPosition.Bottom);
+		TabName = ResourceHelper.GetEnumText(cpuType);
+		LogOptionsTitle = string.Format(ResourceHelper.GetViewLabel(nameof(TraceLoggerWindow), "grpLogOptions"), ResourceHelper.GetEnumText(cpuType));
+	}
+
+	/// <summary>
+	/// Handles changes to the options and updates the trace logger accordingly.
+	/// </summary>
+	private void OnOptionsChanged(object? sender, PropertyChangedEventArgs e) {
+		UpdateFormat();
+
+		if (e.PropertyName == nameof(TraceLoggerCpuConfig.UseCustomFormat) && Options.UseCustomFormat && string.IsNullOrWhiteSpace(Options.Format)) {
+			//Set custom format to the default if it's empty
+			Options.Format = Format;
+		}
+
+		if (Options.Enabled) {
+			//Auto-select current tab when enabled
+			_traceLogger.SelectedTab = this;
+		}
+
+		if (!string.IsNullOrWhiteSpace(Options.Condition)) {
+			DebugApi.EvaluateExpression(Options.Condition, CpuType, out EvalResultType result, false);
+			IsConditionValid = result is EvalResultType.Numeric or EvalResultType.Boolean;
+		} else {
+			IsConditionValid = true;
+		}
+
+		_traceLogger.UpdateOptions();
+	}
+
+	/// <summary>
+	/// Updates the format string from the auto-format generator.
+	/// </summary>
+	private void UpdateFormat() {
+		if (!Options.UseCustomFormat) {
+			Format = GetAutoFormat(Options, CpuType);
+		}
+	}
+
+	/// <summary>
+	/// Generates the auto-format string based on the current options and CPU type.
+	/// </summary>
+	/// <param name="cfg">The trace logger CPU configuration.</param>
+	/// <param name="cpuType">The CPU type to generate format for.</param>
+	/// <returns>A format string with placeholders for the requested fields.</returns>
+	/// <remarks>
+	/// Generates format strings with tags like [Disassembly], [A], [X], etc.
+	/// based on which options are enabled (registers, flags, counters).
+	/// </remarks>
+	public static string GetAutoFormat(TraceLoggerCpuConfig cfg, CpuType cpuType) {
+		string format = "";
+		int alignValue = cpuType switch {
+			CpuType.Gba => 42,
+			CpuType.Ws => 36,
+			_ => 24
+		};
+
+		void addTag(bool condition, string formatText, int align = 0) {
+			if (condition) {
+				format += formatText;
+				alignValue += align;
 			}
 		}
 
-		public void ResizeSelectionTo(int rowNumber)
-		{
-			rowNumber += ScrollPosition;
+		format += "[Disassembly]";
+		addTag(cfg.ShowEffectiveAddresses, "[EffectiveAddress]", 8);
+		addTag(cfg.ShowMemoryValues, " [MemoryValue,h]", 6);
+		format += "[Align," + alignValue.ToString() + "] ";
 
-			if(SelectedRow == rowNumber) {
-				return;
-			}
-
-			bool anchorTop = SelectionAnchor == SelectionStart;
-			if(anchorTop) {
-				if(rowNumber < SelectionStart) {
-					SelectionEnd = SelectionStart;
-					SelectionStart = rowNumber;
-				} else {
-					SelectionEnd = rowNumber;
-				}
-			} else {
-				if(rowNumber < SelectionEnd) {
-					SelectionStart = rowNumber;
-				} else {
-					SelectionStart = SelectionEnd;
-					SelectionEnd = rowNumber;
-				}
-			}
-
-			ScrollDisplayPosition displayPos = SelectedRow < rowNumber ? ScrollDisplayPosition.Bottom : ScrollDisplayPosition.Top;
-			SelectedRow = rowNumber;
-			ScrollToRowNumber(rowNumber, displayPos);
-
-			InvalidateVisual();
-		}
-
-		public void Scroll(int offset)
-		{
-			ScrollPosition += offset;
-		}
-
-		public void ScrollToTop(bool extendSelection)
-		{
-			if(extendSelection) {
-				ResizeSelectionTo(-ScrollPosition);
-			} else {
-				ScrollPosition = 0;
-				SetSelectedRow(0);
-			}
-		}
-
-		public void ScrollToBottom(bool extendSelection)
-		{
-			if(extendSelection) {
-				ResizeSelectionTo(DebugApi.TraceLogBufferSize - 1 - ScrollPosition);
-			} else {
-				ScrollPosition = MaxScrollPosition;
-				SetSelectedRow(DebugApi.TraceLogBufferSize - 1);
-			}
-		}
-
-		public void SelectAll()
-		{
-			SelectionStart = 0;
-			SelectionEnd = DebugApi.TraceLogBufferSize - 1;
-			InvalidateVisual();
-		}
-
-		public void CopySelection()
-		{
-			StringBuilder sb = new();
-
-			int len = SelectionEnd - SelectionStart + 1;
-			CodeLineData[] lines = GetCodeLines(SelectionStart, len);
-
-			for(int i = 0; i < len; i++) {
-				string addrFormat = "X" + lines[i].CpuType.GetAddressSize();
-				sb.AppendLine(lines[i].GetAddressText(AddressDisplayType.CpuAddress, addrFormat).PadRight(6) + " " + lines[i].Text);
-			}
-			ApplicationHelper.GetMainWindow()?.Clipboard?.SetTextAsync(sb.ToString());
-		}
-
-		private bool IsRowVisible(int rowNumber)
-		{
-			return rowNumber > ScrollPosition && rowNumber < ScrollPosition + VisibleRowCount;
-		}
-
-		private void ScrollToRowNumber(int rowNumber, ScrollDisplayPosition position = ScrollDisplayPosition.Center)
-		{
-			if(IsRowVisible(rowNumber)) {
-				//Row is already visible, don't scroll
-				return;
-			}
-
-			switch(position) {
-				case ScrollDisplayPosition.Top: ScrollPosition = rowNumber; break;
-				case ScrollDisplayPosition.Center: ScrollPosition = rowNumber - (VisibleRowCount / 2) + 1; break;
-				case ScrollDisplayPosition.Bottom: ScrollPosition = rowNumber - VisibleRowCount + 1; break;
-			}
-		}
-
-		private CodeLineData[] GetCodeLines(int startIndex, int rowCount)
-		{
-			TraceRow[] rows = DebugApi.GetExecutionTrace((uint)(DebugApi.TraceLogBufferSize - startIndex - rowCount), (uint)rowCount);
-
-			List<CodeLineData> lines = new(rowCount);
-
-			CodeLineData emptyLine = new CodeLineData(CpuType.Snes);
-			int emptyLineCount = rowCount - rows.Length;
-			for(int i = 0; i < emptyLineCount; i++) {
-				lines.Add(emptyLine);
-			}
-
-			for(int i = rows.Length - 1; i >= 0; i--) {
-				lines.Add(new CodeLineData(rows[i].Type) {
-					Address = (int)rows[i].ProgramCounter,
-					AbsoluteAddress = new() { Address = -1 },
-					Text = rows[i].GetOutput(),
-					OpSize = rows[i].ByteCodeSize,
-					ByteCode = rows[i].GetByteCode()
+		switch (cpuType) {
+			case CpuType.Snes:
+			case CpuType.Sa1:
+				addTag(cfg.ShowRegisters, "A:[A,4h] X:[X,4h] Y:[Y,4h] S:[SP,4h] D:[D,4h] DB:[DB,2h] ");
+				addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
+					StatusFlagFormat.Hexadecimal => "P:[P,h] ",
+					StatusFlagFormat.CompactText => "P:[P] ",
+					StatusFlagFormat.Text or _ => "P:[P,8] "
 				});
-			}
+				break;
 
-			return lines.ToArray();
+			case CpuType.Spc:
+			case CpuType.Nes:
+			case CpuType.Pce:
+				addTag(cfg.ShowRegisters, "A:[A,2h] X:[X,2h] Y:[Y,2h] S:[SP,2h] ");
+				addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
+					StatusFlagFormat.Hexadecimal => "P:[P,h] ",
+					StatusFlagFormat.CompactText => "P:[P] ",
+					StatusFlagFormat.Text or _ => "P:[P,8] "
+				});
+				break;
+
+			case CpuType.Gsu:
+				addTag(cfg.ShowRegisters, "SRC:[SRC,2h] DST:[DST,2h] R0:[R0,4h] R1:[R1,4h] R2:[R2,4h] R3:[R3,4h] R4:[R4,4h] R5:[R5,4h] R6:[R6,4h] R7:[R7,4h] R8:[R8,4h] R9:[R9,4h] R10:[R10,4h] R11:[R11,4h] R12:[R12,4h] R13:[R13,4h] R14:[R14,4h] R15:[R15,4h] ");
+				addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
+					StatusFlagFormat.Hexadecimal => "SFR:[SFR,h] ",
+					StatusFlagFormat.CompactText => "SFR:[SFR] ",
+					StatusFlagFormat.Text or _ => "SFR:[SFR,16] "
+				});
+				break;
+
+			case CpuType.Cx4:
+				addTag(cfg.ShowRegisters, "A:[A,6h] MAR:[MAR,6h] MDR:[MDR,6h] DPR:[DPR,6h] ML:[ML,6h] MH:[MH,6h] P:[P,4h] PB:[PB,4h] R0:[R0,6h] R1:[R1,6h] R2:[R2,6h] R3:[R3,6h] R4:[R4,6h] R5:[R5,6h] R6:[R6,6h] R7:[R7,6h] R8:[R8,6h] R9:[R9,6h] R10:[R10,6h] R11:[R11,6h] R12:[R12,6h] R13:[R13,6h] R14:[R14,6h] R15:[R15,6h] ");
+				addTag(cfg.ShowStatusFlags, "PS:[PS] ");
+				break;
+
+			case CpuType.NecDsp:
+				addTag(cfg.ShowRegisters, "A:[A,4h] ");
+				addTag(cfg.ShowStatusFlags, "[FlagsA] ");
+				addTag(cfg.ShowRegisters, "B:[B,4h] ");
+				addTag(cfg.ShowStatusFlags, "[FlagsB] ");
+				addTag(cfg.ShowRegisters, "K:[K,4h] L:[L,4h] M:[M,4h] N:[N,4h] RP:[RP,4h] DP:[DP,4h] DR:[DR,4h] SR:[SR,4h] TR:[TR,4h] TRB:[TRB,4h] ");
+				break;
+
+			case CpuType.Gameboy:
+				addTag(cfg.ShowRegisters, "A:[A,2h] B:[B,2h] C:[C,2h] D:[D,2h] E:[E,2h] ");
+				addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
+					StatusFlagFormat.Hexadecimal => "F:[PS,h] ",
+					StatusFlagFormat.CompactText => "F:[PS] ",
+					StatusFlagFormat.Text or _ => "F:[PS,4] "
+				});
+				addTag(cfg.ShowRegisters, "HL:[H,2h][L,2h] S:[SP,4h] ");
+				break;
+
+			case CpuType.Sms:
+				addTag(cfg.ShowRegisters, "A:[A,2h] B:[B,2h] C:[C,2h] D:[D,2h] E:[E,2h] ");
+				addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
+					StatusFlagFormat.Hexadecimal => "F:[PS,h] ",
+					StatusFlagFormat.CompactText => "F:[PS] ",
+					StatusFlagFormat.Text or _ => "F:[PS,8] "
+				});
+				addTag(cfg.ShowRegisters, "HL:[H,2h][L,2h] IX:[IX,4h] IY:[IY,4h] S:[SP,4h] ");
+				break;
+
+			case CpuType.St018:
+			case CpuType.Gba:
+				addTag(cfg.ShowRegisters, "R0:[R0,8h] R1:[R1,8h] R2:[R2,8h] R3:[R3,8h] R4:[R4,8h] R5:[R5,8h] R6:[R6,8h] R7:[R7,8h] R8:[R8,8h] R9:[R9,8h] R10:[R10,8h] R11:[R11,8h] R12:[R12,8h] R13:[R13,8h] R14:[R14,8h] R15:[R15,8h] ");
+				addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
+					StatusFlagFormat.Hexadecimal => "CPSR:[CPSR,8h] ",
+					StatusFlagFormat.CompactText => "CPSR:[CPSR] ",
+					StatusFlagFormat.Text or _ => "CPSR:[CPSR,7] "
+				});
+				addTag(cfg.ShowStatusFlags, "Mode: [Mode,3] ");
+				break;
+
+			case CpuType.Ws:
+				addTag(cfg.ShowRegisters, "AX:[AX,4h] BX:[BX,4h] CX:[CX,4h] DX:[DX,4h] DS:[DS,4h] ES:[ES,4h] SS:[SS,4h] SP:[SP,4h] BP:[BP,4h] SI:[SI,4h] DI:[DI,4h] ");
+				addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
+					StatusFlagFormat.Hexadecimal => "F:[F,4h] ",
+					StatusFlagFormat.CompactText => "F:[F] ",
+					StatusFlagFormat.Text or _ => "F:[F,10] "
+				});
+				break;
+
+			case CpuType.Lynx:
+				addTag(cfg.ShowRegisters, "A:[A,2h] X:[X,2h] Y:[Y,2h] S:[SP,2h] ");
+				addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
+					StatusFlagFormat.Hexadecimal => "P:[P,h] ",
+					StatusFlagFormat.CompactText => "P:[P] ",
+					StatusFlagFormat.Text or _ => "P:[P,8] "
+				});
+				break;
+
+			case CpuType.Genesis:
+				addTag(cfg.ShowRegisters, "D0:[D0,8h] D1:[D1,8h] D2:[D2,8h] D3:[D3,8h] D4:[D4,8h] D5:[D5,8h] D6:[D6,8h] D7:[D7,8h] A0:[A0,8h] A1:[A1,8h] A2:[A2,8h] A3:[A3,8h] A4:[A4,8h] A5:[A5,8h] A6:[A6,8h] A7:[SP,8h] ");
+				addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
+					StatusFlagFormat.Hexadecimal => "SR:[SR,4h] ",
+					StatusFlagFormat.CompactText => "SR:[SR] ",
+					StatusFlagFormat.Text or _ => "SR:[SR,16] "
+				});
+				break;
+
+			case CpuType.Atari2600:
+				addTag(cfg.ShowRegisters, "A:[A,2h] X:[X,2h] Y:[Y,2h] S:[SP,2h] ");
+				addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
+					StatusFlagFormat.Hexadecimal => "P:[P,h] ",
+					StatusFlagFormat.CompactText => "P:[P] ",
+					StatusFlagFormat.Text or _ => "P:[P,8] "
+				});
+				break;
+
+			case CpuType.ChannelF:
+				addTag(cfg.ShowRegisters, "A:[A,2h] W:[W,2h] ISAR:[ISAR,2h] PC1:[PC1,4h] DC0:[DC0,4h] DC1:[DC1,4h] ");
+				addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
+					StatusFlagFormat.Hexadecimal => "W:[W,h] ",
+					StatusFlagFormat.CompactText => "W:[W] ",
+					StatusFlagFormat.Text or _ => "W:[W,8] "
+				});
+				break;
 		}
 
-		public AddressInfo? GetSelectedRowAddress()
-		{
-			TraceRow[] rows = DebugApi.GetExecutionTrace(DebugApi.TraceLogBufferSize - (uint)SelectedRow - 1, 1);
-			if(rows.Length > 0) {
-				return new AddressInfo() {
-					Address = (int)rows[0].ProgramCounter,
-					Type = rows[0].Type.ToMemoryType()
-				};
-			}
+		addTag(cfg.ShowFramePosition, "V:[Scanline,3] H:[Cycle,3] ");
+		addTag(cfg.ShowFrameCounter, "Fr:[FrameCount] ");
+		addTag(cfg.ShowClockCounter, "Cycle:[CycleCount] ");
+		addTag(cfg.ShowByteCode, "BC:[ByteCode]");
 
-			return null;
-		}
+		return format.Trim();
 	}
 
-	public class TraceLoggerOptionTab : DisposableViewModel
-	{
-		public string TabName { get; set; } = "";
-		public Control HelpTooltip => ExpressionTooltipHelper.GetHelpTooltip(CpuType, false);
-		public Control FormatTooltip => GetFormatTooltip();
+	/// <summary>
+	/// Creates a tooltip control explaining the available format tags.
+	/// </summary>
+	/// <returns>A panel containing format tag documentation.</returns>
+	private Control GetFormatTooltip() {
+		StackPanel panel = new();
 
-		public CpuType CpuType { get; set; } = CpuType.Snes;
+		void addRow(string text) { panel.Children.Add(new TextBlock() { Text = text }); }
 
-		public string LogOptionsTitle { get; }
-		public bool ShowEnableButton { get; }
-		public bool ShowStatusFormat { get; }
-		public bool ShowIndentCode { get; }
-		public TraceLoggerCpuConfig Options { get; }
+		void addBoldRow(string text) { panel.Children.Add(new TextBlock() { Text = text, FontWeight = Avalonia.Media.FontWeight.Bold }); }
 
-		[Reactive] public string Format { get; set; } = "";
-		[Reactive] public bool IsConditionValid { get; set; } = true;
+		addBoldRow("Notes");
+		addRow("You can customize the output by enabling the 'Use custom format' option and manually editing the format.");
+		addRow(" ");
+		addRow("Tags can have their display format configured by using a comma and specifying the format options. e.g:");
+		addRow("  [Scanline,3] - display scanline in decimal, pad to always be 3 characters wide");
+		addRow("  [Scanline,h] - display scanline in hexadecimal");
+		addRow("  [Scanline,3h] - display scanline in decimal, pad to always be 3 characters wide");
+		addRow(" ");
+		addBoldRow("Common tags (all CPUs)");
+		addRow("  [ByteCode] - byte code for the instruction (1 to 3 bytes)");
+		addRow("  [Disassembly] - disassembly for the current instruction");
+		addRow("  [EffectiveAddress] - effective address used for indirect addressing modes");
+		addRow("  [MemoryValue] - value stored at the memory location referred to by the instruction");
+		addRow("  [PC] - program counter");
+		addRow("  [Cycle] - current horizontal cycle (H)");
+		addRow("  [HClock] - current horizontal cycle (H, in master clocks)");
+		addRow("  [Scanline] - current scanline (V)");
+		addRow("  [FrameCount] - current frame number");
+		addRow("  [CycleCount] - current CPU cycle (64-bit unsigned value)");
+		addRow("  [Align,X] - add spaces to ensure the line is X characters long");
+		addRow(" ");
 
-		private TraceLoggerViewModel _traceLogger;
+		addBoldRow("CPU-specific tags (" + ResourceHelper.GetEnumText(CpuType) + ")");
 
-		public TraceLoggerOptionTab(TraceLoggerViewModel traceLogger, CpuType cpuType, TraceLoggerCpuConfig options, bool showEnableButton)
-		{
-			_traceLogger = traceLogger;
-			CpuType = cpuType;
-			Options = options;
-			
-			ShowEnableButton = showEnableButton;
-			ShowStatusFormat = cpuType != CpuType.Cx4 && cpuType != CpuType.NecDsp;
-			ShowIndentCode = cpuType != CpuType.Gsu;
+		string[] tokens = GetCpuSpecificTokens(CpuType);
 
-			AddDisposable(ReactiveHelper.RegisterRecursiveObserver(options, OnOptionsChanged));
-			UpdateFormat();
+		Array.Sort(tokens);
 
-			if(string.IsNullOrWhiteSpace(Options.Format)) {
-				//Set custom format to the default if it's empty
-				Options.Format = GetAutoFormat(Options, CpuType);
-			}
+		Grid tokenGrid = new Grid() {
+			ColumnDefinitions = new("40, 40, 40, 40"),
+			RowDefinitions = new(string.Join(",", Enumerable.Repeat("Auto", (tokens.Length / 4) + 1))),
+			Margin = new Thickness(5, 0, 0, 0)
+		};
 
-			TabName = ResourceHelper.GetEnumText(cpuType);
-			LogOptionsTitle = string.Format(ResourceHelper.GetViewLabel(nameof(TraceLoggerWindow), "grpLogOptions"), ResourceHelper.GetEnumText(cpuType));
-		}
-
-		private void OnOptionsChanged(object? sender, PropertyChangedEventArgs e)
-		{
-			UpdateFormat();
-
-			if(e.PropertyName == nameof(TraceLoggerCpuConfig.UseCustomFormat) && Options.UseCustomFormat && string.IsNullOrWhiteSpace(Options.Format)) {
-				//Set custom format to the default if it's empty
-				Options.Format = Format;
-			}
-
-			if(Options.Enabled) {
-				//Auto-select current tab when enabled
-				_traceLogger.SelectedTab = this;
-			}
-
-			if(!string.IsNullOrWhiteSpace(Options.Condition)) {
-				DebugApi.EvaluateExpression(Options.Condition, CpuType, out EvalResultType result, false);
-				IsConditionValid = result == EvalResultType.Numeric || result == EvalResultType.Boolean;
-			} else {
-				IsConditionValid = true;
-			}
-
-			_traceLogger.UpdateOptions();
-		}
-
-		private void UpdateFormat()
-		{
-			if(!Options.UseCustomFormat) {
-				Format = GetAutoFormat(Options, CpuType);
+		int col = 0;
+		int row = 0;
+		foreach (string token in tokens) {
+			TextBlock txt = new() { Text = $"[{token}]", Padding = new Thickness(0, 0, 5, 0) };
+			tokenGrid.Children.Add(txt);
+			Grid.SetColumn(txt, col);
+			Grid.SetRow(txt, row);
+			col++;
+			if (col == 4) {
+				col = 0;
+				row++;
 			}
 		}
 
-		public static string GetAutoFormat(TraceLoggerCpuConfig cfg, CpuType cpuType)
-		{
-			string format = "";
-			int alignValue = cpuType switch {
-				CpuType.Gba => 42,
-				CpuType.Ws => 36,
-				_ => 24
-			};
+		panel.Children.Add(tokenGrid);
 
-			void addTag(bool condition, string formatText, int align = 0)
-			{
-				if(condition) {
-					format += formatText;
-					alignValue += align;
-				}
-			}
-
-			format += "[Disassembly]";
-			addTag(cfg.ShowEffectiveAddresses, "[EffectiveAddress]", 8);
-			addTag(cfg.ShowMemoryValues, " [MemoryValue,h]", 6);
-			format += "[Align," + alignValue.ToString() + "] ";
-
-			switch(cpuType) {
-				case CpuType.Snes:
-				case CpuType.Sa1:
-					addTag(cfg.ShowRegisters, "A:[A,4h] X:[X,4h] Y:[Y,4h] S:[SP,4h] D:[D,4h] DB:[DB,2h] ");
-					addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
-						StatusFlagFormat.Hexadecimal => "P:[P,h] ",
-						StatusFlagFormat.CompactText => "P:[P] ",
-						StatusFlagFormat.Text or _ => "P:[P,8] "
-					});
-					break;
-
-				case CpuType.Spc:
-				case CpuType.Nes:
-				case CpuType.Pce:
-					addTag(cfg.ShowRegisters, "A:[A,2h] X:[X,2h] Y:[Y,2h] S:[SP,2h] ");
-					addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
-						StatusFlagFormat.Hexadecimal => "P:[P,h] ",
-						StatusFlagFormat.CompactText => "P:[P] ",
-						StatusFlagFormat.Text or _ => "P:[P,8] "
-					});
-					break;
-
-				case CpuType.Gsu:
-					addTag(cfg.ShowRegisters, "SRC:[SRC,2h] DST:[DST,2h] R0:[R0,4h] R1:[R1,4h] R2:[R2,4h] R3:[R3,4h] R4:[R4,4h] R5:[R5,4h] R6:[R6,4h] R7:[R7,4h] R8:[R8,4h] R9:[R9,4h] R10:[R10,4h] R11:[R11,4h] R12:[R12,4h] R13:[R13,4h] R14:[R14,4h] R15:[R15,4h] ");
-					addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
-						StatusFlagFormat.Hexadecimal => "SFR:[SFR,h] ",
-						StatusFlagFormat.CompactText => "SFR:[SFR] ",
-						StatusFlagFormat.Text or _ => "SFR:[SFR,16] "
-					});
-					break;
-
-				case CpuType.Cx4:
-					addTag(cfg.ShowRegisters, "A:[A,6h] MAR:[MAR,6h] MDR:[MDR,6h] DPR:[DPR,6h] ML:[ML,6h] MH:[MH,6h] P:[P,4h] PB:[PB,4h] R0:[R0,6h] R1:[R1,6h] R2:[R2,6h] R3:[R3,6h] R4:[R4,6h] R5:[R5,6h] R6:[R6,6h] R7:[R7,6h] R8:[R8,6h] R9:[R9,6h] R10:[R10,6h] R11:[R11,6h] R12:[R12,6h] R13:[R13,6h] R14:[R14,6h] R15:[R15,6h] ");
-					addTag(cfg.ShowStatusFlags, "PS:[PS] ");
-					break;
-
-				case CpuType.NecDsp:
-					addTag(cfg.ShowRegisters, "A:[A,4h] ");
-					addTag(cfg.ShowStatusFlags, "[FlagsA] ");
-					addTag(cfg.ShowRegisters, "B:[B,4h] ");
-					addTag(cfg.ShowStatusFlags, "[FlagsB] ");
-					addTag(cfg.ShowRegisters, "K:[K,4h] L:[L,4h] M:[M,4h] N:[N,4h] RP:[RP,4h] DP:[DP,4h] DR:[DR,4h] SR:[SR,4h] TR:[TR,4h] TRB:[TRB,4h] ");
-					break;
-
-				case CpuType.Gameboy:
-					addTag(cfg.ShowRegisters, "A:[A,2h] B:[B,2h] C:[C,2h] D:[D,2h] E:[E,2h] ");
-					addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
-						StatusFlagFormat.Hexadecimal => "F:[PS,h] ",
-						StatusFlagFormat.CompactText => "F:[PS] ",
-						StatusFlagFormat.Text or _ => "F:[PS,4] "
-					});
-					addTag(cfg.ShowRegisters, "HL:[H,2h][L,2h] S:[SP,4h] ");
-					break;
-
-				case CpuType.Sms:
-					addTag(cfg.ShowRegisters, "A:[A,2h] B:[B,2h] C:[C,2h] D:[D,2h] E:[E,2h] ");
-					addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
-						StatusFlagFormat.Hexadecimal => "F:[PS,h] ",
-						StatusFlagFormat.CompactText => "F:[PS] ",
-						StatusFlagFormat.Text or _ => "F:[PS,8] "
-					});
-					addTag(cfg.ShowRegisters, "HL:[H,2h][L,2h] IX:[IX,4h] IY:[IY,4h] S:[SP,4h] ");
-					break;
-
-				case CpuType.St018:
-				case CpuType.Gba:
-					addTag(cfg.ShowRegisters, "R0:[R0,8h] R1:[R1,8h] R2:[R2,8h] R3:[R3,8h] R4:[R4,8h] R5:[R5,8h] R6:[R6,8h] R7:[R7,8h] R8:[R8,8h] R9:[R9,8h] R10:[R10,8h] R11:[R11,8h] R12:[R12,8h] R13:[R13,8h] R14:[R14,8h] R15:[R15,8h] ");
-					addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
-						StatusFlagFormat.Hexadecimal => "CPSR:[CPSR,8h] ",
-						StatusFlagFormat.CompactText => "CPSR:[CPSR] ",
-						StatusFlagFormat.Text or _ => "CPSR:[CPSR,7] "
-					});
-					addTag(cfg.ShowStatusFlags, "Mode: [Mode,3] ");
-					break;
-
-				case CpuType.Ws:
-					addTag(cfg.ShowRegisters, "AX:[AX,4h] BX:[BX,4h] CX:[CX,4h] DX:[DX,4h] DS:[DS,4h] ES:[ES,4h] SS:[SS,4h] SP:[SP,4h] BP:[BP,4h] SI:[SI,4h] DI:[DI,4h] ");
-					addTag(cfg.ShowStatusFlags, cfg.StatusFormat switch {
-						StatusFlagFormat.Hexadecimal => "F:[F,4h] ",
-						StatusFlagFormat.CompactText => "F:[F] ",
-						StatusFlagFormat.Text or _ => "F:[F,10] "
-					});
-					break;
-			}
-
-			addTag(cfg.ShowFramePosition, "V:[Scanline,3] H:[Cycle,3] ");
-			addTag(cfg.ShowFrameCounter, "Fr:[FrameCount] ");
-			addTag(cfg.ShowClockCounter, "Cycle:[CycleCount] ");
-			addTag(cfg.ShowByteCode, "BC:[ByteCode]");
-
-			return format.Trim();
-		}
-
-		private Control GetFormatTooltip()
-		{
-			StackPanel panel = new();
-
-			void addRow(string text) { panel.Children.Add(new TextBlock() { Text = text }); }
-			void addBoldRow(string text) { panel.Children.Add(new TextBlock() { Text = text, FontWeight = Avalonia.Media.FontWeight.Bold }); }
-
-			addBoldRow("Notes");
-			addRow("You can customize the output by enabling the 'Use custom format' option and manually editing the format.");
-			addRow(" ");
-			addRow("Tags can have their display format configured by using a comma and specifying the format options. e.g:");
-			addRow("  [Scanline,3] - display scanline in decimal, pad to always be 3 characters wide");
-			addRow("  [Scanline,h] - display scanline in hexadecimal");
-			addRow("  [Scanline,3h] - display scanline in decimal, pad to always be 3 characters wide");
-			addRow(" ");
-			addBoldRow("Common tags (all CPUs)");
-			addRow("  [ByteCode] - byte code for the instruction (1 to 3 bytes)");
-			addRow("  [Disassembly] - disassembly for the current instruction");
-			addRow("  [EffectiveAddress] - effective address used for indirect addressing modes");
-			addRow("  [MemoryValue] - value stored at the memory location referred to by the instruction");
-			addRow("  [PC] - program counter");
-			addRow("  [Cycle] - current horizontal cycle (H)");
-			addRow("  [HClock] - current horizontal cycle (H, in master clocks)");
-			addRow("  [Scanline] - current scanline (V)");
-			addRow("  [FrameCount] - current frame number");
-			addRow("  [CycleCount] - current CPU cycle (64-bit unsigned value)");
-			addRow("  [Align,X] - add spaces to ensure the line is X characters long");
-			addRow(" ");
-
-			addBoldRow("CPU-specific tags (" + ResourceHelper.GetEnumText(CpuType) + ")");
-
-			string[] tokens = CpuType switch {
-				CpuType.Snes or CpuType.Sa1 => new string[] { "A", "X", "Y", "D", "DB", "P", "SP" },
-				CpuType.Spc => new string[] { "A", "X", "Y", "P", "SP" },
-				CpuType.NecDsp => new string[] { "A", "B", "FlagsA", "FlagsB", "K", "L", "M", "N", "RP", "DP", "DR", "SR", "TR", "TRB" },
-				CpuType.Gsu => new string[] { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "SRC", "DST", "SFR" },
-				CpuType.Cx4 => new string[] { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "MAR", "MDR", "DPR", "ML", "MH", "PB", "P", "PS", "A" },
-				CpuType.Gameboy => new string[] { "A", "B", "C", "D", "E", "F", "H", "L", "PS", "SP" },
-				CpuType.Nes => new string[] { "A", "X", "Y", "P", "SP" },
-				CpuType.Pce => new string[] { "A", "X", "Y", "P", "SP" },
-				CpuType.Sms => new string[] { "A", "B", "C", "D", "E", "F", "H", "L", "IX", "IY", "A'", "B'", "C'", "D'", "E'", "F'", "H'", "L'", "I", "R", "PS", "SP" },
-				CpuType.Gba or CpuType.St018  => new string[] { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "CPSR" },
-				CpuType.Ws => new string[] { "AX", "BX", "CX", "DX", "CS", "IP", "SS", "SP", "BP", "DS", "ES", "SI", "DI", "F" },
-				_ => throw new Exception("unsupported cpu type")
-			};
-
-			Array.Sort(tokens);
-
-			Grid tokenGrid = new Grid() {
-				ColumnDefinitions = new("40, 40, 40, 40"),
-				RowDefinitions = new(string.Join(",", Enumerable.Repeat("Auto", (tokens.Length / 4) + 1))),
-				Margin = new Thickness(5, 0, 0, 0)
-			};
-
-			int col = 0;
-			int row = 0;
-			foreach(string token in tokens) {
-				TextBlock txt = new() { Text = $"[{token}]", Padding = new Thickness(0, 0, 5, 0) };
-				tokenGrid.Children.Add(txt);
-				Grid.SetColumn(txt, col);
-				Grid.SetRow(txt, row);
-				col++;
-				if(col == 4) {
-					col = 0;
-					row++;
-				}
-			}
-
-			panel.Children.Add(tokenGrid);
-
-			return panel;
-		}
+		return panel;
 	}
 
-	public class TraceLoggerStyleProvider : ILineStyleProvider
-	{
-		private ConsoleType _consoleType = ConsoleType.Snes;
-		private TraceLoggerViewModel _model;
-
-		public TraceLoggerStyleProvider(TraceLoggerViewModel model)
-		{
-			_model = model;
-		}
-
-		public int AddressSize { get; private set; } = 6;
-		public int ByteCodeSize { get; private set; } = 4;
-		private LineProperties GetMainCpuStyle() { return new LineProperties() { AddressColor = null, LineBgColor = null }; }
-		private LineProperties GetSecondaryCpuStyle() { return new LineProperties() { AddressColor = Color.FromRgb(30, 145, 30), LineBgColor = Color.FromRgb(230, 245, 230) }; }
-		private LineProperties GetCoprocessorStyle() { return new LineProperties() { AddressColor = Color.FromRgb(30, 30, 145), LineBgColor = Color.FromRgb(230, 230, 245) }; }
-
-		public List<CodeColor> GetCodeColors(CodeLineData lineData, bool highlightCode, string addressFormat, Color? textColor, bool showMemoryValues)
-		{
-			return CodeHighlighting.GetCpuHighlights(lineData, highlightCode, addressFormat, textColor, showMemoryValues);
-		}
-
-		public LineProperties GetLineStyle(CodeLineData lineData, int lineIndex)
-		{
-			LineProperties props = lineData.CpuType switch {
-				CpuType.Spc => GetSecondaryCpuStyle(),
-				CpuType.NecDsp or CpuType.Sa1 or CpuType.Gsu or CpuType.Cx4 => GetCoprocessorStyle(),
-				CpuType.Gameboy => _consoleType == ConsoleType.Snes ? GetCoprocessorStyle() : GetMainCpuStyle(),
-				_ => GetMainCpuStyle(),
-			};
-
-			if(_model != null && lineData.HasAddress) {
-				int lineNumber = _model.ScrollPosition + lineIndex;
-				props.IsSelectedRow = lineNumber >= _model.SelectionStart && lineNumber <= _model.SelectionEnd;
-				props.IsActiveRow = _model.SelectedRow == lineNumber;
-			}
-
-			return props;
-		}
-
-		internal void SetConsoleType(ConsoleType consoleType)
-		{
-			_consoleType = consoleType;
-			AddressSize = consoleType.GetMainCpuType().GetAddressSize();
-			ByteCodeSize = consoleType.GetMainCpuType().GetByteCodeSize();
-		}
+	public static string[] GetCpuSpecificTokens(CpuType cpuType) {
+		return cpuType switch {
+			CpuType.Snes or CpuType.Sa1 => new string[] { "A", "X", "Y", "D", "DB", "P", "SP" },
+			CpuType.Spc => new string[] { "A", "X", "Y", "P", "SP" },
+			CpuType.NecDsp => new string[] { "A", "B", "FlagsA", "FlagsB", "K", "L", "M", "N", "RP", "DP", "DR", "SR", "TR", "TRB" },
+			CpuType.Gsu => new string[] { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "SRC", "DST", "SFR" },
+			CpuType.Cx4 => new string[] { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "MAR", "MDR", "DPR", "ML", "MH", "PB", "P", "PS", "A" },
+			CpuType.Gameboy => new string[] { "A", "B", "C", "D", "E", "F", "H", "L", "PS", "SP" },
+			CpuType.Nes => new string[] { "A", "X", "Y", "P", "SP" },
+			CpuType.Pce => new string[] { "A", "X", "Y", "P", "SP" },
+			CpuType.Sms => new string[] { "A", "B", "C", "D", "E", "F", "H", "L", "IX", "IY", "A'", "B'", "C'", "D'", "E'", "F'", "H'", "L'", "I", "R", "PS", "SP" },
+			CpuType.Gba or CpuType.St018 => new string[] { "R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15", "CPSR" },
+			CpuType.Ws => new string[] { "AX", "BX", "CX", "DX", "CS", "IP", "SS", "SP", "BP", "DS", "ES", "SI", "DI", "F" },
+			CpuType.Lynx => new string[] { "A", "X", "Y", "P", "SP" },
+			CpuType.Genesis => new string[] { "D0", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "A0", "A1", "A2", "A3", "A4", "A5", "A6", "SP", "SR" },
+			CpuType.Atari2600 => new string[] { "A", "X", "Y", "P", "SP" },
+			CpuType.ChannelF => new string[] { "A", "W", "ISAR", "PC1", "DC0", "DC1" },
+			_ => GetFallbackCpuTokens(cpuType)
+		};
 	}
 
+	private static string[] GetFallbackCpuTokens(CpuType cpuType) {
+		Log.Warn($"[TraceLogger] Unknown CPU type for token tooltip: {cpuType} ({(byte)cpuType}), using fallback tokens");
+		return ["PC", "ByteCode", "Disassembly"];
+	}
+}
+
+/// <summary>
+/// Provides styling information for trace log lines based on CPU type.
+/// </summary>
+/// <remarks>
+/// Implements ILineStyleProvider to color-code trace log entries by CPU.
+/// Main CPU uses default colors, secondary CPUs and coprocessors use
+/// distinct colors for easy identification.
+/// </remarks>
+public sealed partial class TraceLoggerStyleProvider : ILineStyleProvider {
+	/// <summary>
+	/// The console type for determining main CPU.
+	/// </summary>
+	private ConsoleType _consoleType = ConsoleType.Snes;
+
+	/// <summary>
+	/// Reference to the trace logger view model for selection state.
+	/// </summary>
+	private TraceLoggerViewModel _model;
+
+	/// <summary>
+	/// Creates a new style provider for the trace logger.
+	/// </summary>
+	/// <param name="model">The trace logger view model.</param>
+	public TraceLoggerStyleProvider(TraceLoggerViewModel model) {
+		_model = model;
+	}
+
+	/// <summary>
+	/// Gets the address size in hex characters for the current console.
+	/// </summary>
+	public int AddressSize { get; private set; } = 6;
+
+	/// <summary>
+	/// Gets the maximum byte code size for the current console.
+	/// </summary>
+	public int ByteCodeSize { get; private set; } = 4;
+
+	/// <summary>
+	/// Gets line properties for main CPU entries (default colors).
+	/// </summary>
+	private LineProperties GetMainCpuStyle() { return new LineProperties() { AddressColor = null, LineBgColor = null }; }
+
+	/// <summary>
+	/// Gets line properties for secondary CPU entries (green tint).
+	/// </summary>
+	private LineProperties GetSecondaryCpuStyle() { return new LineProperties() { AddressColor = Color.FromRgb(30, 145, 30), LineBgColor = Color.FromRgb(230, 245, 230) }; }
+
+	/// <summary>
+	/// Gets line properties for coprocessor entries (blue tint).
+	/// </summary>
+	private LineProperties GetCoprocessorStyle() { return new LineProperties() { AddressColor = Color.FromRgb(30, 30, 145), LineBgColor = Color.FromRgb(230, 230, 245) }; }
+
+	/// <summary>
+	/// Gets the syntax highlighting colors for a code line.
+	/// </summary>
+	/// <param name="lineData">The code line data to highlight.</param>
+	/// <param name="highlightCode">Whether to apply syntax highlighting.</param>
+	/// <param name="addressFormat">Format string for addresses.</param>
+	/// <param name="textColor">Optional text color override.</param>
+	/// <param name="showMemoryValues">Whether memory values are shown.</param>
+	/// <returns>List of color spans for the line.</returns>
+	public List<CodeColor> GetCodeColors(CodeLineData lineData, bool highlightCode, string addressFormat, Color? textColor, bool showMemoryValues) {
+		return CodeHighlighting.GetCpuHighlights(lineData, highlightCode, addressFormat, textColor, showMemoryValues);
+	}
+
+	/// <summary>
+	/// Gets the line style properties based on CPU type and selection state.
+	/// </summary>
+	/// <param name="lineData">The code line data.</param>
+	/// <param name="lineIndex">The line index in the visible area.</param>
+	/// <returns>Line properties with colors and selection state.</returns>
+	public LineProperties GetLineStyle(CodeLineData lineData, int lineIndex) {
+		LineProperties props = lineData.CpuType switch {
+			CpuType.Spc => GetSecondaryCpuStyle(),
+			CpuType.NecDsp or CpuType.Sa1 or CpuType.Gsu or CpuType.Cx4 => GetCoprocessorStyle(),
+			CpuType.Gameboy => _consoleType == ConsoleType.Snes ? GetCoprocessorStyle() : GetMainCpuStyle(),
+			_ => GetMainCpuStyle(),
+		};
+
+		if (_model is not null && lineData.HasAddress) {
+			int lineNumber = _model.ScrollPosition + lineIndex;
+			props.IsSelectedRow = lineNumber >= _model.SelectionStart && lineNumber <= _model.SelectionEnd;
+			props.IsActiveRow = _model.SelectedRow == lineNumber;
+		}
+
+		return props;
+	}
+
+	/// <summary>
+	/// Sets the console type and updates address/byte code sizes.
+	/// </summary>
+	/// <param name="consoleType">The console type.</param>
+	internal void SetConsoleType(ConsoleType consoleType) {
+		_consoleType = consoleType;
+		AddressSize = consoleType.GetMainCpuType().GetAddressSize();
+		ByteCodeSize = consoleType.GetMainCpuType().GetByteCodeSize();
+	}
 }

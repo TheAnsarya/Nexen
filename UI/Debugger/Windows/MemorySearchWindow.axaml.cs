@@ -1,70 +1,68 @@
+using System;
+using System.ComponentModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using DataBoxControl;
-using Mesen.Debugger.Controls;
-using Mesen.Debugger.Utilities;
-using Mesen.Debugger.ViewModels;
-using Mesen.Interop;
-using System;
-using System.ComponentModel;
+using Nexen.Debugger.Controls;
+using Nexen.Debugger.Utilities;
+using Nexen.Debugger.ViewModels;
+using Nexen.Interop;
 
-namespace Mesen.Debugger.Windows
-{
-	public class MemorySearchWindow : MesenWindow, INotificationHandler
-	{
-		private MemorySearchViewModel _model;
+namespace Nexen.Debugger.Windows;
+public partial class MemorySearchWindow : NexenWindow, INotificationHandler {
+	private MemorySearchViewModel _model;
 
-		public MemorySearchWindow()
-		{
-			_model = new MemorySearchViewModel();
-			DataContext = _model;
+	public MemorySearchWindow() {
+		_model = new MemorySearchViewModel();
+		DataContext = _model;
 
-			InitializeComponent();
+		InitializeComponent();
 #if DEBUG
-			this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
 
-			if(Design.IsDesignMode) {
-				return;
-			}
-
-			_model.Config.LoadWindowSettings(this);
+		if (Design.IsDesignMode) {
+			return;
 		}
 
-		protected override void OnClosing(WindowClosingEventArgs e)
-		{
-			base.OnClosing(e);
-			_model.Config.SaveWindowSettings(this);
+		_model.Config.LoadWindowSettings(this);
+	}
+
+	protected override void OnClosing(WindowClosingEventArgs e) {
+		base.OnClosing(e);
+		_model.Config.SaveWindowSettings(this);
+	}
+
+	public void ProcessNotification(NotificationEventArgs e) {
+		if (_model.Disposed) {
+			return;
 		}
 
-		public void ProcessNotification(NotificationEventArgs e)
-		{
-			switch(e.NotificationType) {
-				case ConsoleNotificationType.GameLoaded:
-					Dispatcher.UIThread.Post(() => {
-						_model.OnGameLoaded();
-					});
-					break;
+		switch (e.NotificationType) {
+			case ConsoleNotificationType.GameLoaded:
+				Dispatcher.UIThread.Post(() => {
+					if (_model.Disposed) return;
+					_model.OnGameLoaded();
+				});
+				break;
 
-				case ConsoleNotificationType.PpuFrameDone:
-					if(!ToolRefreshHelper.LimitFps(this, 30)) {
-						_model.RefreshData(false);
-					}
-					break;
+			case ConsoleNotificationType.PpuFrameDone:
+				if (!ToolRefreshHelper.LimitFps(this, 30)) {
+					_model.RefreshData(false);
+				}
 
-				case ConsoleNotificationType.CodeBreak:
-					_model.RefreshData(true);
-					break;
-			}
+				break;
+
+			case ConsoleNotificationType.CodeBreak:
+				_model.RefreshData(true);
+				break;
 		}
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
 	}
 }

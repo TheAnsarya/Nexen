@@ -6,25 +6,22 @@
 #include "Shared/CheatManager.h"
 #include "Shared/SaveStateManager.h"
 
-class SaveStateMessage : public NetMessage
-{
+class SaveStateMessage : public NetMessage {
 private:
 	vector<CheatCode> _activeCheats;
 	vector<uint8_t> _stateData;
 
 protected:
-	void Serialize(Serializer &s) override
-	{
+	void Serialize(Serializer& s) override {
 		SVVector(_stateData);
 		SVVector(_activeCheats);
 	}
 
 public:
-	SaveStateMessage(void* buffer, uint32_t length) : NetMessage(buffer, length) { }
-	
-	SaveStateMessage(Emulator* emu) : NetMessage(MessageType::SaveState)
-	{
-		//Used when sending state to clients
+	SaveStateMessage(void* buffer, uint32_t length) : NetMessage(buffer, length) {}
+
+	SaveStateMessage(Emulator* emu) : NetMessage(MessageType::SaveState) {
+		// Used when sending state to clients
 		stringstream state;
 		{
 			auto lock = emu->AcquireLock();
@@ -36,12 +33,11 @@ public:
 		_stateData.resize(dataSize);
 		state.read((char*)_stateData.data(), dataSize);
 	}
-	
-	void LoadState(Emulator* emu)
-	{
+
+	void LoadState(Emulator* emu) {
 		std::stringstream ss;
 		ss.write((char*)_stateData.data(), _stateData.size());
-		emu->Deserialize(ss, SaveStateManager::FileFormatVersion, true);
+		(void)emu->Deserialize(ss, SaveStateManager::FileFormatVersion, true);
 
 		emu->GetCheatManager()->SetCheats(_activeCheats);
 	}

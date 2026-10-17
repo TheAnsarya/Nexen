@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
-namespace Mesen.Interop;
+namespace Nexen.Interop;
 
-public struct PceCpuState : BaseState
-{
+public struct PceCpuState : BaseState {
 	public UInt64 CycleCount;
 	public UInt16 PC;
 	public byte SP;
@@ -14,8 +13,7 @@ public struct PceCpuState : BaseState
 	public byte PS;
 }
 
-public enum PceCpuFlags
-{
+public enum PceCpuFlags {
 	Carry = 0x01,
 	Zero = 0x02,
 	IrqDisable = 0x04,
@@ -25,8 +23,7 @@ public enum PceCpuFlags
 	Negative = 0x80
 }
 
-public struct PceVdcState : BaseState
-{
+public struct PceVdcState : BaseState {
 	public UInt32 FrameCount;
 
 	public UInt16 HClock;
@@ -100,16 +97,14 @@ public struct PceVdcState : BaseState
 	[MarshalAs(UnmanagedType.I1)] public bool NextBackgroundEnabled;
 }
 
-public struct PceVceState : BaseState
-{
+public struct PceVceState : BaseState {
 	public UInt16 ScanlineCount;
 	public UInt16 PalAddr;
 	public byte ClockDivider;
 	[MarshalAs(UnmanagedType.I1)] public bool Grayscale;
 }
 
-public struct PceVdcHvLatches
-{
+public struct PceVdcHvLatches {
 	//R07 - BXR
 	public UInt16 BgScrollX;
 
@@ -142,8 +137,7 @@ public struct PceVdcHvLatches
 	public byte VertEndPosVcr;
 }
 
-public struct PceMemoryManagerState : BaseState
-{
+public struct PceMemoryManagerState : BaseState {
 	public UInt64 CycleCount;
 
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 8)]
@@ -156,16 +150,14 @@ public struct PceMemoryManagerState : BaseState
 	public byte IoBuffer;
 }
 
-public struct PceTimerState
-{
+public struct PceTimerState {
 	public byte ReloadValue;
 	public byte Counter;
 	public UInt16 Scaler;
 	[MarshalAs(UnmanagedType.I1)] public bool Enabled;
 }
 
-public struct PcePsgState
-{
+public struct PcePsgState {
 	public byte ChannelSelect;
 	public byte LeftVolume;
 	public byte RightVolume;
@@ -173,8 +165,7 @@ public struct PcePsgState
 	public byte LfoControl;
 };
 
-public struct PcePsgChannelState
-{
+public struct PcePsgChannelState {
 	public UInt16 Frequency;
 	public byte Amplitude;
 	[MarshalAs(UnmanagedType.I1)] public bool Enabled;
@@ -199,30 +190,26 @@ public struct PcePsgChannelState
 	public byte NoiseFrequency;
 }
 
-public enum PceVpcPriorityMode
-{
+public enum PceVpcPriorityMode {
 	Default = 0,
 	Vdc1SpritesBelowVdc2Bg = 1,
 	Vdc2SpritesAboveVdc1Bg = 2,
 }
 
-public enum PceVpcPixelWindow
-{
+public enum PceVpcPixelWindow {
 	NoWindow,
 	Window1,
 	Window2,
 	Both
 }
 
-public struct PceVpcPriorityConfig
-{
+public struct PceVpcPriorityConfig {
 	public PceVpcPriorityMode PriorityMode;
 	[MarshalAs(UnmanagedType.I1)] public bool Vdc1Enabled;
 	[MarshalAs(UnmanagedType.I1)] public bool Vdc2Enabled;
 }
 
-public struct PceVpcState
-{
+public struct PceVpcState {
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
 	public PceVpcPriorityConfig[] WindowCfg;
 	public byte Priority1;
@@ -234,24 +221,21 @@ public struct PceVpcState
 	[MarshalAs(UnmanagedType.I1)] public bool HasIrqVdc2;
 }
 
-public struct PceVideoState : BaseState
-{
+public struct PceVideoState : BaseState {
 	public PceVdcState Vdc;
 	public PceVceState Vce;
 	public PceVpcState Vpc;
 	public PceVdcState Vdc2;
 }
 
-public enum PceArcadePortOffsetTrigger
-{
+public enum PceArcadePortOffsetTrigger {
 	None = 0,
 	AddOnLowWrite = 1,
 	AddOnHighWrite = 2,
 	AddOnReg0AWrite = 3,
 }
 
-public struct PceArcadeCardPortConfig
-{
+public struct PceArcadeCardPortConfig {
 	public UInt32 BaseAddress;
 	public UInt16 Offset;
 	public UInt16 IncValue;
@@ -265,8 +249,7 @@ public struct PceArcadeCardPortConfig
 	public PceArcadePortOffsetTrigger AddOffsetTrigger;
 }
 
-public struct PceArcadeCardState
-{
+public struct PceArcadeCardState {
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
 	public PceArcadeCardPortConfig[] Port;
 	public UInt32 ValueReg;
@@ -274,8 +257,7 @@ public struct PceArcadeCardState
 	public byte RotateReg;
 }
 
-public enum PceCdRomIrqSource
-{
+public enum PceCdRomIrqSource {
 	Adpcm = 0x04,
 	Stop = 0x08,
 	SubCode = 0x10,
@@ -283,8 +265,7 @@ public enum PceCdRomIrqSource
 	DataIn = 0x40
 }
 
-public struct PceCdRomState
-{
+public struct PceCdRomState {
 	public UInt16 AudioSampleLatch;
 	public byte ActiveIrqs;
 	public byte EnabledIrqs;
@@ -293,8 +274,7 @@ public struct PceCdRomState
 	public byte ResetRegValue;
 }
 
-public struct PceAdpcmState
-{
+public struct PceAdpcmState {
 	[MarshalAs(UnmanagedType.I1)] public bool Nibble;
 	public UInt16 ReadAddress;
 	public UInt16 WriteAddress;
@@ -319,23 +299,20 @@ public struct PceAdpcmState
 	public byte WriteClockCounter;
 }
 
-public enum CdPlayEndBehavior
-{
+public enum CdPlayEndBehavior {
 	Stop,
 	Loop,
 	Irq
 }
 
-public enum CdAudioStatus : byte
-{
+public enum CdAudioStatus : byte {
 	Playing = 0,
 	Inactive = 1,
 	Paused = 2,
 	Stopped = 3
 }
 
-public struct PceCdAudioPlayerState
-{
+public struct PceCdAudioPlayerState {
 	public CdAudioStatus Status;
 
 	public UInt32 StartSector;
@@ -349,8 +326,7 @@ public struct PceCdAudioPlayerState
 	public Int16 RightSample;
 }
 
-public enum ScsiPhase
-{
+public enum ScsiPhase {
 	BusFree,
 	Command,
 	DataIn,
@@ -361,8 +337,7 @@ public enum ScsiPhase
 	Busy
 }
 
-public struct PceScsiBusState
-{
+public struct PceScsiBusState {
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 9)]
 	public byte[] Signals;
 
@@ -376,14 +351,12 @@ public struct PceScsiBusState
 	public byte SectorsToRead;
 }
 
-public enum PceAudioFaderTarget
-{
+public enum PceAudioFaderTarget {
 	Adpcm,
 	CdAudio,
 }
 
-public struct PceAudioFaderState
-{
+public struct PceAudioFaderState {
 	public UInt64 StartClock;
 	public PceAudioFaderTarget Target;
 	[MarshalAs(UnmanagedType.I1)] public bool FastFade;
@@ -391,8 +364,7 @@ public struct PceAudioFaderState
 	public byte RegValue;
 }
 
-public struct PceState : BaseState
-{
+public struct PceState : BaseState {
 	public PceCpuState Cpu;
 	public PceVideoState Video;
 

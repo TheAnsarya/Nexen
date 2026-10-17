@@ -3,45 +3,43 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:c="using:Mesen.Debugger.Controls"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:c="using:Nexen.Debugger.Controls"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
+	xmlns:ext="using:Nexen.Controls.DataGridExtensions"
 	mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="110"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	Focusable="True"
 	x:DataType="vm:BreakpointListViewModel"
-	x:Class="Mesen.Debugger.Views.BreakpointListView"
+	x:Class="Nexen.Debugger.Views.BreakpointListView"
 >
 	<Design.DataContext>
 		<vm:BreakpointListViewModel />
 	</Design.DataContext>
 
-	<Border BorderThickness="0 1 0 0" BorderBrush="{StaticResource MesenGrayBorderColor}">
-		<DataBox
-			Items="{Binding Breakpoints}"
-			Selection="{Binding Selection}"
-			CellClick="OnCellClick"
-			CellDoubleClick="OnCellDoubleClick"
-			SelectionMode="Multiple"
-			SortMode="Multiple"
-			SortCommand="{Binding Sort}"
-			SortState="{Binding SortState}"
+	<Border BorderThickness="0 1 0 0" BorderBrush="{StaticResource NexenGrayBorderColor}">
+		<DataGrid
+			ItemsSource="{Binding Breakpoints}"
+			SelectedItem="{Binding Selection.SelectedItem}"
+			SelectionMode="Extended"
+			IsReadOnly="True"
+			CanUserReorderColumns="False"
+			HeadersVisibility="Column"
 			GridLinesVisibility="All"
-			ColumnWidths="{Binding ColumnWidths}"
+			ext:DataGridSortBehavior.SortMode="Multiple"
+			ext:DataGridSortBehavior.SortCommand="{Binding Sort}"
+			ext:DataGridSortBehavior.SortState="{Binding SortState}"
+			ext:DataGridColumnWidthBehavior.ColumnWidths="{Binding ColumnWidths}"
+			ext:DataGridCellClickBehavior.IsEnabled="True"
 		>
-			<DataBox.Columns>
-				<DataBoxCheckBoxColumn ColumnName="Enabled" Header="{l:Translate colEnabled}" Binding="{Binding Breakpoint.Enabled, DataType={x:Type vm:BreakpointViewModel}}" InitialWidth="22" />
-				<DataBoxCheckBoxColumn
-					ColumnName="Marked"
-					Header="{l:Translate colMarked}"
-					Binding="{Binding Breakpoint.MarkEvent, DataType={x:Type vm:BreakpointViewModel}}" IsVisible="{Binding !Breakpoint.Forbid, DataType={x:Type vm:BreakpointViewModel}}"
-					InitialWidth="22"
-				/>
-				<DataBoxTextColumn ColumnName="Type" Header="{l:Translate colType}" Binding="{Binding TypeDisplay, DataType={x:Type vm:BreakpointViewModel}}" CanUserResize="True" InitialWidth="65" />
-				<DataBoxTextColumn ColumnName="Address" Header="{l:Translate colAddress}" Binding="{Binding AddressDisplay, DataType={x:Type vm:BreakpointViewModel}}" CanUserResize="True" InitialWidth="65" />
-				<DataBoxTextColumn ColumnName="Condition" Header="{l:Translate colCondition}" Binding="{Binding Breakpoint.Condition, DataType={x:Type vm:BreakpointViewModel}}" CanUserResize="True" InitialWidth="150" />
-			</DataBox.Columns>
-		</DataBox>
+			<DataGrid.Columns>
+				<DataGridCheckBoxColumn SortMemberPath="Enabled" Header="{l:Translate colEnabled}" Binding="{Binding Breakpoint.Enabled, DataType={x:Type vm:BreakpointViewModel}}" Width="22" IsReadOnly="False" />
+				<DataGridCheckBoxColumn SortMemberPath="Marked" Header="{l:Translate colMarked}" Binding="{Binding Breakpoint.MarkEvent, DataType={x:Type vm:BreakpointViewModel}}" Width="22" IsReadOnly="False" />
+				<DataGridTextColumn SortMemberPath="Type" Header="{l:Translate colType}" Binding="{Binding TypeDisplay, DataType={x:Type vm:BreakpointViewModel}}" CanUserResize="True" Width="65" IsReadOnly="True" />
+				<DataGridTextColumn SortMemberPath="Address" Header="{l:Translate colAddress}" Binding="{Binding AddressDisplay, DataType={x:Type vm:BreakpointViewModel}}" CanUserResize="True" Width="65" IsReadOnly="True" />
+				<DataGridTextColumn SortMemberPath="Condition" Header="{l:Translate colCondition}" Binding="{Binding Breakpoint.Condition, DataType={x:Type vm:BreakpointViewModel}}" CanUserResize="True" Width="150" IsReadOnly="True" />
+			</DataGrid.Columns>
+		</DataGrid>
 	</Border>
 </UserControl>

@@ -1,0 +1,8 @@
+# Doxygen output - generated files
+/html/
+/xml/
+*.tag
+
+# Keep this directory tracked
+!.gitkeep
+!README.md

@@ -3,46 +3,52 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:c="using:Mesen.Debugger.Controls"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:c="using:Nexen.Debugger.Controls"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:ext="using:Nexen.Controls.DataGridExtensions"
 	mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="110"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	Focusable="True"
 	x:DataType="vm:FindResultListViewModel"
-	x:Class="Mesen.Debugger.Views.FindResultListView"
+	x:Class="Nexen.Debugger.Views.FindResultListView"
 >
 	<Design.DataContext>
 		<vm:FindResultListViewModel />
 	</Design.DataContext>
 
-	<Border BorderThickness="0 1 0 0" BorderBrush="{StaticResource MesenGrayBorderColor}">
-		<DataBox
-			Items="{Binding FindResults}"
-			Selection="{Binding Selection}"
-			CellDoubleClick="OnCellDoubleClick"
+	<Border BorderThickness="0 1 0 0" BorderBrush="{StaticResource NexenGrayBorderColor}">
+		<DataGrid
+			ItemsSource="{Binding FindResults}"
+			SelectedItem="{Binding Selection.SelectedItem}"
 			SelectionMode="Single"
-			SortMode="Multiple"
-			SortCommand="{Binding Sort}"
-			SortState="{Binding SortState}"
 			GridLinesVisibility="All"
-			ColumnWidths="{Binding ColumnWidths}"
+			IsReadOnly="True"
+			CanUserReorderColumns="False"
+			HeadersVisibility="Column"
+			ext:DataGridCellClickBehavior.IsEnabled="True"
+			ext:DataGridSortBehavior.SortState="{Binding SortState}"
+			ext:DataGridSortBehavior.SortCommand="{Binding Sort}"
+			ext:DataGridSortBehavior.SortMode="Multiple"
+			ext:DataGridColumnWidthBehavior.ColumnWidths="{Binding ColumnWidths}"
 		>
-			<DataBox.Columns>
-				<DataBoxTextColumn
-					ColumnName="Address"
+			<DataGrid.Columns>
+				<DataGridTextColumn
 					Header="{l:Translate colAddress}"
-					Binding="{Binding Address, DataType={x:Type vm:FindResultViewModel}}"
-					InitialWidth="100"
+					Binding="{Binding Address}"
+					SortMemberPath="Address"
+					Width="100"
+					IsReadOnly="True"
 				/>
-				<DataBoxTextColumn
-					ColumnName="Result"
+				<DataGridTextColumn
 					Header="{l:Translate colResult}"
-					Binding="{Binding Text, DataType={x:Type vm:FindResultViewModel}}"
-					InitialWidth="300"
+					Binding="{Binding Text}"
+					SortMemberPath="Result"
+					Width="300"
+					IsReadOnly="True"
 				/>
-			</DataBox.Columns>
-		</DataBox>
+			</DataGrid.Columns>
+		</DataGrid>
 	</Border>
 </UserControl>

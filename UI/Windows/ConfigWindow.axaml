@@ -1,17 +1,19 @@
-<Window
+﻿<Window
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:v="using:Mesen.Views"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:v="using:Nexen.Views"
+	xmlns:l="using:Nexen.Localization"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d" d:DesignWidth="620" d:DesignHeight="500"
 	x:DataType="vm:ConfigViewModel"
-	x:Class="Mesen.Windows.ConfigWindow"
-	Width="620" Height="500"
+	x:Class="Nexen.Windows.ConfigWindow"
+	Width="760" Height="620"
+	MinWidth="700" MinHeight="560"
+	CanResize="True"
 	Topmost="{Binding AlwaysOnTop}"
 	Title="{l:Translate wndTitle}"
 >
@@ -21,58 +23,104 @@
 
 	<Window.DataTemplates>
 		<DataTemplate DataType="{x:Type vm:AudioConfigViewModel}">
-			<v:AudioConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:AudioConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:EmulationConfigViewModel}">
-			<v:EmulationConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:EmulationConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:InputConfigViewModel}">
-			<v:InputConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:InputConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:VideoConfigViewModel}">
-			<v:VideoConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:VideoConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:NesConfigViewModel}">
-			<v:NesConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:NesConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:SnesConfigViewModel}">
-			<v:SnesConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:SnesConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:GameboyConfigViewModel}">
-			<v:GameboyConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:GameboyConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:GbaConfigViewModel}">
-			<v:GbaConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:GbaConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:PceConfigViewModel}">
-			<v:PceConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:PceConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:SmsConfigViewModel}">
-			<v:SmsConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:SmsConfigView />
+			</ScrollViewer>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type vm:GenesisConfigViewModel}">
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:GenesisConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:WsConfigViewModel}">
-			<v:WsConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:WsConfigView />
+			</ScrollViewer>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type vm:LynxConfigViewModel}">
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:LynxConfigView />
+			</ScrollViewer>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type vm:Atari2600ConfigViewModel}">
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:Atari2600ConfigView />
+			</ScrollViewer>
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type vm:ChannelFConfigViewModel}">
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:ChannelFConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:OtherConsolesConfigViewModel}">
-			<v:OtherConsolesConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:OtherConsolesConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:PreferencesConfigViewModel}">
-			<v:PreferencesConfigView />
+			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+				<v:PreferencesConfigView />
+			</ScrollViewer>
 		</DataTemplate>
 	</Window.DataTemplates>
 
 	<DockPanel>
 		<Panel DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Background="#2888">
 			<Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" RowDefinitions="Auto" Margin="5 3">
-				<c:ButtonWithIcon Grid.Column="0" Click="OpenMesenFolder" Icon="Assets/Folder.png" Text="{l:Translate btnOpenMesenFolder}" />
-				<c:ButtonWithIcon Grid.Column="1" Click="ResetAllSettings" Icon="Assets/ResetSettings.png" Text="{l:Translate btnResetSettings}" />
+				<c:ButtonWithIcon Grid.Column="0" MinHeight="36" Margin="0 0 8 0" Click="OpenNexenFolder" Icon="Assets/Folder.png" Text="{l:Translate btnOpenNexenFolder}" />
+				<c:ButtonWithIcon Grid.Column="1" MinHeight="36" Click="ResetAllSettings" Icon="Assets/ResetSettings.png" Text="{l:Translate btnResetSettings}" />
 
-				<Button Grid.Column="3" MinWidth="70" HorizontalContentAlignment="Center" Click="Ok_OnClick" Content="{l:Translate btnOK}" />
-				<Button Grid.Column="4" MinWidth="70" HorizontalContentAlignment="Center" Click="Cancel_OnClick" Content="{l:Translate btnCancel}" />
+				<Button Grid.Column="3" MinWidth="70" MinHeight="36" Margin="8 0 0 0" HorizontalContentAlignment="Center" Click="Ok_OnClick" Content="{l:Translate btnOK}" />
+				<Button Grid.Column="4" MinWidth="70" MinHeight="36" Margin="8 0 0 0" HorizontalContentAlignment="Center" Click="Cancel_OnClick" Content="{l:Translate btnCancel}" />
 			</Grid>
 		</Panel>
-		
-		<TabControl TabStripPlacement="Left" Background="#20888888" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" Padding="0">
+
+		<TabControl Name="SettingsTabControl" TabStripPlacement="Left" Background="{DynamicResource SettingsTabStripBackgroundBrush}" SelectedIndex="{ReflectionBinding SelectedIndex, Mode=TwoWay}" Padding="0">
 			<TabItem Content="{Binding Audio}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
@@ -100,22 +148,22 @@
 			<TabItem Content="{Binding Video}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/VideoOptions.png" Margin="0 0 10 0" />
+						<Image Source="{SvgImage /Assets/VideoOptions.svg}" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabVideo}" />
 					</StackPanel>
 				</TabItem.Header>
 			</TabItem>
-			
+
 			<TabItem IsEnabled="False" MinHeight="10">
 				<TabItem.Header>
-					<Rectangle Fill="{StaticResource MesenGrayBorderColor}" Height="1" />
+					<Rectangle Fill="{StaticResource NexenGrayBorderColor}" Height="1" />
 				</TabItem.Header>
 			</TabItem>
-			
-			<TabItem Content="{Binding Nes}"> 
+
+			<TabItem Content="{Binding Nes}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/NesIcon.png" Margin="0 0 10 0" />
+						<Image Source="{SvgImage /Assets/NesIcon.svg}" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabNes}" />
 					</StackPanel>
 				</TabItem.Header>
@@ -124,7 +172,7 @@
 			<TabItem Content="{Binding Snes}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/SnesIcon.png" Margin="0 0 10 0" />
+						<Image Source="{SvgImage /Assets/SnesIcon.svg}" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabSnes}" />
 					</StackPanel>
 				</TabItem.Header>
@@ -133,7 +181,7 @@
 			<TabItem Content="{Binding Gameboy}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/GameboyIcon.png" Margin="0 0 10 0" />
+						<Image Source="{SvgImage /Assets/GameboyIcon.svg}" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabGameboy}" />
 					</StackPanel>
 				</TabItem.Header>
@@ -142,7 +190,7 @@
 			<TabItem Content="{Binding Gba}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/GbaIcon.png" Margin="0 0 10 0" />
+						<Image Source="{SvgImage /Assets/GbaIcon.svg}" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabGba}" />
 					</StackPanel>
 				</TabItem.Header>
@@ -151,7 +199,7 @@
 			<TabItem Content="{Binding PcEngine}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/PceIcon.png" Margin="0 0 10 0" />
+						<Image Source="{SvgImage /Assets/PceIcon.svg}" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabPcEngine}" />
 					</StackPanel>
 				</TabItem.Header>
@@ -160,8 +208,17 @@
 			<TabItem Content="{Binding Sms}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/SmsIcon.png" Margin="0 0 10 0" />
+						<Image Source="{SvgImage /Assets/SmsIcon.svg}" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabSms}" />
+					</StackPanel>
+				</TabItem.Header>
+			</TabItem>
+
+			<TabItem Content="{Binding Genesis}">
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<Image Source="{SvgImage /Assets/SmsIcon.svg}" Margin="0 0 10 0" />
+						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabGenesis}" />
 					</StackPanel>
 				</TabItem.Header>
 			</TabItem>
@@ -169,31 +226,58 @@
 			<TabItem Content="{Binding Ws}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/WsIcon.png" Margin="0 0 10 0" />
+						<Image Source="{SvgImage /Assets/WsIcon.svg}" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabWs}" />
 					</StackPanel>
 				</TabItem.Header>
 			</TabItem>
-			
+
+			<TabItem Content="{Binding Lynx}">
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<Image Source="{SvgImage /Assets/LynxIcon.svg}" Margin="0 0 10 0" />
+						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabLynx}" />
+					</StackPanel>
+				</TabItem.Header>
+			</TabItem>
+
+			<TabItem Content="{Binding Atari2600}">
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<Image Source="/Assets/Controller.png" Margin="0 0 10 0" />
+						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabAtari2600}" />
+					</StackPanel>
+				</TabItem.Header>
+			</TabItem>
+
+			<TabItem Content="{Binding ChannelF}">
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<Image Source="/Assets/Controller.png" Margin="0 0 10 0" />
+						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabChannelF}" />
+					</StackPanel>
+				</TabItem.Header>
+			</TabItem>
+
 			<TabItem Content="{Binding OtherConsoles}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/Drive.png" Margin="0 0 10 0" />
+						<Image Source="{SvgImage /Assets/Drive.svg}" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabOtherConsoles}" />
 					</StackPanel>
 				</TabItem.Header>
 			</TabItem>
-			
+
 			<TabItem IsEnabled="False" MinHeight="10">
 				<TabItem.Header>
-					<Rectangle Fill="{StaticResource MesenGrayBorderColor}" Height="1" />
+					<Rectangle Fill="{StaticResource NexenGrayBorderColor}" Height="1" />
 				</TabItem.Header>
 			</TabItem>
-			
+
 			<TabItem Content="{Binding Preferences}">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/Settings.png" Margin="0 0 10 0" />
+						<Image Source="{SvgImage /Assets/Settings.svg}" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabPreferences}" />
 					</StackPanel>
 				</TabItem.Header>

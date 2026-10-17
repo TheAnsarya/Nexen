@@ -1,17 +1,17 @@
-<Styles
+﻿<Styles
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:sys="clr-namespace:System;assembly=netstandard"	
-	xmlns:c="using:Mesen.Controls"
+	xmlns:sys="using:System"
+	xmlns:c="using:Nexen.Controls"
 >
 	<Styles.Resources>
 		<!-- Custom colors -->
-		<Color x:Key="MesenMenuBackground">#F1F1F1</Color>
+		<Color x:Key="NexenMenuBackground">#F1F1F1</Color>
 	</Styles.Resources>
-	
+
 	<Style Selector="Window">
-		<Setter Property="Background" Value="#181818"/>
-		<Setter Property="Icon" Value="/Assets/Icon.ico" />
+		<Setter Property="Background" Value="{DynamicResource NexenStartupWindowBackgroundBrush}"/>
+		<Setter Property="Icon" Value="/Assets/NexenIcon.ico" />
 		<Setter Property="Template">
 			<ControlTemplate>
 				<Panel>
@@ -19,15 +19,13 @@
 					<Border Background="{TemplateBinding Background}" IsHitTestVisible="False" />
 					<Panel Background="Transparent" Margin="{TemplateBinding WindowDecorationMargin}" />
 					<VisualLayerManager>
-						<VisualLayerManager.ChromeOverlayLayer>
-							<TitleBar />
-						</VisualLayerManager.ChromeOverlayLayer>
+
 						<ContentPresenter Name="PART_ContentPresenter"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Content="{TemplateBinding Content}"
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+							ContentTemplate="{TemplateBinding ContentTemplate}"
+							Content="{TemplateBinding Content}"
+							Margin="{TemplateBinding Padding}"
+							HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+							VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
 					</VisualLayerManager>
 				</Panel>
 			</ControlTemplate>
@@ -38,14 +36,14 @@
 		<Setter Property="Template">
 			<ControlTemplate>
 				<ContentPresenter Name="PART_ContentPresenter"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                        Content="{TemplateBinding Content}"
-                        Padding="{TemplateBinding Padding}"
-                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+						Background="{TemplateBinding Background}"
+						BorderBrush="{TemplateBinding BorderBrush}"
+						BorderThickness="{TemplateBinding BorderThickness}"
+						ContentTemplate="{TemplateBinding ContentTemplate}"
+						Content="{TemplateBinding Content}"
+						Padding="{TemplateBinding Padding}"
+						VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+						HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
 			</ControlTemplate>
 		</Setter>
 	</Style>
@@ -54,14 +52,14 @@
 		<Setter Property="Template">
 			<ControlTemplate>
 				<ContentPresenter Name="PART_ContentPresenter"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                        Content="{TemplateBinding Content}"
-                        Padding="{TemplateBinding Padding}"
-                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+						Background="{TemplateBinding Background}"
+						BorderBrush="{TemplateBinding BorderBrush}"
+						BorderThickness="{TemplateBinding BorderThickness}"
+						ContentTemplate="{TemplateBinding ContentTemplate}"
+						Content="{TemplateBinding Content}"
+						Padding="{TemplateBinding Padding}"
+						VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+						HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"/>
 			</ControlTemplate>
 		</Setter>
 	</Style>
@@ -70,10 +68,10 @@
 		<Setter Property="FocusAdorner">
 			<FocusAdornerTemplate>
 				<Border BorderThickness="{DynamicResource SystemControlFocusVisualPrimaryThickness}"
-                BorderBrush="{DynamicResource SystemControlFocusVisualPrimaryBrush}"
-                Margin="{DynamicResource SystemControlFocusVisualMargin}">
+				BorderBrush="{DynamicResource SystemControlFocusVisualPrimaryBrush}"
+				Margin="{DynamicResource SystemControlFocusVisualMargin}">
 					<Border BorderThickness="{DynamicResource SystemControlFocusVisualSecondaryThickness}"
-                  BorderBrush="{DynamicResource SystemControlFocusVisualSecondaryBrush}" />
+				  BorderBrush="{DynamicResource SystemControlFocusVisualSecondaryBrush}" />
 				</Border>
 			</FocusAdornerTemplate>
 		</Setter>
@@ -83,33 +81,33 @@
 		<Setter Property="Template">
 			<ControlTemplate>
 				<ContentPresenter x:Name="PART_ContentPresenter"
-                          Background="{TemplateBinding Background}"
-                          BorderBrush="{TemplateBinding BorderBrush}"
-                          BorderThickness="{TemplateBinding BorderThickness}"
-                          Content="{TemplateBinding Content}"
-                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                          Padding="{TemplateBinding Padding}"
-                          RecognizesAccessKey="True"
-                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+						  Background="{TemplateBinding Background}"
+						  BorderBrush="{TemplateBinding BorderBrush}"
+						  BorderThickness="{TemplateBinding BorderThickness}"
+						  Content="{TemplateBinding Content}"
+						  ContentTemplate="{TemplateBinding ContentTemplate}"
+						  Padding="{TemplateBinding Padding}"
+						  RecognizesAccessKey="True"
+						  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+						  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
 			</ControlTemplate>
 		</Setter>
 	</Style>
 
 	<Style Selector="Menu">
 		<Setter Property="Height" Value="25" />
-		<Setter Property="Background" Value="{DynamicResource MesenMenuBackground}" />
+		<Setter Property="Background" Value="{DynamicResource NexenMenuBackground}" />
 		<Setter Property="Template">
 			<ControlTemplate>
 				<Border Background="{TemplateBinding Background}"
-              BorderBrush="{TemplateBinding BorderBrush}"
-              BorderThickness="{TemplateBinding BorderThickness}"
-              HorizontalAlignment="Stretch"
-              Padding="{TemplateBinding Padding}">
+			  BorderBrush="{TemplateBinding BorderBrush}"
+			  BorderThickness="{TemplateBinding BorderThickness}"
+			  HorizontalAlignment="Stretch"
+			  Padding="{TemplateBinding Padding}">
 					<ItemsPresenter Name="PART_ItemsPresenter"
-                        ItemsPanel="{TemplateBinding ItemsPanel}"
-                        VerticalAlignment="Stretch"
-                        KeyboardNavigation.TabNavigation="Continue" />
+						ItemsPanel="{TemplateBinding ItemsPanel}"
+						VerticalAlignment="Stretch"
+						KeyboardNavigation.TabNavigation="Continue" />
 				</Border>
 			</ControlTemplate>
 		</Setter>
@@ -119,7 +117,7 @@
 		<Setter Property="FontSize" Value="12" />
 		<Setter Property="FontFamily" Value="Segoe UI" />
 	</Style>
-	
+
 	<Style Selector="MenuItem">
 		<Setter Property="Height" Value="22" />
 		<Setter Property="Margin" Value="1" />
@@ -131,15 +129,15 @@
 		<Setter Property="Template">
 			<ControlTemplate>
 				<Border Name="PART_LayoutRoot"
-                Background="{TemplateBinding Background}"
-                BorderBrush="{TemplateBinding BorderBrush}"
-                BorderThickness="{TemplateBinding BorderThickness}">
+				Background="{TemplateBinding Background}"
+				BorderBrush="{TemplateBinding BorderBrush}"
+				BorderThickness="{TemplateBinding BorderThickness}">
 					<Panel>
 						<ContentPresenter Name="PART_HeaderPresenter"
-                              Content="{TemplateBinding Header}"
-                              VerticalAlignment="Center"
-                              HorizontalAlignment="Stretch"
-                              Margin="{TemplateBinding Padding}">
+							  Content="{TemplateBinding Header}"
+							  VerticalAlignment="Center"
+							  HorizontalAlignment="Stretch"
+							  Margin="{TemplateBinding Padding}">
 							<ContentPresenter.DataTemplates>
 								<DataTemplate DataType="sys:String">
 									<AccessText Text="{Binding}" />
@@ -147,23 +145,23 @@
 							</ContentPresenter.DataTemplates>
 						</ContentPresenter>
 						<Popup Name="PART_Popup"
-                   WindowManagerAddShadowHint="False"
-                   MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
-                   IsLightDismissEnabled="True"
-                   IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
-                   OverlayInputPassThroughElement="{Binding $parent[Menu]}">
+				   WindowManagerAddShadowHint="False"
+				   MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
+				   IsLightDismissEnabled="True"
+				   IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
+				   OverlayInputPassThroughElement="{Binding $parent[Menu]}">
 							<Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
-                      BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
-                      BorderThickness="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}"
-                      Padding="{DynamicResource MenuFlyoutPresenterThemePadding}"
-                      MaxWidth="{DynamicResource FlyoutThemeMaxWidth}"
-                      MinHeight="{DynamicResource MenuFlyoutThemeMinHeight}"
-                      HorizontalAlignment="Stretch">
+					  BorderBrush="{DynamicResource MenuFlyoutPresenterBorderBrush}"
+					  BorderThickness="{DynamicResource MenuFlyoutPresenterBorderThemeThickness}"
+					  Padding="{DynamicResource MenuFlyoutPresenterThemePadding}"
+					  MaxWidth="{DynamicResource FlyoutThemeMaxWidth}"
+					  MinHeight="{DynamicResource MenuFlyoutThemeMinHeight}"
+					  HorizontalAlignment="Stretch">
 								<ScrollViewer Classes="menuscroller">
 									<ItemsPresenter Name="PART_ItemsPresenter"
-                                  ItemsPanel="{TemplateBinding ItemsPanel}"
-                                  Margin="{DynamicResource MenuFlyoutScrollerMargin}"
-                                  Grid.IsSharedSizeScope="True" />
+								  ItemsPanel="{TemplateBinding ItemsPanel}"
+								  Margin="{DynamicResource MenuFlyoutScrollerMargin}"
+								  Grid.IsSharedSizeScope="True" />
 								</ScrollViewer>
 							</Border>
 						</Popup>

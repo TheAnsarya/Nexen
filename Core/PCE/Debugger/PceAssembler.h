@@ -6,8 +6,7 @@
 
 class LabelManager;
 
-class PceAssembler final : public Base6502Assembler<PceAddrMode>
-{
+class PceAssembler final : public Base6502Assembler<PceAddrMode> {
 private:
 	string GetOpName(uint8_t opcode) override;
 	PceAddrMode GetOpMode(uint8_t opcode) override;

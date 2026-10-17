@@ -5,32 +5,27 @@
 #include "Shared/EventType.h"
 #include "Shared/MemoryOperationType.h"
 
-ScriptHost::ScriptHost(int scriptId)
-{
+ScriptHost::ScriptHost(int scriptId) {
 	_scriptId = scriptId;
 }
 
-int ScriptHost::GetScriptId()
-{
+int ScriptHost::GetScriptId() {
 	return _scriptId;
 }
 
-string ScriptHost::GetLog()
-{
+string ScriptHost::GetLog() {
 	shared_ptr<ScriptingContext> context = _context.lock();
 	return context ? context->GetLog() : "";
 }
 
-bool ScriptHost::LoadScript(string scriptName, string path, string scriptContent, Debugger* debugger)
-{
+bool ScriptHost::LoadScript(const string& scriptName, const string& path, const string& scriptContent, Debugger* debugger) {
 	_context.reset(new ScriptingContext(debugger));
-	if(!_context->LoadScript(scriptName, path, scriptContent, debugger)) {
+	if (!_context->LoadScript(scriptName, path, scriptContent, debugger)) {
 		return false;
 	}
 	return true;
 }
 
-void ScriptHost::ProcessEvent(EventType eventType, CpuType cpuType)
-{
+void ScriptHost::ProcessEvent(EventType eventType, CpuType cpuType) {
 	_context->CallEventCallback(eventType, cpuType);
 }

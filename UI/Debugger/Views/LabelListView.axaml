@@ -3,52 +3,56 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
-	xmlns:c="using:Mesen.Debugger.Controls"
-	xmlns:du="using:Mesen.Debugger.Utilities"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
+	xmlns:c="using:Nexen.Debugger.Controls"
+	xmlns:du="using:Nexen.Debugger.Utilities"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:ext="using:Nexen.Controls.DataGridExtensions"
 	mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="110"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	Focusable="True"
 	x:DataType="vm:LabelListViewModel"
-	x:Class="Mesen.Debugger.Views.LabelListView"
+	x:Class="Nexen.Debugger.Views.LabelListView"
 >
 	<Design.DataContext>
 		<vm:LabelListViewModel />
 	</Design.DataContext>
 
 	<UserControl.Styles>
-		<Style Selector="DataBoxRow ToolTip TextBlock">
-			<Setter Property="FontFamily" Value="{DynamicResource MesenMonospaceFont}" />
+		<Style Selector="DataGridRow ToolTip TextBlock">
+			<Setter Property="FontFamily" Value="{DynamicResource NexenMonospaceFont}" />
 		</Style>
-		<Style Selector="DataBoxRow:selected DataBoxCell TextBlock ToolTip TextBlock">
+		<Style Selector="DataGridRow:selected DataGridCell TextBlock ToolTip TextBlock">
 			<Setter Property="Foreground" Value="{DynamicResource ToolTipForeground}" />
 		</Style>
-		<Style Selector="DataBoxRow">
+		<Style Selector="DataGridRow">
 			<Setter Property="Foreground" Value="{Binding RowBrush, DataType={x:Type vm:LabelViewModel}}" />
 			<Setter Property="FontStyle" Value="{Binding RowStyle, DataType={x:Type vm:LabelViewModel}}" />
 		</Style>
 	</UserControl.Styles>
 
 	<Border BorderThickness="0 1 0 0" BorderBrush="#80808080">
-		<DataBox
-			Items="{Binding Labels}"
-			Selection="{Binding Selection}"
+		<DataGrid
+			ItemsSource="{Binding Labels}"
+			SelectedItem="{Binding Selection.SelectedItem}"
 			GridLinesVisibility="All"
-			SelectionMode="Multiple"
-			SortMode="Multiple"
-			SortCommand="{Binding Sort}"
-			SortState="{Binding SortState}"
-			CellDoubleClick="OnCellDoubleClick"
-			ColumnWidths="{Binding ColumnWidths}"
+			SelectionMode="Extended"
+			IsReadOnly="True"
+			CanUserReorderColumns="False"
+			HeadersVisibility="Column"
+			ext:DataGridCellClickBehavior.IsEnabled="True"
+			ext:DataGridSortBehavior.SortState="{Binding SortState}"
+			ext:DataGridSortBehavior.SortCommand="{Binding Sort}"
+			ext:DataGridSortBehavior.SortMode="Multiple"
+			ext:DataGridColumnWidthBehavior.ColumnWidths="{Binding ColumnWidths}"
 		>
-			<DataBox.Columns>
-				<DataBoxTextColumn ColumnName="Label" Header="{l:Translate colLabel}" Binding="{Binding LabelText, DataType={x:Type vm:LabelViewModel}}" CanUserResize="True" InitialWidth="100" />
-				<DataBoxTextColumn ColumnName="RelAddr" Header="{l:Translate colCpuAddr}" Binding="{Binding RelAddressDisplay, DataType={x:Type vm:LabelViewModel}}" CanUserResize="True" InitialWidth="80" />
-				<DataBoxTextColumn ColumnName="AbsAddr" Header="{l:Translate colRomAddr}" Binding="{Binding AbsAddressDisplay, DataType={x:Type vm:LabelViewModel}}" CanUserResize="True" InitialWidth="80" />
-				<DataBoxTextColumn ColumnName="Comment" ShowToolTip="True" Header="{l:Translate colComment}" Binding="{Binding LabelComment, DataType={x:Type vm:LabelViewModel}}" CanUserResize="True" InitialWidth="100" />
-			</DataBox.Columns>
-		</DataBox>
+			<DataGrid.Columns>
+				<DataGridTextColumn SortMemberPath="Label" Header="{l:Translate colLabel}" Binding="{Binding LabelText}" CanUserResize="True" IsReadOnly="True" Width="100" />
+				<DataGridTextColumn SortMemberPath="RelAddr" Header="{l:Translate colCpuAddr}" Binding="{Binding RelAddressDisplay}" CanUserResize="True" IsReadOnly="True" Width="80" />
+				<DataGridTextColumn SortMemberPath="AbsAddr" Header="{l:Translate colRomAddr}" Binding="{Binding AbsAddressDisplay}" CanUserResize="True" IsReadOnly="True" Width="80" />
+				<DataGridTextColumn SortMemberPath="Comment" Header="{l:Translate colComment}" Binding="{Binding LabelComment}" CanUserResize="True" IsReadOnly="True" Width="100" />
+			</DataGrid.Columns>
+		</DataGrid>
 	</Border>
 </UserControl>

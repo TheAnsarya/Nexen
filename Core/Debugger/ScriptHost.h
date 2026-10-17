@@ -8,8 +8,7 @@
 
 class Debugger;
 
-class ScriptHost
-{
+class ScriptHost {
 private:
 	safe_ptr<ScriptingContext> _context;
 	int _scriptId = 0;
@@ -20,14 +19,13 @@ public:
 	int GetScriptId();
 	string GetLog();
 
-	bool LoadScript(string scriptName, string path, string scriptContent, Debugger* debugger);
+	bool LoadScript(const string& scriptName, const string& path, const string& scriptContent, Debugger* debugger);
 	void RefreshMemoryCallbackFlags() { _context->RefreshMemoryCallbackFlags(); }
 
 	void ProcessEvent(EventType eventType, CpuType cpuType);
 
-	template<typename T>
-	__forceinline void CallMemoryCallback(AddressInfo relAddr, T& value, CallbackType callbackType, CpuType cpuType)
-	{
+	template <typename T>
+	__forceinline void CallMemoryCallback(AddressInfo relAddr, T& value, CallbackType callbackType, CpuType cpuType) {
 		_context->CallMemoryCallback(relAddr, value, callbackType, cpuType);
 	}
 };

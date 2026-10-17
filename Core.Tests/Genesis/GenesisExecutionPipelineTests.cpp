@@ -1,0 +1,723 @@
+﻿#include "pch.h"
+#include "Debugger/DebugTypes.h"
+#include "Genesis/GenesisConsole.h"
+#include "Genesis/GenesisM68k.h"
+#include "Genesis/GenesisMemoryManager.h"
+#include "Genesis/GenesisVdp.h"
+#include "Shared/BaseControlManager.h"
+#include "Shared/EventType.h"
+#include "Shared/Emulator.h"
+#include "Utilities/VirtualFile.h"
+
+namespace {
+	std::vector<uint8_t> BuildGenesisNopBootRom(uint32_t initialSp, uint32_t initialPc, size_t romSize = 0x40000) {
+		std::vector<uint8_t> rom(romSize, 0);
+		for (size_t i = 0; i + 1 < rom.size(); i += 2) {
+			rom[i] = 0x4e;
+			rom[i + 1] = 0x71;
+		}
+
+		rom[0] = (uint8_t)((initialSp >> 24) & 0xff);
+		rom[1] = (uint8_t)((initialSp >> 16) & 0xff);
+		rom[2] = (uint8_t)((initialSp >> 8) & 0xff);
+		rom[3] = (uint8_t)(initialSp & 0xff);
+		rom[4] = (uint8_t)((initialPc >> 24) & 0xff);
+		rom[5] = (uint8_t)((initialPc >> 16) & 0xff);
+		rom[6] = (uint8_t)((initialPc >> 8) & 0xff);
+		rom[7] = (uint8_t)(initialPc & 0xff);
+
+		if (rom.size() >= 0x104) {
+			rom[0x100] = 'S';
+			rom[0x101] = 'E';
+			rom[0x102] = 'G';
+			rom[0x103] = 'A';
+		}
+
+		return rom;
+	}
+}
+
+TEST(GenesisExecutionPipelineTests, LoadRomSeedsCpuFromResetVectors) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-load.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetCpu(), nullptr);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	GenesisM68kState cpuState = console.GetCpu()->GetState();
+	EXPECT_EQ(cpuState.PC & 0x00ffffff, InitialPc);
+	EXPECT_EQ(cpuState.A[7] & 0x00ffffff, InitialSp);
+
+	GenesisIoState ioState = console.GetMemoryManager()->GetIoState();
+	EXPECT_EQ(ioState.CpuInstructionHeartbeat, 0u);
+	EXPECT_EQ(ioState.CpuProgramCounterHeartbeat, 0u);
+}
+
+TEST(GenesisExecutionPipelineTests, RunFrameAdvancesCodeExecutionAndHeartbeat) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-run.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetCpu(), nullptr);
+	ASSERT_NE(console.GetVdp(), nullptr);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	uint32_t frameBefore = console.GetVdp()->GetFrameCount();
+	GenesisM68kState cpuBefore = console.GetCpu()->GetState();
+	GenesisIoState ioBefore = console.GetMemoryManager()->GetIoState();
+
+	console.RunFrame();
+
+	uint32_t frameAfter = console.GetVdp()->GetFrameCount();
+	GenesisM68kState cpuAfter = console.GetCpu()->GetState();
+	GenesisIoState ioAfter = console.GetMemoryManager()->GetIoState();
+
+	EXPECT_GT(frameAfter, frameBefore);
+	EXPECT_GT(cpuAfter.CycleCount, cpuBefore.CycleCount);
+	EXPECT_GT(ioAfter.CpuInstructionHeartbeat, ioBefore.CpuInstructionHeartbeat);
+	EXPECT_NE(ioAfter.CpuProgramCounterHeartbeat, ioBefore.CpuProgramCounterHeartbeat);
+}
+
+TEST(GenesisExecutionPipelineTests, StepRequestProgressTracksSteppedCpuExecution) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000200;
+	constexpr int32_t StepBudget = 8;
+	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-step.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetCpu(), nullptr);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	StepRequest stepRequest(StepType::Step);
+	stepRequest.StepCount = StepBudget;
+	GenesisIoState ioBefore = console.GetMemoryManager()->GetIoState();
+	uint32_t expectedHeartbeatPc = InitialPc;
+
+	for (int32_t i = 0; i < StepBudget; i++) {
+		stepRequest.ProcessCpuExec();
+		console.GetCpu()->Exec();
+		GenesisIoState ioStep = console.GetMemoryManager()->GetIoState();
+		expectedHeartbeatPc = InitialPc + (uint32_t)(i * 2);
+		EXPECT_EQ(ioStep.CpuProgramCounterHeartbeat, expectedHeartbeatPc);
+	}
+
+	GenesisIoState ioAfter = console.GetMemoryManager()->GetIoState();
+	EXPECT_EQ(stepRequest.StepCount, 0);
+	EXPECT_EQ(stepRequest.BreakNeeded, BreakType::User);
+	EXPECT_EQ(stepRequest.GetBreakSource(), BreakSource::CpuStep);
+	EXPECT_EQ(ioAfter.CpuInstructionHeartbeat, ioBefore.CpuInstructionHeartbeat + (uint64_t)StepBudget);
+	EXPECT_EQ(ioAfter.CpuProgramCounterHeartbeat, expectedHeartbeatPc);
+}
+
+TEST(GenesisExecutionPipelineTests, ContinuousRunFrameCadenceStaysMonotonicAndDeterministicAcrossRuns) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 3;
+
+	auto runCadenceCapture = [&]() {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-cadence.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetVdp() || !console.GetCpu() || !console.GetMemoryManager()) {
+			return std::tuple<std::vector<uint32_t>, std::vector<uint64_t>, std::vector<uint64_t>, std::vector<uint64_t>>();
+		}
+
+		std::vector<uint32_t> frameCounts;
+		std::vector<uint64_t> cpuCycles;
+		std::vector<uint64_t> cycleHeartbeat;
+		std::vector<uint64_t> instructionHeartbeat;
+		frameCounts.reserve(FrameCount);
+		cpuCycles.reserve(FrameCount);
+		cycleHeartbeat.reserve(FrameCount);
+		instructionHeartbeat.reserve(FrameCount);
+
+		for (int i = 0; i < FrameCount; i++) {
+			console.RunFrame();
+			frameCounts.push_back(console.GetVdp()->GetFrameCount());
+			cpuCycles.push_back(console.GetCpu()->GetState().CycleCount);
+			GenesisIoState ioState = console.GetMemoryManager()->GetIoState();
+			cycleHeartbeat.push_back(ioState.CpuCycleHeartbeat);
+			instructionHeartbeat.push_back(ioState.CpuInstructionHeartbeat);
+		}
+
+		return std::make_tuple(frameCounts, cpuCycles, cycleHeartbeat, instructionHeartbeat);
+	};
+
+	auto runA = runCadenceCapture();
+	auto runB = runCadenceCapture();
+
+	auto& frameA = std::get<0>(runA);
+	auto& cyclesA = std::get<1>(runA);
+	auto& cycleHeartbeatA = std::get<2>(runA);
+	auto& instructionHeartbeatA = std::get<3>(runA);
+
+	ASSERT_EQ((int)frameA.size(), FrameCount);
+	ASSERT_EQ((int)cyclesA.size(), FrameCount);
+	ASSERT_EQ((int)cycleHeartbeatA.size(), FrameCount);
+	ASSERT_EQ((int)instructionHeartbeatA.size(), FrameCount);
+
+	for (int i = 1; i < FrameCount; i++) {
+		EXPECT_GT(frameA[i], frameA[i - 1]);
+		EXPECT_GT(cyclesA[i], cyclesA[i - 1]);
+		EXPECT_GT(cycleHeartbeatA[i], cycleHeartbeatA[i - 1]);
+		EXPECT_GT(instructionHeartbeatA[i], instructionHeartbeatA[i - 1]);
+	}
+
+	EXPECT_EQ(runA, runB);
+}
+
+TEST(GenesisExecutionPipelineTests, RunFrameAdvancesExactlyOneFramePerInvocationDeterministically) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 5;
+
+	auto captureRun = [&]() {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-single-step-frame.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetVdp() || !console.GetMemoryManager()) {
+			return std::tuple<std::vector<uint32_t>, std::vector<uint64_t>>();
+		}
+
+		std::vector<uint32_t> frameDeltas;
+		std::vector<uint64_t> instructionDeltas;
+		frameDeltas.reserve(FrameCount);
+		instructionDeltas.reserve(FrameCount);
+
+		for (int i = 0; i < FrameCount; i++) {
+			uint32_t frameBefore = console.GetVdp()->GetFrameCount();
+			GenesisIoState ioBefore = console.GetMemoryManager()->GetIoState();
+
+			console.RunFrame();
+
+			uint32_t frameAfter = console.GetVdp()->GetFrameCount();
+			GenesisIoState ioAfter = console.GetMemoryManager()->GetIoState();
+			frameDeltas.push_back(frameAfter - frameBefore);
+			instructionDeltas.push_back(ioAfter.CpuInstructionHeartbeat - ioBefore.CpuInstructionHeartbeat);
+		}
+
+		return std::make_tuple(frameDeltas, instructionDeltas);
+	};
+
+	auto runA = captureRun();
+	auto runB = captureRun();
+
+	auto& frameDeltasA = std::get<0>(runA);
+	auto& instructionDeltasA = std::get<1>(runA);
+
+	ASSERT_EQ((int)frameDeltasA.size(), FrameCount);
+	ASSERT_EQ((int)instructionDeltasA.size(), FrameCount);
+
+	for (int i = 0; i < FrameCount; i++) {
+		EXPECT_EQ(frameDeltasA[i], 1u);
+		EXPECT_GT(instructionDeltasA[i], 0u);
+	}
+
+	EXPECT_EQ(runA, runB);
+}
+
+TEST(GenesisExecutionPipelineTests, RunFrameAdvancesPollAndLagCountersDeterministicallyInHeadlessCadence) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 4;
+
+	auto captureRun = [&]() {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-poll-lag-cadence.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetControlManager()) {
+			return std::tuple<std::vector<uint32_t>, std::vector<uint32_t>>();
+		}
+
+		BaseControlManager* controlManager = console.GetControlManager();
+		std::vector<uint32_t> pollDeltas;
+		std::vector<uint32_t> lagDeltas;
+		pollDeltas.reserve(FrameCount);
+		lagDeltas.reserve(FrameCount);
+
+		for (int i = 0; i < FrameCount; i++) {
+			uint32_t pollBefore = controlManager->GetPollCounter();
+			uint32_t lagBefore = controlManager->GetLagCounter();
+
+			console.RunFrame();
+
+			uint32_t pollAfter = controlManager->GetPollCounter();
+			uint32_t lagAfter = controlManager->GetLagCounter();
+			pollDeltas.push_back(pollAfter - pollBefore);
+			lagDeltas.push_back(lagAfter - lagBefore);
+		}
+
+		return std::make_tuple(pollDeltas, lagDeltas);
+	};
+
+	auto runA = captureRun();
+	auto runB = captureRun();
+
+	auto& pollDeltasA = std::get<0>(runA);
+	auto& lagDeltasA = std::get<1>(runA);
+
+	ASSERT_EQ((int)pollDeltasA.size(), FrameCount);
+	ASSERT_EQ((int)lagDeltasA.size(), FrameCount);
+
+	for (int i = 0; i < FrameCount; i++) {
+		EXPECT_EQ(pollDeltasA[i], 1u);
+		EXPECT_EQ(lagDeltasA[i], 1u);
+	}
+
+	EXPECT_EQ(runA, runB);
+}
+
+TEST(GenesisExecutionPipelineTests, StartupFrameVisibilityHandoffIsDeterministicAcrossRuns) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 4;
+
+	auto captureRun = [&]() {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-startup-visibility.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success) {
+			return std::tuple<std::vector<uint32_t>, std::vector<uint8_t>, std::vector<uint32_t>, std::vector<uint32_t>>();
+		}
+
+		std::vector<uint32_t> frameCounts;
+		std::vector<uint8_t> pointerPattern;
+		std::vector<uint32_t> widths;
+		std::vector<uint32_t> heights;
+		frameCounts.reserve(FrameCount);
+		pointerPattern.reserve(FrameCount);
+		widths.reserve(FrameCount);
+		heights.reserve(FrameCount);
+		uintptr_t firstPtr = 0;
+		uintptr_t secondPtr = 0;
+
+		for (int i = 0; i < FrameCount; i++) {
+			console.RunFrame();
+			PpuFrameInfo frame = console.GetPpuFrame();
+			frameCounts.push_back(frame.FrameCount);
+			uintptr_t ptr = (uintptr_t)frame.FrameBuffer;
+			if (i == 0) {
+				firstPtr = ptr;
+				pointerPattern.push_back(ptr != 0 ? 1u : 0u);
+			} else if (i == 1) {
+				secondPtr = ptr;
+				pointerPattern.push_back(ptr != 0 && ptr != firstPtr ? 1u : 0u);
+			} else {
+				uintptr_t expected = (i & 1) == 0 ? firstPtr : secondPtr;
+				pointerPattern.push_back(ptr == expected ? 1u : 0u);
+			}
+			widths.push_back(frame.Width);
+			heights.push_back(frame.Height);
+		}
+
+		return std::make_tuple(frameCounts, pointerPattern, widths, heights);
+	};
+
+	auto runA = captureRun();
+	auto runB = captureRun();
+
+	auto& frameCountsA = std::get<0>(runA);
+	auto& pointerPatternA = std::get<1>(runA);
+	auto& widthsA = std::get<2>(runA);
+	auto& heightsA = std::get<3>(runA);
+
+	ASSERT_EQ((int)frameCountsA.size(), FrameCount);
+	ASSERT_EQ((int)pointerPatternA.size(), FrameCount);
+	ASSERT_EQ((int)widthsA.size(), FrameCount);
+	ASSERT_EQ((int)heightsA.size(), FrameCount);
+
+	for (int i = 0; i < FrameCount; i++) {
+		EXPECT_EQ(frameCountsA[i], (uint32_t)(i + 1));
+		EXPECT_GT(widthsA[i], 0u);
+		EXPECT_GT(heightsA[i], 0u);
+	}
+	EXPECT_EQ(pointerPatternA[0], 1u);
+	EXPECT_EQ(pointerPatternA[1], 1u);
+	for (int i = 2; i < FrameCount; i++) {
+		EXPECT_EQ(pointerPatternA[i], 1u);
+	}
+
+	EXPECT_EQ(runA, runB);
+}
+
+TEST(GenesisExecutionPipelineTests, EventOrderingInteractionsDoNotBreakStartupFrameHandoffDeterminism) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 3;
+
+	auto captureRun = [&](bool injectExternalEvents) {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-debugger-frame-order.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetVdp()) {
+			return std::tuple<std::vector<uint32_t>, std::vector<uint8_t>>();
+		}
+
+		std::vector<uint32_t> frameCounts;
+		std::vector<uint8_t> pointerPattern;
+		frameCounts.reserve(FrameCount);
+		pointerPattern.reserve(FrameCount);
+		uintptr_t firstPtr = 0;
+
+		for (int i = 0; i < FrameCount; i++) {
+			if (injectExternalEvents) {
+				emu.ProcessEvent(EventType::StartFrame, CpuType::Genesis);
+			}
+			console.RunFrame();
+			if (injectExternalEvents) {
+				emu.ProcessEvent(EventType::EndFrame, CpuType::Genesis);
+			}
+
+			PpuFrameInfo frame = console.GetPpuFrame();
+			frameCounts.push_back(frame.FrameCount);
+			uintptr_t ptr = (uintptr_t)frame.FrameBuffer;
+			if (i == 0) {
+				firstPtr = ptr;
+				pointerPattern.push_back(ptr != 0 ? 1u : 0u);
+			} else if (i == 1) {
+				pointerPattern.push_back(ptr != 0 && ptr != firstPtr ? 1u : 0u);
+			} else {
+				pointerPattern.push_back(ptr == firstPtr ? 1u : 0u);
+			}
+		}
+
+		return std::make_tuple(frameCounts, pointerPattern);
+	};
+
+	auto runA = captureRun(false);
+	auto runB = captureRun(false);
+	auto runC = captureRun(true);
+
+	auto& frameCountsA = std::get<0>(runA);
+	auto& pointerPatternA = std::get<1>(runA);
+
+	ASSERT_EQ((int)frameCountsA.size(), FrameCount);
+	ASSERT_EQ((int)pointerPatternA.size(), FrameCount);
+
+	for (int i = 0; i < FrameCount; i++) {
+		EXPECT_EQ(frameCountsA[i], (uint32_t)(i + 1));
+		EXPECT_EQ(pointerPatternA[i], 1u);
+	}
+
+	EXPECT_EQ(runA, runB);
+	EXPECT_EQ(runA, runC);
+}
+
+TEST(GenesisExecutionPipelineTests, StartupTraceSequenceAndDigestRemainDeterministicAcrossFirstSecondCadence) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 60;
+
+	auto captureRun = [&]() {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-trace-order-cadence.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetMemoryManager()) {
+			return std::tuple<std::vector<uint32_t>, std::vector<uint64_t>>();
+		}
+
+		auto* mm = console.GetMemoryManager();
+		std::vector<uint32_t> sequence;
+		std::vector<uint64_t> digest;
+		sequence.reserve(FrameCount);
+		digest.reserve(FrameCount);
+
+		for (int i = 0; i < FrameCount; i++) {
+			console.RunFrame();
+			sequence.push_back(mm->GetStartupTraceSequence());
+			digest.push_back(mm->GetStartupTraceDigest());
+		}
+
+		return std::make_tuple(sequence, digest);
+	};
+
+	auto runA = captureRun();
+	auto runB = captureRun();
+
+	auto& sequenceA = std::get<0>(runA);
+	auto& digestA = std::get<1>(runA);
+	ASSERT_EQ((int)sequenceA.size(), FrameCount);
+	ASSERT_EQ((int)digestA.size(), FrameCount);
+
+	for (int i = 1; i < FrameCount; i++) {
+		EXPECT_GE(sequenceA[i], sequenceA[i - 1]);
+	}
+
+	EXPECT_EQ(runA, runB);
+}
+
+TEST(GenesisExecutionPipelineTests, StartupTraceInvariantsHoldWhenFrameEventsAreExternallyInjected) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 30;
+
+	auto captureRun = [&](bool injectExternalEvents) {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-trace-order-events.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetMemoryManager()) {
+			return std::tuple<uint32_t, uint64_t, uint32_t, uint8_t, uint8_t, uint16_t>(0, 0, 0, 0, 0, 0);
+		}
+
+		auto* mm = console.GetMemoryManager();
+		for (int i = 0; i < FrameCount; i++) {
+			if (injectExternalEvents) {
+				emu.ProcessEvent(EventType::StartFrame, CpuType::Genesis);
+			}
+			console.RunFrame();
+			if (injectExternalEvents) {
+				emu.ProcessEvent(EventType::EndFrame, CpuType::Genesis);
+			}
+		}
+
+		return std::tuple<uint32_t, uint64_t, uint32_t, uint8_t, uint8_t, uint16_t>(
+			mm->GetStartupTraceSequence(),
+			mm->GetStartupTraceDigest(),
+			mm->GetStartupDisplayTransitionCount(),
+			mm->GetStartupArbitrationDigest(),
+			mm->GetStartupArbitrationEpoch(),
+			mm->GetStartupLastArbitrationMclk());
+	};
+
+	auto runA = captureRun(false);
+	auto runB = captureRun(false);
+	auto runC = captureRun(true);
+
+	EXPECT_EQ(runA, runB);
+	EXPECT_EQ(runA, runC);
+	EXPECT_GT(std::get<0>(runA), 0u);
+}
+
+TEST(GenesisExecutionPipelineTests, StartupDisplayTransitionsTrackBusReqResetTimelineDeterministically) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	constexpr int FrameCount = 90;
+
+	auto captureRun = [&]() {
+		std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+		VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-startup-sequencing.bin");
+		Emulator emu;
+		GenesisConsole console(&emu);
+		if (console.LoadRom(rom) != LoadRomResult::Success || !console.GetMemoryManager()) {
+			return std::tuple<uint32_t, uint8_t, uint16_t, uint64_t, uint64_t>(0, 0, 0, 0, 0);
+		}
+
+		auto* mm = console.GetMemoryManager();
+		for (int i = 0; i < FrameCount; i++) {
+			mm->Write8(0xA11200, (i & 1) ? 0x00 : 0x01);
+			mm->Write8(0xA11100, (i & 1) ? 0x00 : 0x01);
+			console.RunFrame();
+		}
+
+		return std::tuple<uint32_t, uint8_t, uint16_t, uint64_t, uint64_t>(
+			mm->GetStartupDisplayTransitionCount(),
+			mm->GetStartupArbitrationEpoch(),
+			mm->GetStartupLastArbitrationMclk(),
+			mm->GetZ80RuntimeTransitionCount(),
+			mm->GetStartupTraceDigest());
+	};
+
+	auto runA = captureRun();
+	auto runB = captureRun();
+
+	EXPECT_EQ(runA, runB);
+	EXPECT_GT(std::get<4>(runA), 0u);
+	if (std::get<0>(runA) > 0u) {
+		EXPECT_GT(std::get<1>(runA), 0u);
+		EXPECT_GT(std::get<2>(runA), 0u);
+		EXPECT_GT(std::get<3>(runA), 0u);
+	}
+}
+
+TEST(GenesisExecutionPipelineTests, YmStatusReportsBusyImmediatelyAfterPortWriteAndClearsAfterClockAdvance) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-ym-busy.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	auto* mm = console.GetMemoryManager();
+	mm->Write8(0xA04000, 0x28); // YM port 0 address
+	mm->Write8(0xA04001, 0xF0); // YM key-on channel 0
+
+	uint8_t statusAfterWrite = mm->Read8(0xA04000);
+	EXPECT_NE(statusAfterWrite & 0x80, 0u);
+
+	mm->Exec(128);
+	uint8_t statusMidWindow = mm->Read8(0xA04000);
+	EXPECT_NE(statusMidWindow & 0x80, 0u);
+
+	mm->Exec(256);
+	uint8_t statusAfterAdvance = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterAdvance & 0x80, 0u);
+	EXPECT_EQ(mm->GetYmKeyOnMask() & 0x01, 0x01u);
+	EXPECT_EQ(mm->GetYmLastKeyOnValue(), 0xF0u);
+}
+
+TEST(GenesisExecutionPipelineTests, AudioTrackInfoReflectsYmAndPsgActivity) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-audio-track-info.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	auto* mm = console.GetMemoryManager();
+	mm->Write8(0xA04000, 0x28);
+	mm->Write8(0xA04001, 0xF2); // key-on channel 2
+	mm->Write8(0xA07F11, 0x90); // PSG latch/data write (non-silent attenuation)
+
+	AudioTrackInfo info = console.GetAudioTrackInfo();
+	EXPECT_EQ(info.GameTitle, "Sega Genesis");
+	EXPECT_NE(info.SongTitle.find("FM 1 /6"), std::string::npos);
+	EXPECT_NE(info.Comment.find("ymKeyOnMask=$04"), std::string::npos);
+	EXPECT_NE(info.Comment.find("ymLastKeyOn=$f2"), std::string::npos);
+	EXPECT_EQ(info.TrackNumber, 1u);
+	EXPECT_EQ(info.TrackCount, 1u);
+}
+
+TEST(GenesisExecutionPipelineTests, YmTimerAStatusSetsOnOverflowAndClearsOnModeResetBit) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-ym-timera.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	auto* mm = console.GetMemoryManager();
+	mm->Write8(0xA04000, 0x24);
+	mm->Write8(0xA04001, 0xFF);
+	mm->Write8(0xA04000, 0x25);
+	mm->Write8(0xA04001, 0x00);
+	mm->Write8(0xA04000, 0x27);
+	mm->Write8(0xA04001, 0x05); // load timer A + enable timer A status
+
+	mm->Exec(2048);
+	uint8_t statusAfterOverflow = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterOverflow & 0x01u, 0x01u);
+
+	mm->Write8(0xA04000, 0x27);
+	mm->Write8(0xA04001, 0x10); // reset timer A status flag
+	mm->Exec(128);
+	uint8_t statusAfterReset = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterReset & 0x01u, 0x00u);
+}
+
+TEST(GenesisExecutionPipelineTests, YmTimerAModeRewriteReloadsCounterWithoutTogglingLoadBit) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-ym-timera-reload.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	auto* mm = console.GetMemoryManager();
+	mm->Write8(0xA04000, 0x24);
+	mm->Write8(0xA04001, 0xFC);
+	mm->Write8(0xA04000, 0x25);
+	mm->Write8(0xA04001, 0x00);
+	mm->Write8(0xA04000, 0x27);
+	mm->Write8(0xA04001, 0x05); // load timer A + enable timer A status
+
+	mm->Exec(30);
+	mm->Write8(0xA04000, 0x27);
+	mm->Write8(0xA04001, 0x05); // rewrite mode with load still set; should reload A accumulator
+
+	mm->Exec(30);
+	uint8_t statusAfterRewrite = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterRewrite & 0x01u, 0x00u);
+
+	mm->Exec(30);
+	uint8_t statusAfterFullPeriod = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterFullPeriod & 0x01u, 0x01u);
+}
+
+TEST(GenesisExecutionPipelineTests, YmTimerBStatusSetsOnOverflowAndClearsOnModeResetBit) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-ym-timerb.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	auto* mm = console.GetMemoryManager();
+	mm->Write8(0xA04000, 0x26);
+	mm->Write8(0xA04001, 0xFE);
+	mm->Write8(0xA04000, 0x27);
+	mm->Write8(0xA04001, 0x0A); // load timer B + enable timer B status
+
+	mm->Exec(4608);
+	uint8_t statusAfterOverflow = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterOverflow & 0x02u, 0x02u);
+
+	mm->Write8(0xA04000, 0x27);
+	mm->Write8(0xA04001, 0x20); // reset timer B status flag
+	mm->Exec(128);
+	uint8_t statusAfterReset = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterReset & 0x02u, 0x00u);
+}
+
+TEST(GenesisExecutionPipelineTests, YmTimerBModeRewriteReloadsCounterWithoutTogglingLoadBit) {
+	constexpr uint32_t InitialSp = 0x00fffe00;
+	constexpr uint32_t InitialPc = 0x00000100;
+	std::vector<uint8_t> romData = BuildGenesisNopBootRom(InitialSp, InitialPc);
+	VirtualFile rom(romData.data(), romData.size(), "genesis-pipeline-ym-timerb-reload.bin");
+	Emulator emu;
+	GenesisConsole console(&emu);
+
+	ASSERT_EQ(console.LoadRom(rom), LoadRomResult::Success);
+	ASSERT_NE(console.GetMemoryManager(), nullptr);
+
+	auto* mm = console.GetMemoryManager();
+	mm->Write8(0xA04000, 0x26);
+	mm->Write8(0xA04001, 0xF8);
+	mm->Write8(0xA04000, 0x27);
+	mm->Write8(0xA04001, 0x0A); // load timer B + enable timer B status
+
+	mm->Exec(250);
+	mm->Write8(0xA04000, 0x27);
+	mm->Write8(0xA04001, 0x0A); // rewrite mode with load still set; should reload B accumulator
+
+	mm->Exec(220);
+	uint8_t statusAfterRewrite = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterRewrite & 0x02u, 0x00u);
+
+	mm->Exec(240);
+	uint8_t statusAfterFullPeriod = mm->Read8(0xA04000);
+	EXPECT_EQ(statusAfterFullPeriod & 0x02u, 0x02u);
+}

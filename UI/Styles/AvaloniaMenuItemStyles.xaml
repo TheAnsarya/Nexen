@@ -94,8 +94,8 @@
 									Width="24">
 									<Rectangle.Fill>
 										<LinearGradientBrush StartPoint="0,0" EndPoint="24,0">
-											<GradientStop Color="{DynamicResource MesenMenuMarginStartColor}" Offset="0.0" />
-											<GradientStop Color="{DynamicResource MesenMenuMarginEndColor}" Offset="1.0" />
+											<GradientStop Color="{DynamicResource NexenMenuMarginStartColor}" Offset="0.0" />
+											<GradientStop Color="{DynamicResource NexenMenuMarginEndColor}" Offset="1.0" />
 										</LinearGradientBrush>
 									</Rectangle.Fill>
 								</Rectangle>
@@ -137,7 +137,7 @@
 								 Placement="BottomEdgeAlignedLeft"
 								 MinWidth="{Binding Bounds.Width, RelativeSource={RelativeSource TemplatedParent}}"
 								 IsLightDismissEnabled="True"
-								 RenderOptions.TextRenderingMode="Alias"
+								 TextOptions.TextRenderingMode="Alias"
 								 IsOpen="{TemplateBinding IsSubMenuOpen, Mode=TwoWay}"
 								 OverlayInputPassThroughElement="{Binding $parent[Menu]}">
 							<Border Background="{DynamicResource MenuFlyoutPresenterBackground}"
@@ -154,8 +154,8 @@
 										Width="24">
 										<Rectangle.Fill>
 											<LinearGradientBrush StartPoint="0,0" EndPoint="24,0">
-												<GradientStop Color="{DynamicResource MesenMenuMarginStartColor}" Offset="0.0" />
-												<GradientStop Color="{DynamicResource MesenMenuMarginEndColor}" Offset="1.0" />
+												<GradientStop Color="{DynamicResource NexenMenuMarginStartColor}" Offset="0.0" />
+												<GradientStop Color="{DynamicResource NexenMenuMarginEndColor}" Offset="1.0" />
 											</LinearGradientBrush>
 										</Rectangle.Fill>
 									</Rectangle>

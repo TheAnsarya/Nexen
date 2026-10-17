@@ -1,84 +1,74 @@
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Mesen.Debugger.Labels;
-using Mesen.Debugger.Utilities;
-using Mesen.Debugger.ViewModels;
-using Mesen.Interop;
-using Mesen.Utilities;
-using System;
+using Nexen.Debugger.Labels;
+using Nexen.Debugger.Utilities;
+using Nexen.Debugger.ViewModels;
+using Nexen.Interop;
+using Nexen.Utilities;
 
-namespace Mesen.Debugger.Windows
-{
-	public class LabelEditWindow : MesenWindow
-	{
-		private LabelEditViewModel _model;
-		
-		[Obsolete("For designer only")]
-		public LabelEditWindow() : this(new()) { }
+namespace Nexen.Debugger.Windows; 
+public partial class LabelEditWindow : NexenWindow {
+	private LabelEditViewModel _model;
 
-		public LabelEditWindow(LabelEditViewModel model)
-		{
-			InitializeComponent();
+	[Obsolete("For designer only")]
+	public LabelEditWindow() : this(new()) { }
 
-			DataContext = model;
-			_model = model;
+	public LabelEditWindow(LabelEditViewModel model) {
+		InitializeComponent();
+
+		DataContext = model;
+		_model = model;
 
 #if DEBUG
-			this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
+	}
+
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
+	}
+
+	protected override void OnOpened(EventArgs e) {
+		base.OnOpened(e);
+		this.GetControl<TextBox>("txtLabel").FocusAndSelectAll();
+	}
+
+	public static async void EditLabel(CpuType cpuType, Control parent, CodeLabel label) {
+		LabelEditViewModel model;
+		CodeLabel? copy = null;
+		if (LabelManager.ContainsLabel(label)) {
+			copy = label.Clone();
+			model = new LabelEditViewModel(cpuType, copy, label);
+		} else {
+			model = new LabelEditViewModel(cpuType, label, null);
 		}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
+		LabelEditWindow wnd = new LabelEditWindow(model);
+
+		bool result = await wnd.ShowCenteredDialog<bool>(parent);
+		if (result) {
+			model.Commit();
+			LabelManager.DeleteLabel(label, false);
+			LabelManager.SetLabel(copy ?? label, true);
+			DebugWorkspaceManager.AutoSave();
 		}
 
-		protected override void OnOpened(EventArgs e)
-		{
-			base.OnOpened(e);
-			this.GetControl<TextBox>("txtLabel").FocusAndSelectAll();
-		}
+		model.Dispose();
+	}
 
-		public static async void EditLabel(CpuType cpuType, Control parent, CodeLabel label)
-		{
-			LabelEditViewModel model;
-			CodeLabel? copy = null;
-			if(LabelManager.ContainsLabel(label)) {
-				copy = label.Clone();
-				model = new LabelEditViewModel(cpuType, copy, label);
-			} else {
-				model = new LabelEditViewModel(cpuType, label, null);
-			}
+	private void Ok_OnClick(object sender, RoutedEventArgs e) {
+		Close(true);
+	}
 
-			LabelEditWindow wnd = new LabelEditWindow(model);
+	private void Cancel_OnClick(object sender, RoutedEventArgs e) {
+		Close(false);
+	}
 
-			bool result = await wnd.ShowCenteredDialog<bool>(parent);
-			if(result) {
-				model.Commit();
-				LabelManager.DeleteLabel(label, false);
-				LabelManager.SetLabel(copy ?? label, true);
-				DebugWorkspaceManager.AutoSave();
-			}
-
-			model.Dispose();
-		}
-
-		private void Ok_OnClick(object sender, RoutedEventArgs e)
-		{
-			Close(true);
-		}
-
-		private void Cancel_OnClick(object sender, RoutedEventArgs e)
-		{
-			Close(false);
-		}
-
-		private void Delete_OnClick(object sender, RoutedEventArgs e)
-		{
-			_model.DeleteLabel();
-			Close(false);
-		}
+	private void Delete_OnClick(object sender, RoutedEventArgs e) {
+		_model.DeleteLabel();
+		Close(false);
 	}
 }

@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <cctype>
 #include <regex>
 #include "Shared/CheatManager.h"
 #include "Shared/MessageManager.h"
@@ -9,45 +10,58 @@
 
 using std::regex;
 
-CheatManager::CheatManager(Emulator* emu)
-{
+CheatManager::CheatManager(Emulator* emu) {
 	_emu = emu;
 }
 
-optional<InternalCheatCode> CheatManager::TryConvertCode(CheatCode code)
-{
-	switch(code.Type) {
-		case CheatType::NesGameGenie: return ConvertFromNesGameGenie(code.Code);
-		case CheatType::NesProActionRocky: return ConvertFromNesProActionRocky(code.Code);
-		case CheatType::NesCustom: return ConvertFromNesCustomCode(code.Code);
-		case CheatType::SnesProActionReplay: return ConvertFromSnesProActionReplay(code.Code);
-		case CheatType::SnesGameGenie: return ConvertFromSnesGameGenie(code.Code);
-		case CheatType::GbGameGenie: return ConvertFromGbGameGenie(code.Code);
-		case CheatType::GbGameShark: return ConvertFromGbGameShark(code.Code);
-		case CheatType::PceRaw: return ConvertFromPceRaw(code.Code);
-		case CheatType::PceAddress: return ConvertFromPceAddress(code.Code);
-		case CheatType::SmsGameGenie: return ConvertFromSmsGameGenie(code.Code);
-		case CheatType::SmsProActionReplay: return ConvertFromSmsProActionReplay(code.Code);
+optional<InternalCheatCode> CheatManager::TryConvertCode(CheatCode code) {
+	switch (code.Type) {
+		case CheatType::NesGameGenie:
+			return ConvertFromNesGameGenie(code.Code);
+		case CheatType::NesProActionRocky:
+			return ConvertFromNesProActionRocky(code.Code);
+		case CheatType::NesCustom:
+			return ConvertFromNesCustomCode(code.Code);
+		case CheatType::SnesProActionReplay:
+			return ConvertFromSnesProActionReplay(code.Code);
+		case CheatType::SnesGameGenie:
+			return ConvertFromSnesGameGenie(code.Code);
+		case CheatType::GbGameGenie:
+			return ConvertFromGbGameGenie(code.Code);
+		case CheatType::GbGameShark:
+			return ConvertFromGbGameShark(code.Code);
+		case CheatType::PceRaw:
+			return ConvertFromPceRaw(code.Code);
+		case CheatType::PceAddress:
+			return ConvertFromPceAddress(code.Code);
+		case CheatType::SmsGameGenie:
+			return ConvertFromSmsGameGenie(code.Code);
+		case CheatType::SmsProActionReplay:
+			return ConvertFromSmsProActionReplay(code.Code);
 
-		default: throw std::runtime_error("unsupported cheat type");
+		default:
+			[[unlikely]] throw std::runtime_error("unsupported cheat type");
 	}
 }
 
-bool CheatManager::AddCheat(CheatCode code)
-{
+bool CheatManager::AddCheat(CheatCode code) {
 	optional<InternalCheatCode> convertedCode = TryConvertCode(code);
 
-	if(!convertedCode.has_value()) {
+	if (!convertedCode.has_value()) {
 		return false;
 	}
 
 	_cheats.push_back(code);
 
 	int cpuIndex = (int)convertedCode->Cpu;
-	if(convertedCode->IsRamCode) {
+	if (convertedCode->IsRamCode) {
 		_ramRefreshCheats[cpuIndex].push_back(convertedCode.value());
 	} else {
-		_cheatsByAddress[cpuIndex].emplace(convertedCode->Address, convertedCode.value());
+		// Insert into sorted vector for cache-friendly binary search in ApplyCheat
+		auto& vec = _cheatsByAddress[cpuIndex];
+		auto it = std::lower_bound(vec.begin(), vec.end(), convertedCode->Address,
+			[](const std::pair<uint32_t, InternalCheatCode>& p, uint32_t addr) { return p.first < addr; });
+		vec.emplace(it, convertedCode->Address, convertedCode.value());
 		_hasCheats[cpuIndex] = true;
 		_bankHasCheats[cpuIndex][convertedCode->Address >> GetBankShift(convertedCode->Cpu)] = true;
 	}
@@ -55,39 +69,36 @@ bool CheatManager::AddCheat(CheatCode code)
 	return true;
 }
 
-void CheatManager::SetCheats(vector<CheatCode>& codes)
-{
+void CheatManager::SetCheats(const vector<CheatCode>& codes) {
 	auto lock = _emu->AcquireLock();
 
 	bool hasCheats = !_cheats.empty();
 	ClearCheats(false);
-	for(CheatCode &code : codes) {
-		if(!AddCheat(code)) {
+	for (const CheatCode& code : codes) {
+		if (!AddCheat(code)) {
 			MessageManager::DisplayMessage("Cheats", "Invalid cheat: " + string(code.Code));
 		}
 	}
 
-	if(codes.size() > 1) {
-		MessageManager::DisplayMessage("Cheats", "CheatsApplied", std::to_string(codes.size()));
-	} else if(codes.size() == 1) {
+	if (codes.size() > 1) {
+		MessageManager::DisplayMessage("Cheats", "CheatsApplied", std::format("{}", codes.size()));
+	} else if (codes.size() == 1) {
 		MessageManager::DisplayMessage("Cheats", "CheatApplied");
-	} else if(hasCheats) {
+	} else if (hasCheats) {
 		MessageManager::DisplayMessage("Cheats", "CheatsDisabled");
 	}
 
 	_emu->GetNotificationManager()->SendNotification(ConsoleNotificationType::CheatsChanged);
 }
 
-void CheatManager::SetCheats(CheatCode codes[], uint32_t length)
-{
-	vector<CheatCode> cheats(codes, codes+length);
+void CheatManager::SetCheats(CheatCode codes[], uint32_t length) {
+	vector<CheatCode> cheats(codes, codes + length);
 	SetCheats(cheats);
 }
 
-void CheatManager::InternalClearCheats()
-{
+void CheatManager::InternalClearCheats() {
 	_cheats.clear();
-	for(int i = 0; i < CpuTypeUtilities::GetCpuTypeCount(); i++) {
+	for (int i = 0; i < CpuTypeUtilities::GetCpuTypeCount(); i++) {
 		_cheatsByAddress[i].clear();
 		_ramRefreshCheats[i].clear();
 	}
@@ -95,25 +106,23 @@ void CheatManager::InternalClearCheats()
 	memset(_bankHasCheats, 0, sizeof(_bankHasCheats));
 }
 
-void CheatManager::ClearCheats(bool showMessage)
-{
+void CheatManager::ClearCheats(bool showMessage) {
 	auto lock = _emu->AcquireLock();
 
 	bool hadCheats = !_cheats.empty();
 	InternalClearCheats();
 
-	if(showMessage && hadCheats) {
+	if (showMessage && hadCheats) {
 		MessageManager::DisplayMessage("Cheats", "CheatsDisabled");
 
-		//Used by net play
+		// Used by net play
 		_emu->GetNotificationManager()->SendNotification(ConsoleNotificationType::CheatsChanged);
 	}
 }
 
-optional<InternalCheatCode> CheatManager::ConvertFromNesGameGenie(string code)
-{
+optional<InternalCheatCode> CheatManager::ConvertFromNesGameGenie(const string& code) {
 	static regex _validator = regex("^([APZLGITYEOXUKSVN]{6})|([APZLGITYEOXUKSVN]{8})$", std::regex_constants::icase);
-	if(!std::regex_match(code, _validator)) {
+	if (!std::regex_match(code, _validator)) {
 		return std::nullopt;
 	}
 
@@ -121,26 +130,26 @@ optional<InternalCheatCode> CheatManager::ConvertFromNesGameGenie(string code)
 
 	auto decodeValue = [](int code, int bitIndexes[], int count) -> int {
 		int result = 0;
-		for(int i = 0; i < count; i++) {
+		for (int i = 0; i < count; i++) {
 			result <<= 1;
 			result |= (code >> bitIndexes[i]) & 0x01;
 		}
 		return result;
 	};
 
-	int addressBits[15] = { 14, 13, 12, 19, 22, 21, 20, 7, 10, 9, 8, 15, 18, 17, 16 };
-	int valueBits[8] = { 3, 6, 5, 4, 23, 2, 1, 0 };
+	int addressBits[15] = {14, 13, 12, 19, 22, 21, 20, 7, 10, 9, 8, 15, 18, 17, 16};
+	int valueBits[8] = {3, 6, 5, 4, 23, 2, 1, 0};
 	int rawCode = 0;
-	for(int i = 0, len = (int)code.size(); i < len; i++) {
-		rawCode |= ggLetters.find(std::toupper(code[i])) << (i * 4);
+	for (int i = 0, len = (int)code.size(); i < len; i++) {
+		rawCode |= ggLetters.find(static_cast<char>(std::toupper(static_cast<unsigned char>(code[i])))) << (i * 4);
 	}
 
 	int compareValue = -1;
-	if(code.size() == 8) {
-		//Bit 5 of the value is stored in a different location for 8-character codes
+	if (code.size() == 8) {
+		// Bit 5 of the value is stored in a different location for 8-character codes
 		valueBits[4] = 31;
 
-		int compareValueBits[8] = { 27, 30, 29, 28, 23, 26, 25, 24 };
+		int compareValueBits[8] = {27, 30, 29, 28, 23, 26, 25, 24};
 		compareValue = decodeValue(rawCode, compareValueBits, 8);
 	}
 
@@ -156,17 +165,16 @@ optional<InternalCheatCode> CheatManager::ConvertFromNesGameGenie(string code)
 	return cheat;
 }
 
-optional<InternalCheatCode> CheatManager::ConvertFromNesProActionRocky(string code)
-{
+optional<InternalCheatCode> CheatManager::ConvertFromNesProActionRocky(const string& code) {
 	static regex _validator = regex("^[a-f0-9]{8}$", std::regex_constants::icase);
-	if(!std::regex_match(code, _validator)) {
+	if (!std::regex_match(code, _validator)) {
 		return std::nullopt;
 	}
 
 	int shiftValues[31] = {
-		3, 13, 14, 1, 6, 9, 5, 0, 12, 7, 2, 8, 10, 11, 4,	//address
-		19, 21, 23, 22, 20, 17, 16, 18,							//compare
-		29, 31, 24, 26, 25, 30, 27, 28							//value
+	    3, 13, 14, 1, 6, 9, 5, 0, 12, 7, 2, 8, 10, 11, 4, // address
+	    19, 21, 23, 22, 20, 17, 16, 18,                   // compare
+	    29, 31, 24, 26, 25, 30, 27, 28                    // value
 	};
 
 	uint32_t key = 0x7E5EE93A;
@@ -174,12 +182,12 @@ optional<InternalCheatCode> CheatManager::ConvertFromNesProActionRocky(string co
 
 	uint32_t parCode = HexUtilities::FromHex(code);
 
-	//Throw away bit 0, not used.
+	// Throw away bit 0, not used.
 	parCode >>= 1;
 
 	uint32_t result = 0;
-	for(int i = 30; i >= 0; i--) {
-		if((((key ^ parCode) >> 30) & 0x01) != 0) {
+	for (int i = 30; i >= 0; i--) {
+		if ((((key ^ parCode) >> 30) & 0x01) != 0) {
 			result |= (uint32_t)(0x01 << shiftValues[i]);
 			key ^= xorValue;
 		}
@@ -196,10 +204,9 @@ optional<InternalCheatCode> CheatManager::ConvertFromNesProActionRocky(string co
 	return cheat;
 }
 
-optional<InternalCheatCode> CheatManager::ConvertFromNesCustomCode(string code)
-{
+optional<InternalCheatCode> CheatManager::ConvertFromNesCustomCode(const string& code) {
 	static regex _validator = regex("^[a-f0-9]{4}:[a-f0-9]{2}(:[a-f0-9]{2}){0,1}$", std::regex_constants::icase);
-	if(!std::regex_match(code, _validator)) {
+	if (!std::regex_match(code, _validator)) {
 		return std::nullopt;
 	}
 
@@ -217,17 +224,16 @@ optional<InternalCheatCode> CheatManager::ConvertFromNesCustomCode(string code)
 	return cheat;
 }
 
-optional<InternalCheatCode> CheatManager::ConvertFromGbGameGenie(string code)
-{
+optional<InternalCheatCode> CheatManager::ConvertFromGbGameGenie(const string& code) {
 	static regex _validator = regex("^[a-f0-9]{3}-[a-f0-9]{3}(-[a-f0-9]{3}){0,1}$", std::regex_constants::icase);
-	if(!std::regex_match(code, _validator)) {
+	if (!std::regex_match(code, _validator)) {
 		return std::nullopt;
 	}
 
 	uint8_t value = (uint8_t)HexUtilities::FromHex(code.substr(0, 2));
 
 	int16_t compare = -1;
-	if(code.length() > 7) {
+	if (code.length() > 7) {
 		compare = (uint8_t)HexUtilities::FromHex(code.substr(8, 1) + code[10]);
 		compare = (uint8_t)(((compare >> 2) | ((compare & 0x03) << 6)) ^ 0xBA);
 	}
@@ -243,10 +249,9 @@ optional<InternalCheatCode> CheatManager::ConvertFromGbGameGenie(string code)
 	return cheat;
 }
 
-optional<InternalCheatCode> CheatManager::ConvertFromGbGameShark(string code)
-{
+optional<InternalCheatCode> CheatManager::ConvertFromGbGameShark(const string& code) {
 	static regex _validator = regex("^[a-f0-9]{8}$", std::regex_constants::icase);
-	if(!std::regex_match(code, _validator)) {
+	if (!std::regex_match(code, _validator)) {
 		return std::nullopt;
 	}
 
@@ -262,41 +267,40 @@ optional<InternalCheatCode> CheatManager::ConvertFromGbGameShark(string code)
 	cheat.Value = value;
 	cheat.IsRamCode = true;
 
-	if(codeType >= 0x80) {
+	if (codeType >= 0x80) {
 		uint32_t bank = (codeType & 0x0F);
 		uint32_t absAddress;
 
-		if(address >= 0xA000 && address < 0xC000) {
+		if (address >= 0xA000 && address < 0xC000) {
 			cheat.MemType = MemoryType::GbCartRam;
 			absAddress = (bank * 0x2000) + address - 0xA000;
-		} else if(address >= 0xD000 && address < 0xE000) {
+		} else if (address >= 0xD000 && address < 0xE000) {
 			cheat.MemType = MemoryType::GbWorkRam;
 			absAddress = (bank * 0x1000) + address - 0xD000;
-		} else if(address >= 0xC000 && address < 0xD000) {
+		} else if (address >= 0xC000 && address < 0xD000) {
 			cheat.MemType = MemoryType::GbWorkRam;
 			bank = 0;
 			absAddress = address - 0xC000;
 		} else {
-			//Invalid code?
+			// Invalid code?
 			return std::nullopt;
 		}
 
 		cheat.IsAbsoluteAddress = true;
 		cheat.Address = absAddress;
-	} else if(codeType == 0x01) {
+	} else if (codeType == 0x01) {
 		cheat.Address = address;
 	} else {
-		//Invalid code?
+		// Invalid code?
 		return std::nullopt;
 	}
 
 	return cheat;
 }
 
-optional<InternalCheatCode> CheatManager::ConvertFromSnesProActionReplay(string code)
-{
+optional<InternalCheatCode> CheatManager::ConvertFromSnesProActionReplay(const string& code) {
 	static regex _validator = regex("^[a-f0-9]{8}$", std::regex_constants::icase);
-	if(!std::regex_match(code, _validator)) {
+	if (!std::regex_match(code, _validator)) {
 		return std::nullopt;
 	}
 
@@ -308,7 +312,7 @@ optional<InternalCheatCode> CheatManager::ConvertFromSnesProActionReplay(string 
 	cheat.Address = (codeValue >> 8) & 0xFFFFFF;
 	cheat.Value = (uint8_t)(codeValue & 0xFF);
 
-	if(cheat.Address >= 0x7E0000 && cheat.Address <= 0x7FFFFF) {
+	if (cheat.Address >= 0x7E0000 && cheat.Address <= 0x7FFFFF) {
 		cheat.IsRamCode = true;
 		cheat.IsAbsoluteAddress = true;
 		cheat.MemType = MemoryType::SnesWorkRam;
@@ -318,45 +322,41 @@ optional<InternalCheatCode> CheatManager::ConvertFromSnesProActionReplay(string 
 	return cheat;
 }
 
-optional<InternalCheatCode> CheatManager::ConvertFromSnesGameGenie(string code)
-{
+optional<InternalCheatCode> CheatManager::ConvertFromSnesGameGenie(const string& code) {
 	static regex _validator = regex("^[a-f0-9]{4}-[a-f0-9]{4}$", std::regex_constants::icase);
 	static string _convertTable = "DF4709156BC8A23E";
-	
-	if(!std::regex_match(code, _validator)) {
+
+	if (!std::regex_match(code, _validator)) {
 		return std::nullopt;
 	}
 
 	uint32_t rawValue = 0;
-	for(int i = 0; i < (int)code.size(); i++) {
-		if(code[i] != '-') {
+	for (int i = 0; i < (int)code.size(); i++) {
+		if (code[i] != '-') {
 			rawValue <<= 4;
-			rawValue |= (uint32_t)_convertTable.find_first_of(std::toupper(code[i]));
+			rawValue |= (uint32_t)_convertTable.find_first_of(static_cast<char>(std::toupper(static_cast<unsigned char>(code[i]))));
 		}
 	}
 
 	InternalCheatCode cheat = {};
 	cheat.Type = CheatType::SnesGameGenie;
 	cheat.Cpu = CpuType::Snes;
-	cheat.Address = (
-		((rawValue & 0x3C00) << 10) |
-		((rawValue & 0x3C) << 14) |
-		((rawValue & 0xF00000) >> 8) |
-		((rawValue & 0x03) << 10) |
-		((rawValue & 0xC000) >> 6) |
-		((rawValue & 0xF0000) >> 12) |
-		((rawValue & 0x3C0) >> 6)
-	);
+	cheat.Address = (((rawValue & 0x3C00) << 10) |
+	                 ((rawValue & 0x3C) << 14) |
+	                 ((rawValue & 0xF00000) >> 8) |
+	                 ((rawValue & 0x03) << 10) |
+	                 ((rawValue & 0xC000) >> 6) |
+	                 ((rawValue & 0xF0000) >> 12) |
+	                 ((rawValue & 0x3C0) >> 6));
 
 	cheat.Value = rawValue >> 24;
 
 	return cheat;
 }
 
-optional<InternalCheatCode> CheatManager::ConvertFromPceRaw(string code)
-{
+optional<InternalCheatCode> CheatManager::ConvertFromPceRaw(const string& code) {
 	static regex _validator = regex("^[a-f0-9]{6}:[a-f0-9]{2}$", std::regex_constants::icase);
-	if(!std::regex_match(code, _validator)) {
+	if (!std::regex_match(code, _validator)) {
 		return std::nullopt;
 	}
 
@@ -368,10 +368,9 @@ optional<InternalCheatCode> CheatManager::ConvertFromPceRaw(string code)
 	return cheat;
 }
 
-optional<InternalCheatCode> CheatManager::ConvertFromPceAddress(string code)
-{
+optional<InternalCheatCode> CheatManager::ConvertFromPceAddress(const string& code) {
 	static regex _validator = regex("^[a-f0-9]{6}:[a-f0-9]{2}$", std::regex_constants::icase);
-	if(!std::regex_match(code, _validator)) {
+	if (!std::regex_match(code, _validator)) {
 		return std::nullopt;
 	}
 
@@ -384,17 +383,16 @@ optional<InternalCheatCode> CheatManager::ConvertFromPceAddress(string code)
 	return cheat;
 }
 
-optional<InternalCheatCode> CheatManager::ConvertFromSmsGameGenie(string code)
-{
+optional<InternalCheatCode> CheatManager::ConvertFromSmsGameGenie(const string& code) {
 	static regex _validator = regex("^[a-f0-9]{3}-[a-f0-9]{3}(-[a-f0-9]{3}){0,1}$", std::regex_constants::icase);
-	if(!std::regex_match(code, _validator)) {
+	if (!std::regex_match(code, _validator)) {
 		return std::nullopt;
 	}
 
 	uint8_t value = (uint8_t)HexUtilities::FromHex(code.substr(0, 2));
 
 	int16_t compare = -1;
-	if(code.length() > 7) {
+	if (code.length() > 7) {
 		compare = (uint8_t)HexUtilities::FromHex(code.substr(8, 1) + code[10]);
 		compare = (uint8_t)(((compare >> 2) | ((compare & 0x03) << 6)) ^ 0xBA);
 	}
@@ -410,10 +408,9 @@ optional<InternalCheatCode> CheatManager::ConvertFromSmsGameGenie(string code)
 	return cheat;
 }
 
-optional<InternalCheatCode> CheatManager::ConvertFromSmsProActionReplay(string code)
-{
+optional<InternalCheatCode> CheatManager::ConvertFromSmsProActionReplay(const string& code) {
 	static regex _validator = regex("^[a-f0-9]{8}$", std::regex_constants::icase);
-	if(!std::regex_match(code, _validator)) {
+	if (!std::regex_match(code, _validator)) {
 		return std::nullopt;
 	}
 
@@ -429,20 +426,17 @@ optional<InternalCheatCode> CheatManager::ConvertFromSmsProActionReplay(string c
 	return cheat;
 }
 
-vector<CheatCode> CheatManager::GetCheats()
-{
+vector<CheatCode> CheatManager::GetCheats() {
 	return _cheats;
 }
 
-vector<InternalCheatCode>& CheatManager::GetRamRefreshCheats(CpuType cpuType)
-{
+vector<InternalCheatCode>& CheatManager::GetRamRefreshCheats(CpuType cpuType) {
 	return _ramRefreshCheats[(int)cpuType];
 }
 
-bool CheatManager::GetConvertedCheat(CheatCode input, InternalCheatCode& output)
-{
+bool CheatManager::GetConvertedCheat(CheatCode input, InternalCheatCode& output) {
 	optional<InternalCheatCode> convertedCode = TryConvertCode(input);
-	if(convertedCode.has_value()) {
+	if (convertedCode.has_value()) {
 		output = convertedCode.value();
 		return true;
 	}
@@ -450,27 +444,29 @@ bool CheatManager::GetConvertedCheat(CheatCode input, InternalCheatCode& output)
 	return false;
 }
 
-void CheatManager::RefreshRamCheats(CpuType cpuType)
-{
-	for(InternalCheatCode& code : _ramRefreshCheats[(int)cpuType]) {
-		if(code.IsAbsoluteAddress) {
+void CheatManager::RefreshRamCheats(CpuType cpuType) {
+	for (InternalCheatCode& code : _ramRefreshCheats[(int)cpuType]) {
+		if (code.IsAbsoluteAddress) {
 			ConsoleMemoryInfo mem = _emu->GetMemory(code.MemType);
-			if(code.Address < mem.Size) {
+			if (code.Address < mem.Size) {
 				((uint8_t*)mem.Memory)[code.Address] = code.Value;
 			}
 		}
 	}
 }
 
-template<CpuType cpuType>
-void CheatManager::ApplyCheat(uint32_t addr, uint8_t& value)
-{
-	if(_bankHasCheats[(int)cpuType][addr >> GetBankShift(cpuType)]) {
-		auto result = _cheatsByAddress[(int)cpuType].find(addr);
-		if(result != _cheatsByAddress[(int)cpuType].end()) {
-			if(result->second.Compare == -1 || result->second.Compare == value) {
-				value = result->second.Value;
-				_emu->GetConsoleUnsafe()->ProcessCheatCode(result->second, addr, value);
+template <CpuType cpuType>
+void CheatManager::ApplyCheat(uint32_t addr, uint8_t& value) {
+	if (_bankHasCheats[(int)cpuType][addr >> GetBankShift(cpuType)]) {
+		// Binary search through sorted contiguous vector — cache-friendly, O(log N)
+		// Typical cheat count is 1-10, so this is faster than unordered_map hash + pointer chasing
+		auto& vec = _cheatsByAddress[(int)cpuType];
+		auto it = std::lower_bound(vec.begin(), vec.end(), addr,
+			[](const std::pair<uint32_t, InternalCheatCode>& p, uint32_t a) { return p.first < a; });
+		if (it != vec.end() && it->first == addr) {
+			if (it->second.Compare == -1 || it->second.Compare == value) {
+				value = it->second.Value;
+				_emu->GetConsoleUnsafe()->ProcessCheatCode(it->second, addr, value);
 			}
 		}
 	}

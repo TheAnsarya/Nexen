@@ -3,23 +3,23 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:cfg="using:Mesen.Config"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:cfg="using:Nexen.Config"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:Name="root"
 	x:DataType="vm:AudioConfigViewModel"
-	x:Class="Mesen.Views.AudioConfigView"
+	x:Class="Nexen.Views.AudioConfigView"
 >
 	<Design.DataContext>
 		<vm:AudioConfigViewModel />
 	</Design.DataContext>
 
 	<UserControl.Styles>
-		<Style Selector="c|MesenSlider.Equalizer">
+		<Style Selector="c|NexenSlider.Equalizer">
 			<Setter Property="Height" Value="190" />
 			<Setter Property="Width" Value="45" />
 			<Setter Property="Minimum" Value="-20" />
@@ -60,7 +60,7 @@
 
 							<TextBlock Grid.Row="2" Grid.Column="0" Text="{l:Translate lblAudioLatency}" />
 							<StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
-								<c:MesenNumericUpDown
+								<c:NexenNumericUpDown
 									Minimum="15"
 									Maximum="300"
 									Value="{Binding Config.AudioLatency}"
@@ -76,7 +76,7 @@
 							</StackPanel>
 
 							<TextBlock Grid.Row="3" Grid.Column="0" Text="{l:Translate lblVolume}" Margin="0 -8 0 0" />
-							<c:MesenSlider
+							<c:NexenSlider
 								Margin="0 -8 0 0"
 								Grid.Row="3"
 								Grid.Column="1"
@@ -96,7 +96,7 @@
 
 						<StackPanel Orientation="Horizontal">
 							<TextBlock VerticalAlignment="Center" Margin="0 -8 10 0" Text="{l:Translate lblVolumeReduction}" />
-							<c:MesenSlider
+							<c:NexenSlider
 								Margin="0 -8 0 0"
 								Minimum="0"
 								Maximum="100"
@@ -112,12 +112,12 @@
 						<StackPanel Margin="10 5 0 0">
 							<StackPanel Orientation="Horizontal">
 								<CheckBox IsChecked="{Binding Config.AudioPlayerAutoDetectSilence}" Content="{l:Translate chkAudioPlayerAutoDetectSilence}" />
-								<c:MesenNumericUpDown Margin="5 1" Maximum="999999" Value="{Binding Config.AudioPlayerSilenceDelay}" IsEnabled="{Binding Config.AudioPlayerAutoDetectSilence}" />
+								<c:NexenNumericUpDown Margin="5 1" Maximum="999999" Value="{Binding Config.AudioPlayerSilenceDelay}" IsEnabled="{Binding Config.AudioPlayerAutoDetectSilence}" />
 								<TextBlock Text="{l:Translate lblMillisecondsOfSilence}" />
 							</StackPanel>
 							<StackPanel Orientation="Horizontal">
 								<CheckBox IsChecked="{Binding Config.AudioPlayerEnableTrackLength}" Content="{l:Translate chkAudioPlayerEnableTrackLength}" />
-								<c:MesenNumericUpDown Margin="5 1" Maximum="9999" Value="{Binding Config.AudioPlayerTrackLength}" IsEnabled="{Binding Config.AudioPlayerEnableTrackLength}" />
+								<c:NexenNumericUpDown Margin="5 1" Maximum="9999" Value="{Binding Config.AudioPlayerTrackLength}" IsEnabled="{Binding Config.AudioPlayerEnableTrackLength}" />
 								<TextBlock Text="{l:Translate lblSeconds}" />
 							</StackPanel>
 						</StackPanel>
@@ -134,28 +134,28 @@
 					</c:GroupBox.Header>
 					<StackPanel>
 						<StackPanel Orientation="Horizontal">
-							<c:MesenSlider Classes="Equalizer" Text="40 Hz" Value="{Binding Config.Band1Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="56 Hz" Value="{Binding Config.Band2Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="80 Hz" Value="{Binding Config.Band3Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="113 Hz" Value="{Binding Config.Band4Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="160 Hz" Value="{Binding Config.Band5Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="225 Hz" Value="{Binding Config.Band6Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="320 Hz" Value="{Binding Config.Band7Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="450 Hz" Value="{Binding Config.Band8Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="600 Hz" Value="{Binding Config.Band9Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="750 Hz" Value="{Binding Config.Band10Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="40 Hz" Value="{Binding Config.Band1Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="56 Hz" Value="{Binding Config.Band2Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="80 Hz" Value="{Binding Config.Band3Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="113 Hz" Value="{Binding Config.Band4Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="160 Hz" Value="{Binding Config.Band5Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="225 Hz" Value="{Binding Config.Band6Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="320 Hz" Value="{Binding Config.Band7Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="450 Hz" Value="{Binding Config.Band8Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="600 Hz" Value="{Binding Config.Band9Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="750 Hz" Value="{Binding Config.Band10Gain}" />
 						</StackPanel>
 						<StackPanel Orientation="Horizontal" Margin="0 10 0 0">
-							<c:MesenSlider Classes="Equalizer" Text="1.0 kHz" Value="{Binding Config.Band11Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="2.0 kHz" Value="{Binding Config.Band12Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="3.0 kHz" Value="{Binding Config.Band13Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="4.0 kHz" Value="{Binding Config.Band14Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="5.0 kHz" Value="{Binding Config.Band15Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="6.0 kHz" Value="{Binding Config.Band16Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="7.0 kHz" Value="{Binding Config.Band17Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="10.0 kHz" Value="{Binding Config.Band18Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="12.5 kHz" Value="{Binding Config.Band19Gain}" />
-							<c:MesenSlider Classes="Equalizer" Text="15.0 kHz" Value="{Binding Config.Band20Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="1.0 kHz" Value="{Binding Config.Band11Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="2.0 kHz" Value="{Binding Config.Band12Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="3.0 kHz" Value="{Binding Config.Band13Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="4.0 kHz" Value="{Binding Config.Band14Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="5.0 kHz" Value="{Binding Config.Band15Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="6.0 kHz" Value="{Binding Config.Band16Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="7.0 kHz" Value="{Binding Config.Band17Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="10.0 kHz" Value="{Binding Config.Band18Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="12.5 kHz" Value="{Binding Config.Band19Gain}" />
+							<c:NexenSlider Classes="Equalizer" Text="15.0 kHz" Value="{Binding Config.Band20Gain}" />
 						</StackPanel>
 					</StackPanel>
 				</c:GroupBox>
@@ -170,7 +170,7 @@
 							IsChecked="{Binding Config.CrossFeedEnabled}"
 							Content="{l:Translate chkCrossFeedEnabled}"
 						/>
-						<c:MesenNumericUpDown
+						<c:NexenNumericUpDown
 							IsEnabled="{Binding Config.CrossFeedEnabled}"
 							Margin="10 0 5 0"
 							Minimum="0"
@@ -186,7 +186,7 @@
 						/>
 						<Grid Margin="25 0 0 0" ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto">
 							<TextBlock Text="{l:Translate lblStrength}" />
-							<c:MesenNumericUpDown
+							<c:NexenNumericUpDown
 								Grid.Column="1"
 								IsEnabled="{Binding Config.ReverbEnabled}"
 								Margin="10 0 5 2"
@@ -198,7 +198,7 @@
 								Grid.Row="1"
 								Text="{l:Translate lblDelay}"
 							/>
-							<c:MesenNumericUpDown
+							<c:NexenNumericUpDown
 								Grid.Row="1"
 								Grid.Column="1"
 								IsEnabled="{Binding Config.ReverbEnabled}"

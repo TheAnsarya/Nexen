@@ -17,16 +17,49 @@ class InputHud;
 class IVideoRecorder;
 enum class VideoCodec;
 
-struct RecordAviOptions
-{
-	VideoCodec Codec;
-	uint32_t CompressionLevel;
-	bool RecordSystemHud;
-	bool RecordInputHud;
+/// <summary>
+/// AVI recording configuration options.
+/// </summary>
+struct RecordAviOptions {
+	VideoCodec Codec;          ///< Video compression codec (Raw/ZMBV/Camstudio)
+	uint32_t CompressionLevel; ///< Codec-specific compression level (0-9)
+	bool RecordSystemHud;      ///< Include system HUD (FPS/messages) in recording
+	bool RecordInputHud;       ///< Include controller input display in recording
 };
 
-class VideoRenderer
-{
+/// <summary>
+/// Video rendering coordinator and HUD manager.
+/// Manages rendering thread, HUD overlays, and video recording.
+/// </summary>
+/// <remarks>
+/// Architecture:
+/// - Dedicated render thread for non-blocking display updates
+/// - Three HUD layers: Debugger HUD, System HUD (FPS/messages), Input HUD (controller display)
+/// - Optional AVI recording with configurable codecs
+///
+/// Rendering pipeline:
+/// 1. Receive filtered frame from VideoDecoder
+/// 2. Apply HUD overlays (if enabled)
+/// 3. Send to IRenderingDevice (OpenGL/D3D/SDL)
+/// 4. Optionally encode frame to AVI recorder
+///
+/// HUD layers (rendered in order):
+/// - DebugHud: Debugger information (memory viewer, CPU state, etc.)
+/// - SystemHud: FPS counter, OSD messages, warnings
+/// - InputHud: Controller button display (for recording/streaming)
+/// - ScriptHud: Lua script drawings (arbitrary graphics)
+///
+/// Thread safety:
+/// - _frameLock protects frame buffer access
+/// - _hudLock protects HUD layer updates
+/// - AutoResetEvent for efficient frame notifications
+///
+/// Video recording:
+/// - safe_ptr<IVideoRecorder> for async recorder management
+/// - Records post-filter, pre-HUD or post-HUD frames
+/// - Supports multiple codecs: Raw, ZMBV, Camstudio LZSS
+/// </remarks>
+class VideoRenderer {
 private:
 	Emulator* _emu;
 
@@ -46,6 +79,8 @@ private:
 
 	RenderSurfaceInfo _aviRecorderSurface = {};
 	RecordAviOptions _recorderOptions = {};
+	unique_ptr<DebugHud> _aviDebugHud;    ///< Persistent HUD for AVI recording (avoids per-frame alloc)
+	unique_ptr<InputHud> _aviInputHud;    ///< Persistent input HUD for AVI recording (avoids per-frame alloc)
 
 	RenderSurfaceInfo _emuHudSurface = {};
 	RenderSurfaceInfo _scriptHudSurface = {};
@@ -61,7 +96,7 @@ private:
 
 	void RenderThread();
 	bool DrawScriptHud(RenderedFrame& frame);
-	
+
 	FrameInfo GetEmuHudSize(FrameInfo baseFrameSize);
 
 	void ProcessAviRecording(RenderedFrame& frame);
@@ -70,22 +105,22 @@ public:
 	VideoRenderer(Emulator* emu);
 	~VideoRenderer();
 
-	FrameInfo GetRendererSize();
+	[[nodiscard]] FrameInfo GetRendererSize();
 	void SetRendererSize(uint32_t width, uint32_t height);
-	
+
 	void SetScriptHudScale(uint32_t scale) { _scriptHudScale = scale; }
-	std::pair<FrameInfo, OverscanDimensions> GetScriptHudSize();
+	[[nodiscard]] std::pair<FrameInfo, OverscanDimensions> GetScriptHudSize();
 
 	void StartThread();
 	void StopThread();
 
 	void UpdateFrame(RenderedFrame& frame);
 	void ClearFrame();
-	void RegisterRenderingDevice(IRenderingDevice *renderer);
-	void UnregisterRenderingDevice(IRenderingDevice *renderer);
+	void RegisterRenderingDevice(IRenderingDevice* renderer);
+	void UnregisterRenderingDevice(IRenderingDevice* renderer);
 
-	void StartRecording(string filename, RecordAviOptions options);
+	void StartRecording(const string& filename, RecordAviOptions options);
 	void AddRecordingSound(int16_t* soundBuffer, uint32_t sampleCount, uint32_t sampleRate);
 	void StopRecording();
-	bool IsRecording();
+	[[nodiscard]] bool IsRecording();
 };

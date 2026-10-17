@@ -2,8 +2,7 @@
 #include "pch.h"
 #include "NES/BaseMapper.h"
 
-class Mapper253 : public BaseMapper
-{
+class Mapper253 : public BaseMapper {
 private:
 	uint8_t _chrLow[8] = {};
 	uint8_t _chrHigh[8] = {};
@@ -20,8 +19,7 @@ protected:
 	uint16_t GetChrRamPageSize() override { return 0x400; }
 	bool EnableCpuClockHook() override { return true; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		memset(_chrLow, 0, sizeof(_chrLow));
 		memset(_chrHigh, 0, sizeof(_chrHigh));
 		_forceChrRom = false;
@@ -34,8 +32,7 @@ protected:
 		SelectPrgPage(3, -1);
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		BaseMapper::Serialize(s);
 
 		SVArray(_chrLow, 8);
@@ -46,16 +43,15 @@ protected:
 		SV(_irqEnabled);
 		SV(_irqScaler);
 
-		if(!s.IsSaving()) {
+		if (!s.IsSaving()) {
 			UpdateChr();
 		}
 	}
 
-	void UpdateChr()
-	{
-		for(uint16_t i = 0; i < 8; i++) {
+	void UpdateChr() {
+		for (uint16_t i = 0; i < 8; i++) {
 			uint16_t page = _chrLow[i] | (_chrHigh[i] << 8);
-			if((_chrLow[i] == 4 || _chrLow[i] == 5) && !_forceChrRom) {
+			if ((_chrLow[i] == 4 || _chrLow[i] == 5) && !_forceChrRom) {
 				SelectChrPage(i, page & 0x01, ChrMemoryType::ChrRam);
 			} else {
 				SelectChrPage(i, page);
@@ -63,16 +59,15 @@ protected:
 		}
 	}
 
-	void ProcessCpuClock() override
-	{
+	void ProcessCpuClock() override {
 		BaseProcessCpuClock();
 
-		if(_irqEnabled) {
+		if (_irqEnabled) {
 			_irqScaler++;
-			if(_irqScaler >= 114) {
+			if (_irqScaler >= 114) {
 				_irqScaler = 0;
 				_irqCounter++;
-				if(_irqCounter == 0) {
+				if (_irqCounter == 0) {
 					_irqCounter = _irqReloadValue;
 					_console->GetCpu()->SetIrqSource(IRQSource::External);
 				}
@@ -80,34 +75,45 @@ protected:
 		}
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
-		if(addr >= 0xB000 && addr <= 0xE00C) {
+	void WriteRegister(uint16_t addr, uint8_t value) override {
+		if (addr >= 0xB000 && addr <= 0xE00C) {
 			uint8_t slot = ((((addr & 0x08) | (addr >> 8)) >> 3) + 2) & 0x07;
 			uint8_t shift = addr & 0x04;
 			uint8_t chrLow = (_chrLow[slot] & (0xF0 >> shift)) | (value << shift);
 			_chrLow[slot] = chrLow;
-			if(slot == 0) {
-				if(chrLow == 0xc8) {
+			if (slot == 0) {
+				if (chrLow == 0xc8) {
 					_forceChrRom = false;
-				} else if(chrLow == 0x88) {
+				} else if (chrLow == 0x88) {
 					_forceChrRom = true;
 				}
 			}
-			if(shift) {
+			if (shift) {
 				_chrHigh[slot] = value >> 4;
 			}
 			UpdateChr();
 		} else {
-			switch(addr) {
-				case 0x8010: SelectPrgPage(0, value); break;
-				case 0xA010: SelectPrgPage(1, value); break;
+			switch (addr) {
+				case 0x8010:
+					SelectPrgPage(0, value);
+					break;
+				case 0xA010:
+					SelectPrgPage(1, value);
+					break;
 				case 0x9400:
-					switch(value & 0x03) {
-						case 0: SetMirroringType(MirroringType::Vertical); break;
-						case 1: SetMirroringType(MirroringType::Horizontal); break;
-						case 2: SetMirroringType(MirroringType::ScreenAOnly); break;
-						case 3: SetMirroringType(MirroringType::ScreenBOnly); break;
+					switch (value & 0x03) {
+						case 0:
+							SetMirroringType(MirroringType::Vertical);
+							break;
+						case 1:
+							SetMirroringType(MirroringType::Horizontal);
+							break;
+						case 2:
+							SetMirroringType(MirroringType::ScreenAOnly);
+							break;
+						case 3:
+							SetMirroringType(MirroringType::ScreenBOnly);
+							break;
 					}
 					break;
 

@@ -8,8 +8,7 @@
 #include "Shared/Utilities/Emu2413Serializer.h"
 #include "Utilities/Serializer.h"
 
-SmsFmAudio::SmsFmAudio(Emulator* emu, SmsConsole* console)
-{
+SmsFmAudio::SmsFmAudio(Emulator* emu, SmsConsole* console) {
 	_emu = emu;
 	_console = console;
 
@@ -17,20 +16,19 @@ SmsFmAudio::SmsFmAudio(Emulator* emu, SmsConsole* console)
 	OPLL_setChipType(_opll, 0);
 	OPLL_resetPatch(_opll, 0);
 	OPLL_reset(_opll);
+	_samplesToPlay.reserve(2048);
 	_emu->GetSoundMixer()->RegisterAudioProvider(this);
 }
 
-SmsFmAudio::~SmsFmAudio()
-{
+SmsFmAudio::~SmsFmAudio() {
 	OPLL_delete(_opll);
 	_emu->GetSoundMixer()->UnregisterAudioProvider(this);
 }
 
-void SmsFmAudio::Run()
-{
-	if(_fmEnabled && _emu->GetSettings()->GetSmsConfig().EnableFmAudio) {
+void SmsFmAudio::Run() {
+	if (_fmEnabled && _emu->GetSettings()->GetSmsConfig().EnableFmAudio) {
 		uint64_t clocksToRun = _console->GetMasterClock() - _prevMasterClock;
-		while(clocksToRun >= 72) {
+		while (clocksToRun >= 72) {
 			int16_t output = OPLL_calc(_opll);
 			_samplesToPlay.push_back(output);
 			_samplesToPlay.push_back(output);
@@ -42,22 +40,19 @@ void SmsFmAudio::Run()
 	}
 }
 
-bool SmsFmAudio::IsPsgAudioMuted()
-{
-	//PSG is muted when 1 or 2
-	//This only works on the Japanese SMS - not on Mark III consoles
+bool SmsFmAudio::IsPsgAudioMuted() {
+	// PSG is muted when 1 or 2
+	// This only works on the Japanese SMS - not on Mark III consoles
 	return _audioControl == 0x01 || _audioControl == 0x02;
 }
 
-uint8_t SmsFmAudio::Read()
-{
-	//TODOSMS - c-sync counter bits?
+uint8_t SmsFmAudio::Read() {
+	// TODOSMS - c-sync counter bits?
 	return _audioControl & 0x03;
 }
 
-void SmsFmAudio::Write(uint8_t port, uint8_t value)
-{
-	switch(port) {
+void SmsFmAudio::Write(uint8_t port, uint8_t value) {
+	switch (port) {
 		case 0xF0:
 		case 0xF1:
 			_fmEnabled = true;
@@ -71,12 +66,11 @@ void SmsFmAudio::Write(uint8_t port, uint8_t value)
 	}
 }
 
-void SmsFmAudio::MixAudio(int16_t* out, uint32_t sampleCount, uint32_t sampleRate)
-{
+void SmsFmAudio::MixAudio(int16_t* out, uint32_t sampleCount, uint32_t sampleRate) {
 	Run();
 
-	if(_audioControl == 0 || _audioControl == 2) {
-		//FM audio is muted when 0 or 2
+	if (_audioControl == 0 || _audioControl == 2) {
+		// FM audio is muted when 0 or 2
 		_samplesToPlay.clear();
 		return;
 	}
@@ -87,8 +81,7 @@ void SmsFmAudio::MixAudio(int16_t* out, uint32_t sampleCount, uint32_t sampleRat
 	_samplesToPlay.clear();
 }
 
-void SmsFmAudio::Serialize(Serializer& s)
-{
+void SmsFmAudio::Serialize(Serializer& s) {
 	SV(_prevMasterClock);
 	SV(_audioControl);
 	SV(_fmEnabled);

@@ -6,10 +6,9 @@
 class InternalRegisters;
 class SnesConsole;
 
-class Multitap : public ControllerHub<4>
-{
+class Multitap : public ControllerHub<4> {
 private:
-	InternalRegisters *_internalRegs = nullptr;
+	InternalRegisters* _internalRegs = nullptr;
 
 public:
 	Multitap(SnesConsole* console, uint8_t port, ControllerConfig controllers[]);

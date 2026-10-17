@@ -37,8 +37,7 @@
 #include "ymfm_adpcm.h"
 #include "ymfm_ssg.h"
 
-namespace ymfm
-{
+namespace ymfm {
 
 //*********************************************************
 //  SSG IMPLEMENTATION CLASSES
@@ -48,24 +47,23 @@ namespace ymfm
 
 // ym2149 is just an SSG with no FM part, but we expose FM-like parts so that it
 // integrates smoothly with everything else; they just don't do anything
-class ym2149
-{
+class ym2149 {
 public:
 	static constexpr uint32_t OUTPUTS = ssg_engine::OUTPUTS;
 	static constexpr uint32_t SSG_OUTPUTS = ssg_engine::OUTPUTS;
 	using output_data = ymfm_output<OUTPUTS>;
 
 	// constructor
-	ym2149(ymfm_interface &intf);
+	ym2149(ymfm_interface& intf);
 
 	// configuration
-	void ssg_override(ssg_override &intf) { m_ssg.override(intf); }
+	void ssg_override(ssg_override& intf) { m_ssg.override(intf); }
 
 	// reset
 	void reset();
 
 	// save/restore
-	void save_restore(ymfm_saved_state &state);
+	void save_restore(ymfm_saved_state& state);
 
 	// pass-through helpers
 	uint32_t sample_rate(uint32_t input_clock) const { return input_clock / ssg_engine::CLOCK_DIVIDER / 8; }
@@ -80,14 +78,14 @@ public:
 	void write(uint32_t offset, uint8_t data);
 
 	// generate one sample of sound
-	void generate(output_data *output, uint32_t numsamples = 1);
+	void generate(output_data* output, uint32_t numsamples = 1);
 
 protected:
 	// internal state
-	uint8_t m_address;               // address register
-	ssg_engine m_ssg;                // SSG engine
+	uint8_t m_address; // address register
+	ssg_engine m_ssg;  // SSG engine
 };
 
-}
+} // namespace ymfm
 
 #endif // YMFM_MISC_H

@@ -5,30 +5,27 @@
 #include "NES/NesConsole.h"
 #include "Shared/KeyManager.h"
 
-class BandaiHyperShot : public NesController
-{
+class BandaiHyperShot : public NesController {
 private:
 	NesConsole* _console;
 	uint32_t _hypershotState = 0;
 
 protected:
 	enum ZapperButtons { Fire = 9 };
-	
+
 	bool HasCoordinates() override { return true; }
 
-	string GetKeyNames() override
-	{
+	string GetKeyNames() override {
 		return NesController::GetKeyNames() + "F";
 	}
 
-	void InternalSetStateFromInput() override
-	{
+	void InternalSetStateFromInput() override {
 		NesController::InternalSetStateFromInput();
 		MousePosition pos = KeyManager::GetMousePosition();
 
-		for(KeyMapping& keyMapping : _keyMappings) {
+		for (KeyMapping& keyMapping : _keyMappings) {
 			SetPressedState(ZapperButtons::Fire, KeyManager::IsKeyPressed(keyMapping.CustomKeys[0]));
-			if(KeyManager::IsKeyPressed(keyMapping.CustomKeys[1])) {
+			if (KeyManager::IsKeyPressed(keyMapping.CustomKeys[1])) {
 				pos.X = -1;
 				pos.Y = -1;
 			}
@@ -37,31 +34,26 @@ protected:
 		SetCoordinates(pos);
 	}
 
-	bool IsLightFound()
-	{
+	bool IsLightFound() {
 		return Zapper::StaticIsLightFound(GetCoordinates(), _console);
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		NesController::Serialize(s);
 		SV(_hypershotState);
 	}
 
 public:
-	BandaiHyperShot(NesConsole* console, KeyMappingSet keyMappings) : NesController(console->GetEmulator(), ControllerType::BandaiHyperShot, BaseControlDevice::ExpDevicePort, keyMappings)
-	{
+	BandaiHyperShot(NesConsole* console, KeyMappingSet keyMappings) : NesController(console->GetEmulator(), ControllerType::BandaiHyperShot, BaseControlDevice::ExpDevicePort, keyMappings) {
 		_console = console;
 	}
 
-	void RefreshStateBuffer() override
-	{
+	void RefreshStateBuffer() override {
 		_hypershotState = (uint32_t)ToByte();
 	}
 
-	uint8_t ReadRam(uint16_t addr) override
-	{
-		if(addr == 0x4016) {
+	uint8_t ReadRam(uint16_t addr) override {
+		if (addr == 0x4016) {
 			StrobeProcessRead();
 			uint8_t output = (_hypershotState & 0x01) << 1;
 			_hypershotState >>= 1;
@@ -71,8 +63,7 @@ public:
 		}
 	}
 
-	void WriteRam(uint16_t addr, uint8_t value) override
-	{
+	void WriteRam(uint16_t addr, uint8_t value) override {
 		StrobeProcessWrite(value);
 	}
 };

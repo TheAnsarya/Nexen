@@ -1,8 +1,7 @@
 #pragma once
 #include "pch.h"
 
-struct SaveStateCompatInfo
-{
+struct SaveStateCompatInfo {
 	bool IsCompatible;
 	string PrefixToAdd;
 	string PrefixToRemove;

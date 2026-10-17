@@ -1,27 +1,24 @@
-﻿using Avalonia;
-using Avalonia.Data.Converters;
-using Avalonia.Media;
 using System;
 using System.Globalization;
+using Avalonia;
+using Avalonia.Data.Converters;
+using Avalonia.Media;
 
-namespace Mesen.Utilities
-{
-	public class ArgbColorToBrushConverter : IValueConverter
-	{
-		public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-		{
-			if(value is UInt32 c && targetType == typeof(IBrush)) {
-				return new SolidColorBrush(c);
-			}
-			return AvaloniaProperty.UnsetValue;
+namespace Nexen.Utilities; 
+public sealed class ArgbColorToBrushConverter : IValueConverter {
+	public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) {
+		if (value is UInt32 c && targetType == typeof(IBrush)) {
+			return new SolidColorBrush(c);
 		}
 
-		public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-		{
-			if(value is SolidColorBrush b && targetType == typeof(UInt32)) {
-				return b.Color.ToUInt32();
-			}
-			return AvaloniaProperty.UnsetValue;
+		return AvaloniaProperty.UnsetValue;
+	}
+
+	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) {
+		if (value is SolidColorBrush b && targetType == typeof(UInt32)) {
+			return b.Color.ToUInt32();
 		}
+
+		return AvaloniaProperty.UnsetValue;
 	}
 }

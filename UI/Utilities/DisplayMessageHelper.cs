@@ -1,23 +1,21 @@
-﻿using Avalonia.Threading;
-using Mesen.Config;
-using Mesen.Interop;
-using Mesen.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Threading;
+using Nexen.Config;
+using Nexen.Interop;
+using Nexen.ViewModels;
 
-namespace Mesen.Utilities;
+namespace Nexen.Utilities;
 
-public class DisplayMessageHelper
-{
+public sealed class DisplayMessageHelper {
 	private static int _taskId = 0;
 
-	public static void DisplayMessage(string title, string message, string? param1 = null)
-	{
-		if(EmuApi.IsRunning() || ConfigManager.Config.Preferences.GameSelectionScreenMode == GameSelectionMode.Disabled) {
+	public static void DisplayMessage(string title, string message, string? param1 = null) {
+		if (EmuApi.IsRunning() || ConfigManager.Config.Preferences.GameSelectionScreenMode == GameSelectionMode.Disabled) {
 			EmuApi.DisplayMessage(title, message, param1);
 		} else {
 			//Temporarily hide selection screen to allow displaying messages
@@ -34,7 +32,7 @@ public class DisplayMessageHelper
 				//Show game selection screen after ~3 seconds
 				//This allows the message to be visible to the user
 				Dispatcher.UIThread.Post(() => {
-					if(_taskId == counter && !EmuApi.IsRunning()) {
+					if (_taskId == counter && !EmuApi.IsRunning()) {
 						MainWindowViewModel.Instance.RecentGames.Visible = true;
 					}
 				});

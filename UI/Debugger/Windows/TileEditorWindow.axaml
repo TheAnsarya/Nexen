@@ -2,19 +2,19 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:vm="using:Mesen.ViewModels"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:vm="using:Nexen.ViewModels"
 	xmlns:sys="using:System"
-	xmlns:v="using:Mesen.Views"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:i="using:Mesen.Interop"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:v="using:Nexen.Views"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:i="using:Nexen.Interop"
+	xmlns:l="using:Nexen.Localization"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:dv="using:Mesen.Debugger.Views"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:dv="using:Nexen.Debugger.Views"
 	mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
-	x:Class="Mesen.Debugger.Windows.TileEditorWindow"
+	x:Class="Nexen.Debugger.Windows.TileEditorWindow"
 	x:DataType="dvm:TileEditorViewModel"
 	Width="600" Height="600"
 	Title="{l:Translate wndTitle}"
@@ -26,11 +26,11 @@
 	
 	<DockPanel>
 		<Panel DockPanel.Dock="Top">
-			<c:MesenMenu DockPanel.Dock="Top" Name="ActionMenu">
+			<c:NexenMenu DockPanel.Dock="Top" Name="ActionMenu">
 				<MenuItem Header="{l:Translate mnuFile}" ItemsSource="{Binding FileMenuActions}" />
 				<MenuItem Header="{l:Translate mnuView}" ItemsSource="{Binding ViewMenuActions}" />
 				<MenuItem Header="{l:Translate mnuTools}" ItemsSource="{Binding ToolsMenuActions}" />
-			</c:MesenMenu>
+			</c:NexenMenu>
 		</Panel>
 
 		<dc:ActionToolbar Items="{Binding ToolbarActions}" DockPanel.Dock="Top" />

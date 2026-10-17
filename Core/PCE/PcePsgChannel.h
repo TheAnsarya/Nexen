@@ -6,8 +6,7 @@
 
 class PcePsg;
 
-class PcePsgChannel : public ISerializable
-{
+class PcePsgChannel : public ISerializable {
 private:
 	PcePsgChannelState _state = {};
 	PcePsg* _psg = nullptr;

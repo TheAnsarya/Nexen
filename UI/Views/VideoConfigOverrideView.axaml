@@ -3,16 +3,16 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:u="using:Mesen.Utilities"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:u="using:Nexen.Utilities"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="150"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:Name="root"
 	x:DataType="cfg:ConsoleOverrideConfig"
-	x:Class="Mesen.Views.VideoConfigOverrideView"
+	x:Class="Nexen.Views.VideoConfigOverrideView"
 >
 	<Design.DataContext>
 		<cfg:ConsoleOverrideConfig />
@@ -46,7 +46,7 @@
 				<c:EnumComboBox SelectedItem="{Binding AspectRatio}" Width="160" IsEnabled="{Binding OverrideAspectRatio}" />
 				<StackPanel Orientation="Horizontal" IsVisible="{Binding AspectRatio, Converter={StaticResource EnumMatchConverter}, ConverterParameter={x:Static cfg:VideoAspectRatio.Custom}}">
 					<TextBlock Text="{l:Translate lblCustomRatio}" VerticalAlignment="Center" Margin="5 0 0 0" />
-					<c:MesenNumericUpDown
+					<c:NexenNumericUpDown
 						Value="{Binding CustomAspectRatio}"
 						FormatString="0.0000"
 						Minimum="0.1"

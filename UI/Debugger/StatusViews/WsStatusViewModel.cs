@@ -1,58 +1,56 @@
-﻿using Mesen.Interop;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Text;
 using System.Text.RegularExpressions;
+using Nexen.Interop;
+using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.Debugger.StatusViews;
+namespace Nexen.Debugger.StatusViews;
 
-public class WsStatusViewModel : BaseConsoleStatusViewModel
-{
-	[Reactive] public UInt16 RegAX { get; set; }
-	[Reactive] public UInt16 RegBX { get; set; }
-	[Reactive] public UInt16 RegCX { get; set; }
-	[Reactive] public UInt16 RegDX { get; set; }
-	[Reactive] public UInt16 RegFlags { get; set; }
+public sealed partial class WsStatusViewModel : BaseConsoleStatusViewModel {
+	[Reactive] public partial UInt16 RegAX { get; set; }
+	[Reactive] public partial UInt16 RegBX { get; set; }
+	[Reactive] public partial UInt16 RegCX { get; set; }
+	[Reactive] public partial UInt16 RegDX { get; set; }
+	[Reactive] public partial UInt16 RegFlags { get; set; }
 
-	[Reactive] public UInt16 RegSS { get; set; }
-	[Reactive] public UInt16 RegDS { get; set; }
-	[Reactive] public UInt16 RegES { get; set; }
+	[Reactive] public partial UInt16 RegSS { get; set; }
+	[Reactive] public partial UInt16 RegDS { get; set; }
+	[Reactive] public partial UInt16 RegES { get; set; }
 
-	[Reactive] public UInt16 RegCS { get; set; }
-	[Reactive] public UInt16 RegIP { get; set; }
-	
-	[Reactive] public UInt16 RegDI { get; set; }
-	[Reactive] public UInt16 RegSI { get; set; }
+	[Reactive] public partial UInt16 RegCS { get; set; }
+	[Reactive] public partial UInt16 RegIP { get; set; }
 
-	[Reactive] public UInt16 RegSP { get; set; }
-	[Reactive] public UInt16 RegBP { get; set; }
+	[Reactive] public partial UInt16 RegDI { get; set; }
+	[Reactive] public partial UInt16 RegSI { get; set; }
 
-	[Reactive] public UInt16 Scanline { get; set; }
-	[Reactive] public UInt16 Cycle { get; set; }
+	[Reactive] public partial UInt16 RegSP { get; set; }
+	[Reactive] public partial UInt16 RegBP { get; set; }
 
-	[Reactive] public bool FlagCarry { get; set; }
-	[Reactive] public bool FlagAuxCarry { get; set; }
-	[Reactive] public bool FlagParity { get; set; }
-	[Reactive] public bool FlagSign { get; set; }
-	[Reactive] public bool FlagZero { get; set; }
-	[Reactive] public bool FlagOverflow { get; set; }
-	[Reactive] public bool FlagTrap { get; set; }
-	[Reactive] public bool FlagIrq { get; set; }
-	[Reactive] public bool FlagDirection { get; set; }
-	[Reactive] public bool FlagMode { get; set; }
+	[Reactive] public partial UInt16 Scanline { get; set; }
+	[Reactive] public partial UInt16 Cycle { get; set; }
 
-	[Reactive] public bool FlagHalted { get; set; }
+	[Reactive] public partial bool FlagCarry { get; set; }
+	[Reactive] public partial bool FlagAuxCarry { get; set; }
+	[Reactive] public partial bool FlagParity { get; set; }
+	[Reactive] public partial bool FlagSign { get; set; }
+	[Reactive] public partial bool FlagZero { get; set; }
+	[Reactive] public partial bool FlagOverflow { get; set; }
+	[Reactive] public partial bool FlagTrap { get; set; }
+	[Reactive] public partial bool FlagIrq { get; set; }
+	[Reactive] public partial bool FlagDirection { get; set; }
+	[Reactive] public partial bool FlagMode { get; set; }
 
-	[Reactive] public string StackPreview { get; private set; } = "";
+	[Reactive] public partial bool FlagHalted { get; set; }
 
-	public WsStatusViewModel()
-	{
-		this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagSign, x => x.FlagOverflow).Subscribe(x => UpdateFlags());
-		this.WhenAnyValue(x => x.FlagParity, x => x.FlagIrq, x => x.FlagTrap, x => x.FlagMode).Subscribe(x => UpdateFlags());
-		this.WhenAnyValue(x => x.FlagAuxCarry, x => x.FlagDirection).Subscribe(x => UpdateFlags());
+	[Reactive] public partial string StackPreview { get; private set; } = "";
 
-		this.WhenAnyValue(x => x.RegFlags).Subscribe(f => {
+	public WsStatusViewModel() {
+		AddDisposable(this.WhenAnyValue(x => x.FlagZero, x => x.FlagCarry, x => x.FlagSign, x => x.FlagOverflow).Subscribe(x => UpdateFlags()));
+		AddDisposable(this.WhenAnyValue(x => x.FlagParity, x => x.FlagIrq, x => x.FlagTrap, x => x.FlagMode).Subscribe(x => UpdateFlags()));
+		AddDisposable(this.WhenAnyValue(x => x.FlagAuxCarry, x => x.FlagDirection).Subscribe(x => UpdateFlags()));
+
+		AddDisposable(this.WhenAnyValue(x => x.RegFlags).Subscribe(f => {
 			using var delayNotifs = DelayChangeNotifications(); //don't reupdate RegFlags while updating the flags
 			FlagCarry = (f & 0x01) != 0;
 			FlagParity = (f & 0x04) != 0;
@@ -64,11 +62,10 @@ public class WsStatusViewModel : BaseConsoleStatusViewModel
 			FlagDirection = (f & 0x400) != 0;
 			FlagOverflow = (f & 0x800) != 0;
 			FlagMode = (f & 0x8000) != 0;
-		});
+		}));
 	}
 
-	private void UpdateFlags()
-	{
+	private void UpdateFlags() {
 		RegFlags = (UInt16)(
 			(FlagCarry ? 0x01 : 0) |
 			(FlagParity ? 0x04 : 0) |
@@ -84,8 +81,7 @@ public class WsStatusViewModel : BaseConsoleStatusViewModel
 		);
 	}
 
-	protected override void InternalUpdateUiState()
-	{
+	protected override void InternalUpdateUiState() {
 		WsCpuState cpu = DebugApi.GetCpuState<WsCpuState>(CpuType.Ws);
 		WsPpuState ppu = DebugApi.GetPpuState<WsPpuState>(CpuType.Ws);
 
@@ -109,10 +105,10 @@ public class WsStatusViewModel : BaseConsoleStatusViewModel
 
 		RegSI = cpu.SI;
 		RegDI = cpu.DI;
-		
+
 		RegIP = cpu.IP;
 		RegCS = cpu.CS;
-		
+
 		RegSS = cpu.SS;
 		RegDS = cpu.DS;
 		RegES = cpu.ES;
@@ -127,16 +123,16 @@ public class WsStatusViewModel : BaseConsoleStatusViewModel
 
 		StringBuilder sb = new StringBuilder();
 		UInt32 stackAddr = (UInt32)((cpu.SS << 4) + cpu.SP);
-		byte[] stackValues = DebugApi.GetMemoryValues(MemoryType.WsMemory, stackAddr, stackAddr + 30 * 4 - 1);
-		for(int i = 0; i < stackValues.Length; i += 2) {
+		byte[] stackValues = DebugApi.GetMemoryValues(MemoryType.WsMemory, stackAddr, stackAddr + (30 * 4) - 1);
+		for (int i = 0; i < stackValues.Length; i += 2) {
 			UInt16 value = (UInt16)(stackValues[i] | (stackValues[i + 1] << 8));
 			sb.Append($"${value:X4} ");
 		}
+
 		StackPreview = sb.ToString();
 	}
 
-	protected override void InternalUpdateConsoleState()
-	{
+	protected override void InternalUpdateConsoleState() {
 		WsCpuState cpu = DebugApi.GetCpuState<WsCpuState>(CpuType.Ws);
 
 		cpu.AX = RegAX;

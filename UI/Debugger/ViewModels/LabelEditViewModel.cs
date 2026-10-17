@@ -1,151 +1,246 @@
-﻿using Avalonia.Controls;
-using Mesen.Debugger.Labels;
-using Mesen.Interop;
-using Mesen.Localization;
-using Mesen.ViewModels;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
+// CS8618: Source-generated ObservableAsProperty helpers assigned after Design.IsDesignMode guard
+#pragma warning disable CS8618
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
+using Avalonia.Controls;
+using Nexen.Debugger.Labels;
+using Nexen.Interop;
+using Nexen.Localization;
+using Nexen.ViewModels;
+using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.Debugger.ViewModels
-{
-	public class LabelEditViewModel : DisposableViewModel
-	{
-		[Reactive] public ReactiveCodeLabel Label { get; set; }
+namespace Nexen.Debugger.ViewModels; 
+/// <summary>
+/// ViewModel for the label edit dialog, providing validation and two-way binding for label properties.
+/// </summary>
+/// <remarks>
+/// <para>
+/// This ViewModel handles:
+/// <list type="bullet">
+///   <item><description>Validation of label names against naming rules</description></item>
+///   <item><description>Validation of address ranges against memory type limits</description></item>
+///   <item><description>Conflict detection with existing labels</description></item>
+///   <item><description>Dynamic filtering of available memory types based on CPU</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// Uses ReactiveUI observables to provide real-time validation feedback as the user types.
+/// </para>
+/// </remarks>
+public sealed partial class LabelEditViewModel : DisposableViewModel {
+	/// <summary>
+	/// Gets or sets the reactive code label being edited.
+	/// </summary>
+	[Reactive] public partial ReactiveCodeLabel Label { get; set; }
 
-		[ObservableAsProperty] public bool OkEnabled { get; }
-		[ObservableAsProperty] public string MaxAddress { get; } = "";
-		[Reactive] public string ErrorMessage { get; private set; } = "";
-		
-		public bool AllowDelete { get; } = false;
-		
-		public Enum[] AvailableMemoryTypes { get; private set; } = Array.Empty<Enum>();
-		public CpuType CpuType { get; }
+	/// <summary>
+	/// Gets whether the OK button should be enabled (all validation passed).
+	/// </summary>
+	[ObservableAsProperty] private bool _okEnabled;
 
-		private CodeLabel? _originalLabel;
+	/// <summary>
+	/// Gets the maximum address display string for the current memory type.
+	/// </summary>
+	[ObservableAsProperty] private string _maxAddress = "";
 
-		[Obsolete("For designer only")]
-		public LabelEditViewModel() : this(CpuType.Snes, new CodeLabel()) { }
+	/// <summary>
+	/// Gets or sets the current validation error message, or empty string if valid.
+	/// </summary>
+	[Reactive] public partial string ErrorMessage { get; private set; } = "";
 
-		public LabelEditViewModel(CpuType cpuType, CodeLabel label, CodeLabel? originalLabel = null)
-		{
-			_originalLabel = originalLabel;
+	/// <summary>
+	/// Gets whether the delete button should be shown (editing existing label).
+	/// </summary>
+	public bool AllowDelete { get; } = false;
 
-			Label = new ReactiveCodeLabel(label);
-			AllowDelete = originalLabel != null;
+	/// <summary>
+	/// Gets the array of memory types available for labels on this CPU.
+	/// </summary>
+	public Enum[] AvailableMemoryTypes { get; private set; } = [];
 
-			if(Design.IsDesignMode) {
-				return;
+	/// <summary>
+	/// Gets the CPU type for this label editing context.
+	/// </summary>
+	public CpuType CpuType { get; }
+
+	private CodeLabel? _originalLabel;
+
+	/// <summary>
+	/// Designer-only constructor. Do not use in code.
+	/// </summary>
+	[Obsolete("For designer only")]
+	public LabelEditViewModel() : this(CpuType.Snes, new CodeLabel()) { }
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="LabelEditViewModel"/> class.
+	/// </summary>
+	/// <param name="cpuType">The CPU type, which determines available memory types.</param>
+	/// <param name="label">The code label to edit.</param>
+	/// <param name="originalLabel">The original label being edited (null if creating new label).</param>
+	/// <remarks>
+	/// Sets up reactive subscriptions for validation and max address display.
+	/// When editing an existing label, preserves the original for conflict detection.
+	/// </remarks>
+	public LabelEditViewModel(CpuType cpuType, CodeLabel label, CodeLabel? originalLabel = null) {
+		_originalLabel = originalLabel;
+
+		Label = new ReactiveCodeLabel(label);
+		AllowDelete = originalLabel is not null;
+
+		if (Design.IsDesignMode) {
+			return;
+		}
+
+		CpuType = cpuType;
+		// Filter memory types to those accessible by this CPU that support labels
+		AvailableMemoryTypes = Enum.GetValues<MemoryType>().Where(t => cpuType.CanAccessMemoryType(t) && t.SupportsLabels() && DebugApi.GetMemorySize(t) > 0).Cast<Enum>().ToArray();
+		if (!AvailableMemoryTypes.Contains(Label.MemoryType)) {
+			Label.MemoryType = (MemoryType)AvailableMemoryTypes[0];
+		}
+
+		// Update max address display when memory type changes
+		AddDisposable(_maxAddressHelper = this.WhenAnyValue(x => x.Label.MemoryType, (memoryType) => {
+			int maxAddress = DebugApi.GetMemorySize(memoryType) - 1;
+			if (maxAddress <= 0) {
+				return "(unavailable)";
+			} else {
+				return "(Max: $" + maxAddress.ToString("X4") + ")";
 			}
+		}).ToProperty(this, _ => _.MaxAddress));
 
-			CpuType = cpuType;
-			AvailableMemoryTypes = Enum.GetValues<MemoryType>().Where(t => cpuType.CanAccessMemoryType(t) && t.SupportsLabels() && DebugApi.GetMemorySize(t) > 0).Cast<Enum>().ToArray();
-			if(!AvailableMemoryTypes.Contains(Label.MemoryType)) {
-				Label.MemoryType = (MemoryType)AvailableMemoryTypes[0];
-			}
+		// Comprehensive validation when any relevant property changes
+		AddDisposable(_okEnabledHelper = this.WhenAnyValue(x => x.Label.Label, x => x.Label.Comment, x => x.Label.Length, x => x.Label.MemoryType, x => x.Label.Address, (label, comment, length, memoryType, address) => {
+			CodeLabel? sameLabel = LabelManager.GetLabel(label);
+			int maxAddress = DebugApi.GetMemorySize(memoryType) - 1;
 
-			AddDisposable(this.WhenAnyValue(x => x.Label.MemoryType, (memoryType) => {
-				int maxAddress = DebugApi.GetMemorySize(memoryType) - 1;
-				if(maxAddress <= 0) {
-					return "(unavailable)";
-				} else {
-					return "(Max: $" + maxAddress.ToString("X4") + ")";
-				}
-			}).ToPropertyEx(this, x => x.MaxAddress));
-
-			AddDisposable(this.WhenAnyValue(x => x.Label.Label, x => x.Label.Comment, x => x.Label.Length, x => x.Label.MemoryType, x => x.Label.Address, (label, comment, length, memoryType, address) => {
-				CodeLabel? sameLabel = LabelManager.GetLabel(label);
-				int maxAddress = DebugApi.GetMemorySize(memoryType) - 1;
-
-				for(UInt32 i = 0; i < length; i++) {
-					CodeLabel? sameAddress = LabelManager.GetLabel(address + i, memoryType);
-					if(sameAddress != null) {
-						if(originalLabel == null || (sameAddress.Label != originalLabel.Label && !sameAddress.Label.StartsWith(originalLabel.Label + "+"))) {
-							//A label already exists, we're trying to edit an existing label, but the existing label
-							//and the label we're editing aren't the same label.  Can't override an existing label with a different one.
-							ErrorMessage = ResourceHelper.GetMessage("AddressHasOtherLabel", sameAddress.Label.Length > 0 ? sameAddress.Label : sameAddress.Comment);
-							return false;
-						}
+			// Check for address conflicts with existing labels
+			for (UInt32 i = 0; i < length; i++) {
+				CodeLabel? sameAddress = LabelManager.GetLabel(address + i, memoryType);
+				if (sameAddress is not null) {
+					if (originalLabel is null || (sameAddress.Label != originalLabel.Label && !sameAddress.Label.StartsWith(originalLabel.Label + "+"))) {
+						//A label already exists, we're trying to edit an existing label, but the existing label
+						//and the label we're editing aren't the same label.  Can't override an existing label with a different one.
+						ErrorMessage = ResourceHelper.GetMessage("AddressHasOtherLabel", sameAddress.Label.Length > 0 ? sameAddress.Label : sameAddress.Comment);
+						return false;
 					}
 				}
+			}
 
-				if(address + (length - 1) > maxAddress) {
-					ErrorMessage = ResourceHelper.GetMessage("AddressOutOfRange");
-					return false;
-				}
-
-				if(label.Length == 0 && comment.Length == 0) {
-					ErrorMessage = ResourceHelper.GetMessage("LabelOrCommentRequired");
-					return false;
-				}
-
-				if(label.Length > 0 && !LabelManager.LabelRegex.IsMatch(label)) {
-					ErrorMessage = ResourceHelper.GetMessage("InvalidLabel");
-					return false;
-				}
-
-				if(sameLabel != null && sameLabel != originalLabel) {
-					ErrorMessage = ResourceHelper.GetMessage("LabelNameInUse");
-					return false;
-				}
-
-				if(length >= 1 && length <= 65536 && !comment.Contains('\x1')) {
-					ErrorMessage = "";
-					return true;
-				}
-
+			// Check address is within valid range
+			if (address + (length - 1) > maxAddress) {
+				ErrorMessage = ResourceHelper.GetMessage("AddressOutOfRange");
 				return false;
-			}).ToPropertyEx(this, x => x.OkEnabled));
-		}
-
-		public void DeleteLabel()
-		{
-			if(_originalLabel != null) {
-				LabelManager.DeleteLabel(_originalLabel, true);
-			}
-		}
-
-		public void Commit()
-		{
-			Label.Commit();
-		}
-
-		public class ReactiveCodeLabel : ReactiveObject
-		{
-			private CodeLabel _originalLabel;
-
-			public ReactiveCodeLabel(CodeLabel label)
-			{
-				_originalLabel = label;
-
-				Address = label.Address;
-				Label = label.Label;
-				Comment = label.Comment;
-				MemoryType = label.MemoryType;
-				Flags = label.Flags;
-				Length = label.Length;
 			}
 
-			public void Commit()
-			{
-				_originalLabel.Address = Address;
-				_originalLabel.Label = Label;
-				_originalLabel.Comment = Comment;
-				_originalLabel.MemoryType = MemoryType;
-				_originalLabel.Flags = Flags;
-				_originalLabel.Length = Length;
+			// Require at least a label name or a comment
+			if (label.Length == 0 && comment.Length == 0) {
+				ErrorMessage = ResourceHelper.GetMessage("LabelOrCommentRequired");
+				return false;
 			}
 
-			[Reactive] public UInt32 Address { get; set; }
-			[Reactive] public MemoryType MemoryType { get; set; }
-			[Reactive] public string Label { get; set; } = "";
-			[Reactive] public string Comment { get; set; } = "";
-			[Reactive] public CodeLabelFlags Flags { get; set; }
-			[Reactive] public UInt32 Length { get; set; } = 1;
+			// Validate label name format (alphanumeric + underscore, cannot start with digit)
+			if (label.Length > 0 && !LabelManager.LabelRegex.IsMatch(label)) {
+				ErrorMessage = ResourceHelper.GetMessage("InvalidLabel");
+				return false;
+			}
+
+			// Check for label name conflicts
+			if (sameLabel is not null && sameLabel != originalLabel) {
+				ErrorMessage = ResourceHelper.GetMessage("LabelNameInUse");
+				return false;
+			}
+
+			// Final validation: length must be valid and comment cannot contain separator
+			if (length >= 1 && length <= 65536 && !comment.Contains('\x1')) {
+				ErrorMessage = "";
+				return true;
+			}
+
+			return false;
+		}).ToProperty(this, _ => _.OkEnabled));
+	}
+
+	/// <summary>
+	/// Deletes the original label from the label manager.
+	/// </summary>
+	/// <remarks>
+	/// Only callable when editing an existing label (AllowDelete is true).
+	/// </remarks>
+	public void DeleteLabel() {
+		if (_originalLabel is not null) {
+			LabelManager.DeleteLabel(_originalLabel, true);
 		}
+	}
+
+	/// <summary>
+	/// Commits the edited label values to the underlying code label.
+	/// </summary>
+	public void Commit() {
+		Label.Commit();
+	}
+
+	/// <summary>
+	/// Reactive wrapper around <see cref="CodeLabel"/> that provides property change notifications.
+	/// </summary>
+	/// <remarks>
+	/// <para>
+	/// This class wraps a <see cref="CodeLabel"/> instance to provide ReactiveUI-compatible
+	/// property change notifications, enabling real-time validation in the edit dialog.
+	/// </para>
+	/// <para>
+	/// Call <see cref="Commit"/> to save changes back to the original label.
+	/// </para>
+	/// </remarks>
+	public sealed partial class ReactiveCodeLabel : ReactiveObject {
+		private CodeLabel _originalLabel;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ReactiveCodeLabel"/> class.
+		/// </summary>
+		/// <param name="label">The code label to wrap.</param>
+		public ReactiveCodeLabel(CodeLabel label) {
+			_originalLabel = label;
+
+			Address = label.Address;
+			Label = label.Label;
+			Comment = label.Comment;
+			MemoryType = label.MemoryType;
+			Flags = label.Flags;
+			Length = label.Length;
+		}
+
+		/// <summary>
+		/// Commits the current property values back to the original code label.
+		/// </summary>
+		public void Commit() {
+			_originalLabel.Address = Address;
+			_originalLabel.Label = Label;
+			_originalLabel.Comment = Comment;
+			_originalLabel.MemoryType = MemoryType;
+			_originalLabel.Flags = Flags;
+			_originalLabel.Length = Length;
+		}
+
+		/// <summary>Gets or sets the memory address of the label.</summary>
+		[Reactive] public partial UInt32 Address { get; set; }
+
+		/// <summary>Gets or sets the memory type where the label resides.</summary>
+		[Reactive] public partial MemoryType MemoryType { get; set; }
+
+		/// <summary>Gets or sets the label name (must be a valid identifier).</summary>
+		[Reactive] public partial string Label { get; set; } = "";
+
+		/// <summary>Gets or sets the comment text associated with the label.</summary>
+		[Reactive] public partial string Comment { get; set; } = "";
+
+		/// <summary>Gets or sets the label flags (function start, auto-generated, etc.).</summary>
+		[Reactive] public partial CodeLabelFlags Flags { get; set; }
+
+		/// <summary>Gets or sets the length in bytes covered by this label (for data tables).</summary>
+		[Reactive] public partial UInt32 Length { get; set; } = 1;
 	}
 }

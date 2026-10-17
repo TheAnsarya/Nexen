@@ -1,21 +1,16 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Mesen.Utilities;
-using Mesen.Config;
+using Nexen.Config;
+using Nexen.Utilities;
 
-namespace Mesen.Views
-{
-	public class EmulationConfigView : UserControl
-	{
-		public EmulationConfigView()
-		{
-			InitializeComponent();
-		}
+namespace Nexen.Views; 
+public partial class EmulationConfigView : UserControl {
+	public EmulationConfigView() {
+		InitializeComponent();
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
 	}
 }

@@ -7,8 +7,7 @@
 class GbaApu;
 class GbaConsole;
 
-class GbaWaveChannel final : public ISerializable
-{
+class GbaWaveChannel final : public ISerializable {
 private:
 	GbaWaveState _state = {};
 	GbaApu* _apu = nullptr;
@@ -22,7 +21,7 @@ public:
 	bool Enabled();
 	void Disable();
 	void ResetLengthCounter();
-	
+
 	uint8_t GetRawOutput();
 	double GetOutput();
 

@@ -4,22 +4,19 @@
 
 class LabelManager;
 
-class WsAssembler final : public IAssembler
-{
+class WsAssembler final : public IAssembler {
 private:
 	LabelManager* _labelManager;
 
 public:
-	WsAssembler(LabelManager* labelManager)
-	{
+	WsAssembler(LabelManager* labelManager) {
 		_labelManager = labelManager;
 	}
 
 	virtual ~WsAssembler() {}
 
-	uint32_t AssembleCode(string code, uint32_t startAddress, int16_t* assembledCode)
-	{
-		//TODOWS
+	uint32_t AssembleCode(const string& code, uint32_t startAddress, int16_t* assembledCode) {
+		// TODOWS
 		return 0;
 	}
 };

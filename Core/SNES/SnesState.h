@@ -13,8 +13,7 @@
 #include "SNES/InternalRegisterTypes.h"
 #include "SNES/AluMulDiv.h"
 
-struct SnesState
-{
+struct SnesState {
 	uint64_t MasterClock;
 	SnesCpuState Cpu;
 	SnesPpuState Ppu;

@@ -3,36 +3,38 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:cs="using:Mesen.Config.Shortcuts"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:cs="using:Nexen.Config.Shortcuts"
+	xmlns:v="using:Nexen.Views"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
 	VerticalAlignment="Top"
 	HorizontalAlignment="Stretch"
 	x:Name="root"
-	x:Class="Mesen.Views.ShortcutKeysTabView"
+	x:DataType="v:ShortcutKeysTabView"
+	x:Class="Nexen.Views.ShortcutKeysTabView"
 >
 	<UserControl.Resources>
 		<l:EnumConverter x:Key="EnumConverter" />
 	</UserControl.Resources>
 
 	<DockPanel>
-		<Border BorderThickness="0 0 0 1" BorderBrush="{StaticResource MesenGrayBorderColor}" DockPanel.Dock="Top">
+		<Border BorderThickness="0 0 0 1" BorderBrush="{StaticResource NexenGrayBorderColor}" DockPanel.Dock="Top">
 			<Grid ColumnDefinitions="3*, 1*, 1*" Margin="{Binding HeaderMargin, ElementName=root}">
 				<TextBlock Grid.Column="0" Text="{l:Translate colAction}"  />
 				<TextBlock Grid.Column="1" Text="{l:Translate colBinding1}" HorizontalAlignment="Center" />
 				<TextBlock Grid.Column="2" Text="{l:Translate colBinding2}" HorizontalAlignment="Center" />
 			</Grid>
 		</Border>
-		
+
 		<ScrollViewer AllowAutoHide="False">
 			<ItemsControl ItemsSource="{Binding ShortcutKeys, ElementName=root}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate DataType="{x:Type cs:ShortcutKeyInfo}">
 						<StackPanel>
-							<Border BorderBrush="{StaticResource MesenGrayBorderColor}" BorderThickness="1" Margin="0 -1 0 0">
+							<Border BorderBrush="{StaticResource NexenGrayBorderColor}" BorderThickness="1" Margin="0 -1 0 0">
 								<Grid ColumnDefinitions="3*, 1*, 1*" Margin="5 0 0 0">
 									<TextBlock Grid.Column="0" Text="{Binding Shortcut, Converter={StaticResource EnumConverter}}" />
 									<c:MultiKeyBindingButton Grid.Column="1" KeyBinding="{Binding KeyCombination}" HorizontalAlignment="Stretch"  />

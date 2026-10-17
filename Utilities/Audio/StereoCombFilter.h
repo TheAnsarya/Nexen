@@ -2,8 +2,7 @@
 #include "pch.h"
 #include <deque>
 
-class StereoCombFilter
-{
+class StereoCombFilter {
 	std::deque<int16_t> _delayedSamplesLeft;
 	std::deque<int16_t> _delayedSamplesRight;
 	size_t _lastDelay = 0;

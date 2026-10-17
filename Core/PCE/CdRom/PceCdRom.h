@@ -13,8 +13,7 @@ class Emulator;
 class PceConsole;
 class PceMemoryManager;
 
-class PceCdRom final : public ISerializable
-{
+class PceCdRom final : public ISerializable {
 private:
 	Emulator* _emu = nullptr;
 	PceConsole* _console = nullptr;
@@ -48,12 +47,11 @@ public:
 	PceAudioFaderState& GetAudioFaderState() { return _audioFader.GetState(); }
 	PceCdAudioPlayerState& GetCdPlayerState() { return _audioPlayer.GetState(); }
 
-	__forceinline void Exec()
-	{
-		if(_scsi.NeedExec()) {
+	__forceinline void Exec() {
+		if (_scsi.NeedExec()) {
 			_scsi.Exec();
 		}
-		if(_adpcm.NeedExec()) {
+		if (_adpcm.NeedExec()) {
 			_adpcm.Exec();
 		}
 		_audioPlayer.Exec();
@@ -61,7 +59,7 @@ public:
 
 	PceCdAudioPlayer& GetAudioPlayer() { return _audioPlayer; }
 	PceAudioFader& GetAudioFader() { return _audioFader; }
-	
+
 	uint32_t GetCurrentSector();
 
 	void SetScsiGoodStatus();

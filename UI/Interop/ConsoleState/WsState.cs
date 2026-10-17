@@ -1,11 +1,10 @@
-﻿using Mesen.Config;
 using System;
 using System.Runtime.InteropServices;
+using Nexen.Config;
 
-namespace Mesen.Interop;
+namespace Nexen.Interop;
 
-public struct WsBgLayer
-{
+public struct WsBgLayer {
 	public UInt16 MapAddress;
 	public UInt16 MapAddressLatch;
 	public byte ScrollX;
@@ -16,8 +15,7 @@ public struct WsBgLayer
 	[MarshalAs(UnmanagedType.I1)] public bool EnabledLatch;
 }
 
-public struct WsWindow
-{
+public struct WsWindow {
 	[MarshalAs(UnmanagedType.I1)] public bool Enabled;
 	[MarshalAs(UnmanagedType.I1)] public bool EnabledLatch;
 	public byte Left;
@@ -30,8 +28,7 @@ public struct WsWindow
 	public byte BottomLatch;
 }
 
-public struct WsLcdIcons
-{
+public struct WsLcdIcons {
 	[MarshalAs(UnmanagedType.I1)] public bool Sleep;
 	[MarshalAs(UnmanagedType.I1)] public bool Vertical;
 	[MarshalAs(UnmanagedType.I1)] public bool Horizontal;
@@ -42,18 +39,15 @@ public struct WsLcdIcons
 	public byte Value;
 }
 
-public enum WsVideoMode : byte
-{
+public enum WsVideoMode : byte {
 	Monochrome,
 	Color2bpp,
 	Color4bpp,
 	Color4bppPacked
 }
 
-public static class WsVideoModeExtensions
-{
-	public static TileFormat ToTileFormat(this WsVideoMode mode)
-	{
+public static class WsVideoModeExtensions {
+	public static TileFormat ToTileFormat(this WsVideoMode mode) {
 		return mode switch {
 			WsVideoMode.Monochrome => TileFormat.Bpp2,
 			WsVideoMode.Color2bpp => TileFormat.Bpp2,
@@ -63,8 +57,7 @@ public static class WsVideoModeExtensions
 	}
 }
 
-public struct WsPpuState : BaseState
-{
+public struct WsPpuState : BaseState {
 	public UInt32 FrameCount;
 	public UInt16 Cycle;
 	public UInt16 Scanline;
@@ -116,8 +109,7 @@ public struct WsPpuState : BaseState
 	public byte ScreenAddress;
 }
 
-public struct WsCpuFlags
-{
+public struct WsCpuFlags {
 	[MarshalAs(UnmanagedType.I1)] public bool Carry;
 	[MarshalAs(UnmanagedType.I1)] public bool Parity;
 	[MarshalAs(UnmanagedType.I1)] public bool AuxCarry;
@@ -129,8 +121,7 @@ public struct WsCpuFlags
 	[MarshalAs(UnmanagedType.I1)] public bool Overflow;
 	[MarshalAs(UnmanagedType.I1)] public bool Mode;
 
-	public UInt16 Get()
-	{
+	public UInt16 Get() {
 		return (UInt16)(
 			(Carry ? 0x01 : 0) |
 			(Parity ? 0x04 : 0) |
@@ -146,8 +137,7 @@ public struct WsCpuFlags
 		);
 	}
 
-	void Set(UInt16 f)
-	{
+	void Set(UInt16 f) {
 		Carry = (f & 0x01) != 0;
 		Parity = (f & 0x04) != 0;
 		AuxCarry = (f & 0x10) != 0;
@@ -161,8 +151,7 @@ public struct WsCpuFlags
 	}
 }
 
-public struct WsCpuState : BaseState
-{
+public struct WsCpuState : BaseState {
 	public UInt64 CycleCount;
 
 	public UInt16 CS;
@@ -188,8 +177,7 @@ public struct WsCpuState : BaseState
 	[MarshalAs(UnmanagedType.I1)] public bool PowerOff;
 }
 
-public enum WsIrqSource : byte
-{
+public enum WsIrqSource : byte {
 	UartSendReady = 0x01,
 	KeyPressed = 0x02,
 	Cart = 0x04,
@@ -200,8 +188,7 @@ public enum WsIrqSource : byte
 	HorizontalBlankTimer = 0x80
 }
 
-public struct WsMemoryManagerState
-{
+public struct WsMemoryManagerState {
 	public byte ActiveIrqs;
 	public byte EnabledIrqs;
 	public byte IrqVectorOffset;
@@ -212,24 +199,22 @@ public struct WsMemoryManagerState
 	[MarshalAs(UnmanagedType.I1)] public bool ColorEnabled;
 	[MarshalAs(UnmanagedType.I1)] public bool Enable4bpp;
 	[MarshalAs(UnmanagedType.I1)] public bool Enable4bppPacked;
-	
+
 	[MarshalAs(UnmanagedType.I1)] public bool BootRomDisabled;
 	[MarshalAs(UnmanagedType.I1)] public bool CartWordBus;
 	[MarshalAs(UnmanagedType.I1)] public bool SlowRom;
-	
+
 	[MarshalAs(UnmanagedType.I1)] public bool SlowSram;
 	[MarshalAs(UnmanagedType.I1)] public bool SlowPort;
 	[MarshalAs(UnmanagedType.I1)] public bool EnableLowBatteryNmi;
 	[MarshalAs(UnmanagedType.I1)] public bool PowerOffRequested;
 }
 
-public struct WsControlManagerState
-{
+public struct WsControlManagerState {
 	public byte InputSelect;
 }
 
-public struct WsDmaControllerState
-{
+public struct WsDmaControllerState {
 	public UInt32 GdmaSrc;
 	public UInt32 SdmaSrc;
 	public UInt32 SdmaLength;
@@ -250,8 +235,7 @@ public struct WsDmaControllerState
 	public byte SdmaTimer;
 }
 
-public struct WsTimerState
-{
+public struct WsTimerState {
 	public UInt16 HTimer;
 	public UInt16 VTimer;
 
@@ -265,8 +249,7 @@ public struct WsTimerState
 	[MarshalAs(UnmanagedType.I1)] public bool VBlankAutoReload;
 }
 
-public struct WsApuCh1State
-{
+public struct WsApuCh1State {
 	public UInt16 Frequency;
 	public UInt16 Timer;
 
@@ -279,8 +262,7 @@ public struct WsApuCh1State
 	public byte RightOutput;
 }
 
-public struct WsApuCh2State
-{
+public struct WsApuCh2State {
 	public UInt16 Frequency;
 	public UInt16 Timer;
 
@@ -299,8 +281,7 @@ public struct WsApuCh2State
 	[MarshalAs(UnmanagedType.I1)] public bool HalfPcmVolumeLeft;
 };
 
-public struct WsApuCh3State
-{
+public struct WsApuCh3State {
 	public UInt16 Frequency;
 	public UInt16 Timer;
 
@@ -320,8 +301,7 @@ public struct WsApuCh3State
 	[MarshalAs(UnmanagedType.I1)] public bool UseSweepCpuClock;
 };
 
-public struct WsApuCh4State
-{
+public struct WsApuCh4State {
 	public UInt16 Frequency;
 	public UInt16 Timer;
 
@@ -341,27 +321,24 @@ public struct WsApuCh4State
 	public byte HoldLfsr;
 };
 
-public enum WsHyperVoiceScalingMode : byte
-{
+public enum WsHyperVoiceScalingMode : byte {
 	Unsigned,
 	UnsignedNegated,
 	Signed,
 	None
 }
 
-public enum WsHyperVoiceChannelMode : byte
-{
+public enum WsHyperVoiceChannelMode : byte {
 	Stereo,
 	MonoLeft,
 	MonoRight,
 	MonoBoth
 }
 
-public struct WsApuHyperVoiceState
-{
+public struct WsApuHyperVoiceState {
 	public Int16 LeftOutput;
 	public Int16 RightOutput;
-	
+
 	[MarshalAs(UnmanagedType.I1)] public bool Enabled;
 
 	public byte LeftSample;
@@ -379,8 +356,7 @@ public struct WsApuHyperVoiceState
 	public byte ControlHigh;
 };
 
-public struct WsApuState
-{
+public struct WsApuState {
 	public WsApuCh1State Ch1;
 	public WsApuCh2State Ch2;
 	public WsApuCh3State Ch3;
@@ -398,12 +374,11 @@ public struct WsApuState
 	[MarshalAs(UnmanagedType.I1)] public bool ForceOutput2;
 	[MarshalAs(UnmanagedType.I1)] public bool ForceOutput4;
 	[MarshalAs(UnmanagedType.I1)] public bool ForceOutputCh2Voice;
-	
+
 	public byte SoundTest;
 };
 
-public struct WsSerialState
-{
+public struct WsSerialState {
 	public UInt64 SendClock;
 
 	[MarshalAs(UnmanagedType.I1)] public bool Enabled;
@@ -417,16 +392,14 @@ public struct WsSerialState
 	public byte SendBuffer;
 }
 
-public enum WsEepromSize : UInt16
-{
+public enum WsEepromSize : UInt16 {
 	Size0 = 0,
 	Size128 = 0x80,
 	Size1kb = 0x400,
 	Size2kb = 0x800
 }
 
-public struct WsEepromState
-{
+public struct WsEepromState {
 	public UInt64 CmdStartClock;
 	public WsEepromSize Size;
 	public UInt16 ReadBuffer;
@@ -440,14 +413,12 @@ public struct WsEepromState
 	[MarshalAs(UnmanagedType.I1)] public bool InternalEepromWriteProtected;
 }
 
-public struct WsCartState
-{
+public struct WsCartState {
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
 	public byte[] SelectedBanks;
 }
 
-public struct WsState : BaseState
-{
+public struct WsState : BaseState {
 	public WsCpuState Cpu;
 	public WsPpuState Ppu;
 	public WsApuState Apu;

@@ -5,8 +5,7 @@
 
 enum class SnesAddrMode : uint8_t;
 
-class SnesAssembler : public Base6502Assembler<SnesAddrMode>
-{
+class SnesAssembler : public Base6502Assembler<SnesAddrMode> {
 protected:
 	string GetOpName(uint8_t opcode) override;
 	SnesAddrMode GetOpMode(uint8_t opcode) override;

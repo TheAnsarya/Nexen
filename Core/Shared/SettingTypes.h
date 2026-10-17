@@ -1,9 +1,8 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include <algorithm>
 
-enum class EmulationFlags
-{
+enum class EmulationFlags {
 	Turbo = 0x01,
 	Rewind = 0x02,
 	TurboOrRewind = 0x03,
@@ -14,8 +13,7 @@ enum class EmulationFlags
 	OutputToStdout = 0x40,
 };
 
-enum class ScaleFilterType
-{
+enum class ScaleFilterType {
 	xBRZ = 0,
 	HQX = 1,
 	Scale2x = 2,
@@ -26,8 +24,7 @@ enum class ScaleFilterType
 	LcdGrid = 7,
 };
 
-enum class VideoFilterType
-{
+enum class VideoFilterType {
 	None = 0,
 	NtscBlargg,
 	NtscBisqwit,
@@ -54,14 +51,12 @@ enum class VideoFilterType
 	Prescale10x
 };
 
-enum class VideoResizeFilter
-{
+enum class VideoResizeFilter {
 	NearestNeighbor = 0,
 	Bilinear = 1
 };
 
-enum class VideoAspectRatio
-{
+enum class VideoAspectRatio {
 	NoStretching = 0,
 	Auto = 1,
 	NTSC = 2,
@@ -71,15 +66,13 @@ enum class VideoAspectRatio
 	Custom = 6
 };
 
-enum class NtscBisqwitFilterScale
-{
+enum class NtscBisqwitFilterScale {
 	_2x,
 	_4x,
 	_8x,
 };
 
-struct VideoConfig
-{
+struct VideoConfig {
 	double CustomAspectRatio = 1.0;
 	VideoFilterType VideoFilter = VideoFilterType::None;
 	VideoAspectRatio AspectRatio = VideoAspectRatio::NoStretching;
@@ -122,8 +115,7 @@ struct VideoConfig
 	uint32_t ScreenRotation = 0;
 };
 
-struct AudioConfig
-{
+struct AudioConfig {
 	const char* AudioDevice = nullptr;
 	bool EnableAudio = true;
 	bool DisableDynamicSampleRate = false;
@@ -172,18 +164,17 @@ struct AudioConfig
 	uint32_t AudioPlayerSilenceDelay = 3;
 };
 
-enum class ControllerType
-{
+enum class ControllerType {
 	None,
 
-	//SNES controllers
+	// SNES controllers
 	SnesController,
 	SnesMouse,
 	SuperScope,
 	Multitap,
 	SnesRumbleController,
 
-	//NES controllers
+	// NES controllers
 	NesController,
 	FamicomController,
 	FamicomControllerP2,
@@ -194,7 +185,7 @@ enum class ControllerType
 	SuborMouse,
 	VirtualBoyController,
 
-	//NES/Famicon expansion devices
+	// NES/Famicon expansion devices
 	FourScore,
 	FamicomZapper,
 	TwoPlayerAdapter,
@@ -216,34 +207,53 @@ enum class ControllerType
 	AsciiTurboFile,
 	BattleBox,
 
-	//NES cart input devices
+	// NES cart input devices
 	BandaiMicrophone,
 	DatachBarcodeReader,
 
-	//Game Boy
+	// Game Boy
 	GameboyController,
 	GameboyAccelerometer,
 
-	//PC Engine
+	// PC Engine
 	PceController,
 	PceTurboTap,
 	PceAvenuePad6,
 
-	//SMS
+	// SMS
 	SmsController,
 	SmsLightPhaser,
 	ColecoVisionController,
 
-	//GBA
+	// GBA
 	GbaController,
 
-	//WS
+	// WS
 	WsController,
-	WsControllerVertical
+	WsControllerVertical,
+
+	// Lynx
+	LynxController,
+
+	// Genesis
+	GenesisController,
+
+	// Atari 2600
+	Atari2600Joystick,
+	Atari2600Paddle,
+	Atari2600Keypad,
+	Atari2600DrivingController,
+	Atari2600BoosterGrip,
+
+	// Channel F
+	ChannelFController,
+	ChannelFConsolePanel,
+
+	// Additional Genesis variants
+	GenesisController3Buttons
 };
 
-struct KeyMapping
-{
+struct KeyMapping {
 	uint16_t A = 0;
 	uint16_t B = 0;
 	uint16_t X = 0;
@@ -267,18 +277,17 @@ struct KeyMapping
 	uint16_t TurboR = 0;
 	uint16_t TurboSelect = 0;
 	uint16_t TurboStart = 0;
-	
+
 	uint16_t GenericKey1 = 0;
 
 	uint16_t CustomKeys[100] = {};
 
-	bool HasKeySet()
-	{
-		if(A || B || X || Y || L || R || U || D || Up || Down || Left || Right || Start || Select || TurboA || TurboB || TurboX || TurboY || TurboL || TurboR || TurboStart || TurboSelect || GenericKey1) {
+	bool HasKeySet() {
+		if (A || B || X || Y || L || R || U || D || Up || Down || Left || Right || Start || Select || TurboA || TurboB || TurboX || TurboY || TurboL || TurboR || TurboStart || TurboSelect || GenericKey1) {
 			return true;
 		}
-		for(uint32_t i = 0; i < 100; i++) {
-			if(CustomKeys[i] != 0) {
+		for (uint32_t i = 0; i < 100; i++) {
+			if (CustomKeys[i] != 0) {
 				return true;
 			}
 		}
@@ -286,68 +295,61 @@ struct KeyMapping
 	}
 };
 
-struct KeyMappingSet
-{
+struct KeyMappingSet {
 	KeyMapping Mapping1;
 	KeyMapping Mapping2;
 	KeyMapping Mapping3;
 	KeyMapping Mapping4;
 	uint32_t TurboSpeed = 0;
 
-	vector<KeyMapping> GetKeyMappingArray()
-	{
+	vector<KeyMapping> GetKeyMappingArray() {
 		vector<KeyMapping> keyMappings;
-		if(Mapping1.HasKeySet()) {
+		if (Mapping1.HasKeySet()) {
 			keyMappings.push_back(Mapping1);
 		}
-		if(Mapping2.HasKeySet()) {
+		if (Mapping2.HasKeySet()) {
 			keyMappings.push_back(Mapping2);
 		}
-		if(Mapping3.HasKeySet()) {
+		if (Mapping3.HasKeySet()) {
 			keyMappings.push_back(Mapping3);
 		}
-		if(Mapping4.HasKeySet()) {
+		if (Mapping4.HasKeySet()) {
 			keyMappings.push_back(Mapping4);
 		}
 		return keyMappings;
 	}
 };
 
-struct ControllerConfig
-{
+struct ControllerConfig {
 	KeyMappingSet Keys;
 	ControllerType Type = ControllerType::None;
 };
 
-enum class InputDisplayPosition
-{
+enum class InputDisplayPosition {
 	TopLeft = 0,
 	TopRight = 1,
 	BottomLeft = 2,
 	BottomRight = 3
 };
 
-struct InputConfig
-{
+struct InputConfig {
 	uint32_t ControllerDeadzoneSize = 2;
 	uint32_t MouseSensitivity = 1;
 
 	InputDisplayPosition DisplayInputPosition = InputDisplayPosition::TopLeft;
-	bool DisplayInputPort[8] = { };
+	bool DisplayInputPort[8] = {};
 	bool DisplayInputHorizontally = true;
 
 	double ForceFeedbackIntensity = 1.0;
 };
 
-enum class RamState
-{
+enum class RamState {
 	Random = 0,
 	AllZeros = 1,
 	AllOnes = 2,
 };
 
-enum class ConsoleRegion
-{
+enum class ConsoleRegion {
 	Auto = 0,
 	Ntsc = 1,
 	Pal = 2,
@@ -355,19 +357,21 @@ enum class ConsoleRegion
 	NtscJapan = 4
 };
 
-enum class ConsoleType
-{
+enum class ConsoleType {
 	Snes = 0,
 	Gameboy = 1,
 	Nes = 2,
 	PcEngine = 3,
 	Sms = 4,
 	Gba = 5,
-	Ws = 6
+	Ws = 6,
+	Lynx = 7,
+	Atari2600 = 8,
+	Genesis = 9,
+	ChannelF = 10
 };
 
-enum class GameboyModel
-{
+enum class GameboyModel {
 	AutoFavorGbc,
 	AutoFavorSgb,
 	AutoFavorGb,
@@ -376,8 +380,7 @@ enum class GameboyModel
 	SuperGameboy
 };
 
-struct EmulationConfig
-{
+struct EmulationConfig {
 	uint32_t EmulationSpeed = 100;
 	uint32_t TurboSpeed = 300;
 	uint32_t RewindSpeed = 100;
@@ -385,24 +388,21 @@ struct EmulationConfig
 	uint32_t RunAheadFrames = 0;
 };
 
-struct OverscanDimensions
-{
+struct OverscanDimensions {
 	uint32_t Left = 0;
 	uint32_t Right = 0;
 	uint32_t Top = 0;
 	uint32_t Bottom = 0;
 };
 
-struct GameConfig
-{
+struct GameConfig {
 	uint32_t DipSwitches = 0;
 
 	bool OverrideOverscan = false;
 	OverscanDimensions Overscan = {};
 };
 
-struct GameboyConfig
-{
+struct GameboyConfig {
 	ControllerConfig Controller;
 
 	GameboyModel Model = GameboyModel::AutoFavorGbc;
@@ -410,7 +410,7 @@ struct GameboyConfig
 
 	bool BlendFrames = true;
 	bool GbcAdjustColors = true;
-	
+
 	bool DisableBackground = false;
 	bool DisableSprites = false;
 	bool HideSgbBorders = false;
@@ -418,9 +418,9 @@ struct GameboyConfig
 	RamState RamPowerOnState = RamState::Random;
 	bool AllowInvalidInput = false;
 
-	uint32_t BgColors[4] = { 0xFFFFFF, 0xB0B0B0, 0x686868, 0x000000 };
-	uint32_t Obj0Colors[4] = { 0xFFFFFF, 0xB0B0B0, 0x686868, 0x000000 };
-	uint32_t Obj1Colors[4] = { 0xFFFFFF, 0xB0B0B0, 0x686868, 0x000000 };
+	uint32_t BgColors[4] = {0xFFFFFF, 0xB0B0B0, 0x686868, 0x000000};
+	uint32_t Obj0Colors[4] = {0xFFFFFF, 0xB0B0B0, 0x686868, 0x000000};
+	uint32_t Obj1Colors[4] = {0xFFFFFF, 0xB0B0B0, 0x686868, 0x000000};
 
 	uint32_t Square1Vol = 100;
 	uint32_t Square2Vol = 100;
@@ -428,8 +428,7 @@ struct GameboyConfig
 	uint32_t WaveVol = 100;
 };
 
-enum class GbaSaveType
-{
+enum class GbaSaveType {
 	AutoDetect,
 	None,
 	Sram,
@@ -440,21 +439,18 @@ enum class GbaSaveType
 	Flash128
 };
 
-enum class GbaRtcType
-{
+enum class GbaRtcType {
 	AutoDetect = 0,
 	Enabled = 1,
 	Disabled = 2,
 };
 
-enum class GbaCartridgeType
-{
+enum class GbaCartridgeType {
 	Default,
 	TiltSensor
 };
 
-struct GbaConfig
-{
+struct GbaConfig {
 	ControllerConfig Controller;
 
 	bool SkipBootScreen = false;
@@ -465,7 +461,7 @@ struct GbaConfig
 
 	bool HideBgLayers[4] = {};
 	bool DisableSprites = false;
-	
+
 	uint32_t OverclockScanlineCount = 0;
 
 	RamState RamPowerOnState = RamState::AllZeros;
@@ -482,23 +478,20 @@ struct GbaConfig
 	uint32_t WaveVol = 100;
 };
 
-enum class PceConsoleType
-{
+enum class PceConsoleType {
 	Auto,
 	PcEngine,
 	SuperGrafx,
 	TurboGrafx
 };
 
-enum class PceCdRomType
-{
+enum class PceCdRomType {
 	CdRom,
 	SuperCdRom,
 	Arcade
 };
 
-struct PcEngineConfig
-{
+struct PcEngineConfig {
 	ControllerConfig Port1;
 	ControllerConfig Port1SubPorts[5];
 
@@ -513,7 +506,7 @@ struct PcEngineConfig
 	RamState RamPowerOnState = RamState::Random;
 	bool EnableRandomPowerOnState = false;
 
-	uint32_t ChannelVol[6] = { 100, 100, 100, 100, 100, 100 };
+	uint32_t ChannelVol[6] = {100, 100, 100, 100, 100, 100};
 	uint32_t CdAudioVolume = 100;
 	uint32_t AdpcmVolume = 100;
 	bool UseHuC6280aAudio = true;
@@ -528,19 +521,17 @@ struct PcEngineConfig
 
 	OverscanDimensions Overscan = {};
 
-	uint32_t Palette[512] = { };
+	uint32_t Palette[512] = {};
 };
 
-enum class DspInterpolationType
-{
+enum class DspInterpolationType {
 	Gauss,
 	Cubic,
 	Sinc,
 	None
 };
 
-struct SnesConfig
-{
+struct SnesConfig {
 	ControllerConfig Port1;
 	ControllerConfig Port2;
 
@@ -562,7 +553,7 @@ struct SnesConfig
 	OverscanDimensions Overscan = {};
 
 	DspInterpolationType InterpolationType = DspInterpolationType::Gauss;
-	uint32_t ChannelVolumes[8] = { 100, 100, 100, 100, 100, 100, 100, 100 };
+	uint32_t ChannelVolumes[8] = {100, 100, 100, 100, 100, 100, 100, 100};
 
 	bool EnableRandomPowerOnState = false;
 	bool EnableStrictBoardMappings = false;
@@ -576,31 +567,27 @@ struct SnesConfig
 	int64_t BsxCustomDate = -1;
 };
 
-enum class StereoFilterType
-{
+enum class StereoFilterType {
 	None = 0,
 	Delay = 1,
 	Panning = 2,
 	CombFilter = 3,
 };
 
-enum class VsDualOutputOption
-{
+enum class VsDualOutputOption {
 	Both = 0,
 	MainSystemOnly = 1,
 	SubSystemOnly = 2
 };
 
-enum class NesConsoleType
-{
+enum class NesConsoleType {
 	Nes001,
 	Nes101,
 	Hvc001,
 	Hvc101
 };
 
-struct NesConfig
-{
+struct NesConfig {
 	ControllerConfig Port1;
 	ControllerConfig Port2;
 	ControllerConfig ExpPort;
@@ -629,9 +616,9 @@ struct NesConfig
 	bool RemoveSpriteLimit = false;
 	bool AdaptiveSpriteLimit = false;
 	bool EnablePalBorders = false;
-	
+
 	bool UseCustomVsPalette = false;
-	
+
 	OverscanDimensions NtscOverscan = {};
 	OverscanDimensions PalOverscan = {};
 
@@ -672,7 +659,7 @@ struct NesConfig
 	int32_t InputScanline = 241;
 
 	bool IsFullColorPalette = false;
-	uint32_t UserPalette[512] = { };
+	uint32_t UserPalette[512] = {};
 
 	uint32_t ChannelVolumes[11] = {};
 	uint32_t EpsmVolume = 100;
@@ -685,18 +672,16 @@ struct NesConfig
 	int32_t StereoCombFilterStrength = 0;
 };
 
-enum class SmsRevision
-{
+enum class SmsRevision {
 	Compatibility,
 	Sms1,
 	Sms2
 };
 
-struct SmsConfig
-{
+struct SmsConfig {
 	ControllerConfig Port1;
 	ControllerConfig Port2;
-	
+
 	ConsoleRegion Region = ConsoleRegion::Auto;
 	ConsoleRegion GameGearRegion = ConsoleRegion::Auto;
 	RamState RamPowerOnState = RamState::Random;
@@ -719,8 +704,7 @@ struct SmsConfig
 	OverscanDimensions GameGearOverscan = {};
 };
 
-struct CvConfig
-{
+struct CvConfig {
 	ControllerConfig Port1;
 	ControllerConfig Port2;
 
@@ -734,22 +718,19 @@ struct CvConfig
 	uint32_t ChannelVolumes[4] = {};
 };
 
-enum class WsModel : uint8_t
-{
+enum class WsModel : uint8_t {
 	Auto,
 	Monochrome,
 	Color,
 	SwanCrystal
 };
 
-enum class WsAudioMode : uint8_t
-{
+enum class WsAudioMode : uint8_t {
 	Headphones,
 	Speakers
 };
 
-struct WsConfig
-{
+struct WsConfig {
 	ControllerConfig ControllerHorizontal;
 	ControllerConfig ControllerVertical;
 
@@ -764,6 +745,7 @@ struct WsConfig
 
 	bool HideBgLayers[2] = {};
 	bool DisableSprites = false;
+	bool ForceFlash = false;
 
 	WsAudioMode AudioMode = WsAudioMode::Headphones;
 	uint32_t Channel1Vol = 100;
@@ -773,22 +755,90 @@ struct WsConfig
 	uint32_t Channel5Vol = 100;
 };
 
-struct AudioPlayerConfig
-{
+struct LynxConfig {
+	ControllerConfig Controller;
+
+	bool UseBootRom = false;
+	bool AutoRotate = true;
+	bool BlendFrames = false;
+
+	bool DisableSprites = false;
+	bool DisableBackground = false;
+
+	uint32_t Channel1Vol = 100;
+	uint32_t Channel2Vol = 100;
+	uint32_t Channel3Vol = 100;
+	uint32_t Channel4Vol = 100;
+};
+
+struct GenesisConfig {
+	ControllerConfig Port1;
+	ControllerConfig Port2;
+
+	ConsoleRegion Region = ConsoleRegion::Auto;
+	RamState RamPowerOnState = RamState::Random;
+
+	bool RemoveSpriteLimit = false;
+	bool DisableSprites = false;
+	bool DisableBackground = false;
+	bool EnableTmss = false;
+
+	OverscanDimensions Overscan = {};
+};
+
+struct Atari2600Config {
+	ControllerConfig Port1;
+	ControllerConfig Port2;
+
+	bool P0DifficultyB = true;
+	bool P1DifficultyB = true;
+	bool ColorMode = true;
+
+	RamState RamPowerOnState = RamState::AllZeros;
+
+	uint32_t Channel0Vol = 100;
+	uint32_t Channel1Vol = 100;
+
+	bool HidePlayfield = false;
+	bool HidePlayer0 = false;
+	bool HidePlayer1 = false;
+	bool HideMissile0 = false;
+	bool HideMissile1 = false;
+	bool HideBall = false;
+};
+
+enum class ChannelFConsoleVariant {
+	Auto,
+	SystemI,
+	SystemII,
+	SystemII_Luxor,
+	Clone
+};
+
+struct ChannelFConfig {
+	ControllerConfig Controller;
+	ControllerConfig ConsolePanel;
+	ChannelFConsoleVariant ConsoleVariant = ChannelFConsoleVariant::Auto;
+	ConsoleRegion Region = ConsoleRegion::Auto;
+
+	RamState RamPowerOnState = RamState::AllZeros;
+
+	uint32_t AudioVol = 100;
+};
+
+struct AudioPlayerConfig {
 	uint32_t Volume = 100;
 	bool Repeat = false;
 	bool Shuffle = false;
 };
 
-enum class GbaDisassemblyMode : uint8_t
-{
+enum class GbaDisassemblyMode : uint8_t {
 	Default,
 	Arm,
 	Thumb
 };
 
-struct DebugConfig
-{
+struct DebugConfig {
 	bool BreakOnUninitRead = false;
 
 	bool ShowJumpLabels = false;
@@ -849,26 +899,30 @@ struct DebugConfig
 	bool GbaBreakOnInvalidOpCode = false;
 	bool GbaBreakOnUnalignedMemAccess = false;
 	GbaDisassemblyMode GbaDisMode;
-	
+
 	bool WsBreakOnInvalidOpCode = false;
+
+	bool LynxBreakOnBrk = false;
+
+	bool Atari2600BreakOnBrk = false;
 
 	bool ScriptAllowIoOsAccess = false;
 	bool ScriptAllowNetworkAccess = false;
 	uint32_t ScriptTimeout = 1;
 };
 
-enum class HudDisplaySize
-{
+enum class HudDisplaySize {
 	Fixed,
 	Scaled,
 };
 
-struct PreferencesConfig
-{
+struct PreferencesConfig {
 	bool ShowFps = false;
 	bool ShowFrameCounter = false;
 	bool ShowGameTimer = false;
 	bool ShowLagCounter = false;
+	bool ShowRerecordCounter = false;
+	bool ShowLagFrameIndicator = false;
 	bool ShowDebugInfo = false;
 	bool DisableOsd = false;
 	bool AllowBackgroundInput = false;
@@ -879,7 +933,9 @@ struct PreferencesConfig
 
 	HudDisplaySize HudSize = HudDisplaySize::Fixed;
 
-	uint32_t AutoSaveStateDelay = 5;
+	uint32_t AutoSaveStateDelay = 20;
+	bool ShowAutoSaveNotifications = true;
+	bool ShowRecentPlayNotifications = false;
 	uint32_t RewindBufferSize = 300;
 
 	const char* SaveFolderOverride = nullptr;
@@ -887,20 +943,17 @@ struct PreferencesConfig
 	const char* ScreenshotFolderOverride = nullptr;
 };
 
-struct FrameInfo
-{
+struct FrameInfo {
 	uint32_t Width;
 	uint32_t Height;
 };
 
-struct HudScaleFactors
-{
+struct HudScaleFactors {
 	double X;
 	double Y;
 };
 
-enum class EmulatorShortcut
-{
+enum class EmulatorShortcut {
 	FastForward,
 	Rewind,
 	RewindTenSecs,
@@ -967,7 +1020,7 @@ enum class EmulatorShortcut
 	ToggleOsd,
 	ToggleAlwaysOnTop,
 	ToggleDebugInfo,
-	
+
 	ToggleAudio,
 	IncreaseVolume,
 	DecreaseVolume,
@@ -1013,6 +1066,17 @@ enum class EmulatorShortcut
 	LoadStateDialog,
 	LoadLastSession,
 
+	QuickSaveTimestamped,
+	OpenSaveStatePicker,
+
+	// Designated slots - 3 slots for quick F2-F4/Shift-F2-F4 access
+	SaveDesignatedSlot,
+	LoadDesignatedSlot,
+	SaveDesignatedSlot2,
+	LoadDesignatedSlot2,
+	SaveDesignatedSlot3,
+	LoadDesignatedSlot3,
+
 	OpenFile,
 
 	InputBarcode,
@@ -1020,7 +1084,7 @@ enum class EmulatorShortcut
 	RecordTape,
 	StopRecordTape,
 
-	//NES
+	// NES
 	FdsSwitchDiskSide,
 	FdsEjectDisk,
 	FdsInsertDiskNumber,
@@ -1037,36 +1101,33 @@ enum class EmulatorShortcut
 	ShortcutCount,
 };
 
-struct KeyCombination
-{
+struct KeyCombination {
 	uint32_t Key1 = 0;
 	uint32_t Key2 = 0;
 	uint32_t Key3 = 0;
 
-	vector<uint32_t> GetKeys()
-	{
+	vector<uint32_t> GetKeys() {
 		vector<uint32_t> result;
-		if(Key1) {
+		if (Key1) {
 			result.push_back(Key1);
 		}
-		if(Key2) {
+		if (Key2) {
 			result.push_back(Key2);
 		}
-		if(Key3) {
+		if (Key3) {
 			result.push_back(Key3);
 		}
 		return result;
 	}
 
-	bool IsSubsetOf(KeyCombination keyCombination)
-	{
+	bool IsSubsetOf(KeyCombination keyCombination) {
 		vector<uint32_t> myKeys = GetKeys();
 		vector<uint32_t> otherKeys = keyCombination.GetKeys();
 
-		if(otherKeys.size() > myKeys.size()) {
-			for(size_t i = 0; i < myKeys.size(); i++) {
-				if(std::find(otherKeys.begin(), otherKeys.end(), myKeys[i]) == otherKeys.end()) {
-					//Current key combination contains a key not found in the other combination, so it's not a subset
+		if (otherKeys.size() > myKeys.size()) {
+			for (size_t i = 0; i < myKeys.size(); i++) {
+				if (std::find(otherKeys.begin(), otherKeys.end(), myKeys[i]) == otherKeys.end()) {
+					// Current key combination contains a key not found in the other combination, so it's not a subset
 					return false;
 				}
 			}
@@ -1076,14 +1137,12 @@ struct KeyCombination
 	}
 };
 
-struct ShortcutKeyInfo
-{
+struct ShortcutKeyInfo {
 	EmulatorShortcut Shortcut;
 	KeyCombination Keys;
 };
 
-enum class DebuggerFlags
-{
+enum class DebuggerFlags {
 	SnesDebuggerEnabled = (1 << 0),
 	SpcDebuggerEnabled = (1 << 1),
 	Sa1DebuggerEnabled = (1 << 2),
@@ -1097,4 +1156,7 @@ enum class DebuggerFlags
 	SmsDebuggerEnabled = (1 << 10),
 	GbaDebuggerEnabled = (1 << 11),
 	WsDebuggerEnabled = (1 << 12),
+	LynxDebuggerEnabled = (1 << 13),
+	Atari2600DebuggerEnabled = (1 << 14),
+	ChannelFDebuggerEnabled = (1 << 15),
 };

@@ -2,20 +2,20 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
 	xmlns:sys="using:System"
-	xmlns:v="using:Mesen.Views"
-	xmlns:dbg="using:Mesen.Debugger"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:i="using:Mesen.Interop"
+	xmlns:v="using:Nexen.Views"
+	xmlns:dbg="using:Nexen.Debugger"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:i="using:Nexen.Interop"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:dv="using:Mesen.Debugger.Views"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:dv="using:Nexen.Debugger.Views"
 	mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="300"
-	x:Class="Mesen.Debugger.Windows.TraceLoggerWindow"
+	x:Class="Nexen.Debugger.Windows.TraceLoggerWindow"
 	Icon="/Assets/LogWindow.png"
 	Width="700" Height="500"
 	x:DataType="vm:TraceLoggerViewModel"
@@ -35,12 +35,12 @@
 	</Window.Styles>
 
 	<DockPanel>
-		<c:MesenMenu DockPanel.Dock="Top" Name="ActionMenu">
+		<c:NexenMenu DockPanel.Dock="Top" Name="ActionMenu">
 			<MenuItem Header="{l:Translate mnuFile}" ItemsSource="{Binding FileMenuItems}" />
 			<MenuItem Header="{l:Translate mnuDebug}" ItemsSource="{Binding DebugMenuItems}" />
 			<MenuItem Header="{l:Translate mnuSearch}" ItemsSource="{Binding SearchMenuItems}" />
 			<MenuItem Header="{l:Translate mnuView}" ItemsSource="{Binding ViewMenuItems}" />
-		</c:MesenMenu>
+		</c:NexenMenu>
 
 		<StackPanel Orientation="Horizontal" DockPanel.Dock="Top" IsVisible="{Binding Config.ShowToolbar}">
 			<dc:ActionToolbar Items="{Binding ToolbarItems}" />
@@ -77,7 +77,7 @@
 				Text="{l:Translate btnStop}"
 			/>
 		</Grid>
-		
+
 		<TabControl ItemsSource="{Binding Tabs}" SelectedItem="{Binding SelectedTab}" Padding="1" DockPanel.Dock="Bottom">
 			<TabControl.ItemTemplate>
 				<DataTemplate>
@@ -127,14 +127,14 @@
 									IsVisible="{Binding Options.UseCustomFormat}"
 									MaxLength="1000"
 								/>
-								<Image Grid.Row="0" Grid.Column="2" Source="/Assets/Help.png" ToolTip.Tip="{Binding FormatTooltip}" ToolTip.Placement="Right" ToolTip.ShowDelay="0" />
-								
+								<Image Grid.Row="0" Grid.Column="2" Source="{SvgImage /Assets/Help.svg}" ToolTip.Tip="{Binding FormatTooltip}" ToolTip.Placement="Right" ToolTip.ShowDelay="0" />
+
 								<TextBlock VerticalAlignment="Center" Grid.Row="1" Text="{l:Translate lblCondition}" />
 								<DockPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
 									<Image
 										DockPanel.Dock="Right"
 										Stretch="None"
-										Source="/Assets/Help.png"
+										Source="{SvgImage /Assets/Help.svg}"
 										ToolTip.Tip="{Binding HelpTooltip}"
 										ToolTip.Placement="Right"
 										ToolTip.ShowDelay="0"
@@ -143,7 +143,7 @@
 										IsVisible="{Binding !IsConditionValid}"
 										DockPanel.Dock="Right"
 										Stretch="None"
-										Source="/Assets/Error.png"
+										Source="{SvgImage /Assets/Error.svg}"
 										ToolTip.Tip="{l:Translate lblConditionError}"
 										ToolTip.Placement="Right"
 										ToolTip.ShowDelay="0"
@@ -171,7 +171,7 @@
 					Maximum="{Binding MaxScrollPosition}"
 					Value="{Binding ScrollPosition}"
 				/>
-				
+
 				<ScrollBar
 					Orientation="Horizontal"
 					Grid.Row="1"
@@ -185,8 +185,8 @@
 					<dc:DisassemblyViewer
 						Name="disViewer"
 						Lines="{Binding TraceLogLines}"
-						FontFamily="{DynamicResource MesenDisassemblyFont}"
-						FontSize="{DynamicResource MesenDisassemblyFontSize}"
+						FontFamily="{DynamicResource NexenDisassemblyFont}"
+						FontSize="{DynamicResource NexenDisassemblyFontSize}"
 						StyleProvider="{Binding StyleProvider}"
 						SearchString="{Binding QuickSearch.SearchString}"
 						ShowByteCode="{Binding ShowByteCode}"

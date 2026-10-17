@@ -3,23 +3,18 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using Mesen.Config;
-using Mesen.Utilities;
-using Mesen.ViewModels;
-using Mesen.Windows;
+using Nexen.Config;
+using Nexen.Utilities;
+using Nexen.ViewModels;
+using Nexen.Windows;
 
-namespace Mesen.Debugger.Views
-{
-	public class ControllerInputView : UserControl
-	{
-		public ControllerInputView()
-		{
-			InitializeComponent();
-		}
+namespace Nexen.Debugger.Views; 
+public partial class ControllerInputView : UserControl {
+	public ControllerInputView() {
+		InitializeComponent();
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
 	}
 }

@@ -1,12 +1,3 @@
-﻿using Mesen.Config;
-using Mesen.Debugger.Utilities;
-using Mesen.Debugger.ViewModels;
-using Mesen.Debugger.Windows;
-using Mesen.Interop;
-using Mesen.Localization;
-using Mesen.Utilities;
-using Mesen.ViewModels;
-using Mesen.Windows;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,11 +8,19 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Nexen.Config;
+using Nexen.Debugger.Utilities;
+using Nexen.Debugger.ViewModels;
+using Nexen.Debugger.Windows;
+using Nexen.Interop;
+using Nexen.Localization;
+using Nexen.Utilities;
+using Nexen.ViewModels;
+using Nexen.Windows;
 
-namespace Mesen.Utilities;
+namespace Nexen.Utilities;
 
-public class CommandLineHelper
-{
+public sealed class CommandLineHelper {
 	public bool NoVideo { get; private set; }
 	public bool NoAudio { get; private set; }
 	public bool NoInput { get; private set; }
@@ -34,29 +33,21 @@ public class CommandLineHelper
 
 	private List<string> _errorMessages = new();
 
-	public CommandLineHelper(string[] args, bool forStartup)
-	{
+	public CommandLineHelper(string[] args, bool forStartup) {
 		ProcessCommandLineArgs(args, forStartup);
 	}
 
-	private void ProcessCommandLineArgs(string[] args, bool forStartup)
-	{
-		foreach(string arg in args) {
-			string absPath;
-			if(Path.IsPathRooted(arg)) {
-				absPath = arg;
-			} else {
-				absPath = Path.GetFullPath(arg, Program.OriginalFolder);
-			}
-
-			if(File.Exists(absPath)) {
-				switch(Path.GetExtension(absPath).ToLowerInvariant()) {
+	private void ProcessCommandLineArgs(string[] args, bool forStartup) {
+		foreach (string arg in args) {
+			string absPath = Path.IsPathRooted(arg) ? arg : Path.GetFullPath(arg, Program.OriginalFolder);
+			if (File.Exists(absPath)) {
+				switch (Path.GetExtension(absPath).ToLowerInvariant()) {
 					case ".lua": LuaScriptsToLoad.Add(absPath); break;
 					default: FilesToLoad.Add(absPath); break;
 				}
-			} else if(arg.StartsWith("-") || arg.StartsWith("/")) {
+			} else if (arg.StartsWith("-") || arg.StartsWith("/")) {
 				string switchArg = ConvertArg(arg).ToLowerInvariant();
-				switch(switchArg) {
+				switch (switchArg) {
 					case "novideo": NoVideo = true; break;
 					case "noaudio": NoAudio = true; break;
 					case "noinput": NoInput = true; break;
@@ -65,37 +56,43 @@ public class CommandLineHelper
 					case "donotsavesettings": ConfigManager.DisableSaveSettings = true; break;
 					case "loadlastsession": LoadLastSessionRequested = true; break;
 					default:
-						if(switchArg.StartsWith("recordmovie=")) {
+						if (switchArg.StartsWith("recordmovie=")) {
 							string[] values = switchArg.Split('=');
-							if(values.Length <= 1) {
+							if (values.Length <= 1) {
 								//invalid
 								continue;
 							}
+
 							string moviePath = values[1];
 							string? folder = Path.GetDirectoryName(moviePath);
-							if(string.IsNullOrWhiteSpace(folder)) {
+							if (string.IsNullOrWhiteSpace(folder)) {
 								moviePath = Path.Combine(ConfigManager.MovieFolder, moviePath);
-							} else if(!Path.IsPathRooted(moviePath)) {
+							} else if (!Path.IsPathRooted(moviePath)) {
 								moviePath = Path.Combine(Program.OriginalFolder, moviePath);
 							}
-							if(!moviePath.ToLower().EndsWith("." + FileDialogHelper.MesenMovieExt)) {
-								moviePath += "." + FileDialogHelper.MesenMovieExt;
+
+							string lowerPath = moviePath.ToLower();
+							if (!lowerPath.EndsWith("." + FileDialogHelper.NexenMovieExt) && !lowerPath.EndsWith("." + FileDialogHelper.LegacyMovieExt)) {
+								moviePath += "." + FileDialogHelper.NexenMovieExt;
 							}
+
 							MovieToRecord = moviePath;
-						} else if(switchArg.StartsWith("timeout=")) {
+						} else if (switchArg.StartsWith("timeout=")) {
 							string[] values = switchArg.Split('=');
-							if(values.Length <= 1) {
+							if (values.Length <= 1) {
 								//invalid
 								continue;
 							}
-							if(int.TryParse(values[1], out int timeout)) {
+
+							if (int.TryParse(values[1], out int timeout)) {
 								TestRunnerTimeout = timeout;
 							}
 						} else {
-							if(!ConfigManager.ProcessSwitch(switchArg)) {
+							if (!ConfigManager.ProcessSwitch(switchArg)) {
 								_errorMessages.Add(ResourceHelper.GetMessage("InvalidArgument", arg));
 							}
 						}
+
 						break;
 				}
 			} else {
@@ -104,36 +101,37 @@ public class CommandLineHelper
 		}
 	}
 
-	public void OnAfterInit(MainWindow wnd)
-	{
-		if(Fullscreen && FilesToLoad.Count == 0) {
+	public void OnAfterInit(MainWindow wnd) {
+		if (Fullscreen && FilesToLoad.Count == 0) {
 			wnd.ToggleFullscreen();
 			Fullscreen = false;
 		}
 	}
 
-	private static string ConvertArg(string arg)
-	{
+	private static string ConvertArg(string arg) {
 		arg = arg.Trim();
-		if(arg.StartsWith("--")) {
+		if (arg.StartsWith("--")) {
 			arg = arg.Substring(2);
-		} else if(arg.StartsWith("-") || arg.StartsWith("/")) {
+		} else if (arg.StartsWith("-") || arg.StartsWith("/")) {
 			arg = arg.Substring(1);
 		}
+
 		return arg;
 	}
 
-	public static bool IsTestRunner(string[] args)
-	{
+	public static bool IsTestRunner(string[] args) {
 		return args.Any(arg => CommandLineHelper.ConvertArg(arg).ToLowerInvariant() == "testrunner");
 	}
 
-	public void ProcessPostLoadCommandSwitches(MainWindow wnd)
-	{
-		if(LuaScriptsToLoad.Count > 0) {
-			foreach(string luaScript in LuaScriptsToLoad) {
+	public static bool IsMcpRunner(string[] args) {
+		return args.Any(arg => CommandLineHelper.ConvertArg(arg).ToLowerInvariant() == "mcp");
+	}
+
+	public void ProcessPostLoadCommandSwitches(MainWindow wnd) {
+		if (LuaScriptsToLoad.Count > 0) {
+			foreach (string luaScript in LuaScriptsToLoad) {
 				ScriptWindow? existingWnd = DebugWindowManager.GetDebugWindow<ScriptWindow>(wnd => !string.IsNullOrWhiteSpace(wnd.Model.FilePath) && Path.GetFullPath(wnd.Model.FilePath) == Path.GetFullPath(luaScript));
-				if(existingWnd != null) {
+				if (existingWnd is not null) {
 					//Script is already opened, skip it
 					continue;
 				}
@@ -147,38 +145,35 @@ public class CommandLineHelper
 			wnd.BringToFront();
 		}
 
-		if(MovieToRecord != null) {
-			if(RecordApi.MovieRecording()) {
+		if (MovieToRecord is not null) {
+			if (RecordApi.MovieRecording()) {
 				RecordApi.MovieStop();
 			}
+
 			RecordMovieOptions options = new RecordMovieOptions(MovieToRecord, "", "", RecordMovieFrom.StartWithSaveData);
 			RecordApi.MovieRecord(options);
 		}
 
-		if(Fullscreen) {
+		if (Fullscreen) {
 			wnd.ToggleFullscreen();
 		}
 
-		if(LoadLastSessionRequested) {
-			Task.Run(() => {
-				EmuApi.ExecuteShortcut(new ExecuteShortcutParams() { Shortcut = Config.Shortcuts.EmulatorShortcut.LoadLastSession });
-			});
+		if (LoadLastSessionRequested) {
+			Task.Run(() => EmuApi.ExecuteShortcut(new ExecuteShortcutParams() { Shortcut = Config.Shortcuts.EmulatorShortcut.LoadLastSession }));
 		}
 	}
 
-	public void LoadFiles()
-	{
-		foreach(string file in FilesToLoad) {
+	public void LoadFiles() {
+		foreach (string file in FilesToLoad) {
 			LoadRomHelper.LoadFile(file);
 		}
 
-		foreach(string msg in _errorMessages) {
+		foreach (string msg in _errorMessages) {
 			DisplayMessageHelper.DisplayMessage("Error", msg);
 		}
 	}
 
-	public static Dictionary<string, string> GetAvailableSwitches()
-	{
+	public static Dictionary<string, string> GetAvailableSwitches() {
 		Dictionary<string, string> result = new();
 
 		string general = @"--doNotSaveSettings - Prevent settings from being saved to the disk (useful to prevent command line options from becoming the default settings)
@@ -207,36 +202,33 @@ public class CommandLineHelper
 		return result;
 	}
 
-	private static string GetSwichesForObject(string prefix, Type type)
-	{
+	private static string GetSwichesForObject(string prefix, Type type) {
 		StringBuilder sb = new();
 
 #pragma warning disable IL2070 // 'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The parameter of method does not have matching annotations.
-		foreach(PropertyInfo info in type.GetProperties()) {
-			if(!info.CanWrite) {
+		foreach (PropertyInfo info in type.GetProperties()) {
+			if (!info.CanWrite) {
 				continue;
 			}
 
 			string name = char.ToLowerInvariant(info.Name[0]) + info.Name.Substring(1);
-			if(info.PropertyType == typeof(int) || info.PropertyType == typeof(uint) || info.PropertyType == typeof(double)) {
-				MinMaxAttribute? minMaxAttribute = info.GetCustomAttribute(typeof(MinMaxAttribute)) as MinMaxAttribute;
-				if(minMaxAttribute != null) {
+			if (info.PropertyType == typeof(int) || info.PropertyType == typeof(uint) || info.PropertyType == typeof(double)) {
+				if (info.GetCustomAttribute(typeof(MinMaxAttribute)) is MinMaxAttribute minMaxAttribute) {
 					sb.AppendLine("--" + prefix + name + "=[" + minMaxAttribute.Min.ToString() + " - " + minMaxAttribute.Max.ToString() + "]");
 				}
-			} else if(info.PropertyType == typeof(bool)) {
+			} else if (info.PropertyType == typeof(bool)) {
 				sb.AppendLine("--" + prefix + name + "=[true | false]");
-			} else if(info.PropertyType.IsEnum) {
-				if(info.PropertyType != typeof(ControllerType)) {
-					ValidValuesAttribute? validValuesAttribute = info.GetCustomAttribute(typeof(ValidValuesAttribute)) as ValidValuesAttribute;
-					if(validValuesAttribute != null) {
+			} else if (info.PropertyType.IsEnum) {
+				if (info.PropertyType != typeof(ControllerType)) {
+					if (info.GetCustomAttribute(typeof(ValidValuesAttribute)) is ValidValuesAttribute validValuesAttribute) {
 						sb.AppendLine("--" + prefix + name + "=[" + string.Join(" | ", validValuesAttribute.ValidValues.Select(v => Enum.GetName(info.PropertyType, v))) + "]");
 					} else {
 						sb.AppendLine("--" + prefix + name + "=[" + string.Join(" | ", Enum.GetNames(info.PropertyType)) + "]");
 					}
 				}
-			} else if(info.PropertyType.IsClass && !info.PropertyType.IsGenericType) {
+			} else if (info.PropertyType.IsClass && !info.PropertyType.IsGenericType) {
 				string content = GetSwichesForObject(prefix + name + ".", info.PropertyType);
-				if(content.Length > 0) {
+				if (content.Length > 0) {
 					sb.Append(content);
 				}
 			}
@@ -246,3 +238,4 @@ public class CommandLineHelper
 		return sb.ToString();
 	}
 }
+

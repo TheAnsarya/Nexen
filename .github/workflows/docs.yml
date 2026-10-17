@@ -1,0 +1,100 @@
+﻿# Generate and Deploy Doxygen Documentation
+name: Documentation
+
+on:
+  push:
+    branches: [ master, cpp-modernization ]
+    paths:
+      - 'Core/**/*.h'
+      - 'Core/**/*.cpp'
+      - 'Utilities/**/*.h'
+      - 'Utilities/**/*.cpp'
+      - 'Doxyfile'
+      - 'README.md'
+      - 'COMPILING.md'
+      - 'FORMATTING.md'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      pages_enabled: ${{ steps.pages.outputs.enabled || 'false' }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+
+    - name: Install Doxygen
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y doxygen graphviz
+        doxygen --version
+
+    - name: Generate Documentation
+      run: |
+        doxygen Doxyfile
+
+    - name: Check for warnings
+      run: |
+        if [ -f docs/doxygen-warnings.log ]; then
+          echo "Doxygen warnings:"
+          cat docs/doxygen-warnings.log
+          # Count warnings but don't fail the build
+          WARN_COUNT=$(wc -l < docs/doxygen-warnings.log)
+          echo "Total warnings: $WARN_COUNT"
+        fi
+
+    - name: Detect Pages enablement
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      id: pages
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        if gh api repos/${{ github.repository }}/pages >/dev/null 2>&1; then
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+          echo "GitHub Pages is enabled."
+        else
+          echo "enabled=false" >> "$GITHUB_OUTPUT"
+          echo "GitHub Pages is disabled; skipping publish steps."
+        fi
+
+    - name: Setup Pages
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master' && steps.pages.outputs.enabled == 'true'
+      uses: actions/configure-pages@v6
+
+    - name: Upload artifact
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master' && steps.pages.outputs.enabled == 'true'
+      uses: actions/upload-pages-artifact@v4
+      with:
+        path: './docs/api/html'
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.build.outputs.pages_enabled == 'true'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v5

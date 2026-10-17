@@ -2,18 +2,13 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace Mesen.Debugger.Views
-{
-	public class SmsEventViewerConfigView : UserControl
-	{
-		public SmsEventViewerConfigView()
-		{
-			InitializeComponent();
-		}
+namespace Nexen.Debugger.Views; 
+public partial class SmsEventViewerConfigView : UserControl {
+	public SmsEventViewerConfigView() {
+		InitializeComponent();
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
 	}
 }

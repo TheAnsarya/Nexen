@@ -5,8 +5,11 @@
 #include "NES/APU/BaseExpansionAudio.h"
 #include "Utilities/Serializer.h"
 
-class Namco163Audio : public BaseExpansionAudio
-{
+/// <summary>
+/// Namco 163 expansion audio (up to 8 wavetable channels).
+/// Emulates the Namco 163 sound hardware used in Famicom games.
+/// </summary>
+class Namco163Audio : public BaseExpansionAudio {
 public:
 	static constexpr uint32_t AudioRamSize = 0x80;
 
@@ -20,8 +23,7 @@ private:
 	int16_t _lastOutput = 0;
 	bool _disableSound = false;
 
-	enum SoundReg
-	{
+	enum SoundReg {
 		FrequencyLow = 0x00,
 		PhaseLow = 0x01,
 		FrequencyMid = 0x02,
@@ -33,51 +35,43 @@ private:
 		Volume = 0x07
 	};
 
-	uint32_t GetFrequency(int channel)
-	{
+	uint32_t GetFrequency(int channel) {
 		uint8_t baseAddr = 0x40 + channel * 0x08;
 		return ((_internalRam[baseAddr + SoundReg::FrequencyHigh] & 0x03) << 16) | (_internalRam[baseAddr + SoundReg::FrequencyMid] << 8) | _internalRam[baseAddr + SoundReg::FrequencyLow];
 	}
 
-	uint32_t GetPhase(int channel)
-	{
+	uint32_t GetPhase(int channel) {
 		uint8_t baseAddr = 0x40 + channel * 0x08;
 		return (_internalRam[baseAddr + SoundReg::PhaseHigh] << 16) | (_internalRam[baseAddr + SoundReg::PhaseMid] << 8) | _internalRam[baseAddr + SoundReg::PhaseLow];
 	}
 
-	void SetPhase(int channel, uint32_t phase)
-	{
+	void SetPhase(int channel, uint32_t phase) {
 		uint8_t baseAddr = 0x40 + channel * 0x08;
 		_internalRam[baseAddr + SoundReg::PhaseHigh] = (phase >> 16) & 0xFF;
 		_internalRam[baseAddr + SoundReg::PhaseMid] = (phase >> 8) & 0xFF;
 		_internalRam[baseAddr + SoundReg::PhaseLow] = phase & 0xFF;
 	}
 
-	uint8_t GetWaveAddress(int channel)
-	{
+	uint8_t GetWaveAddress(int channel) {
 		uint8_t baseAddr = 0x40 + channel * 0x08;
 		return _internalRam[baseAddr + SoundReg::WaveAddress];
 	}
 
-	uint16_t GetWaveLength(int channel)
-	{
+	uint16_t GetWaveLength(int channel) {
 		uint8_t baseAddr = 0x40 + channel * 0x08;
 		return 256 - (_internalRam[baseAddr + SoundReg::WaveLength] & 0xFC);
 	}
 
-	uint8_t GetVolume(int channel)
-	{
+	uint8_t GetVolume(int channel) {
 		uint8_t baseAddr = 0x40 + channel * 0x08;
 		return _internalRam[baseAddr + SoundReg::Volume] & 0x0F;
 	}
-	
-	uint8_t GetNumberOfChannels()
-	{
+
+	uint8_t GetNumberOfChannels() {
 		return (_internalRam[0x7F] >> 4) & 0x07;
 	}
 
-	void UpdateChannel(int channel)
-	{
+	void UpdateChannel(int channel) {
 		uint32_t phase = GetPhase(channel);
 		uint32_t freq = GetFrequency(channel);
 		uint16_t length = GetWaveLength(channel);
@@ -85,10 +79,10 @@ private:
 		uint8_t volume = GetVolume(channel);
 
 		phase = (phase + freq) % (length << 16);
-		
+
 		uint8_t samplePosition = ((phase >> 16) + offset) & 0xFF;
 		int8_t sample;
-		if((samplePosition & 0x01)) {
+		if ((samplePosition & 0x01)) {
 			sample = _internalRam[samplePosition / 2] >> 4;
 		} else {
 			sample = _internalRam[samplePosition / 2] & 0x0F;
@@ -99,10 +93,9 @@ private:
 		SetPhase(channel, phase);
 	}
 
-	void UpdateOutputLevel()
-	{
+	void UpdateOutputLevel() {
 		int16_t summedOutput = 0;
-		for(int i = 7, min = 7 - GetNumberOfChannels(); i >= min; i--) {
+		for (int i = 7, min = 7 - GetNumberOfChannels(); i >= min; i--) {
 			summedOutput += _channelOutput[i];
 		}
 		summedOutput /= GetNumberOfChannels() + 1;
@@ -112,25 +105,28 @@ private:
 	}
 
 protected:
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		BaseExpansionAudio::Serialize(s);
 
 		SVArray(_internalRam, 0x80);
 		SVArray(_channelOutput, 8);
-		SV(_ramPosition); SV(_autoIncrement); SV(_updateCounter); SV(_currentChannel); SV(_lastOutput); SV(_disableSound);
+		SV(_ramPosition);
+		SV(_autoIncrement);
+		SV(_updateCounter);
+		SV(_currentChannel);
+		SV(_lastOutput);
+		SV(_disableSound);
 	}
 
-	void ClockAudio() override
-	{
-		if(!_disableSound) {
+	void ClockAudio() override {
+		if (!_disableSound) {
 			_updateCounter++;
-			if(_updateCounter == 15) {
+			if (_updateCounter == 15) {
 				UpdateChannel(_currentChannel);
 
 				_updateCounter = 0;
 				_currentChannel--;
-				if(_currentChannel < 7 - GetNumberOfChannels()) {
+				if (_currentChannel < 7 - GetNumberOfChannels()) {
 					_currentChannel = 7;
 				}
 			}
@@ -138,8 +134,7 @@ protected:
 	}
 
 public:
-	Namco163Audio(NesConsole* console) : BaseExpansionAudio(console)
-	{
+	Namco163Audio(NesConsole* console) : BaseExpansionAudio(console) {
 		console->InitializeRam(_internalRam, Namco163Audio::AudioRamSize);
 		memset(_channelOutput, 0, sizeof(_channelOutput));
 		_ramPosition = 0;
@@ -150,17 +145,15 @@ public:
 		_disableSound = false;
 	}
 
-	uint8_t* GetInternalRam()
-	{
+	uint8_t* GetInternalRam() {
 		return _internalRam;
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value)
-	{
-		switch(addr & 0xF800) {
+	void WriteRegister(uint16_t addr, uint8_t value) {
+		switch (addr & 0xF800) {
 			case 0x4800:
 				_internalRam[_ramPosition] = value;
-				if(_autoIncrement) {
+				if (_autoIncrement) {
 					_ramPosition = (_ramPosition + 1) & 0x7F;
 				}
 				break;
@@ -171,17 +164,15 @@ public:
 				_ramPosition = value & 0x7F;
 				_autoIncrement = (value & 0x80) == 0x80;
 				break;
-
 		}
 	}
 
-	uint8_t ReadRegister(uint16_t addr)
-	{
+	uint8_t ReadRegister(uint16_t addr) {
 		uint8_t value = 0;
-		switch(addr & 0xF800) {
+		switch (addr & 0xF800) {
 			case 0x4800: {
 				value = _internalRam[_ramPosition];
-				if(_autoIncrement) {
+				if (_autoIncrement) {
 					_ramPosition = (_ramPosition + 1) & 0x7F;
 				}
 				break;

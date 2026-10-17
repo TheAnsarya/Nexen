@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "PCE/PceConstants.h"
 #include "PCE/PceTypes.h"
 #include "PCE/PcePsgChannel.h"
@@ -11,8 +12,7 @@ class SoundMixer;
 struct PcEngineConfig;
 struct blip_t;
 
-class PcePsg final : public ISerializable
-{
+class PcePsg final : public ISerializable {
 private:
 	static constexpr int MaxSamples = 4000;
 	static constexpr int SampleRate = 96000;
@@ -25,14 +25,14 @@ private:
 	PcePsgChannel _channels[6] = {};
 	uint64_t _lastClock = 0;
 
-	int16_t* _soundBuffer = nullptr;
+	std::unique_ptr<int16_t[]> _soundBuffer;
 	blip_t* _leftChannel = nullptr;
 	blip_t* _rightChannel = nullptr;
 	int16_t _prevLeftOutput = 0;
 	int16_t _prevRightOutput = 0;
 
 	uint32_t _clockCounter = 0;
-	
+
 	void UpdateOutput(PcEngineConfig& cfg);
 	void UpdateSoundOffset();
 

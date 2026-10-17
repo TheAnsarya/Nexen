@@ -3,29 +3,30 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
 	VerticalAlignment="Top"
 	HorizontalAlignment="Stretch"
-	x:Class="Mesen.Debugger.Controls.DebuggerShortcutKeyGrid"
+	x:Class="Nexen.Debugger.Controls.DebuggerShortcutKeyGrid"
 	x:Name="root"
+	x:DataType="dc:DebuggerShortcutKeyGrid"
 >
 	<UserControl.Resources>
 		<l:EnumConverter x:Key="EnumConverter" />
 	</UserControl.Resources>
 
 	<DockPanel DataContext="{Binding ElementName=root}">
-		<Border BorderThickness="0 0 0 1" BorderBrush="{StaticResource MesenGrayBorderColor}" DockPanel.Dock="Top">
+		<Border BorderThickness="0 0 0 1" BorderBrush="{StaticResource NexenGrayBorderColor}" DockPanel.Dock="Top">
 			<Grid ColumnDefinitions="3*, 1*" Margin="5 5 16 5">
 				<TextBlock Grid.Column="0" Text="{l:Translate colAction}"  />
 				<TextBlock Grid.Column="1" Text="{l:Translate colBinding1}" HorizontalAlignment="Center" />
 			</Grid>
 		</Border>
-		
+
 		<ScrollViewer AllowAutoHide="False">
 			<ItemsControl ItemsSource="{Binding Shortcuts}">
 				<ItemsControl.ItemsPanel>
@@ -36,7 +37,7 @@
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
 						<StackPanel>
-							<Border BorderBrush="{StaticResource MesenGrayBorderColor}" BorderThickness="1" Margin="0 -1 0 0">
+							<Border BorderBrush="{StaticResource NexenGrayBorderColor}" BorderThickness="1" Margin="0 -1 0 0">
 								<Grid ColumnDefinitions="3*, 1*" Margin="5 0 0 0">
 									<TextBlock Grid.Column="0" Text="{Binding Shortcut, Converter={StaticResource EnumConverter}}" />
 									<dc:DebuggerKeyBindingButton Grid.Column="1" KeyBinding="{Binding KeyBinding}" HorizontalAlignment="Stretch"  />

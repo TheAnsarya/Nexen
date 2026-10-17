@@ -3,41 +3,104 @@
 #include "pch.h"
 #include <unordered_set>
 
-class FolderUtilities
-{
+/// <summary>
+/// Cross-platform folder and file path management for NEXEN.
+/// Handles save folders, screenshots, firmware, HD packs, and game directories.
+/// </summary>
+/// <remarks>
+/// Folder hierarchy:
+/// - Home folder: Root directory for all NEXEN data
+/// - Save folder: Battery saves (.sav files)
+/// - Save state folder: Save states (.mst files)
+/// - Screenshot folder: Screenshots (.png files)
+/// - Firmware folder: Console firmware/BIOS files
+/// - HD Pack folder: High-definition texture packs
+/// - Debugger folder: Debug symbols and labels
+/// - Recent games folder: Recently played games list
+///
+/// All folders can be overridden via SetFolderOverrides().
+/// Game folders track known ROM locations for quick access.
+/// </remarks>
+class FolderUtilities {
 private:
-	static string _homeFolder;
-	static string _saveFolderOverride;
-	static string _saveStateFolderOverride;
-	static string _firmwareFolderOverride;
-	static string _screenshotFolderOverride;
-	static vector<string> _gameFolders;
+	static string _homeFolder;               ///< Root folder for all NEXEN data
+	static string _saveFolderOverride;       ///< Custom save folder (empty = default)
+	static string _saveStateFolderOverride;  ///< Custom save state folder
+	static string _firmwareFolderOverride;   ///< Custom firmware/BIOS folder
+	static string _screenshotFolderOverride; ///< Custom screenshot folder
+	static vector<string> _gameFolders;      ///< List of known ROM directories
 
 public:
-	static void SetHomeFolder(string homeFolder);
-	static string GetHomeFolder();
+	/// <summary>Set NEXEN home folder (root for all data)</summary>
+	static void SetHomeFolder(const string& homeFolder);
 
-	static void SetFolderOverrides(string saveFolder, string saveStateFolder, string screenshotFolder, string firmwareFolder);
+	/// <summary>Get current home folder path</summary>
+	[[nodiscard]] static string GetHomeFolder();
 
-	static void AddKnownGameFolder(string gameFolder);
-	static vector<string> GetKnownGameFolders();
+	/// <summary>
+	/// Override default folder locations.
+	/// </summary>
+	/// <param name="saveFolder">Custom save folder (empty = use default)</param>
+	/// <param name="saveStateFolder">Custom save state folder</param>
+	/// <param name="screenshotFolder">Custom screenshot folder</param>
+	/// <param name="firmwareFolder">Custom firmware/BIOS folder</param>
+	static void SetFolderOverrides(const string& saveFolder, const string& saveStateFolder, const string& screenshotFolder, const string& firmwareFolder);
 
-	static string GetSaveFolder();
-	static string GetFirmwareFolder();
-	static string GetSaveStateFolder();
-	static string GetScreenshotFolder();
-	static string GetHdPackFolder();
-	static string GetDebuggerFolder();
-	static string GetRecentGamesFolder();
+	/// <summary>Add folder to known game directory list</summary>
+	static void AddKnownGameFolder(const string& gameFolder);
 
-	static vector<string> GetFolders(string rootFolder);
-	static vector<string> GetFilesInFolder(string rootFolder, std::unordered_set<string> extensions, bool recursive);
+	/// <summary>Get list of all known game directories</summary>
+	[[nodiscard]] static vector<string> GetKnownGameFolders();
 
-	static string GetFilename(string filepath, bool includeExtension);
-	static string GetExtension(string filename);
-	static string GetFolderName(string filepath);
+	/// <summary>Get battery save folder path</summary>
+	[[nodiscard]] static string GetSaveFolder();
 
-	static void CreateFolder(string folder);
+	/// <summary>Get firmware/BIOS folder path</summary>
+	[[nodiscard]] static string GetFirmwareFolder();
 
-	static string CombinePath(string folder, string filename);
+	/// <summary>Get save state folder path</summary>
+	[[nodiscard]] static string GetSaveStateFolder();
+
+	/// <summary>Get screenshot folder path</summary>
+	[[nodiscard]] static string GetScreenshotFolder();
+
+	/// <summary>Get HD texture pack folder path</summary>
+	[[nodiscard]] static string GetHdPackFolder();
+
+	/// <summary>Get debugger symbols/labels folder path</summary>
+	[[nodiscard]] static string GetDebuggerFolder();
+
+	/// <summary>Get recent games list folder path</summary>
+	[[nodiscard]] static string GetRecentGamesFolder();
+
+	/// <summary>Get list of all subdirectories in folder</summary>
+	/// <param name="rootFolder">Root folder to scan</param>
+	/// <returns>List of subdirectory paths</returns>
+	[[nodiscard]] static vector<string> GetFolders(const string& rootFolder);
+
+	/// <summary>
+	/// Get list of files in folder matching extensions.
+	/// </summary>
+	/// <param name="rootFolder">Root folder to scan</param>
+	/// <param name="extensions">Set of file extensions to match (e.g., {".nes", ".sfc"})</param>
+	/// <param name="recursive">Recursively scan subdirectories if true</param>
+	/// <returns>List of matching file paths</returns>
+	[[nodiscard]] static vector<string> GetFilesInFolder(const string& rootFolder, const std::unordered_set<string>& extensions, bool recursive);
+
+	/// <summary>Extract filename from full path</summary>
+	/// <param name="filepath">Full file path</param>
+	/// <param name="includeExtension">Include file extension in result</param>
+	/// <returns>Filename with or without extension</returns>
+	[[nodiscard]] static string GetFilename(const string& filepath, bool includeExtension);
+
+	/// <summary>Get file extension from path</summary>
+	[[nodiscard]] static string GetExtension(const string& filename);
+
+	/// <summary>Get folder name from full path (excluding filename)</summary>
+	[[nodiscard]] static string GetFolderName(const string& filepath);
+
+	/// <summary>Create directory (and parent directories if needed)</summary>
+	static void CreateFolder(const string& folder);
+
+	[[nodiscard]] static string CombinePath(const string& folder, const string& filename);
 };

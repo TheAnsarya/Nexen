@@ -4,8 +4,7 @@
 #include "NES/NesConsole.h"
 #include "NES/NesCpu.h"
 
-class Mapper43 : public BaseMapper
-{
+class Mapper43 : public BaseMapper {
 private:
 	uint8_t _reg = 0;
 	bool _swap = false;
@@ -19,8 +18,7 @@ protected:
 	uint16_t RegisterEndAddress() override { return 0xFFFF; }
 	bool EnableCpuClockHook() override { return true; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		_irqCounter = 0;
 		_irqEnabled = false;
 		_swap = false;
@@ -33,46 +31,48 @@ protected:
 		SelectChrPage(0, 0);
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		BaseMapper::Serialize(s);
 		SV(_irqCounter);
 		SV(_irqEnabled);
 		SV(_reg);
 		SV(_swap);
 
-		if(!s.IsSaving()) {
+		if (!s.IsSaving()) {
 			UpdateState();
 		}
 	}
 
-	void ProcessCpuClock() override
-	{
+	void ProcessCpuClock() override {
 		BaseProcessCpuClock();
 
-		if(_irqEnabled) {
+		if (_irqEnabled) {
 			_irqCounter++;
-			if(_irqCounter >= 4096) {
+			if (_irqCounter >= 4096) {
 				_irqEnabled = false;
 				_console->GetCpu()->SetIrqSource(IRQSource::External);
 			}
 		}
 	}
 
-	void UpdateState()
-	{
+	void UpdateState() {
 		SetCpuMemoryMapping(0x6000, 0x7FFF, _swap ? 0 : 2, PrgMemoryType::PrgRom);
 		SelectPrgPage(2, _reg);
 		SelectPrgPage(3, _swap ? 8 : 9);
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
-		int lut[8] = { 4, 3, 5, 3, 6, 3, 7, 3 };
-		switch(addr & 0xF1FF) {
-			case 0x4022: _reg = lut[value & 0x07]; UpdateState(); break;
-			case 0x4120: _swap = value & 0x01; UpdateState(); break;
-			
+	void WriteRegister(uint16_t addr, uint8_t value) override {
+		int lut[8] = {4, 3, 5, 3, 6, 3, 7, 3};
+		switch (addr & 0xF1FF) {
+			case 0x4022:
+				_reg = lut[value & 0x07];
+				UpdateState();
+				break;
+			case 0x4120:
+				_swap = value & 0x01;
+				UpdateState();
+				break;
+
 			case 0x8122:
 			case 0x4122:
 				_irqEnabled = (value & 0x01) == 0x01;

@@ -1,0 +1,84 @@
+{
+	"manifestVersion": "1.0",
+	"description": "Example ROM checklist used to keep Atari 2600 and Genesis regression runs consistent.",
+	"plainLanguageNote": "This is an example list for testing and regression checks. It is not a full ROM set.",
+	"systems": [
+		{
+			"platform": "atari2600",
+			"entries": [
+				{
+					"id": "atari-sonic-like-example",
+					"romFileHint": "example-atari-title-a26.bin",
+					"sourceNote": "Known-good dump from your trusted local reference collection.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"mapper": "2k_or_4k",
+						"harness": "Atari2600TimingSpikeHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run"
+					}
+				},
+				{
+					"id": "atari-mapper-edge-example",
+					"romFileHint": "example-atari-mapper-e0.bin",
+					"sourceNote": "Known-good dump used for mapper edge behavior checks.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"mapper": "e0",
+						"harness": "Atari2600CompatibilityMatrixTests",
+						"summaryDigest": "capture-after-first-known-good-run"
+					}
+				},
+				{
+					"id": "atari-performance-gate-example",
+					"romFileHint": "example-atari-performance.bin",
+					"sourceNote": "Known-good dump used for performance gate regression checks.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"mapper": "3f",
+						"harness": "Atari2600PerformanceGateTests",
+						"summaryDigest": "capture-after-first-known-good-run"
+					}
+				}
+			]
+		},
+		{
+			"platform": "genesis",
+			"entries": [
+				{
+					"id": "genesis-sonic-class-example",
+					"romFileHint": "example-sonic.bin",
+					"sourceNote": "Known-good dump used for Sonic-class behavior checks.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"titleClass": "sonic",
+						"harness": "GenesisCompatibilityHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run"
+					}
+				},
+				{
+					"id": "genesis-jurassic-class-example",
+					"romFileHint": "example-jurassic.bin",
+					"sourceNote": "Known-good dump used for Jurassic-class behavior checks.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"titleClass": "jurassic",
+						"harness": "GenesisCompatibilityHarnessTests",
+						"summaryDigest": "capture-after-first-known-good-run"
+					}
+				},
+				{
+					"id": "genesis-generic-class-example",
+					"romFileHint": "example-generic.bin",
+					"sourceNote": "Known-good dump used for generic Genesis behavior checks.",
+					"sha256": "replace-with-real-sha256",
+					"expected": {
+						"titleClass": "generic",
+						"harness": "GenesisPerformanceGateTests",
+						"summaryDigest": "capture-after-first-known-good-run"
+					}
+				}
+			]
+		}
+	],
+	"nextStep": "Replace placeholders with real SHA256 values and first known-good digests from your local full ROM reference sets."
+}

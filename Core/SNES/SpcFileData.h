@@ -1,8 +1,7 @@
 #pragma once
 #include "pch.h"
 
-class SpcFileData
-{
+class SpcFileData {
 public:
 	string SongTitle;
 	string GameTitle;
@@ -33,8 +32,7 @@ public:
 	uint32_t TrackLength;
 	uint32_t FadeLength;
 
-	SpcFileData(uint8_t* spcData, uint32_t size)
-	{
+	SpcFileData(uint8_t* spcData, uint32_t size) {
 		SongTitle = string(spcData + 0x2E, spcData + 0x2E + 0x20);
 		GameTitle = string(spcData + 0x4E, spcData + 0x4E + 0x20);
 		Dumper = string(spcData + 0x6E, spcData + 0x6E + 0x10);
@@ -44,8 +42,8 @@ public:
 		string strTrackLength = string(spcData + 0xA9, spcData + 0xA9 + 0x03);
 		string strFadeLength = string(spcData + 0xAC, spcData + 0xAC + 0x05);
 		bool isStringValue = true;
-		for(char c : strTrackLength) {
-			if(c != 0 && (c < '0' || c > '9')) {
+		for (char c : strTrackLength) {
+			if (c != 0 && (c < '0' || c > '9')) {
 				isStringValue = false;
 			}
 		}
@@ -53,21 +51,21 @@ public:
 		TrackLength = 0;
 		FadeLength = 0;
 
-		if(isStringValue) {
+		if (isStringValue) {
 			try {
-				if(strTrackLength.size() && strTrackLength[0] != 0) {
+				if (strTrackLength.size() && strTrackLength[0] != 0) {
 					TrackLength = std::stoi(strTrackLength);
 				}
-				if(strFadeLength.size() && strFadeLength[0] != 0) {
+				if (strFadeLength.size() && strFadeLength[0] != 0) {
 					FadeLength = std::stoi(strFadeLength);
 				}
-			} catch(std::exception&) {
+			} catch (std::exception&) {
 			}
 		}
 
 		memcpy(SpcRam, spcData + 0x100, 0x10000);
-		if(size >= 0x10200) {
-			//Some SPC files don't have this data (0x10180 bytes instead of 0x10200 bytes)
+		if (size >= 0x10200) {
+			// Some SPC files don't have this data (0x10180 bytes instead of 0x10200 bytes)
 			memcpy(SpcExtraRam, spcData + 0x101C0, 0x40);
 			HasExtraRam = true;
 		}

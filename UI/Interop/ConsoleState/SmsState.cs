@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
-namespace Mesen.Interop;
+namespace Nexen.Interop;
 
-public struct SmsCpuState : BaseState
-{
+public struct SmsCpuState : BaseState {
 	public UInt64 CycleCount;
 	public UInt16 PC;
 	public UInt16 SP;
@@ -52,8 +51,7 @@ public struct SmsCpuState : BaseState
 }
 
 [Flags]
-public enum SmsCpuFlags : byte
-{
+public enum SmsCpuFlags : byte {
 	Carry = 0x01,
 	AddSub = 0x02,
 	Parity = 0x04,
@@ -64,8 +62,7 @@ public enum SmsCpuFlags : byte
 	Sign = 0x80,
 }
 
-public struct SmsVdpState : BaseState
-{
+public struct SmsVdpState : BaseState {
 	public UInt32 FrameCount;
 	public UInt16 Cycle;
 	public UInt16 Scanline;
@@ -126,16 +123,14 @@ public struct SmsVdpState : BaseState
 	public UInt16 EffectiveNametableAddressMask;
 }
 
-public struct SmsToneChannelState
-{
+public struct SmsToneChannelState {
 	public UInt16 ReloadValue;
 	public UInt16 Timer;
 	public byte Output;
 	public byte Volume;
 }
 
-public struct SmsNoiseChannelState
-{
+public struct SmsNoiseChannelState {
 	public UInt16 Timer;
 	public UInt16 Lfsr;
 	public byte LfsrInputBit;
@@ -144,8 +139,7 @@ public struct SmsNoiseChannelState
 	public byte Volume;
 }
 
-public struct SmsPsgState
-{
+public struct SmsPsgState {
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
 	public SmsToneChannelState[] Tone;
 	public SmsNoiseChannelState Noise;
@@ -153,16 +147,14 @@ public struct SmsPsgState
 	public byte GameGearPanningReg;
 }
 
-public enum SmsRegisterAccess
-{
+public enum SmsRegisterAccess {
 	None = 0,
 	Read = 1,
 	Write = 2,
 	ReadWrite = 3
 }
 
-public struct SmsMemoryManagerState
-{
+public struct SmsMemoryManagerState {
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x100)]
 	public byte[] IsReadRegister;
 
@@ -183,13 +175,11 @@ public struct SmsMemoryManagerState
 	[MarshalAs(UnmanagedType.I1)] public bool IoEnabled;
 }
 
-public struct SmsControlManagerState
-{
+public struct SmsControlManagerState {
 	public byte ControlPort;
 }
 
-public struct SmsState : BaseState
-{
+public struct SmsState : BaseState {
 	public SmsCpuState Cpu;
 	public SmsVdpState Vdp;
 	public SmsPsgState Psg;

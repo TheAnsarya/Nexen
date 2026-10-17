@@ -1,25 +1,25 @@
-<UserControl
+﻿<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:v="using:Mesen.Views"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:v="using:Nexen.Views"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="350"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:SmsConfigViewModel"
-	x:Class="Mesen.Views.SmsConfigView"
+	x:Class="Nexen.Views.SmsConfigView"
 >
 	<Design.DataContext>
 		<vm:SmsConfigViewModel />
 	</Design.DataContext>
 
-	<TabControl TabStripPlacement="Top" SelectedIndex="{Binding SelectedTab}">
+	<TabControl TabStripPlacement="Top" SelectedIndex="{ReflectionBinding SelectedTab}">
 		<TabItem Header="{l:Translate tpgGeneral}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
@@ -50,7 +50,7 @@
 					<c:GroupBox Header="{l:Translate grpVolume}" HorizontalAlignment="Left">
 						<StackPanel Orientation="Horizontal" Height="150">
 							<StackPanel.Styles>
-								<Style Selector="c|MesenSlider">
+								<Style Selector="c|NexenSlider">
 									<Setter Property="Minimum" Value="0" />
 									<Setter Property="Maximum" Value="100" />
 									<Setter Property="Orientation" Value="Vertical" />
@@ -58,11 +58,11 @@
 								</Style>
 							</StackPanel.Styles>
 
-							<c:MesenSlider Text="{l:Translate lblChannel1}" Value="{Binding Config.Tone1Vol}" />
-							<c:MesenSlider Text="{l:Translate lblChannel2}" Value="{Binding Config.Tone2Vol}" />
-							<c:MesenSlider Text="{l:Translate lblChannel3}" Value="{Binding Config.Tone3Vol}" />
-							<c:MesenSlider Text="{l:Translate lblChannel4}" Value="{Binding Config.NoiseVol}" />
-							<c:MesenSlider
+							<c:NexenSlider Text="{l:Translate lblChannel1}" Value="{Binding Config.Tone1Vol}" />
+							<c:NexenSlider Text="{l:Translate lblChannel2}" Value="{Binding Config.Tone2Vol}" />
+							<c:NexenSlider Text="{l:Translate lblChannel3}" Value="{Binding Config.Tone3Vol}" />
+							<c:NexenSlider Text="{l:Translate lblChannel4}" Value="{Binding Config.NoiseVol}" />
+							<c:NexenSlider
 								Text="{l:Translate lblChannel5}"
 								IsEnabled="{Binding Config.EnableFmAudio}"
 								Value="{Binding Config.FmAudioVolume}"
@@ -72,7 +72,7 @@
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
-		
+
 		<TabItem Header="{l:Translate tpgEmulation}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
@@ -95,7 +95,7 @@
 		<TabItem Header="{l:Translate tpgInput}">
 			<v:SmsInputConfigView DataContext="{Binding Input}" />
 		</TabItem>
-		
+
 		<TabItem Header="{l:Translate tpgVideo}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
@@ -116,9 +116,9 @@
 						<c:CheckBoxWarning IsChecked="{Binding Config.DisableBackground}" Text="{l:Translate chkDisableBackground}" />
 						<c:CheckBoxWarning IsChecked="{Binding Config.DisableSprites}" Text="{l:Translate chkDisableSprites}" />
 					</c:OptionSection>
-					
+
 					<c:OptionSection Header="{l:Translate lblOverscan}" HorizontalAlignment="Left">
-						<Border BorderBrush="{StaticResource MesenGrayBorderColor}" BorderThickness="1" Margin="0 0 0 5">
+						<Border BorderBrush="{StaticResource NexenGrayBorderColor}" BorderThickness="1" Margin="0 0 0 5">
 							<TabControl>
 								<TabItem Header="{l:Translate lblOverscanNtsc}">
 									<c:OverscanInput Overscan="{Binding Config.NtscOverscan}" Margin="5" />

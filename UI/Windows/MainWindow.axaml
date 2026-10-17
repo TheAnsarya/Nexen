@@ -1,16 +1,16 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:v="using:Mesen.Views"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:vm="using:Mesen.ViewModels"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:v="using:Nexen.Views"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:vm="using:Nexen.ViewModels"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	mc:Ignorable="d" d:DesignWidth="512" d:DesignHeight="505"
-	x:Class="Mesen.Windows.MainWindow"
-	Width="512" Height="505"
-	MinWidth="160" MinHeight="144"
+	mc:Ignorable="d" d:DesignWidth="1500" d:DesignHeight="940"
+	x:Class="Nexen.Windows.MainWindow"
+	Width="1500" Height="940"
+	MinWidth="960" MinHeight="640"
 	DragDrop.AllowDrop="True"
 	x:DataType="vm:MainWindowViewModel"
 	Topmost="{Binding Config.Preferences.AlwaysOnTop}"
@@ -29,14 +29,14 @@
 			<c:StateGrid IsVisible="{Binding Visible}" Entries="{Binding GameEntries}" Title="{Binding Title}" Mode="{Binding Mode}" />
 		</DataTemplate>
 	</Window.DataTemplates>
-	
+
 	<DockPanel>
 		<Panel DockPanel.Dock="Top" IsVisible="{Binding IsMenuVisible}">
 			<Panel DataContext="{Binding MainMenu}">
 				<v:MainMenuView Name="MainMenu" />
 			</Panel>
 		</Panel>
-		
+
 		<ContentControl Name="AudioPlayer" DockPanel.Dock="Bottom" Content="{Binding AudioPlayer}" />
 
 		<Panel Name="RendererPanel" Background="Black" Focusable="True">

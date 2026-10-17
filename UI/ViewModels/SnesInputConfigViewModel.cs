@@ -1,57 +1,53 @@
-﻿using Mesen.Config;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Linq;
 using System.Reactive.Linq;
+using Nexen.Config;
+using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.ViewModels
-{
-	public class SnesInputConfigViewModel : DisposableViewModel
-	{
-		[Reactive] public SnesConfig Config { get; set; }
-		
-		[ObservableAsProperty] public bool HasMultitap1 { get; }
-		[ObservableAsProperty] public bool HasMultitap2 { get; }
+namespace Nexen.ViewModels; 
+public sealed partial class SnesInputConfigViewModel : DisposableViewModel {
+	[Reactive] public partial SnesConfig Config { get; set; }
 
-		public Enum[] AvailableControllerTypesP1 => new Enum[] {
-			ControllerType.None,
-			ControllerType.SnesController,
-			ControllerType.SnesMouse,
-			ControllerType.SuperScope,
-			ControllerType.Multitap,
-			ControllerType.SnesRumbleController,
-		};
+	[ObservableAsProperty] private bool _hasMultitap1;
+	[ObservableAsProperty] private bool _hasMultitap2;
 
-		public Enum[] AvailableControllerTypesP2 => new Enum[] {
-			ControllerType.None,
-			ControllerType.SnesController,
-			ControllerType.SnesMouse,
-			ControllerType.SuperScope,
-			ControllerType.Multitap
-		};
+	public Enum[] AvailableControllerTypesP1 => new Enum[] {
+		ControllerType.None,
+		ControllerType.SnesController,
+		ControllerType.SnesMouse,
+		ControllerType.SuperScope,
+		ControllerType.Multitap,
+		ControllerType.SnesRumbleController,
+	};
 
-		public Enum[] AvailableControllerTypesMultitap => new Enum[] {
-			ControllerType.None,
-			ControllerType.SnesController,
-			ControllerType.SnesMouse,
-			ControllerType.SuperScope,
-		};
+	public Enum[] AvailableControllerTypesP2 => new Enum[] {
+		ControllerType.None,
+		ControllerType.SnesController,
+		ControllerType.SnesMouse,
+		ControllerType.SuperScope,
+		ControllerType.Multitap
+	};
 
-		[Obsolete("For designer only")]
-		public SnesInputConfigViewModel() : this(new SnesConfig()) { }
+	public Enum[] AvailableControllerTypesMultitap => new Enum[] {
+		ControllerType.None,
+		ControllerType.SnesController,
+		ControllerType.SnesMouse,
+		ControllerType.SuperScope,
+	};
 
-		public SnesInputConfigViewModel(SnesConfig config)
-		{
-			Config = config;
-		
-			AddDisposable(this.WhenAnyValue(x => x.Config.Port1.Type)
-				.Select(x => x == ControllerType.Multitap)
-				.ToPropertyEx(this, x => x.HasMultitap1));
+	[Obsolete("For designer only")]
+	public SnesInputConfigViewModel() : this(new SnesConfig()) { }
 
-			AddDisposable(this.WhenAnyValue(x => x.Config.Port2.Type)
-				.Select(x => x == ControllerType.Multitap)
-				.ToPropertyEx(this, x => x.HasMultitap2));
-		}
+	public SnesInputConfigViewModel(SnesConfig config) {
+		Config = config;
+
+		AddDisposable(_hasMultitap1Helper = this.WhenAnyValue(x => x.Config.Port1.Type)
+			.Select(x => x == ControllerType.Multitap)
+			.ToProperty(this, _ => _.HasMultitap1));
+
+		AddDisposable(_hasMultitap2Helper = this.WhenAnyValue(x => x.Config.Port2.Type)
+			.Select(x => x == ControllerType.Multitap)
+			.ToProperty(this, _ => _.HasMultitap2));
 	}
 }

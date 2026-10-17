@@ -1,76 +1,83 @@
-#pragma once
+﻿#pragma once
 
 #include "pch.h"
 #include "Utilities/ISerializable.h"
 #include "Utilities/FastString.h"
-#include "Utilities/magic_enum.hpp"
+#include <magic_enum/magic_enum.hpp>
 #include "Utilities/safe_ptr.h"
 
 class Serializer;
 
+/// <summary>Stream variable to serializer with automatic name stringification</summary>
+/// <remarks>Usage: SV(myVariable) expands to s.Stream(myVariable, "myVariable")</remarks>
 #define SV(var) (s.Stream(var, #var))
+
+/// <summary>Stream array to serializer with automatic name and count</summary>
 #define SVArray(arr, count) (s.StreamArray(arr, count, #arr))
+
+/// <summary>Stream indexed variable to serializer</summary>
 #define SVI(var) (s.Stream(var, #var, i))
 
+/// <summary>Stream vector to serializer with automatic name</summary>
 #define SVVector(var) (s.Stream(var, #var))
+
+/// <summary>Stream indexed vector to serializer</summary>
 #define SVVectorI(var) (s.Stream(var, #var, i))
 
-enum class SerializeMapValueFormat
-{
-	Integer,
-	Double,
-	Bool,
-	String
+/// <summary>Value type for map-based serialization (Lua API)</summary>
+enum class SerializeMapValueFormat {
+	Integer, ///< 64-bit signed integer
+	Double,  ///< 64-bit floating point
+	Bool,    ///< Boolean value
+	String   ///< String value
 };
 
-union MapValue
-{
-	int64_t Integer;
-	double Double;
-	bool Bool;
+/// <summary>Union for storing numeric/boolean map values</summary>
+union MapValue {
+	int64_t Integer; ///< Integer representation
+	double Double;   ///< Double representation
+	bool Bool;       ///< Boolean representation
 
 	MapValue(bool b) { Bool = b; }
 	MapValue(double d) { Double = d; }
 	MapValue(int64_t i) { Integer = i; }
 };
 
-struct SerializeMapValue
-{
-	SerializeMapValueFormat Format;
-	MapValue Value;
-	string StringValue;
+/// <summary>Tagged union for map-based serialization values</summary>
+struct SerializeMapValue {
+	SerializeMapValueFormat Format; ///< Value type discriminator
+	MapValue Value;                 ///< Numeric/bool value
+	string StringValue;             ///< String value (if Format == String)
 
 	SerializeMapValue(SerializeMapValueFormat f, MapValue v) : Format(f), Value(v) {}
 	SerializeMapValue(string v) : Format(SerializeMapValueFormat::String), Value(false), StringValue(v) {}
 };
 
-struct SerializeValue
-{
-	uint8_t* DataPtr;
-	uint32_t Size;
+/// <summary>Pointer/size pair for serialized data values</summary>
+struct SerializeValue {
+	uint8_t* DataPtr; ///< Pointer to serialized data
+	uint32_t Size;    ///< Size of data in bytes
 
-	SerializeValue()
-	{
+	SerializeValue() {
 		DataPtr = nullptr;
 		Size = 0;
 	}
 
-	SerializeValue(uint8_t* ptr, uint32_t size)
-	{
+	SerializeValue(uint8_t* ptr, uint32_t size) {
 		DataPtr = ptr;
 		Size = size;
 	}
 };
 
-enum class SerializeFormat
-{
-	Binary,
-	Text,
-	Map
+/// <summary>Serialization output format</summary>
+enum class SerializeFormat {
+	Binary,     ///< Compact binary format with string keys (save states)
+	Text,       ///< Human-readable text format (debugging)
+	Map,        ///< Key-value map format (Lua API)
+	FastBinary  ///< Positional binary format — no keys, no hash maps (run-ahead hot path)
 };
 
-class Serializer
-{
+class Serializer {
 private:
 	vector<uint8_t> _data;
 	vector<string> _prefixes;
@@ -79,7 +86,7 @@ private:
 	unordered_set<string> _usedKeys;
 	unordered_map<string, SerializeValue> _values;
 
-	//Used by Lua API
+	// Used by Lua API
 	unordered_map<string, SerializeMapValue> _mapValues;
 
 	uint32_t _version = 0;
@@ -87,92 +94,89 @@ private:
 	SerializeFormat _format = SerializeFormat::Binary;
 	bool _hasError = false;
 
+	/// <summary>Read position for FastBinary deserialization</summary>
+	uint32_t _readPos = 0;
+
 private:
 	bool LoadFromTextFormat(istream& file);
 	string NormalizeName(const char* name, int index);
 	void UpdatePrefix();
 
-	string GetKey(const char* name, int index)
-	{
+	string GetKey(const char* name, int index) {
 		string valName = NormalizeName(name, index);
-		if(valName.empty()) {
+		if (valName.empty()) {
 			throw std::runtime_error("invalid value name");
 		}
 		return _prefix + valName;
 	}
 
-	template<typename T>
-	void WriteValue(T value)
-	{
+	template <typename T>
+	void WriteValue(T value) {
 		uint8_t* ptr = (uint8_t*)&value;
 		constexpr bool isBigEndian = false;
 		constexpr int mask = isBigEndian ? sizeof(T) - 1 : 0;
-		for(int i = 0; i < (int)sizeof(T); i++) {
+		for (int i = 0; i < (int)sizeof(T); i++) {
 			_data.push_back(ptr[i ^ mask]);
 		}
 	}
 
-	template<typename T>
-	void ReadValue(T& value, uint8_t* src)
-	{
+	template <typename T>
+	void ReadValue(T& value, uint8_t* src) {
 		uint8_t* ptr = (uint8_t*)&value;
 		constexpr bool isBigEndian = false;
 		constexpr int mask = isBigEndian ? sizeof(T) - 1 : 0;
-		for(int i = 0; i < (int)sizeof(T); i++) {
+		for (int i = 0; i < (int)sizeof(T); i++) {
 			ptr[i ^ mask] = src[i];
 		}
 	}
 
-	template<typename T>
-	void WriteMapFormat(string& key, T& value)
-	{
-		if constexpr(std::is_same<T, bool>::value) {
+	template <typename T>
+	void WriteMapFormat(string& key, T& value) {
+		if constexpr (std::is_same<T, bool>::value) {
 			_mapValues.try_emplace(key, SerializeMapValueFormat::Bool, (bool)value);
-		} else if constexpr(std::is_integral<T>::value) {
+		} else if constexpr (std::is_integral<T>::value) {
 			_mapValues.try_emplace(key, SerializeMapValueFormat::Integer, (int64_t)value);
-		} else if constexpr(std::is_floating_point<T>::value) {
+		} else if constexpr (std::is_floating_point<T>::value) {
 			_mapValues.try_emplace(key, SerializeMapValueFormat::Double, (double)value);
-		} else if constexpr(std::is_same<T, string>::value) {
+		} else if constexpr (std::is_same<T, string>::value) {
 			_mapValues.try_emplace(key, value);
 		}
 	}
 
-	template<typename T>
-	void ReadMapFormat(string& key, T& value)
-	{
+	template <typename T>
+	void ReadMapFormat(string& key, T& value) {
 		auto result = _mapValues.find(key);
-		if(result != _mapValues.end()) {
+		if (result != _mapValues.end()) {
 			SerializeMapValue mapVal = result->second;
-			if constexpr(std::is_same<T, bool>::value) {
-				if(mapVal.Format == SerializeMapValueFormat::Bool) {
+			if constexpr (std::is_same<T, bool>::value) {
+				if (mapVal.Format == SerializeMapValueFormat::Bool) {
 					value = mapVal.Value.Bool;
 				}
-			} else if constexpr(std::is_integral<T>::value) {
-				if(mapVal.Format == SerializeMapValueFormat::Integer) {
+			} else if constexpr (std::is_integral<T>::value) {
+				if (mapVal.Format == SerializeMapValueFormat::Integer) {
 					value = (T)mapVal.Value.Integer;
 				}
-			} else if constexpr(std::is_floating_point<T>::value) {
-				if(mapVal.Format == SerializeMapValueFormat::Double) {
-					value = (double)mapVal.Value.Double;
+			} else if constexpr (std::is_floating_point<T>::value) {
+				if (mapVal.Format == SerializeMapValueFormat::Double) {
+					value = static_cast<T>(mapVal.Value.Double);
 				}
-			} else if constexpr(std::is_same<T, string>::value) {
-				if(mapVal.Format == SerializeMapValueFormat::String) {
+			} else if constexpr (std::is_same<T, string>::value) {
+				if (mapVal.Format == SerializeMapValueFormat::String) {
 					value = mapVal.StringValue;
 				}
 			}
 		}
 	}
 
-	template<typename T>
-	void WriteTextFormat(string& key, T& value)
-	{
-		//Write key
+	template <typename T>
+	void WriteTextFormat(string& key, T& value) {
+		// Write key
 		_data.insert(_data.end(), key.begin(), key.end());
 		_data.push_back(' ');
-		if constexpr(std::is_enum<T>::value) {
+		if constexpr (std::is_enum<T>::value) {
 			auto enumStr = magic_enum::enum_name(value);
 			_data.insert(_data.end(), enumStr.begin(), enumStr.end());
-		} else if constexpr(std::is_same<T, bool>::value) {
+		} else if constexpr (std::is_same<T, bool>::value) {
 			string boolStr = value ? "true" : "false";
 			_data.insert(_data.end(), boolStr.begin(), boolStr.end());
 		} else {
@@ -182,32 +186,30 @@ private:
 		_data.push_back('\n');
 	}
 
-	template<typename T>
-	void ReadTextFormat(SerializeValue& savedValue, T& value)
-	{
+	template <typename T>
+	void ReadTextFormat(SerializeValue& savedValue, T& value) {
 		string textValue(savedValue.DataPtr, savedValue.DataPtr + savedValue.Size);
-		if constexpr(std::is_enum<T>::value) {
+		if constexpr (std::is_enum<T>::value) {
 			auto enumValue = magic_enum::enum_cast<T>(textValue);
-			if(enumValue.has_value()) {
+			if (enumValue.has_value()) {
 				value = enumValue.value();
 			}
-		} else if constexpr(std::is_same<T, bool>::value) {
+		} else if constexpr (std::is_same<T, bool>::value) {
 			value = textValue == "true";
 		} else {
-			if(textValue.find_first_not_of("0123456789") == string::npos) {
+			if (textValue.find_first_not_of("0123456789") == string::npos) {
 				try {
 					value = (T)std::stoll(textValue);
-				} catch(std::exception&) {
+				} catch (std::exception&) {
 					value = (T)0;
 				}
 			}
 		}
 	}
 
-	__forceinline void CheckDuplicateKey(string& key)
-	{
+	__forceinline void CheckDuplicateKey([[maybe_unused]] string& key) {
 #ifdef DEBUG
-		if(!_usedKeys.emplace(key).second) {
+		if (!_usedKeys.emplace(key).second) {
 			throw std::runtime_error("Duplicate key");
 		}
 #endif
@@ -216,82 +218,115 @@ private:
 public:
 	Serializer(uint32_t version, bool forSave, SerializeFormat format = SerializeFormat::Binary);
 
+	/// <summary>Default constructor for persistent FastBinary serializer (run-ahead)</summary>
+	Serializer();
+
+	/// <summary>Reset for FastBinary save — clears data buffer (retains capacity), resets position</summary>
+	void ResetForFastSave(uint32_t version);
+
+	/// <summary>Reset for FastBinary load — rewinds read position to start of buffer</summary>
+	void ResetForFastLoad();
+
 	uint32_t GetVersion() { return _version; }
 	bool IsSaving() { return _saving; }
-	
+
 	SerializeFormat GetFormat() { return _format; }
 	unordered_map<string, SerializeMapValue>& GetMapValues() { return _mapValues; }
+
+	/// <summary>Move the serialized data buffer out for async writing</summary>
+	[[nodiscard]] vector<uint8_t> GetData() { return std::move(_data); }
 
 	void SetErrorFlag() { _hasError = true; }
 	bool HasError() { return _hasError; }
 
 	bool IsValid() { return _values.size() > 0; }
-	void AddKeyPrefix(string prefix);
-	void RemoveKeyPrefix(string prefix);
+	void AddKeyPrefix(const string& prefix);
+	void RemoveKeyPrefix(const string& prefix);
 	void RemoveKeys(vector<string>& keys);
 
-	template <class T> struct is_unique_ptr : std::false_type {};
-	template <class T, class D> struct is_unique_ptr<std::unique_ptr<T, D>> : std::true_type {};
-	template <class T> struct is_shared_ptr : std::false_type {};
-	template <class T> struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
+	template <class T>
+	struct is_unique_ptr : std::false_type {};
+	template <class T, class D>
+	struct is_unique_ptr<std::unique_ptr<T, D>> : std::true_type {};
+	template <class T>
+	struct is_shared_ptr : std::false_type {};
+	template <class T>
+	struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
 
-	template<typename T> void Stream(T& value, const char* name, int index = -1)
-	{
+	template <typename T>
+	void Stream(T& value, const char* name, int index = -1) {
 		static_assert(!is_unique_ptr<std::remove_cv_t<T>>::value, "[Serializer] Unexpected unique_ptr");
 		static_assert(!is_shared_ptr<std::remove_cv_t<T>>::value, "[Serializer] Unexpected shared_ptr");
 		static_assert(!std::is_pointer<T>::value, "[Serializer] Unexpected pointer");
 		static_assert(!std::is_class<T>::value || std::is_base_of<ISerializable, T>::value, "[Serializer] Object does not implement ISerializable");
 		static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value || std::is_base_of<ISerializable, T>::value, "[Serializer] Invalid value type");
-		
-		if constexpr(std::is_base_of<ISerializable, T>::value) {
+
+		if constexpr (std::is_base_of<ISerializable, T>::value) {
 			Stream((ISerializable&)value, name, index);
 		} else {
+			// FastBinary: positional read/write — no keys, no hash maps
+			if (_format == SerializeFormat::FastBinary) {
+				if (_saving) {
+					WriteValue(value);
+				} else {
+					if (_readPos + sizeof(T) <= _data.size()) {
+						ReadValue(value, &_data[_readPos]);
+						_readPos += sizeof(T);
+					}
+				}
+				return;
+			}
+
 			string key = GetKey(name, index);
 
 			CheckDuplicateKey(key);
 
-			if(_saving) {
-				switch(_format) {
+			if (_saving) {
+				switch (_format) {
 					case SerializeFormat::Binary:
-						//Write key
+						// Write key
 						_data.insert(_data.end(), key.begin(), key.end());
 						_data.push_back(0);
 
-						//Write value size
+						// Write value size
 						WriteValue((uint32_t)sizeof(T));
 
-						//Write value
+						// Write value
 						WriteValue(value);
 						break;
 
-					case SerializeFormat::Text: WriteTextFormat(key, value); break;
-					case SerializeFormat::Map: WriteMapFormat(key, value); break;
+					case SerializeFormat::Text:
+						WriteTextFormat(key, value);
+						break;
+					case SerializeFormat::Map:
+						WriteMapFormat(key, value);
+						break;
 				}
 			} else {
-				switch(_format) {
+				switch (_format) {
 					case SerializeFormat::Binary: {
 						auto result = _values.find(key);
-						if(result != _values.end()) {
+						if (result != _values.end()) {
 							SerializeValue& savedValue = result->second;
-							if(savedValue.Size >= sizeof(T)) {
+							if (savedValue.Size >= sizeof(T)) {
 								ReadValue(value, savedValue.DataPtr);
 							} else {
-								//TODO review this - is it better to keep the state as-is if the data can't be found?
-								//Setting to 0 can break compatibility with old save states - maybe keeping the current state is safer?
-								//value = (T)0;
+								// TODO review this - is it better to keep the state as-is if the data can't be found?
+								// Setting to 0 can break compatibility with old save states - maybe keeping the current state is safer?
+								// value = (T)0;
 							}
 						} else {
-							//value = (T)0;
+							// value = (T)0;
 						}
 						break;
 					}
 
 					case SerializeFormat::Text: {
 						auto result = _values.find(key);
-						if(result != _values.end()) {
+						if (result != _values.end()) {
 							ReadTextFormat(result->second, value);
 						} else {
-							//value = (T)0;
+							// value = (T)0;
 						}
 						break;
 					}
@@ -304,57 +339,70 @@ public:
 		}
 	}
 
-	void Stream(ISerializable& obj, const char* name, int index)
-	{
+	void Stream(ISerializable& obj, const char* name, int index) {
 		PushNamePrefix(name, index);
 		obj.Serialize(*this);
 		PopNamePrefix();
 	}
 
-	template<typename T> void Stream(unique_ptr<T>& obj, const char* name, int index = -1)
-	{
+	template <typename T>
+	void Stream(unique_ptr<T>& obj, const char* name, int index = -1) {
 		static_assert(std::is_base_of<ISerializable, T>::value, "[Serializer] Object does not implement ISerializable");
 		PushNamePrefix(name, index);
 		((ISerializable*)obj.get())->Serialize(*this);
 		PopNamePrefix();
 	}
 
-	template<typename T> void Stream(const unique_ptr<T>& obj, const char* name, int index = -1)
-	{
+	template <typename T>
+	void Stream(const unique_ptr<T>& obj, const char* name, int index = -1) {
 		static_assert(std::is_base_of<ISerializable, T>::value, "[Serializer] Object does not implement ISerializable");
 		PushNamePrefix(name, index);
 		((ISerializable*)obj.get())->Serialize(*this);
 		PopNamePrefix();
 	}
 
-	template<typename T> void Stream(shared_ptr<T>& obj, const char* name, int index = -1)
-	{
+	template <typename T>
+	void Stream(shared_ptr<T>& obj, const char* name, int index = -1) {
 		static_assert(std::is_base_of<ISerializable, T>::value, "[Serializer] Object does not implement ISerializable");
 		PushNamePrefix(name, index);
 		((ISerializable*)obj.get())->Serialize(*this);
 		PopNamePrefix();
 	}
 
-	template<typename T> void Stream(safe_ptr<T>& obj, const char* name, int index = -1)
-	{
+	template <typename T>
+	void Stream(safe_ptr<T>& obj, const char* name, int index = -1) {
 		static_assert(std::is_base_of<ISerializable, T>::value, "[Serializer] Object does not implement ISerializable");
 		PushNamePrefix(name, index);
 		((ISerializable*)obj.get())->Serialize(*this);
 		PopNamePrefix();
 	}
 
-	template<typename T> void StreamArray(T* arrayValues, uint32_t elementCount, const char* name)
-	{
+	template <typename T>
+	void StreamArray(T* arrayValues, uint32_t elementCount, const char* name) {
+		// FastBinary: raw memcpy — no keys, no size prefix
+		if (_format == SerializeFormat::FastBinary) {
+			uint32_t bytes = elementCount * sizeof(T);
+			if (_saving) {
+				_data.insert(_data.end(), (uint8_t*)arrayValues, (uint8_t*)arrayValues + bytes);
+			} else {
+				if (_readPos + bytes <= _data.size()) {
+					memcpy(arrayValues, &_data[_readPos], bytes);
+					_readPos += bytes;
+				}
+			}
+			return;
+		}
+
 		string key = GetKey(name, -1);
 
 		CheckDuplicateKey(key);
 
-		if(_format == SerializeFormat::Map) {
-			if(elementCount <= 64) {
-				//Only save/load small arrays (otherwise this would end up serializing work/save ram, etc.)
-				for(uint32_t i = 0; i < elementCount; i++) {
+		if (_format == SerializeFormat::Map) {
+			if (elementCount <= 64) {
+				// Only save/load small arrays (otherwise this would end up serializing work/save ram, etc.)
+				for (uint32_t i = 0; i < elementCount; i++) {
 					string elemKey = key + std::to_string(i);
-					if(_saving) {
+					if (_saving) {
 						WriteMapFormat(elemKey, arrayValues[i]);
 					} else {
 						ReadMapFormat(elemKey, arrayValues[i]);
@@ -364,48 +412,72 @@ public:
 			return;
 		}
 
-		//TODO detect big vs little endian
+		// TODO detect big vs little endian
 		constexpr bool isBigEndian = false;
-		if(_saving) {
-			//Write key
+		if (_saving) {
+			// Write key
 			_data.insert(_data.end(), key.begin(), key.end());
 			_data.push_back(0);
 
-			//Write array size
+			// Write array size
 			WriteValue((uint32_t)(elementCount * sizeof(T)));
 
-			//Write array content
-			if constexpr(sizeof(T) == 1 || !isBigEndian) {
+			// Write array content
+			if constexpr (sizeof(T) == 1 || !isBigEndian) {
 				_data.insert(_data.end(), (uint8_t*)arrayValues, (uint8_t*)(arrayValues + elementCount));
 			} else {
-				for(uint32_t i = 0; i < elementCount; i++) {
+				for (uint32_t i = 0; i < elementCount; i++) {
 					WriteValue(arrayValues[i]);
 				}
 			}
 		} else {
 			auto result = _values.find(key);
-			if(result != _values.end()) {
+			if (result != _values.end()) {
 				SerializeValue& savedValue = result->second;
-				//Copy as much data as possible (up to the size of whichever is smaller - savedValue or arrayValues)
-				if constexpr(sizeof(T) == 1 || !isBigEndian) {
+				// Copy as much data as possible (up to the size of whichever is smaller - savedValue or arrayValues)
+				if constexpr (sizeof(T) == 1 || !isBigEndian) {
 					memcpy(arrayValues, savedValue.DataPtr, std::min<int>(savedValue.Size, sizeof(T) * elementCount));
 				} else {
 					uint8_t* src = savedValue.DataPtr;
 					uint32_t maxCount = std::min<int>(elementCount, savedValue.Size / sizeof(T));
-					for(uint32_t i = 0; i < maxCount; i++) {
+					for (uint32_t i = 0; i < maxCount; i++) {
 						ReadValue(arrayValues[i], src);
 						src += sizeof(T);
 					}
 				}
 			} else {
-				//memset(arrayValues, 0, sizeof(T) * elementCount);
+				// memset(arrayValues, 0, sizeof(T) * elementCount);
 			}
 		}
 	}
 
-	template<typename T> void Stream(vector<T>& values, const char* name, int index = -1)
-	{
-		if(_format == SerializeFormat::Map) {
+	template <typename T>
+	void Stream(vector<T>& values, const char* name, int index = -1) {
+		// FastBinary: write count + raw data
+		if (_format == SerializeFormat::FastBinary) {
+			if (_saving) {
+				uint32_t count = (uint32_t)values.size();
+				WriteValue(count);
+				if (count > 0) {
+					_data.insert(_data.end(), (uint8_t*)values.data(), (uint8_t*)(values.data() + count));
+				}
+			} else {
+				if (_readPos + sizeof(uint32_t) <= _data.size()) {
+					uint32_t count;
+					ReadValue(count, &_data[_readPos]);
+					_readPos += sizeof(uint32_t);
+					uint32_t bytes = count * sizeof(T);
+					if (_readPos + bytes <= _data.size()) {
+						values.resize(count);
+						memcpy(values.data(), &_data[_readPos], bytes);
+						_readPos += bytes;
+					}
+				}
+			}
+			return;
+		}
+
+		if (_format == SerializeFormat::Map) {
 			return;
 		}
 
@@ -413,28 +485,28 @@ public:
 
 		CheckDuplicateKey(key);
 
-		if(_saving) {
-			//Write key
+		if (_saving) {
+			// Write key
 			_data.insert(_data.end(), key.begin(), key.end());
 			_data.push_back(0);
 
 			uint32_t elementCount = (uint32_t)values.size();
-			//Write array size
+			// Write array size
 			WriteValue((uint32_t)(elementCount * sizeof(T)));
 
-			//Write array content
-			for(uint32_t i = 0; i < elementCount; i++) {
+			// Write array content
+			for (uint32_t i = 0; i < elementCount; i++) {
 				WriteValue(values[i]);
 			}
 		} else {
 			auto result = _values.find(key);
-			if(result != _values.end()) {
+			if (result != _values.end()) {
 				SerializeValue& savedValue = result->second;
 				uint32_t elementCount = savedValue.Size / sizeof(T);
 				values.resize(elementCount);
 
 				uint8_t* src = savedValue.DataPtr;
-				for(uint32_t i = 0; i < elementCount; i++) {
+				for (uint32_t i = 0; i < elementCount; i++) {
 					ReadValue(values[i], src);
 					src += sizeof(T);
 				}
@@ -444,45 +516,64 @@ public:
 		}
 	}
 
-	bool ContainsKey(const char* name)
-	{
+	bool ContainsKey(const char* name) {
 		string key = GetKey(name, -1);
-		return _values.find(key) != _values.end();
+		return _values.contains(key);
 	}
 
 	void PushNamePrefix(const char* name, int index = -1);
 	void PopNamePrefix();
-	void SaveTo(ostream &file, int compressionLevel = 1);
+	void SaveTo(ostream& file, int compressionLevel = 1);
 	bool LoadFrom(istream& file);
 	void LoadFromMap(unordered_map<string, SerializeMapValue>& map);
 };
 
-template<> inline void Serializer::Stream(string& value, const char* name, int index)
-{
+template <>
+inline void Serializer::Stream(string& value, const char* name, int index) {
+	// FastBinary: write length + raw chars
+	if (_format == SerializeFormat::FastBinary) {
+		if (_saving) {
+			uint32_t len = (uint32_t)value.size();
+			WriteValue(len);
+			_data.insert(_data.end(), value.begin(), value.end());
+		} else {
+			if (_readPos + sizeof(uint32_t) <= _data.size()) {
+				uint32_t len;
+				ReadValue(len, &_data[_readPos]);
+				_readPos += sizeof(uint32_t);
+				if (_readPos + len <= _data.size()) {
+					value = string((char*)&_data[_readPos], len);
+					_readPos += len;
+				}
+			}
+		}
+		return;
+	}
+
 	string key = GetKey(name, index);
 
 	CheckDuplicateKey(key);
 
-	if(_format == SerializeFormat::Map) {
-		if(_saving) {
+	if (_format == SerializeFormat::Map) {
+		if (_saving) {
 			WriteMapFormat(key, value);
 		} else {
 			ReadMapFormat(key, value);
 		}
 	} else {
-		if(_saving) {
-			//Write key
+		if (_saving) {
+			// Write key
 			_data.insert(_data.end(), key.begin(), key.end());
 			_data.push_back(0);
 
-			//Write string size
+			// Write string size
 			WriteValue((uint32_t)value.size());
 
-			//Write string content
+			// Write string content
 			_data.insert(_data.end(), value.begin(), value.end());
 		} else {
 			auto result = _values.find(key);
-			if(result != _values.end()) {
+			if (result != _values.end()) {
 				SerializeValue& savedValue = result->second;
 				value = string(savedValue.DataPtr, savedValue.DataPtr + savedValue.Size);
 			} else {

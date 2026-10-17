@@ -5,9 +5,9 @@
 #include <algorithm>
 #include "MacOSKeyManager.h"
 #include "MacOSGameController.h"
-//The MacOS SDK defines a global function 'Debugger', colliding with Mesen's Debugger class
+//The MacOS SDK defines a global function 'Debugger', colliding with Nexen's Debugger class
 //Redefine it temporarily so the headers don't cause compilation errors due to this
-#define Debugger MesenDebugger
+#define Debugger NexenDebugger
 #include "Shared/MessageManager.h"
 #include "Shared/Emulator.h"
 #include "Shared/EmuSettings.h"
@@ -181,7 +181,7 @@ string MacOSKeyManager::GetKeyName(uint16_t key)
 	return "";
 }
 
-uint16_t MacOSKeyManager::GetKeyCode(string keyName)
+uint16_t MacOSKeyManager::GetKeyCode(const string& keyName)
 {
 	auto keyDef = _keyCodes.find(keyName);
 	if(keyDef != _keyCodes.end()) {

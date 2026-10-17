@@ -3,63 +3,70 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
-	xmlns:c="using:Mesen.Debugger.Controls"
-	xmlns:du="using:Mesen.Debugger.Utilities"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
+	xmlns:c="using:Nexen.Debugger.Controls"
+	xmlns:du="using:Nexen.Debugger.Utilities"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:ext="using:Nexen.Controls.DataGridExtensions"
 	mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="110"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	Focusable="True"
 	x:DataType="vm:FunctionListViewModel"
-	x:Class="Mesen.Debugger.Views.FunctionListView"
+	x:Class="Nexen.Debugger.Views.FunctionListView"
 >
 	<Design.DataContext>
 		<vm:FunctionListViewModel />
 	</Design.DataContext>
 
 	<UserControl.Styles>
-		<Style Selector="DataBoxRow">
+		<Style Selector="DataGridRow">
 			<Setter Property="Foreground" Value="{Binding RowBrush, DataType={x:Type vm:FunctionViewModel}}" />
 			<Setter Property="FontStyle" Value="{Binding RowStyle, DataType={x:Type vm:FunctionViewModel}}" />
 		</Style>
 	</UserControl.Styles>
 
-	<Border BorderThickness="0 1 0 0" BorderBrush="{StaticResource MesenGrayBorderColor}">
-		<DataBox
-			Items="{Binding Functions}"
-			Selection="{Binding Selection}"
+	<Border BorderThickness="0 1 0 0" BorderBrush="{StaticResource NexenGrayBorderColor}">
+		<DataGrid
+			ItemsSource="{Binding Functions}"
+			SelectedItem="{Binding Selection.SelectedItem}"
 			GridLinesVisibility="All"
-			SelectionMode="Multiple"
-			SortMode="Multiple"
-			SortCommand="{Binding Sort}"
-			SortState="{Binding SortState}"
-			CellDoubleClick="OnCellDoubleClick"
-			ColumnWidths="{Binding ColumnWidths}"
+			SelectionMode="Extended"
+			IsReadOnly="True"
+			CanUserReorderColumns="False"
+			HeadersVisibility="Column"
+			ext:DataGridCellClickBehavior.IsEnabled="True"
+			ext:DataGridSortBehavior.SortState="{Binding SortState}"
+			ext:DataGridSortBehavior.SortCommand="{Binding Sort}"
+			ext:DataGridSortBehavior.SortMode="Multiple"
+			ext:DataGridColumnWidthBehavior.ColumnWidths="{Binding ColumnWidths}"
 		>
-			<DataBox.Columns>
-				<DataBoxTextColumn
-					ColumnName="Function"
+			<DataGrid.Columns>
+				<DataGridTextColumn
+					SortMemberPath="Function"
 					Header="{l:Translate colFunction}"
-					Binding="{Binding LabelName, DataType={x:Type vm:FunctionViewModel}}"
+					Binding="{Binding LabelName}"
 					CanUserResize="True"
-					InitialWidth="100"
+					IsReadOnly="True"
+					Width="100"
 				/>
-				<DataBoxTextColumn
-					ColumnName="RelAddr"
+				<DataGridTextColumn
+					SortMemberPath="RelAddr"
 					Header="{l:Translate colCpuAddr}"
-					Binding="{Binding RelAddressDisplay, DataType={x:Type vm:FunctionViewModel}}"
+					Binding="{Binding RelAddressDisplay}"
 					CanUserResize="True"
-					InitialWidth="80"
+					IsReadOnly="True"
+					Width="80"
 				/>
-				<DataBoxTextColumn
-					ColumnName="AbsAddr"
+				<DataGridTextColumn
+					SortMemberPath="AbsAddr"
 					Header="{l:Translate colRomAddr}"
-					Binding="{Binding AbsAddressDisplay, DataType={x:Type vm:FunctionViewModel}}"
+					Binding="{Binding AbsAddressDisplay}"
 					CanUserResize="True"
-					InitialWidth="80"
+					IsReadOnly="True"
+					Width="80"
 				/>
-			</DataBox.Columns>
-		</DataBox>
+			</DataGrid.Columns>
+		</DataGrid>
 	</Border>
 </UserControl>

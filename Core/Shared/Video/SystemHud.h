@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include <chrono>
 #include "Shared/SettingTypes.h"
@@ -10,9 +10,11 @@
 
 class MessageInfo;
 
-class SystemHud final : public IMessageManager
-{
+class SystemHud final : public IMessageManager {
 private:
+	static constexpr int NotificationLeftMargin = 10;
+	static constexpr int NotificationBottomMargin = 14;
+
 	Emulator* _emu = nullptr;
 
 	SimpleLock _msgLock;
@@ -25,21 +27,31 @@ private:
 	uint32_t _currentFPS = 0;
 	uint32_t _currentRenderedFPS = 0;
 	uint32_t _renderedFrameCount = 0;
-	
+
 	void DrawMessages(DebugHud* hud, uint32_t screenWidth, uint32_t screenHeight) const;
 	void DrawBar(DebugHud* hud, int x, int y, int width, int height) const;
 	void DrawPauseIcon(DebugHud* hud) const;
 	void DrawPlayIcon(DebugHud* hud) const;
 	void DrawRecordIcon(DebugHud* hud) const;
 	void DrawTurboRewindIcon(DebugHud* hud, bool forRewind, int xOffset) const;
+	void DrawTasReadWriteIndicator(DebugHud* hud, int xOffset) const;
 	void DrawMessage(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight, int& lastHeight) const;
-	void DrawString(DebugHud* hud, uint32_t screenWidth, string msg, int x, int y, uint8_t opacity = 255) const;
-	void DisplayMessage(string title, string message) override;
+	void DrawSaveStateNotification(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight) const;
+	void DrawActionNotification(DebugHud* hud, MessageInfo& msg, uint32_t screenWidth, uint32_t screenHeight) const;
+	void DrawString(DebugHud* hud, uint32_t screenWidth, const string& msg, int x, int y, uint8_t opacity = 255, int fontScale = 1) const;
+	void DrawColoredString(DebugHud* hud, uint32_t screenWidth, const string& text, int x, int y, uint32_t color, uint8_t opacity = 255, int fontScale = 1) const;
+	static int GetFontScale(uint32_t screenHeight);
+	static uint32_t GetSaveStateBadgeColor(const string& badge);
+	static bool IsActionNotification(const string& title);
+	void DisplayMessage(const string& title, const string& message) override;
 
 	void ShowFpsCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
 	void ShowFrameCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
 	void ShowLagCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
 	void ShowGameTimer(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
+	void ShowRerecordCounter(DebugHud* hud, uint32_t screenWidth, int lineNumber) const;
+	void ShowInputDisplay(DebugHud* hud, uint32_t screenWidth, uint32_t screenHeight) const;
+	void DrawLagFrameIndicator(DebugHud* hud, uint32_t screenWidth, uint32_t screenHeight) const;
 
 	void DrawCounters(DebugHud* hud, uint32_t screenWidth) const;
 
@@ -47,59 +59,53 @@ public:
 	SystemHud(Emulator* emu);
 	~SystemHud();
 
+	static std::pair<int, int> GetBottomLeftBoxPosition(uint32_t screenWidth, uint32_t screenHeight, int boxWidth, int boxHeight, int leftMargin = NotificationLeftMargin, int bottomMargin = NotificationBottomMargin);
+
 	void Draw(DebugHud* hud, uint32_t width, uint32_t height) const;
 	void UpdateHud();
 };
 
-
-class MessageInfo
-{
+class MessageInfo {
 private:
 	string _title;
 	string _message;
 	uint64_t _endTime;
 	uint64_t _startTime;
 
-	uint64_t GetCurrentTime()
-	{
+	uint64_t GetCurrentTime() {
 		return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 	}
 
 public:
-	MessageInfo(string title, string message, int displayDuration)
-	{
+	MessageInfo(const string& title, const string& message, int displayDuration) {
 		_title = title;
 		_message = message;
 		_startTime = GetCurrentTime();
 		_endTime = _startTime + displayDuration;
 	}
 
-	string GetTitle()
-	{
+	[[nodiscard]] const string& GetTitle() const {
 		return _title;
 	}
 
-	string GetMessage()
-	{
+	[[nodiscard]] const string& GetMessage() const {
 		return _message;
 	}
 
-	float GetOpacity()
-	{
+	[[nodiscard]] float GetOpacity() {
 		uint64_t currentTime = GetCurrentTime();
-		if(currentTime - _startTime < 100) {
+		if (currentTime - _startTime < 100) {
 			return (currentTime - _startTime) * 10.0f / 1000.0f;
-		} else if(_endTime - currentTime < 200) {
+		} else if (_endTime - currentTime < 200) {
 			return (_endTime - currentTime) * 5.0f / 1000.0f;
-		} else if(currentTime >= _endTime) {
+		} else if (currentTime >= _endTime) {
 			return 0.0f;
 		} else {
 			return 1.0f;
 		}
 	}
 
-	bool IsExpired()
-	{
+	[[nodiscard]] bool IsExpired() {
 		return _endTime < GetCurrentTime();
 	}
 };

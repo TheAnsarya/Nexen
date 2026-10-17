@@ -27,22 +27,22 @@
 static bool _needStaticInit = true;
 static SimpleLock _staticInitLock;
 
-GbaConsole::GbaConsole(Emulator* emu)
-{
+// Initialize GBA console emulator with reference to main emulator
+GbaConsole::GbaConsole(Emulator* emu) {
 	_emu = emu;
 
-	if(_needStaticInit) {
+	// Perform one-time static initialization of CPU tables (thread-safe)
+	if (_needStaticInit) {
 		auto lock = _staticInitLock.AcquireSafe();
-		if(_needStaticInit) {
-			GbaCpu::StaticInit();
-			DummyGbaCpu::StaticInit();
+		if (_needStaticInit) {
+			GbaCpu::StaticInit();       // Initialize ARM/Thumb instruction tables
+			DummyGbaCpu::StaticInit();  // Initialize dummy CPU tables (for debugging)
 			_needStaticInit = false;
 		}
 	}
 }
 
-GbaConsole::~GbaConsole()
-{
+GbaConsole::~GbaConsole() {
 	delete[] _saveRam;
 	delete[] _prgRom;
 
@@ -56,12 +56,13 @@ GbaConsole::~GbaConsole()
 	delete[] _bootRom;
 }
 
-LoadRomResult GbaConsole::LoadRom(VirtualFile& romFile)
-{
+LoadRomResult GbaConsole::LoadRom(VirtualFile& romFile) {
 	vector<uint8_t> romData;
-	romFile.ReadFile(romData);
+	if (!romFile.ReadFile(romData)) {
+		return LoadRomResult::Failure;
+	}
 
-	if(romData.size() < 0xC0) {
+	if (romData.size() < 0xC0) {
 		return LoadRomResult::Failure;
 	}
 
@@ -73,7 +74,7 @@ LoadRomResult GbaConsole::LoadRom(VirtualFile& romFile)
 	_emu->RegisterMemory(MemoryType::GbaPrgRom, _prgRom, _prgRomSize);
 
 	_bootRom = new uint8_t[GbaConsole::BootRomSize];
-	if(!FirmwareHelper::LoadGbaBootRom(_emu, &_bootRom)) {
+	if (!FirmwareHelper::LoadGbaBootRom(_emu, &_bootRom)) {
 		memset(_bootRom, 0, GbaConsole::BootRomSize);
 	}
 	_emu->RegisterMemory(MemoryType::GbaBootRom, _bootRom, GbaConsole::BootRomSize);
@@ -98,17 +99,17 @@ LoadRomResult GbaConsole::LoadRom(VirtualFile& romFile)
 	InitializeRam(_paletteRam, GbaConsole::PaletteRamSize);
 	_emu->RegisterMemory(MemoryType::GbaPaletteRam, _paletteRam, GbaConsole::PaletteRamSize);
 
-	_cpu.reset(new GbaCpu());
-	_ppu.reset(new GbaPpu());
-	_dmaController.reset(new GbaDmaController());
-	_timer.reset(new GbaTimer());
-	_apu.reset(new GbaApu());
-	_cart.reset(new GbaCart());
-	_serial.reset(new GbaSerial());
-	_controlManager.reset(new GbaControlManager(_emu, this));
-	_prefetch.reset(new GbaRomPrefetch());
+	_cpu = std::make_unique<GbaCpu>();
+	_ppu = std::make_unique<GbaPpu>();
+	_dmaController = std::make_unique<GbaDmaController>();
+	_timer = std::make_unique<GbaTimer>();
+	_apu = std::make_unique<GbaApu>();
+	_cart = std::make_unique<GbaCart>();
+	_serial = std::make_unique<GbaSerial>();
+	_controlManager = std::make_unique<GbaControlManager>(_emu, this);
+	_prefetch = std::make_unique<GbaRomPrefetch>();
 
-	_memoryManager.reset(new GbaMemoryManager(_emu, this, _ppu.get(), _dmaController.get(), _controlManager.get(), _timer.get(), _apu.get(), _cart.get(), _serial.get(), _prefetch.get()));
+	_memoryManager = std::make_unique<GbaMemoryManager>(_emu, this, _ppu.get(), _dmaController.get(), _controlManager.get(), _timer.get(), _apu.get(), _cart.get(), _serial.get(), _prefetch.get());
 
 	_prefetch->Init(_memoryManager->GetWaitStates(), this);
 	_cart->Init(_emu, this, _memoryManager.get(), _saveType, _rtcType, _cartType);
@@ -119,7 +120,7 @@ LoadRomResult GbaConsole::LoadRom(VirtualFile& romFile)
 	_cpu->Init(_emu, _memoryManager.get(), _prefetch.get());
 	_serial->Init(_emu, _memoryManager.get());
 	_controlManager->Init(_memoryManager.get());
-	
+
 	LoadBattery();
 
 	_cpu->PowerOn();
@@ -127,8 +128,7 @@ LoadRomResult GbaConsole::LoadRom(VirtualFile& romFile)
 	return LoadRomResult::Success;
 }
 
-void GbaConsole::InitCart(VirtualFile& romFile, vector<uint8_t>& romData)
-{
+void GbaConsole::InitCart(VirtualFile& romFile, vector<uint8_t>& romData) {
 	string title = StringUtilities::GetString(&romData[0xA0], 12);
 	string gameCode = StringUtilities::GetString(&romData[0xAC], 4);
 	string makerCode = StringUtilities::GetString(&romData[0xB0], 2);
@@ -138,11 +138,11 @@ void GbaConsole::InitCart(VirtualFile& romFile, vector<uint8_t>& romData)
 	MessageManager::Log("Title: " + title);
 	MessageManager::Log("Game Code: " + gameCode);
 	MessageManager::Log("Maker Code: " + makerCode);
-	
-	if(gameCode.size() > 0 && gameCode[0] == 'F') {
+
+	if (gameCode.size() > 0 && gameCode[0] == 'F') {
 		MessageManager::Log("Classic series game detected.");
-		if(romData.size() == 0x100000) {
-			//Mirror up to 4 MB to fix input problems
+		if (romData.size() == 0x100000) {
+			// Mirror up to 4 MB to fix input problems
 			romData.insert(romData.end(), romData.begin(), romData.end());
 			romData.insert(romData.end(), romData.begin(), romData.end());
 		}
@@ -150,22 +150,22 @@ void GbaConsole::InitCart(VirtualFile& romFile, vector<uint8_t>& romData)
 
 	_cartType = GbaCartridgeType::Default;
 
-	if(gameCode == "KYGE" || gameCode == "KHPJ") {
+	if (gameCode == "KYGE" || gameCode == "KHPJ") {
 		MessageManager::Log("Tilt Sensor detected.");
 		_cartType = GbaCartridgeType::TiltSensor;
 	}
 
 	_rtcType = _emu->GetSettings()->GetGbaConfig().RtcType;
-	if(_rtcType == GbaRtcType::AutoDetect) {
+	if (_rtcType == GbaRtcType::AutoDetect) {
 		string rtcMarker = "SIIRTC_V001";
-		if(std::search(romData.begin(), romData.end(), rtcMarker.begin(), rtcMarker.end()) != romData.end()) {
+		if (std::search(romData.begin(), romData.end(), rtcMarker.begin(), rtcMarker.end()) != romData.end()) {
 			_rtcType = GbaRtcType::Enabled;
 		} else {
 			_rtcType = GbaRtcType::Disabled;
 		}
 	}
 
-	if(_rtcType == GbaRtcType::Enabled) {
+	if (_rtcType == GbaRtcType::Enabled) {
 		MessageManager::Log("RTC enabled");
 	}
 
@@ -174,23 +174,22 @@ void GbaConsole::InitCart(VirtualFile& romFile, vector<uint8_t>& romData)
 	MessageManager::Log("-----------------------------");
 }
 
-void GbaConsole::InitSaveRam(string& gameCode, vector<uint8_t>& romData)
-{
+void GbaConsole::InitSaveRam(string& gameCode, vector<uint8_t>& romData) {
 	_saveType = _emu->GetSettings()->GetGbaConfig().SaveType;
 
-	if(_saveType == GbaSaveType::AutoDetect) {
-		if(gameCode == "A2YE") {
-			//Force no backup data for Top Gun, otherwise A button doesn't work in menu
+	if (_saveType == GbaSaveType::AutoDetect) {
+		if (gameCode == "A2YE") {
+			// Force no backup data for Top Gun, otherwise A button doesn't work in menu
 			_saveType = GbaSaveType::None;
-		} else if(gameCode == "AYGE" || gameCode == "ALUE" || gameCode == "ALUP") {
-			//Force 512-byte eeprom for Gauntlet (AYGE) and Super Monkey Ball Jr. (ALUE & ALUP) (auto-detect logic doesn't work)
+		} else if (gameCode == "AYGE" || gameCode == "ALUE" || gameCode == "ALUP") {
+			// Force 512-byte eeprom for Gauntlet (AYGE) and Super Monkey Ball Jr. (ALUE & ALUP) (auto-detect logic doesn't work)
 			_saveType = GbaSaveType::Eeprom512;
-		} else if(gameCode == "AI2E") {
-			//Iridion II crashes if it has SRAM, force it to none
+		} else if (gameCode == "AI2E") {
+			// Iridion II crashes if it has SRAM, force it to none
 			_saveType = GbaSaveType::None;
 		} else {
 			auto checkMarker = [&](string marker, GbaSaveType type) {
-				if(_saveType == GbaSaveType::AutoDetect && std::search(romData.begin(), romData.end(), marker.begin(), marker.end()) != romData.end()) {
+				if (_saveType == GbaSaveType::AutoDetect && std::search(romData.begin(), romData.end(), marker.begin(), marker.end()) != romData.end()) {
 					_saveType = type;
 				}
 			};
@@ -201,15 +200,15 @@ void GbaConsole::InitSaveRam(string& gameCode, vector<uint8_t>& romData)
 			checkMarker("FLASH512_V", GbaSaveType::Flash64);
 			checkMarker("FLASH1M_V", GbaSaveType::Flash128);
 
-			if(_saveType == GbaSaveType::AutoDetect) {
-				//Default to SRAM when nothing is found, for best compatibility
+			if (_saveType == GbaSaveType::AutoDetect) {
+				// Default to SRAM when nothing is found, for best compatibility
 				MessageManager::Log("Save type auto-detect failed - using SRAM.");
 				_saveType = GbaSaveType::Sram;
 			}
 		}
 	}
 
-	switch(_saveType) {
+	switch (_saveType) {
 		default:
 		case GbaSaveType::None:
 			MessageManager::Log("Save type: None");
@@ -248,23 +247,20 @@ void GbaConsole::InitSaveRam(string& gameCode, vector<uint8_t>& romData)
 	}
 
 	_saveRam = new uint8_t[_saveRamSize];
-	//SRAM and Flash are initialized to 0xFF?
+	// SRAM and Flash are initialized to 0xFF?
 	_emu->GetSettings()->InitializeRam(RamState::AllOnes, _saveRam, _saveRamSize);
 	_emu->RegisterMemory(MemoryType::GbaSaveRam, _saveRam, _saveRamSize);
 }
 
-void GbaConsole::LoadBattery()
-{
+void GbaConsole::LoadBattery() {
 	_cart->LoadBattery();
 }
 
-void GbaConsole::SaveBattery()
-{
+void GbaConsole::SaveBattery() {
 	_cart->SaveBattery();
 }
 
-GbaState GbaConsole::GetState()
-{
+GbaState GbaConsole::GetState() {
 	GbaState state;
 	state.Cpu = _cpu->GetState();
 	state.Ppu = _ppu->GetState();
@@ -278,69 +274,60 @@ GbaState GbaConsole::GetState()
 	return state;
 }
 
-void GbaConsole::GetConsoleState(BaseState& state, ConsoleType consoleType)
-{
+void GbaConsole::GetConsoleState(BaseState& state, ConsoleType consoleType) {
 	(GbaState&)state = GetState();
 }
 
-GbaMemoryManager* GbaConsole::GetMemoryManager()
-{
+GbaMemoryManager* GbaConsole::GetMemoryManager() {
 	return _memoryManager.get();
 }
 
-Emulator* GbaConsole::GetEmulator()
-{
+Emulator* GbaConsole::GetEmulator() {
 	return _emu;
 }
 
-GbaCpu* GbaConsole::GetCpu()
-{
+GbaCpu* GbaConsole::GetCpu() {
 	return _cpu.get();
 }
 
-GbaPpu* GbaConsole::GetPpu()
-{
+GbaPpu* GbaConsole::GetPpu() {
 	return _ppu.get();
 }
 
-GbaApu* GbaConsole::GetApu()
-{
+GbaApu* GbaConsole::GetApu() {
 	return _apu.get();
 }
 
-GbaDmaController* GbaConsole::GetDmaController()
-{
+GbaDmaController* GbaConsole::GetDmaController() {
 	return _dmaController.get();
 }
 
-void GbaConsole::Reset()
-{
-	//The GB has no reset button, behave like power cycle
+void GbaConsole::Reset() {
+	// The GB has no reset button, behave like power cycle
 	_emu->ReloadRom(true);
 }
 
-void GbaConsole::RunFrame()
-{
+void GbaConsole::RunFrame() {
 	uint32_t frameCount = _ppu->GetFrameCount();
 	uint32_t& newCount = _ppu->GetState().FrameCount;
 
-	if(_emu->IsDebugging()) {
-		if(_memoryManager->UseInlineHalt()) {
-			while(frameCount == newCount) {
+	if (_emu->IsDebugging()) {
+		if (_memoryManager->UseInlineHalt()) {
+			while (frameCount == newCount) {
 				_cpu->Exec<true, true>();
 			}
 		} else {
-			while(frameCount == newCount) {
+			while (frameCount == newCount) {
 				_cpu->Exec<false, true>();
 			}
 		}
 	} else {
-		if(_memoryManager->UseInlineHalt()) {
-			while(frameCount == newCount) {
+		if (_memoryManager->UseInlineHalt()) {
+			while (frameCount == newCount) {
 				_cpu->Exec<true, false>();
 			}
 		} else {
-			while(frameCount == newCount) {
+			while (frameCount == newCount) {
 				_cpu->Exec<false, false>();
 			}
 		}
@@ -350,29 +337,24 @@ void GbaConsole::RunFrame()
 	_apu->PlayQueuedAudio();
 }
 
-void GbaConsole::ProcessEndOfFrame()
-{
+void GbaConsole::ProcessEndOfFrame() {
 	_controlManager->UpdateControlDevices();
 	_controlManager->UpdateInputState();
 }
 
-BaseControlManager* GbaConsole::GetControlManager()
-{
+BaseControlManager* GbaConsole::GetControlManager() {
 	return _controlManager.get();
 }
 
-ConsoleType GbaConsole::GetConsoleType()
-{
+ConsoleType GbaConsole::GetConsoleType() {
 	return ConsoleType::Gba;
 }
 
-double GbaConsole::GetFps()
-{
+double GbaConsole::GetFps() {
 	return 59.72750056960583;
 }
 
-PpuFrameInfo GbaConsole::GetPpuFrame()
-{
+PpuFrameInfo GbaConsole::GetPpuFrame() {
 	PpuFrameInfo frame;
 	frame.FrameBuffer = (uint8_t*)_ppu->GetScreenBuffer();
 	frame.FrameCount = _ppu->GetFrameCount();
@@ -381,49 +363,47 @@ PpuFrameInfo GbaConsole::GetPpuFrame()
 	frame.FrameBufferSize = frame.Width * frame.Height * sizeof(uint16_t);
 	frame.FirstScanline = 0;
 	frame.ScanlineCount = 228;
-	frame.CycleCount = 308*4;
+	frame.CycleCount = 308 * 4;
 	return frame;
 }
 
-vector<CpuType> GbaConsole::GetCpuTypes()
-{
-	return { CpuType::Gba };
+vector<CpuType> GbaConsole::GetCpuTypes() {
+	return {CpuType::Gba};
 }
 
-AddressInfo GbaConsole::GetAbsoluteAddress(AddressInfo& relAddress)
-{
+AddressInfo GbaConsole::GetAbsoluteAddress(AddressInfo& relAddress) {
 	return _memoryManager->GetAbsoluteAddress(relAddress.Address);
 }
 
-AddressInfo GbaConsole::GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType)
-{
-	int64_t addr = _memoryManager->GetRelativeAddress(absAddress);
-	if(addr >= 0) {
-		return { (int32_t)_memoryManager->GetRelativeAddress(absAddress), MemoryType::GbaMemory };
-	}
-	
-	return { -1, MemoryType::None };
+AddressInfo GbaConsole::GetPcAbsoluteAddress() {
+	return _memoryManager->GetAbsoluteAddress(_cpu->GetState().Pipeline.Execute.Address);
 }
 
-uint64_t GbaConsole::GetMasterClock()
-{
+AddressInfo GbaConsole::GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) {
+	int64_t addr = _memoryManager->GetRelativeAddress(absAddress);
+	if (addr >= 0) {
+		return {(int32_t)_memoryManager->GetRelativeAddress(absAddress), MemoryType::GbaMemory};
+	}
+
+	return {-1, MemoryType::None};
+}
+
+uint64_t GbaConsole::GetMasterClock() {
 	return _memoryManager->GetMasterClock();
 }
 
-uint32_t GbaConsole::GetMasterClockRate()
-{
+uint32_t GbaConsole::GetMasterClockRate() {
 	return 16777216;
 }
 
-BaseVideoFilter* GbaConsole::GetVideoFilter(bool getDefaultFilter)
-{
-	if(getDefaultFilter) {
+BaseVideoFilter* GbaConsole::GetVideoFilter(bool getDefaultFilter) {
+	if (getDefaultFilter) {
 		return new GbaDefaultVideoFilter(_emu, false);
 	}
 
 	VideoFilterType filterType = _emu->GetSettings()->GetVideoConfig().VideoFilter;
 
-	switch(filterType) {
+	switch (filterType) {
 		case VideoFilterType::NtscBlargg:
 		case VideoFilterType::NtscBisqwit:
 			return new GbaDefaultVideoFilter(_emu, true);
@@ -433,55 +413,85 @@ BaseVideoFilter* GbaConsole::GetVideoFilter(bool getDefaultFilter)
 	}
 }
 
-RomFormat GbaConsole::GetRomFormat()
-{
+RomFormat GbaConsole::GetRomFormat() {
 	return RomFormat::Gba;
 }
 
-AudioTrackInfo GbaConsole::GetAudioTrackInfo()
-{
-	//TODOGBA
-	return {};
+AudioTrackInfo GbaConsole::GetAudioTrackInfo() {
+	GbaApuDebugState apu = _apu->GetState();
+
+	int activeChannels = 0;
+	string channelInfo;
+
+	if (apu.Square1.Enabled) {
+		activeChannels++;
+		channelInfo += "SQ1(f=" + std::to_string(apu.Square1.Frequency) + ",v=" + std::to_string(apu.Square1.Volume) + ") ";
+	}
+	if (apu.Square2.Enabled) {
+		activeChannels++;
+		channelInfo += "SQ2(f=" + std::to_string(apu.Square2.Frequency) + ",v=" + std::to_string(apu.Square2.Volume) + ") ";
+	}
+	if (apu.Wave.Enabled && apu.Wave.DacEnabled) {
+		activeChannels++;
+		channelInfo += "WAV(f=" + std::to_string(apu.Wave.Frequency) + ") ";
+	}
+	if (apu.Noise.Enabled) {
+		activeChannels++;
+		channelInfo += string("NOI(") + (apu.Noise.ShortWidthMode ? "7bit" : "15bit") + ",v=" + std::to_string(apu.Noise.Volume) + ") ";
+	}
+	if (apu.Common.EnableLeftA || apu.Common.EnableRightA) {
+		activeChannels++;
+		channelInfo += "DMA-A ";
+	}
+	if (apu.Common.EnableLeftB || apu.Common.EnableRightB) {
+		activeChannels++;
+		channelInfo += "DMA-B ";
+	}
+
+	AudioTrackInfo info = {};
+	info.GameTitle = "Game Boy Advance";
+	info.SongTitle = std::to_string(activeChannels) + " active channel" + (activeChannels != 1 ? "s" : "");
+	info.Comment = channelInfo.empty() ? "silent" : channelInfo;
+	info.Position = _ppu->GetFrameCount() / GetFps();
+	info.Length = 0;
+	info.FadeLength = 0;
+	info.TrackNumber = 1;
+	info.TrackCount = 1;
+	return info;
 }
 
-void GbaConsole::ProcessAudioPlayerAction(AudioPlayerActionParams p)
-{
-	//TODOGBA
+void GbaConsole::ProcessAudioPlayerAction(AudioPlayerActionParams p) {
+	// GBA has no multi-track audio format; no-op
 }
 
-void GbaConsole::ClearCpuSequentialFlag()
-{
+void GbaConsole::ClearCpuSequentialFlag() {
 	_cpu->ClearSequentialFlag();
 }
 
-void GbaConsole::SetCpuSequentialFlag()
-{
+void GbaConsole::SetCpuSequentialFlag() {
 	_cpu->SetSequentialFlag();
 }
 
-void GbaConsole::SetCpuStopFlag()
-{
+void GbaConsole::SetCpuStopFlag() {
 	_cpu->SetStopFlag(true);
 }
 
-ConsoleRegion GbaConsole::GetRegion()
-{
+ConsoleRegion GbaConsole::GetRegion() {
 	return ConsoleRegion::Ntsc;
 }
 
-void GbaConsole::RefreshRamCheats()
-{
-	//TODOGBA
+void GbaConsole::RefreshRamCheats() {
+	for (InternalCheatCode& code : _emu->GetCheatManager()->GetRamRefreshCheats(CpuType::Gba)) {
+		_memoryManager->DebugWrite(code.Address, code.Value);
+	}
 }
 
-void GbaConsole::InitializeRam(void* data, uint32_t length)
-{
+void GbaConsole::InitializeRam(void* data, uint32_t length) {
 	EmuSettings* settings = _emu->GetSettings();
 	settings->InitializeRam(settings->GetGbaConfig().RamPowerOnState, data, length);
 }
 
-void GbaConsole::Serialize(Serializer& s)
-{
+void GbaConsole::Serialize(Serializer& s) {
 	SV(_cpu);
 	SV(_ppu);
 	SV(_apu);

@@ -4,8 +4,7 @@
 #include "NES/NesCpu.h"
 #include "NES/Mappers/A12Watcher.h"
 
-class Mapper116 : public BaseMapper
-{
+class Mapper116 : public BaseMapper {
 private:
 	A12Watcher _a12Watcher;
 	uint8_t _mode = 0;
@@ -34,8 +33,7 @@ protected:
 	uint16_t GetChrPageSize() override { return 0x400; }
 	bool EnableVramAddressHook() override { return true; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		_mode = 0;
 
 		_vrc2Chr[0] = -1;
@@ -49,7 +47,7 @@ protected:
 		_vrc2Prg[0] = 0;
 		_vrc2Prg[1] = 1;
 		_vrc2Mirroring = 0;
-		
+
 		_mmc3Regs[0] = 0;
 		_mmc3Regs[1] = 2;
 		_mmc3Regs[2] = 4;
@@ -77,8 +75,7 @@ protected:
 		UpdateState();
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		BaseMapper::Serialize(s);
 
 		SV(_a12Watcher);
@@ -95,26 +92,25 @@ protected:
 		SV(_irqEnabled);
 		SV(_irqReload);
 		SV(_irqReloadValue),
-		SV(_mmc1Buffer);
+		    SV(_mmc1Buffer);
 		SV(_mmc1Shift);
 	}
 
-	void NotifyVramAddressChange(uint16_t addr) override
-	{
-		if((_mode & 0x03) == 1) {
-			switch(_a12Watcher.UpdateVramAddress(addr, _console->GetPpu()->GetFrameCycle())) {
+	void NotifyVramAddressChange(uint16_t addr) override {
+		if ((_mode & 0x03) == 1) {
+			switch (_a12Watcher.UpdateVramAddress(addr, _console->GetPpu()->GetFrameCycle())) {
 				case A12StateChange::None:
 				case A12StateChange::Fall:
 					break;
 
 				case A12StateChange::Rise:
-					if(_irqCounter == 0 || _irqReload) {
+					if (_irqCounter == 0 || _irqReload) {
 						_irqCounter = _irqReloadValue;
 					} else {
 						_irqCounter--;
 					}
 
-					if(_irqCounter == 0 && _irqEnabled) {
+					if (_irqCounter == 0 && _irqEnabled) {
 						_console->GetCpu()->SetIrqSource(IRQSource::External);
 					}
 					_irqReload = false;
@@ -123,9 +119,8 @@ protected:
 		}
 	}
 
-	void UpdatePrg()
-	{
-		switch(_mode & 0x03) {
+	void UpdatePrg() {
+		switch (_mode & 0x03) {
 			case 0:
 				SelectPrgPage(0, _vrc2Prg[0]);
 				SelectPrgPage(1, _vrc2Prg[1]);
@@ -145,8 +140,8 @@ protected:
 			case 2:
 			case 3: {
 				uint8_t bank = _mmc1Regs[3] & 0x0F;
-				if(_mmc1Regs[0] & 0x08) {
-					if(_mmc1Regs[0] & 0x04) {
+				if (_mmc1Regs[0] & 0x08) {
+					if (_mmc1Regs[0] & 0x04) {
 						SelectPrgPage2x(0, bank << 1);
 						SelectPrgPage2x(1, 0x0F << 1);
 					} else {
@@ -161,12 +156,11 @@ protected:
 		}
 	}
 
-	void UpdateChr()
-	{
+	void UpdateChr() {
 		uint32_t outerBank = (_mode & 0x04) << 6;
-		switch(_mode & 0x03) {
+		switch (_mode & 0x03) {
 			case 0:
-				for(int i = 0; i < 8; i++) {
+				for (int i = 0; i < 8; i++) {
 					SelectChrPage(i, outerBank | _vrc2Chr[i]);
 				}
 				break;
@@ -186,7 +180,7 @@ protected:
 
 			case 2:
 			case 3: {
-				if(_mmc1Regs[0] & 0x10) {
+				if (_mmc1Regs[0] & 0x10) {
 					SelectChrPage4x(0, _mmc1Regs[1] << 2);
 					SelectChrPage4x(1, _mmc1Regs[2] << 2);
 				} else {
@@ -197,50 +191,67 @@ protected:
 		}
 	}
 
-	void UpdateMirroring()
-	{
-		switch(_mode & 0x03) {
-			case 0: SetMirroringType((_vrc2Mirroring & 0x01) ? MirroringType::Horizontal : MirroringType::Vertical); break;
-			case 1: SetMirroringType((_mmc3Mirroring & 0x01) ? MirroringType::Horizontal : MirroringType::Vertical); break;
+	void UpdateMirroring() {
+		switch (_mode & 0x03) {
+			case 0:
+				SetMirroringType((_vrc2Mirroring & 0x01) ? MirroringType::Horizontal : MirroringType::Vertical);
+				break;
+			case 1:
+				SetMirroringType((_mmc3Mirroring & 0x01) ? MirroringType::Horizontal : MirroringType::Vertical);
+				break;
 
 			case 2:
 			case 3:
-				switch(_mmc1Regs[0] & 0x03) {
-					case 0: SetMirroringType(MirroringType::ScreenAOnly); break;
-					case 1: SetMirroringType(MirroringType::ScreenBOnly); break;
-					case 2: SetMirroringType(MirroringType::Vertical); break;
-					case 3: SetMirroringType(MirroringType::Horizontal); break;
+				switch (_mmc1Regs[0] & 0x03) {
+					case 0:
+						SetMirroringType(MirroringType::ScreenAOnly);
+						break;
+					case 1:
+						SetMirroringType(MirroringType::ScreenBOnly);
+						break;
+					case 2:
+						SetMirroringType(MirroringType::Vertical);
+						break;
+					case 3:
+						SetMirroringType(MirroringType::Horizontal);
+						break;
 				}
 				break;
 		}
 	}
 
-	void UpdateState()
-	{
+	void UpdateState() {
 		UpdatePrg();
 		UpdateChr();
 		UpdateMirroring();
 	}
 
-	void WriteVrc2Register(uint16_t addr, uint8_t value)
-	{
-		if(addr >= 0xB000 && addr <= 0xE003) {
+	void WriteVrc2Register(uint16_t addr, uint8_t value) {
+		if (addr >= 0xB000 && addr <= 0xE003) {
 			int32_t regIndex = ((((addr & 0x02) | (addr >> 10)) >> 1) + 2) & 0x07;
 			int32_t lowHighNibble = ((addr & 1) << 2);
 			_vrc2Chr[regIndex] = (_vrc2Chr[regIndex] & (0xF0 >> lowHighNibble)) | ((value & 0x0F) << lowHighNibble);
 			UpdateChr();
 		} else {
-			switch(addr & 0xF000) {
-				case 0x8000: _vrc2Prg[0] = value; UpdatePrg(); break;
-				case 0xA000: _vrc2Prg[1] = value; UpdatePrg(); break;
-				case 0x9000: _vrc2Mirroring = value; UpdateMirroring(); break;
+			switch (addr & 0xF000) {
+				case 0x8000:
+					_vrc2Prg[0] = value;
+					UpdatePrg();
+					break;
+				case 0xA000:
+					_vrc2Prg[1] = value;
+					UpdatePrg();
+					break;
+				case 0x9000:
+					_vrc2Mirroring = value;
+					UpdateMirroring();
+					break;
 			}
 		}
 	}
 
-	void WriteMmc3Register(uint16_t addr, uint8_t value)
-	{
-		switch(addr & 0xE001) {
+	void WriteMmc3Register(uint16_t addr, uint8_t value) {
+		switch (addr & 0xE001) {
 			case 0x8000:
 				_mmc3Ctrl = value;
 				UpdateState();
@@ -256,28 +267,33 @@ protected:
 				UpdateState();
 				break;
 
-			case 0xC000: _irqReloadValue = value; break;
-			case 0xC001: _irqReload = true; break;
-			
+			case 0xC000:
+				_irqReloadValue = value;
+				break;
+			case 0xC001:
+				_irqReload = true;
+				break;
+
 			case 0xE000:
 				_console->GetCpu()->ClearIrqSource(IRQSource::External);
 				_irqEnabled = false;
 				break;
-			
-			case 0xE001: _irqEnabled = true; break;
+
+			case 0xE001:
+				_irqEnabled = true;
+				break;
 		}
 	}
 
-	void WriteMmc1Register(uint16_t addr, uint8_t value)
-	{
-		if(value & 0x80) {
+	void WriteMmc1Register(uint16_t addr, uint8_t value) {
+		if (value & 0x80) {
 			_mmc1Regs[0] |= 0xc;
 			_mmc1Buffer = _mmc1Shift = 0;
 			UpdateState();
 		} else {
 			uint8_t regIndex = (addr >> 13) - 4;
 			_mmc1Buffer |= (value & 0x01) << (_mmc1Shift++);
-			if(_mmc1Shift == 5) {
+			if (_mmc1Shift == 5) {
 				_mmc1Regs[regIndex] = _mmc1Buffer;
 				_mmc1Buffer = _mmc1Shift = 0;
 				UpdateState();
@@ -285,12 +301,11 @@ protected:
 		}
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
-		if(addr < 0x8000) {
-			if((addr & 0x4100) == 0x4100) {
+	void WriteRegister(uint16_t addr, uint8_t value) override {
+		if (addr < 0x8000) {
+			if ((addr & 0x4100) == 0x4100) {
 				_mode = value;
-				if(addr & 0x01) {
+				if (addr & 0x01) {
 					_mmc1Regs[0] = 0xc;
 					_mmc1Regs[3] = 0;
 					_mmc1Buffer = 0;
@@ -299,12 +314,18 @@ protected:
 				UpdateState();
 			}
 		} else {
-			switch(_mode & 0x03) {
-				case 0: WriteVrc2Register(addr, value); break;
-				case 1: WriteMmc3Register(addr, value); break;
+			switch (_mode & 0x03) {
+				case 0:
+					WriteVrc2Register(addr, value);
+					break;
+				case 1:
+					WriteMmc3Register(addr, value);
+					break;
 
 				case 2:
-				case 3: WriteMmc1Register(addr, value); break;
+				case 3:
+					WriteMmc1Register(addr, value);
+					break;
 			}
 		}
 	}

@@ -1,4 +1,7 @@
 #include "pch.h"
+#include <algorithm>
+#include <cctype>
+#include <ranges>
 #include <regex>
 #include "Debugger/LabelManager.h"
 #include "SMS/Debugger/SmsAssembler.h"
@@ -8,52 +11,48 @@
 
 static const std::regex labelRegex = std::regex("^\\s*([@_a-zA-Z][@_a-zA-Z0-9+]*)", std::regex_constants::icase);
 
-SmsAssembler::SmsAssembler(LabelManager* labelManager)
-{
+SmsAssembler::SmsAssembler(LabelManager* labelManager) {
 	_labelManager = labelManager;
 	InitAssembler();
 }
 
-SmsAssembler::~SmsAssembler()
-{
+SmsAssembler::~SmsAssembler() {
 }
 
-void SmsAssembler::InitAssembler()
-{
-	struct OpType
-	{
+void SmsAssembler::InitAssembler() {
+	struct OpType {
 		int Prefix;
 		HlRegType HlType;
 	};
 
 	vector<OpType> opTypes = {
-		{ 0, HlRegType::HL },
-		{ 0xCB, HlRegType::HL },
-		{ 0xDD, HlRegType::IX },
-		{ 0xED, HlRegType::HL },
-		{ 0xFD, HlRegType::IY },
-		{ 0xCBDD, HlRegType::IX },
-		{ 0xCBFD, HlRegType::IY }
-	};
+	    {0,      HlRegType::HL},
+	    {0xCB,   HlRegType::HL},
+	    {0xDD,   HlRegType::IX},
+	    {0xED,   HlRegType::HL},
+	    {0xFD,   HlRegType::IY},
+	    {0xCBDD, HlRegType::IX},
+	    {0xCBFD, HlRegType::IY}
+    };
 
-	for(auto opType : opTypes) {
-		for(int i = 0; i < 256; i++) {
+	for (const auto& opType : opTypes) {
+		for (int i = 0; i < 256; i++) {
 			string op = SmsDisUtils::GetOpTemplate(i, opType.Prefix == 0xCB || opType.Prefix >= 0x1000, opType.Prefix == 0xED);
 			size_t vIndex = op.find('v');
-			if(vIndex != string::npos) {
-				if(opType.HlType != HlRegType::HL) {
+			if (vIndex != string::npos) {
+				if (opType.HlType != HlRegType::HL) {
 					op.insert(op.begin() + vIndex + 1, ',');
 				} else {
 					op.erase(vIndex, 1);
 				}
 			}
 
-			uint32_t paramCount = std::count(op.begin(), op.end(), ',') + 1;
+			uint32_t paramCount = std::ranges::count(op, ',') + 1;
 			size_t spaceIndex = op.find(' ');
 			string opName;
 
 			OpCodeEntry entry = {};
-			if(spaceIndex != string::npos) {
+			if (spaceIndex != string::npos) {
 				opName = op.substr(0, spaceIndex);
 				entry.ParamCount = paramCount;
 			} else {
@@ -61,30 +60,30 @@ void SmsAssembler::InitAssembler()
 				entry.ParamCount = 0;
 			}
 
-			if(opType.Prefix == 0) {
+			if (opType.Prefix == 0) {
 				entry.OpCode = i;
-			} else if(opType.Prefix <= 0xFF) {
+			} else if (opType.Prefix <= 0xFF) {
 				entry.OpCode = (i << 8) | opType.Prefix;
 			} else {
 				entry.OpCode = (i << 16) | opType.Prefix;
 			}
 
-			std::transform(opName.begin(), opName.end(), opName.begin(), ::tolower);
-			if(_opCodes.find(opName) == _opCodes.end()) {
+			std::ranges::transform(opName, opName.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+			if (_opCodes.find(opName) == _opCodes.end()) {
 				_opCodes[opName] = vector<OpCodeEntry>();
 			}
 
-			if(entry.ParamCount > 0) {
+			if (entry.ParamCount > 0) {
 				string operands = op.substr(spaceIndex + 1);
-				operands.erase(std::remove_if(operands.begin(), operands.end(), isspace), operands.end());
-				if(entry.ParamCount > 1) {
+				std::erase_if(operands, isspace);
+				if (entry.ParamCount > 1) {
 					vector<string> operandList = StringUtilities::Split(operands, ',');
 					InitParamEntry(entry.Param1, operandList[0], opType.HlType);
 					InitParamEntry(entry.Param2, operandList[1], opType.HlType);
-					if(entry.ParamCount > 2) {
+					if (entry.ParamCount > 2) {
 						InitParamEntry(entry.Param3, operandList[2], opType.HlType);
 					}
-				} else if(entry.ParamCount == 1) {
+				} else if (entry.ParamCount == 1) {
 					InitParamEntry(entry.Param1, operands, opType.HlType);
 				}
 			}
@@ -93,29 +92,29 @@ void SmsAssembler::InitAssembler()
 	}
 }
 
-void SmsAssembler::InitParamEntry(ParamEntry& entry, string param, HlRegType hlRegType)
-{
-	if(param == "a") {
+void SmsAssembler::InitParamEntry(ParamEntry& entry, string param, HlRegType hlRegType) {
+	if (param == "a") {
 		entry.Type = ParamType::Short;
 		entry.Param = param;
-	} else if(param == "d") {
+	} else if (param == "d") {
 		entry.Type = ParamType::Byte;
 		entry.Param = param;
-	} else if(param == "e") {
+	} else if (param == "e") {
 		entry.Type = ParamType::Short;
 		entry.Param = param;
-	} else if(param == "r") {
+	} else if (param == "r") {
 		entry.Type = ParamType::RelAddress;
 		entry.Param = param;
-	} else if(param == "(a)") {
+	} else if (param == "(a)") {
 		entry.Type = ParamType::Address;
 		entry.Param = param;
-	} else if(param == "(p)") {
+	} else if (param == "(p)") {
 		entry.Type = ParamType::Port;
 		entry.Param = param;
-	} else if(param == "v") {
-		switch(hlRegType) {
-			case HlRegType::HL: throw std::runtime_error("unexpected value");
+	} else if (param == "v") {
+		switch (hlRegType) {
+			case HlRegType::HL:
+				throw std::runtime_error("unexpected value");
 
 			case HlRegType::IX:
 				entry.Type = ParamType::IxOffset;
@@ -127,15 +126,21 @@ void SmsAssembler::InitParamEntry(ParamEntry& entry, string param, HlRegType hlR
 				entry.Param = param;
 				break;
 		}
-	} else if(param == "w") {
+	} else if (param == "w") {
 		entry.Type = ParamType::Literal;
-		switch(hlRegType) {
-			case HlRegType::HL: entry.Param = "hl"; break;
-			case HlRegType::IX: entry.Param = "ix"; break;
-			case HlRegType::IY: entry.Param = "iy"; break;
+		switch (hlRegType) {
+			case HlRegType::HL:
+				entry.Param = "hl";
+				break;
+			case HlRegType::IX:
+				entry.Param = "ix";
+				break;
+			case HlRegType::IY:
+				entry.Param = "iy";
+				break;
 		}
-	} else if(param == "x") {
-		switch(hlRegType) {
+	} else if (param == "x") {
+		switch (hlRegType) {
 			case HlRegType::HL:
 				entry.Type = ParamType::Literal;
 				entry.Param = "(hl)";
@@ -151,70 +156,82 @@ void SmsAssembler::InitParamEntry(ParamEntry& entry, string param, HlRegType hlR
 				entry.Param = param;
 				break;
 		}
-	} else if(param == "y") {
+	} else if (param == "y") {
 		entry.Type = ParamType::Literal;
-		switch(hlRegType) {
-			case HlRegType::HL: entry.Param = "h"; break;
-			case HlRegType::IX: entry.Param = "ixh"; break;
-			case HlRegType::IY: entry.Param = "iyh"; break;
+		switch (hlRegType) {
+			case HlRegType::HL:
+				entry.Param = "h";
+				break;
+			case HlRegType::IX:
+				entry.Param = "ixh";
+				break;
+			case HlRegType::IY:
+				entry.Param = "iyh";
+				break;
 		}
-	} else if(param == "z") {
+	} else if (param == "z") {
 		entry.Type = ParamType::Literal;
-		switch(hlRegType) {
-			case HlRegType::HL: entry.Param = "l"; break;
-			case HlRegType::IX: entry.Param = "ixl"; break;
-			case HlRegType::IY: entry.Param = "iyl"; break;
+		switch (hlRegType) {
+			case HlRegType::HL:
+				entry.Param = "l";
+				break;
+			case HlRegType::IX:
+				entry.Param = "ixl";
+				break;
+			case HlRegType::IY:
+				entry.Param = "iyl";
+				break;
 		}
 	} else {
-		std::transform(param.begin(), param.end(), param.begin(), ::tolower);
+		std::ranges::transform(param, param.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 		entry.Type = ParamType::Literal;
 		entry.Param = param;
 	}
 }
 
-bool SmsAssembler::IsRegisterName(string op)
-{
-	std::transform(op.begin(), op.end(), op.begin(), ::tolower);
-	if(op.size() > 2 && op[0] == '(' && op[op.size() - 1] == ')') {
+bool SmsAssembler::IsRegisterName(string op) {
+	std::ranges::transform(op, op.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+	if (op.size() > 2 && op[0] == '(' && op[op.size() - 1] == ')') {
 		op = op.substr(1, op.size() - 2);
 		return op == "hl" || op == "af" || op == "bc" || op == "de" || op == "a" || op == "b" || op == "c" || op == "d" || op == "e" || op == "f" || op == "l" || op == "h" || op == "ix" || op == "iy" || op == "ixl" || op == "ixh" || op == "iyl" || op == "iyh";
 	}
 	return op == "hl" || op == "af" || op == "bc" || op == "de" || op == "a" || op == "b" || op == "c" || op == "d" || op == "e" || op == "f" || op == "l" || op == "h" || op == "ix" || op == "iy" || op == "ixl" || op == "ixh" || op == "iyl" || op == "iyh";
 }
 
-int SmsAssembler::ReadValue(string operand, int min, int max, unordered_map<string, uint16_t>& localLabels, bool firstPass, bool isPortValue)
-{
+int SmsAssembler::ReadValue(const string& operand, int min, int max, unordered_map<string, uint16_t>& localLabels, bool firstPass, bool isPortValue) {
 	int value = 0;
-	switch(operand[0]) {
-		//Hex
-		case '$': value = HexUtilities::FromHex(operand.substr(1)); break;
+	switch (operand[0]) {
+		// Hex
+		case '$':
+			value = HexUtilities::FromHex(operand.substr(1));
+			break;
 
 		case '%':
-			//Binary
-			for(size_t i = 1; i < operand.size(); i++) {
+			// Binary
+			for (size_t i = 1; i < operand.size(); i++) {
 				value <<= 1;
 				value |= operand[i] == '1' ? 1 : 0;
 			}
 			break;
 
 		default:
-			if(std::regex_match(operand, labelRegex)) {
-				if(isPortValue) {
+			if (std::regex_match(operand, labelRegex)) {
+				if (isPortValue) {
 					AddressInfo label = _labelManager->GetLabelAbsoluteAddress(operand);
-					if(label.Type != MemoryType::None) {
+					if (label.Type != MemoryType::None) {
 						value = label.Address;
 					} else {
 						return -1;
 					}
 				} else {
-					if(firstPass) {
+					if (firstPass) {
 						return 0;
-					} else if(localLabels.find(operand) != localLabels.end()) {
-						value = localLabels.find(operand)->second;
+					} else if (auto it = localLabels.find(operand); it != localLabels.end()) {
+						value = it->second;
 					} else {
 						int labelAddress = _labelManager->GetLabelRelativeAddress(operand, CpuType::Sms);
-						if(labelAddress >= 0) {
-							//Matching label found
+						if (labelAddress >= 0) {
+							// Matching label found
 							value = labelAddress;
 						} else {
 							return -1;
@@ -222,45 +239,45 @@ int SmsAssembler::ReadValue(string operand, int min, int max, unordered_map<stri
 					}
 				}
 			} else {
-				//Decimal
-				for(size_t i = 0; i < operand.size(); i++) {
-					if(operand[i] != '-' && (operand[i] < '0' || operand[i] > '9')) {
+				// Decimal
+				for (size_t i = 0; i < operand.size(); i++) {
+					if (operand[i] != '-' && (operand[i] < '0' || operand[i] > '9')) {
 						return -1;
 					}
 				}
 
 				try {
 					value = std::stoi(operand);
-					if(value < 0) {
+					if (value < 0) {
 						value = max + value + 1;
 					}
-				} catch(std::exception&) {
+				} catch (std::exception&) {
 					return -1;
 				}
 			}
 			break;
 	}
 
-	if(value < min || value > max) {
+	if (value < min || value > max) {
 		return -1;
 	}
 
 	return value;
 }
 
-bool SmsAssembler::IsMatch(ParamEntry& entry, string operand, uint32_t address, unordered_map<string, uint16_t>& localLabels, bool firstPass)
-{
-	if(entry.Type != ParamType::Literal && IsRegisterName(operand)) {
+bool SmsAssembler::IsMatch(ParamEntry& entry, string operand, uint32_t address, unordered_map<string, uint16_t>& localLabels, bool firstPass) {
+	if (entry.Type != ParamType::Literal && IsRegisterName(operand)) {
 		return false;
 	}
 
-	switch(entry.Type) {
-		case ParamType::None: return false;
+	switch (entry.Type) {
+		case ParamType::None:
+			return false;
 
 		case ParamType::Literal: {
 			string param = entry.Param;
-			std::transform(param.begin(), param.end(), param.begin(), ::tolower);
-			std::transform(operand.begin(), operand.end(), operand.begin(), ::tolower);
+			std::ranges::transform(param, param.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+			std::ranges::transform(operand, operand.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 			return operand == param;
 		}
 
@@ -271,39 +288,39 @@ bool SmsAssembler::IsMatch(ParamEntry& entry, string operand, uint32_t address, 
 			return ReadValue(operand, -32768, 0xFFFF, localLabels, firstPass) >= 0;
 
 		case ParamType::Address:
-			if(operand.size() > 2 && operand[0] == '(' && operand[operand.size() - 1] == ')') {
+			if (operand.size() > 2 && operand[0] == '(' && operand[operand.size() - 1] == ')') {
 				return ReadValue(operand.substr(1, operand.size() - 2), 0, 0xFFFF, localLabels, firstPass) >= 0;
 			}
 			return false;
 
 		case ParamType::Port:
-			if(operand.size() > 2 && operand[0] == '(' && operand[operand.size() - 1] == ')') {
+			if (operand.size() > 2 && operand[0] == '(' && operand[operand.size() - 1] == ')') {
 				return ReadValue(operand.substr(1, operand.size() - 2), 0, 0xFF, localLabels, firstPass, true) >= 0;
 			}
 			return false;
 
 		case ParamType::IxOffset:
-			if(operand.size() > 5 && StringUtilities::StartsWith(operand, "(IX+") && operand[operand.size() - 1] == ')') {
+			if (operand.size() > 5 && StringUtilities::StartsWith(operand, "(IX+") && operand[operand.size() - 1] == ')') {
 				return ReadValue(operand.substr(4, operand.size() - 5), 0, 0xFF, localLabels, firstPass) >= 0;
 			}
 			return false;
 
 		case ParamType::IyOffset:
-			if(operand.size() > 5 && StringUtilities::StartsWith(operand, "(IY+") && operand[operand.size() - 1] == ')') {
+			if (operand.size() > 5 && StringUtilities::StartsWith(operand, "(IY+") && operand[operand.size() - 1] == ')') {
 				return ReadValue(operand.substr(4, operand.size() - 5), 0, 0xFF, localLabels, firstPass) >= 0;
 			}
 			return false;
 
 		case ParamType::RelAddress: {
 			int value = ReadValue(operand, 0, 0xFFFF, localLabels, firstPass);
-			if(value >= 0) {
-				if(firstPass) {
-					//Behave as if the label was in range since the address is unknown
+			if (value >= 0) {
+				if (firstPass) {
+					// Behave as if the label was in range since the address is unknown
 					return true;
 				}
 				int offset = (value - (address + 2));
 				return offset >= -128 && offset <= 127;
-			} else if(firstPass) {
+			} else if (firstPass) {
 				return 0;
 			}
 			return false;
@@ -316,11 +333,10 @@ bool SmsAssembler::IsMatch(ParamEntry& entry, string operand, uint32_t address, 
 	return true;
 }
 
-void SmsAssembler::PushOp(uint32_t opCode, vector<int16_t>& output, uint32_t& address)
-{
-	if(opCode <= 0xFF) {
+void SmsAssembler::PushOp(uint32_t opCode, vector<int16_t>& output, uint32_t& address) {
+	if (opCode <= 0xFF) {
 		PushByte((uint8_t)opCode, output, address);
-	} else if(opCode < 0xFFFF) {
+	} else if (opCode < 0xFFFF) {
 		PushWord((uint16_t)opCode, output, address);
 	} else {
 		PushByte((uint8_t)opCode, output, address);
@@ -329,9 +345,8 @@ void SmsAssembler::PushOp(uint32_t opCode, vector<int16_t>& output, uint32_t& ad
 	}
 }
 
-void SmsAssembler::PushByte(uint8_t operand, vector<int16_t>& output, uint32_t& address, bool insertBeforeOpCode)
-{
-	if(insertBeforeOpCode) {
+void SmsAssembler::PushByte(uint8_t operand, vector<int16_t>& output, uint32_t& address, bool insertBeforeOpCode) {
+	if (insertBeforeOpCode) {
 		output.insert(output.end() - 1, operand);
 	} else {
 		output.push_back(operand);
@@ -339,16 +354,14 @@ void SmsAssembler::PushByte(uint8_t operand, vector<int16_t>& output, uint32_t& 
 	address++;
 }
 
-void SmsAssembler::PushWord(uint16_t operand, vector<int16_t>& output, uint32_t& address)
-{
+void SmsAssembler::PushWord(uint16_t operand, vector<int16_t>& output, uint32_t& address) {
 	output.push_back((uint8_t)operand);
 	output.push_back((operand >> 8));
 	address += 2;
 }
 
-void SmsAssembler::ProcessOperand(OpCodeEntry& opEntry, ParamEntry& entry, string operand, vector<int16_t>& output, uint32_t& address, unordered_map<string, uint16_t>& localLabels, bool firstPass)
-{
-	switch(entry.Type) {
+void SmsAssembler::ProcessOperand(OpCodeEntry& opEntry, ParamEntry& entry, const string& operand, vector<int16_t>& output, uint32_t& address, unordered_map<string, uint16_t>& localLabels, bool firstPass) {
+	switch (entry.Type) {
 		default:
 			break;
 
@@ -361,25 +374,25 @@ void SmsAssembler::ProcessOperand(OpCodeEntry& opEntry, ParamEntry& entry, strin
 			break;
 
 		case ParamType::Address:
-			if(operand.size() > 2 && operand[0] == '(' && operand[operand.size() - 1] == ')') {
+			if (operand.size() > 2 && operand[0] == '(' && operand[operand.size() - 1] == ')') {
 				PushWord((uint16_t)ReadValue(operand.substr(1, operand.size() - 2), 0, 0xFFFF, localLabels, firstPass), output, address);
 			}
 			break;
 
 		case ParamType::Port:
-			if(operand.size() > 2 && operand[0] == '(' && operand[operand.size() - 1] == ')') {
+			if (operand.size() > 2 && operand[0] == '(' && operand[operand.size() - 1] == ')') {
 				PushByte((uint8_t)ReadValue(operand.substr(1, operand.size() - 2), -128, 0xFF, localLabels, firstPass, true), output, address);
 			}
 			break;
 
 		case ParamType::IxOffset:
-			if(operand.size() > 5 && StringUtilities::StartsWith(operand, "(IX+") && operand[operand.size() - 1] == ')') {
+			if (operand.size() > 5 && StringUtilities::StartsWith(operand, "(IX+") && operand[operand.size() - 1] == ')') {
 				PushByte(ReadValue(operand.substr(4, operand.size() - 5), 0, 0xFF, localLabels, firstPass), output, address, opEntry.OpCode > 0xFFFF);
 			}
 			break;
 
 		case ParamType::IyOffset:
-			if(operand.size() > 5 && StringUtilities::StartsWith(operand, "(IY+") && operand[operand.size() - 1] == ')') {
+			if (operand.size() > 5 && StringUtilities::StartsWith(operand, "(IY+") && operand[operand.size() - 1] == ')') {
 				PushByte(ReadValue(operand.substr(4, operand.size() - 5), 0, 0xFF, localLabels, firstPass), output, address, opEntry.OpCode > 0xFFFF);
 			}
 			break;
@@ -393,24 +406,23 @@ void SmsAssembler::ProcessOperand(OpCodeEntry& opEntry, ParamEntry& entry, strin
 	}
 }
 
-void SmsAssembler::RunPass(vector<int16_t>& output, string code, uint32_t address, int16_t* assembledCode, bool firstPass, unordered_map<string, uint16_t>& localLabels)
-{
+void SmsAssembler::RunPass(vector<int16_t>& output, const string& code, uint32_t address, int16_t* assembledCode, bool firstPass, unordered_map<string, uint16_t>& localLabels) {
 	unordered_set<string> currentPassLabels;
-	for(string line : StringUtilities::Split(code, '\n')) {
-		//Remove comment
+	for (string line : StringUtilities::Split(code, '\n')) {
+		// Remove comment
 		size_t commentIndex = line.find(';');
-		if(commentIndex != string::npos) {
+		if (commentIndex != string::npos) {
 			line = line.substr(0, commentIndex);
 		}
 
-		//Check if this is a label definition
+		// Check if this is a label definition
 		size_t labelDefIndex = line.find(':');
-		if(labelDefIndex != string::npos) {
+		if (labelDefIndex != string::npos) {
 			std::smatch match;
 			string labelName = line.substr(0, labelDefIndex);
-			if(std::regex_search(labelName, match, labelRegex)) {
+			if (std::regex_search(labelName, match, labelRegex)) {
 				string label = match.str(1);
-				if(firstPass && currentPassLabels.find(label) != currentPassLabels.end()) {
+				if (firstPass && currentPassLabels.contains(label)) {
 					output.push_back(AssemblerSpecialCodes::LabelRedefinition);
 					continue;
 				} else {
@@ -424,22 +436,22 @@ void SmsAssembler::RunPass(vector<int16_t>& output, string code, uint32_t addres
 			}
 		}
 
-		//Trim left spaces
+		// Trim left spaces
 		size_t startIndex = line.find_first_not_of("\t ");
-		if(startIndex > 0 && startIndex != string::npos) {
+		if (startIndex > 0 && startIndex != string::npos) {
 			line = line.substr(startIndex);
 		}
 
-		//Check if this is a .db statement
-		if(line.size() > 3 && line.substr(0, 3) == ".db") {
+		// Check if this is a .db statement
+		if (line.starts_with(".db")) {
 			line = line.substr(3);
-			for(string byte : StringUtilities::Split(line, ' ')) {
-				if(byte.empty()) {
+			for (const string& byte : StringUtilities::Split(line, ' ')) {
+				if (byte.empty()) {
 					continue;
 				}
 
 				int value = ReadValue(byte, -128, 255, localLabels, true);
-				if(value >= 0) {
+				if (value >= 0) {
 					PushByte((uint8_t)value, output, address);
 				}
 			}
@@ -447,83 +459,83 @@ void SmsAssembler::RunPass(vector<int16_t>& output, string code, uint32_t addres
 			continue;
 		}
 
-		//Find op code name
+		// Find op code name
 		size_t spaceIndex = line.find(' ');
 		string opName;
-		if(spaceIndex != string::npos) {
+		if (spaceIndex != string::npos) {
 			opName = line.substr(0, spaceIndex);
 		} else {
 			opName = line;
 		}
 
-		if(opName.empty()) {
+		if (opName.empty()) {
 			output.push_back(AssemblerSpecialCodes::EndOfLine);
 			continue;
 		}
 
-		std::transform(opName.begin(), opName.end(), opName.begin(), ::tolower);
+		std::ranges::transform(opName, opName.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
-		if(_opCodes.find(opName) == _opCodes.end()) {
-			//No matching opcode found, mark it as invalid
+		if (_opCodes.find(opName) == _opCodes.end()) {
+			// No matching opcode found, mark it as invalid
 			output.push_back(AssemblerSpecialCodes::InvalidInstruction);
 			continue;
 		}
 
-		//Find the operands given
+		// Find the operands given
 		int paramCount = 0;
 		vector<string> operandList;
-		if(spaceIndex != string::npos) {
+		if (spaceIndex != string::npos) {
 			string operands = line.substr(spaceIndex + 1);
-			operands.erase(std::remove_if(operands.begin(), operands.end(), isspace), operands.end());
-			if(!operands.empty()) {
-				paramCount = std::count(operands.begin(), operands.end(), ',') + 1;
+			std::erase_if(operands, isspace);
+			if (!operands.empty()) {
+				paramCount = std::ranges::count(operands, ',') + 1;
 
-				if(paramCount > 1) {
+				if (paramCount > 1) {
 					operandList = StringUtilities::Split(operands, ',');
 
 					bool invalid = operandList.size() > 3;
-					for(string operand : operandList) {
-						if(operand.empty()) {
+					for (const string& operand : operandList) {
+						if (operand.empty()) {
 							invalid = true;
 							break;
 						}
 					}
 
-					if(invalid) {
+					if (invalid) {
 						output.push_back(AssemblerSpecialCodes::InvalidOperands);
 						continue;
 					}
 				} else {
-					operandList = { operands };
+					operandList = {operands};
 				}
 			}
 		}
 
 		bool matchFound = false;
-		//Find a matching set of opcode + operands
-		for(OpCodeEntry& entry : _opCodes.find(opName)->second) {
-			if(entry.ParamCount == paramCount) {
-				if(paramCount == 0) {
+		// Find a matching set of opcode + operands
+		for (OpCodeEntry& entry : _opCodes.find(opName)->second) {
+			if (entry.ParamCount == paramCount) {
+				if (paramCount == 0) {
 					PushOp(entry.OpCode, output, address);
 					matchFound = true;
 					break;
-				} else if(paramCount == 1) {
-					if(IsMatch(entry.Param1, operandList[0], address, localLabels, firstPass)) {
+				} else if (paramCount == 1) {
+					if (IsMatch(entry.Param1, operandList[0], address, localLabels, firstPass)) {
 						PushOp(entry.OpCode, output, address);
 						ProcessOperand(entry, entry.Param1, operandList[0], output, address, localLabels, firstPass);
 						matchFound = true;
 						break;
 					}
-				} else if(paramCount == 2) {
-					if(IsMatch(entry.Param1, operandList[0], address, localLabels, firstPass) && IsMatch(entry.Param2, operandList[1], address, localLabels, firstPass)) {
+				} else if (paramCount == 2) {
+					if (IsMatch(entry.Param1, operandList[0], address, localLabels, firstPass) && IsMatch(entry.Param2, operandList[1], address, localLabels, firstPass)) {
 						PushOp(entry.OpCode, output, address);
 						ProcessOperand(entry, entry.Param1, operandList[0], output, address, localLabels, firstPass);
 						ProcessOperand(entry, entry.Param2, operandList[1], output, address, localLabels, firstPass);
 						matchFound = true;
 						break;
 					}
-				} else if(paramCount == 3) {
-					if(IsMatch(entry.Param1, operandList[0], address, localLabels, firstPass) && IsMatch(entry.Param2, operandList[1], address, localLabels, firstPass) && IsMatch(entry.Param3, operandList[2], address, localLabels, firstPass)) {
+				} else if (paramCount == 3) {
+					if (IsMatch(entry.Param1, operandList[0], address, localLabels, firstPass) && IsMatch(entry.Param2, operandList[1], address, localLabels, firstPass) && IsMatch(entry.Param3, operandList[2], address, localLabels, firstPass)) {
 						PushOp(entry.OpCode, output, address);
 						ProcessOperand(entry, entry.Param1, operandList[0], output, address, localLabels, firstPass);
 						ProcessOperand(entry, entry.Param2, operandList[1], output, address, localLabels, firstPass);
@@ -535,7 +547,7 @@ void SmsAssembler::RunPass(vector<int16_t>& output, string code, uint32_t addres
 			}
 		}
 
-		if(!matchFound) {
+		if (!matchFound) {
 			output.push_back(AssemblerSpecialCodes::InvalidOperands);
 		} else {
 			output.push_back(AssemblerSpecialCodes::EndOfLine);
@@ -543,8 +555,7 @@ void SmsAssembler::RunPass(vector<int16_t>& output, string code, uint32_t addres
 	}
 }
 
-uint32_t SmsAssembler::AssembleCode(string code, uint32_t address, int16_t* assembledCode)
-{
+uint32_t SmsAssembler::AssembleCode(const string& code, uint32_t address, int16_t* assembledCode) {
 	vector<int16_t> output;
 	unordered_map<string, uint16_t> localLabels;
 

@@ -1,17 +1,14 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace Mesen.Views;
+namespace Nexen.Views;
 
-public class WsControllerView : UserControl
-{
-	public WsControllerView()
-	{
+public partial class WsControllerView : UserControl {
+	public WsControllerView() {
 		InitializeComponent();
 	}
 
-	private void InitializeComponent()
-	{
+	private void InitializeComponent() {
 		AvaloniaXamlLoader.Load(this);
 	}
 }

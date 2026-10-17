@@ -8,23 +8,33 @@
 enum class MemoryType;
 enum class CpuType : uint8_t;
 
-struct MemoryOperationInfo
-{
-	uint32_t Address;
-	int32_t Value;
-	MemoryOperationType Type;
-	MemoryType MemType;
+/// <summary>
+/// Memory operation information (read/write).
+/// </summary>
+/// <remarks>
+/// Used by breakpoints, event viewer, trace logger.
+/// Records address, value, operation type, memory type.
+/// </remarks>
+struct MemoryOperationInfo {
+	uint32_t Address;         ///< Memory address
+	int32_t Value;            ///< Value read/written
+	MemoryOperationType Type; ///< Operation type (read/write/exec)
+	MemoryType MemType;       ///< Memory type (PRG ROM/RAM/etc)
 
-	MemoryOperationInfo()
-	{
+	/// <summary>
+	/// Default constructor.
+	/// </summary>
+	MemoryOperationInfo() {
 		Address = 0;
 		Value = 0;
 		Type = (MemoryOperationType)0;
 		MemType = (MemoryType)0;
 	}
 
-	MemoryOperationInfo(uint32_t addr, int32_t val, MemoryOperationType opType, MemoryType memType)
-	{
+	/// <summary>
+	/// Constructor with initial values.
+	/// </summary>
+	MemoryOperationInfo(uint32_t addr, int32_t val, MemoryOperationType opType, MemoryType memType) {
 		Address = addr;
 		Value = val;
 		Type = opType;
@@ -32,65 +42,85 @@ struct MemoryOperationInfo
 	}
 };
 
-enum class BreakpointTypeFlags
-{
-	None = 0,
-	Read = 1,
-	Write = 2,
-	Execute = 4,
-	Forbid = 8,
+/// <summary>
+/// Breakpoint type flags (bitfield).
+/// </summary>
+enum class BreakpointTypeFlags {
+	None = 0,    ///< No breakpoint
+	Read = 1,    ///< Break on memory read
+	Write = 2,   ///< Break on memory write
+	Execute = 4, ///< Break on code execution
+	Forbid = 8,  ///< Forbid breakpoint (prevents execution)
 };
 
-enum class BreakpointType
-{
-	Execute = 0,
-	Read = 1,
-	Write = 2,
-	Forbid = 3,
+/// <summary>
+/// Breakpoint type (exclusive).
+/// </summary>
+enum class BreakpointType {
+	Execute = 0, ///< Execute breakpoint
+	Read = 1,    ///< Read breakpoint
+	Write = 2,   ///< Write breakpoint
+	Forbid = 3,  ///< Forbid breakpoint (prevents execution)
 };
 
-namespace CdlFlags
-{
-	enum CdlFlags : uint8_t
-	{
-		None = 0x00,
-		Code = 0x01,
-		Data = 0x02,
-		JumpTarget = 0x04,
-		SubEntryPoint = 0x08,
-	};
-}
+/// <summary>
+/// Code/Data Logger (CDL) flags namespace.
+/// </summary>
+namespace CdlFlags {
+/// <summary>
+/// CDL flags for marking ROM bytes.
+/// </summary>
+enum CdlFlags : uint8_t {
+	None = 0x00,          ///< Unmarked
+	Code = 0x01,          ///< Executed as code
+	Data = 0x02,          ///< Accessed as data
+	JumpTarget = 0x04,    ///< Branch/jump target
+	SubEntryPoint = 0x08, ///< Subroutine entry point
+};
+} // namespace CdlFlags
 
-enum class CdlStripOption
-{
-	StripNone = 0,
-	StripUnused,
-	StripUsed,
+/// <summary>
+/// CDL strip options for ROM stripping.
+/// </summary>
+enum class CdlStripOption {
+	StripNone = 0, ///< No stripping
+	StripUnused,   ///< Strip unused bytes
+	StripUsed,     ///< Strip used bytes (keep only unused)
 };
 
-struct CdlStatistics
-{
-	uint32_t CodeBytes;
-	uint32_t DataBytes;
-	uint32_t TotalBytes;
-	
-	uint32_t JumpTargetCount;
-	uint32_t FunctionCount;
+/// <summary>
+/// CDL statistics for ROM analysis.
+/// </summary>
+struct CdlStatistics {
+	uint32_t CodeBytes;  ///< Bytes executed as code
+	uint32_t DataBytes;  ///< Bytes accessed as data
+	uint32_t TotalBytes; ///< Total ROM bytes
 
-	//CHR ROM (NES-specific)
-	uint32_t DrawnChrBytes;
-	uint32_t TotalChrBytes;
+	uint32_t JumpTargetCount; ///< Number of jump targets
+	uint32_t FunctionCount;   ///< Number of subroutines
+
+	// CHR ROM (NES-specific)
+	uint32_t DrawnChrBytes; ///< CHR bytes drawn to screen
+	uint32_t TotalChrBytes; ///< Total CHR ROM bytes
 };
 
-struct DisassemblyResult
-{
-	AddressInfo Address;
-	int32_t CpuAddress;
-	uint16_t Flags;
-	int16_t CommentLine;
+/// <summary>
+/// Disassembly result for one instruction.
+/// </summary>
+/// <remarks>
+/// Used by Disassembler to return disassembled instruction info.
+/// Includes address info, flags, CPU address, comment line.
+/// </remarks>
+struct DisassemblyResult {
+	AddressInfo Address; ///< Absolute address (PRG ROM/RAM)
+	int32_t CpuAddress;  ///< CPU address ($0000-$FFFF)
+	uint16_t Flags;      ///< LineFlags bitfield
+	int16_t CommentLine; ///< Comment line number (or byte count)
 
-	DisassemblyResult(int32_t cpuAddress, uint16_t flags, int16_t commentLine = -1)
-	{
+	/// <summary>
+	/// Constructor with CPU address only.
+	/// </summary>
+	DisassemblyResult(int32_t cpuAddress, uint16_t flags, int16_t commentLine = -1) {
 		Flags = flags;
 		CpuAddress = cpuAddress;
 		Address.Address = -1;
@@ -98,315 +128,401 @@ struct DisassemblyResult
 		CommentLine = commentLine;
 	}
 
-	DisassemblyResult(AddressInfo address, int32_t cpuAddress, uint16_t flags = 0, int16_t commentLine = -1)
-	{
+	/// <summary>
+	/// Constructor with absolute address.
+	/// </summary>
+	DisassemblyResult(AddressInfo address, int32_t cpuAddress, uint16_t flags = 0, int16_t commentLine = -1) {
 		Address = address;
 		CpuAddress = cpuAddress;
 		Flags = flags;
 		CommentLine = commentLine;
 	}
 
-	void SetByteCount(uint8_t byteCount)
-	{
+	/// <summary>
+	/// Set byte count (uses CommentLine field).
+	/// </summary>
+	void SetByteCount(uint8_t byteCount) {
 		CommentLine = byteCount;
 	}
 
-	uint8_t GetByteCount()
-	{
+	/// <summary>
+	/// Get byte count (from CommentLine field).
+	/// </summary>
+	uint8_t GetByteCount() {
 		return (uint8_t)CommentLine;
 	}
 };
 
-namespace LineFlags
-{
-	enum LineFlags : uint16_t
-	{
-		None = 0,
-		PrgRom = 0x01,
-		WorkRam = 0x02,
-		SaveRam = 0x04,
-		VerifiedData = 0x08,
-		VerifiedCode = 0x10,
-		BlockStart = 0x20,
-		BlockEnd = 0x40,
-		SubStart = 0x80,
-		Label = 0x100,
-		Comment = 0x200,
-		ShowAsData = 0x400,
-		UnexecutedCode = 0x800,
-		UnmappedMemory = 0x1000,
-		Empty = 0x2000
-	};
-}
+/// <summary>
+/// Disassembly line flags namespace.
+/// </summary>
+namespace LineFlags {
+/// <summary>
+/// Line flags for disassembly display.
+/// </summary>
+enum LineFlags : uint16_t {
+	None = 0,                ///< No flags
+	PrgRom = 0x01,           ///< PRG ROM
+	WorkRam = 0x02,          ///< Work RAM
+	SaveRam = 0x04,          ///< Save RAM (battery-backed)
+	VerifiedData = 0x08,     ///< Verified as data (CDL)
+	VerifiedCode = 0x10,     ///< Verified as code (CDL)
+	BlockStart = 0x20,       ///< Block start marker
+	BlockEnd = 0x40,         ///< Block end marker
+	SubStart = 0x80,         ///< Subroutine start
+	Label = 0x100,           ///< Has label
+	Comment = 0x200,         ///< Has comment
+	ShowAsData = 0x400,      ///< Force display as data
+	UnexecutedCode = 0x800,  ///< Code never executed (CDL)
+	UnmappedMemory = 0x1000, ///< Unmapped address
+	Empty = 0x2000           ///< Empty line
+};
+} // namespace LineFlags
 
-struct CodeLineData
-{
-	int32_t Address;
-	AddressInfo AbsoluteAddress;
-	uint8_t OpSize;
-	uint16_t Flags;
+/// <summary>
+/// Code line data for disassembly viewer.
+/// </summary>
+/// <remarks>
+/// Full disassembled line info: address, opcode bytes, text, comment.
+/// Used for debugger disassembly window display.
+/// </remarks>
+struct CodeLineData {
+	int32_t Address;             ///< CPU address
+	AddressInfo AbsoluteAddress; ///< Absolute address (PRG ROM/RAM)
+	uint8_t OpSize;              ///< Opcode size (bytes)
+	uint16_t Flags;              ///< LineFlags bitfield
 
-	EffectiveAddressInfo EffectiveAddress;
-	uint32_t Value;
-	CpuType LineCpuType;
+	EffectiveAddressInfo EffectiveAddress; ///< Effective address (operand)
+	uint32_t Value;                        ///< Operand value
+	CpuType LineCpuType;                   ///< CPU type for this line
 
-	uint8_t ByteCode[8];
-	char Text[1000];
-	char Comment[1000];
+	uint8_t ByteCode[8]; ///< Opcode bytes
+	char Text[1000];     ///< Disassembled text
+	char Comment[1000];  ///< Comment text
 };
 
-enum class TilemapDisplayMode
-{
-	Default,
-	Grayscale,
-	AttributeView
+/// <summary>
+/// Tilemap display mode for tilemap viewer.
+/// </summary>
+enum class TilemapDisplayMode {
+	Default,      ///< Normal rendering
+	Grayscale,    ///< Grayscale display
+	AttributeView ///< Show attribute data (palettes/flip)
 };
 
 struct AddressCounters;
 
-enum class TilemapHighlightMode
-{
-	None,
-	Changes,
-	Writes
+/// <summary>
+/// Tilemap highlight mode for access visualization.
+/// </summary>
+enum class TilemapHighlightMode {
+	None,    ///< No highlighting
+	Changes, ///< Highlight changed tiles
+	Writes   ///< Highlight written tiles
 };
 
-struct GetTilemapOptions
-{
-	uint8_t Layer;
-	uint8_t* CompareVram;
-	AddressCounters* AccessCounters;
+/// <summary>
+/// Tilemap viewer options.
+/// </summary>
+struct GetTilemapOptions {
+	uint8_t Layer;                   ///< Layer number (0-3)
+	uint8_t* CompareVram;            ///< VRAM snapshot for change detection
+	AddressCounters* AccessCounters; ///< Access counters for highlighting
 
-	uint64_t MasterClock;
-	TilemapHighlightMode TileHighlightMode;
-	TilemapHighlightMode AttributeHighlightMode;
+	uint64_t MasterClock;                        ///< Master clock for timing
+	TilemapHighlightMode TileHighlightMode;      ///< Tile highlight mode
+	TilemapHighlightMode AttributeHighlightMode; ///< Attribute highlight mode
 
-	TilemapDisplayMode DisplayMode;
+	TilemapDisplayMode DisplayMode; ///< Display mode
 };
 
-enum class TileFormat
-{
-	Bpp2,
-	Bpp4,
-	Bpp8,
-	DirectColor,
-	Mode7,
-	Mode7DirectColor,
-	Mode7ExtBg,
-	NesBpp2,
-	PceSpriteBpp4,
-	PceSpriteBpp2Sp01,
-	PceSpriteBpp2Sp23,
-	PceBackgroundBpp2Cg0,
-	PceBackgroundBpp2Cg1,
-	SmsBpp4,
-	SmsSgBpp1,
-	GbaBpp4,
-	GbaBpp8,
-	WsBpp4Packed
+/// <summary>
+/// Tile format for tile viewer.
+/// </summary>
+enum class TileFormat {
+	Bpp2,                 ///< 2bpp linear (NES, GB)
+	Bpp4,                 ///< 4bpp linear
+	Bpp8,                 ///< 8bpp linear
+	DirectColor,          ///< Direct color (SNES mode 3/4)
+	Mode7,                ///< SNES Mode 7
+	Mode7DirectColor,     ///< SNES Mode 7 direct color
+	Mode7ExtBg,           ///< SNES Mode 7 extended BG
+	NesBpp2,              ///< NES 2bpp (planar)
+	PceSpriteBpp4,        ///< PCE sprite 4bpp
+	PceSpriteBpp2Sp01,    ///< PCE sprite 2bpp (SP0/SP1)
+	PceSpriteBpp2Sp23,    ///< PCE sprite 2bpp (SP2/SP3)
+	PceBackgroundBpp2Cg0, ///< PCE background 2bpp (CG0)
+	PceBackgroundBpp2Cg1, ///< PCE background 2bpp (CG1)
+	SmsBpp4,              ///< SMS 4bpp
+	SmsSgBpp1,            ///< SMS SG-1000 1bpp
+	GbaBpp4,              ///< GBA 4bpp
+	GbaBpp8,              ///< GBA 8bpp
+	WsBpp4Packed          ///< WonderSwan 4bpp packed
 };
 
-enum class TileLayout
-{
-	Normal,
-	SingleLine8x16,
-	SingleLine16x16
+/// <summary>
+/// Tile layout for tile viewer.
+/// </summary>
+enum class TileLayout {
+	Normal,         ///< 8x8 tiles
+	SingleLine8x16, ///< 8x16 tiles (single line)
+	SingleLine16x16 ///< 16x16 tiles (single line)
 };
 
-enum class TileBackground
-{
-	Default,
-	Transparent,
-	PaletteColor,
-	Black,
-	White,
-	Magenta,
+/// <summary>
+/// Tile background color for tile viewer.
+/// </summary>
+enum class TileBackground {
+	Default,      ///< Default background
+	Transparent,  ///< Transparent (color 0)
+	PaletteColor, ///< Specific palette color
+	Black,        ///< Black
+	White,        ///< White
+	Magenta,      ///< Magenta (common transparency color)
 };
 
-enum class TileFilter
-{
-	None,
-	HideUnused,
-	HideUsed
+/// <summary>
+/// Tile filter for tile viewer.
+/// </summary>
+enum class TileFilter {
+	None,       ///< Show all tiles
+	HideUnused, ///< Hide unused tiles (CDL)
+	HideUsed    ///< Hide used tiles (CDL)
 };
 
-struct GetTileViewOptions
-{
-	MemoryType MemType;
-	TileFormat Format;
-	TileLayout Layout;
-	TileFilter Filter;
-	TileBackground Background;
-	int32_t Width;
-	int32_t Height;
-	int32_t StartAddress;
-	int32_t Palette;
-	bool UseGrayscalePalette;
+/// <summary>
+/// Tile viewer options.
+/// </summary>
+struct GetTileViewOptions {
+	MemoryType MemType;        ///< Memory type (CHR ROM/VRAM)
+	TileFormat Format;         ///< Tile format
+	TileLayout Layout;         ///< Tile layout
+	TileFilter Filter;         ///< Tile filter
+	TileBackground Background; ///< Background color
+	int32_t Width;             ///< Viewer width (pixels)
+	int32_t Height;            ///< Viewer height (pixels)
+	int32_t StartAddress;      ///< Start address in memory
+	int32_t Palette;           ///< Palette number
+	bool UseGrayscalePalette;  ///< True for grayscale
 };
 
-enum class SpriteBackground
-{
-	Gray,
-	Background,
-	Transparent,
-	Black,
-	White,
-	Magenta,
+/// <summary>
+/// Sprite background color for sprite viewer.
+/// </summary>
+enum class SpriteBackground {
+	Gray,        ///< Gray background
+	Background,  ///< Use background layer
+	Transparent, ///< Transparent
+	Black,       ///< Black
+	White,       ///< White
+	Magenta,     ///< Magenta
 };
 
-struct GetSpritePreviewOptions
-{
-	SpriteBackground Background;
+/// <summary>
+/// Sprite preview options.
+/// </summary>
+struct GetSpritePreviewOptions {
+	SpriteBackground Background; ///< Background color/mode
 };
 
-struct GetPaletteInfoOptions
-{
-	TileFormat Format;
+/// <summary>
+/// Palette viewer options.
+/// </summary>
+struct GetPaletteInfoOptions {
+	TileFormat Format; ///< Tile format (affects palette size)
 };
 
-enum class StackFrameFlags
-{
-	None = 0,
-	Nmi = 1,
-	Irq = 2
+/// <summary>
+/// Stack frame flags for interrupt context.
+/// </summary>
+enum class StackFrameFlags {
+	None = 0, ///< Normal call
+	Nmi = 1,  ///< NMI handler
+	Irq = 2   ///< IRQ handler
 };
 
-struct StackFrameInfo
-{
-	uint32_t Source;
-	AddressInfo AbsSource;
-	uint32_t Target;
-	AddressInfo AbsTarget;
-	uint32_t Return;
-	uint32_t ReturnStackPointer;
-	AddressInfo AbsReturn;
-	StackFrameFlags Flags;
+/// <summary>
+/// Callstack stack frame information.
+/// </summary>
+struct StackFrameInfo {
+	uint32_t Source;             ///< Source address (caller)
+	AddressInfo AbsSource;       ///< Absolute source address
+	uint32_t Target;             ///< Target address (callee)
+	AddressInfo AbsTarget;       ///< Absolute target address
+	uint32_t Return;             ///< Return address
+	uint32_t ReturnStackPointer; ///< Stack pointer at return
+	AddressInfo AbsReturn;       ///< Absolute return address
+	StackFrameFlags Flags;       ///< Interrupt flags
 };
 
-enum class DebugEventType
-{
-	Register,
-	Nmi,
-	Irq,
-	Breakpoint,
-	BgColorChange,
-	SpriteZeroHit,
-	DmcDmaRead,
-	DmaRead
+/// <summary>
+/// Debug event types for event viewer.
+/// </summary>
+enum class DebugEventType {
+	Register,      ///< Register write
+	Nmi,           ///< NMI interrupt
+	Irq,           ///< IRQ interrupt
+	Breakpoint,    ///< Breakpoint hit
+	BgColorChange, ///< Background color change
+	SpriteZeroHit, ///< Sprite 0 hit (NES)
+	DmcDmaRead,    ///< DMC DMA read (NES)
+	DmaRead        ///< DMA read
 };
 
-enum class BreakSource
-{
-	Unspecified = -1,
-	Breakpoint = 0,
-	Pause,
-	CpuStep,
-	PpuStep,
+/// <summary>
+/// Break source for debugger break reasons.
+/// </summary>
+/// <remarks>
+/// Values after InternalOperation are treated as "exceptions".
+/// Forbid breakpoints can block exceptions, but not user breaks.
+/// </remarks>
+enum class BreakSource {
+	Unspecified = -1, ///< No break source
+	Breakpoint = 0,   ///< Breakpoint hit
+	Pause,            ///< User pause
+	CpuStep,          ///< CPU step
+	PpuStep,          ///< PPU step
 
-	Irq,
-	Nmi,
+	Irq, ///< IRQ interrupt
+	Nmi, ///< NMI interrupt
 
-	//Used by DebugBreakHelper, prevents debugger getting focus
+	// Used by DebugBreakHelper, prevents debugger getting focus
 	InternalOperation,
 
-	//Everything after InternalOperation is treated as an "Exception"
-	//Forbid breakpoints can block these, but not the other types above
-	BreakOnBrk,
-	BreakOnCop,
-	BreakOnWdm,
-	BreakOnStp,
-	BreakOnUninitMemoryRead,
-	
-	GbInvalidOamAccess,
-	GbInvalidVramAccess,
-	GbDisableLcdOutsideVblank,
-	GbInvalidOpCode,
-	GbNopLoad,
-	GbOamCorruption,
+	// Everything after InternalOperation is treated as an "Exception"
+	// Forbid breakpoints can block these, but not the other types above
+	BreakOnBrk,              ///< BRK instruction (6502)
+	BreakOnCop,              ///< COP instruction (65816)
+	BreakOnWdm,              ///< WDM instruction (65816)
+	BreakOnStp,              ///< STP instruction (65816)
+	BreakOnUninitMemoryRead, ///< Uninitialized memory read
 
-	NesBreakOnDecayedOamRead,
-	NesBreakOnPpuScrollGlitch,
-	BreakOnUnofficialOpCode,
-	BreakOnUnstableOpCode,
-	NesBusConflict,
-	NesBreakOnCpuCrash,
-	NesBreakOnExtOutputMode,
-	NesInvalidVramAccess,
-	NesInvalidOamWrite,
-	NesDmaInputRead,
+	GbInvalidOamAccess,        ///< Game Boy: Invalid OAM access
+	GbInvalidVramAccess,       ///< Game Boy: Invalid VRAM access
+	GbDisableLcdOutsideVblank, ///< Game Boy: LCD disabled outside VBlank
+	GbInvalidOpCode,           ///< Game Boy: Invalid opcode
+	GbNopLoad,                 ///< Game Boy: NOP load (ld b,b)
+	GbOamCorruption,           ///< Game Boy: OAM corruption
 
-	PceBreakOnInvalidVramAddress,
-	
-	SmsNopLoad,
+	NesBreakOnDecayedOamRead,  ///< NES: Decayed OAM read
+	NesBreakOnPpuScrollGlitch, ///< NES: PPU scroll glitch
+	BreakOnUnofficialOpCode,   ///< NES: Unofficial opcode
+	BreakOnUnstableOpCode,     ///< NES: Unstable opcode
+	NesBusConflict,            ///< NES: Bus conflict
+	NesBreakOnCpuCrash,        ///< NES: CPU crash
+	NesBreakOnExtOutputMode,   ///< NES: Extended output mode
+	NesInvalidVramAccess,      ///< NES: Invalid VRAM access
+	NesInvalidOamWrite,        ///< NES: Invalid OAM write
+	NesDmaInputRead,           ///< NES: DMA input read
 
-	GbaInvalidOpCode,
-	GbaNopLoad,
-	GbaUnalignedMemoryAccess,
+	PceBreakOnInvalidVramAddress, ///< PCE: Invalid VRAM address
 
-	SnesInvalidPpuAccess,
-	SnesReadDuringAutoJoy,
+	SmsNopLoad, ///< SMS: NOP load
 
-	BreakOnUndefinedOpCode
+	GbaInvalidOpCode,         ///< GBA: Invalid opcode
+	GbaNopLoad,               ///< GBA: NOP load
+	GbaUnalignedMemoryAccess, ///< GBA: Unaligned memory access
+
+	SnesInvalidPpuAccess,  ///< SNES: Invalid PPU access
+	SnesReadDuringAutoJoy, ///< SNES: Read during auto-joypad
+
+	BreakOnUndefinedOpCode ///< Undefined opcode
 };
 
-struct BreakEvent
-{
-	BreakSource Source;
-	CpuType SourceCpu;
-	MemoryOperationInfo Operation;
-	int32_t BreakpointId;
+/// <summary>
+/// Break event information.
+/// </summary>
+struct BreakEvent {
+	BreakSource Source;            ///< Break source
+	CpuType SourceCpu;             ///< CPU type
+	MemoryOperationInfo Operation; ///< Memory operation (if applicable)
+	int32_t BreakpointId;          ///< Breakpoint ID (-1 if N/A)
 };
 
-enum class StepType
-{
-	Step,
-	StepOut,
-	StepOver,
-	CpuCycleStep,
-	PpuStep,
-	PpuScanline,
-	PpuFrame,
-	SpecificScanline,
-	RunToNmi,
-	RunToIrq,
-	StepBack
+/// <summary>
+/// Step type for debugger stepping.
+/// </summary>
+enum class StepType {
+	Step,             ///< Step one instruction
+	StepOut,          ///< Step out of function
+	StepOver,         ///< Step over function call
+	CpuCycleStep,     ///< Step one CPU cycle
+	PpuStep,          ///< Step one PPU cycle
+	PpuScanline,      ///< Step one scanline
+	PpuFrame,         ///< Step one frame
+	SpecificScanline, ///< Run to specific scanline
+	RunToNmi,         ///< Run until NMI
+	RunToIrq,         ///< Run until IRQ
+	StepBack          ///< Step backwards (rewind)
 };
 
-enum class BreakType
-{
-	None = 0,
-	User = 1,
-	Exception = 2,
-	Both = 3
+/// <summary>
+/// Break type for debugger break classification.
+/// </summary>
+enum class BreakType {
+	None = 0,      ///< No break
+	User = 1,      ///< User break (breakpoint/pause)
+	Exception = 2, ///< Exception break (BRK/invalid opcode/etc)
+	Both = 3       ///< Both user and exception
 };
 
-struct StepRequest
-{
-	int64_t BreakAddress = -1;
-	int64_t BreakStackPointer = -1;
-	int32_t StepCount = -1;
-	int32_t PpuStepCount = -1;
-	int32_t CpuCycleStepCount = -1;
-	int32_t BreakScanline = INT32_MIN;
-	StepType Type = StepType::Step;
-	
-	bool HasRequest = false;
+/// <summary>
+/// Step request for debugger stepping (hot path structure).
+/// </summary>
+/// <remarks>
+/// This structure is checked EVERY instruction execution (hot path).
+/// Performance-critical: uses __forceinline methods, bitflags.
+///
+/// Step tracking:
+/// - StepCount: Instruction step counter
+/// - PpuStepCount: PPU cycle step counter
+/// - CpuCycleStepCount: CPU cycle step counter
+/// - BreakAddress: Target address for step over/out
+/// - BreakStackPointer: Stack pointer for step out
+/// - BreakScanline: Target scanline for specific scanline step
+///
+/// Break classification:
+/// - BreakType::User: User-initiated (breakpoint, pause, step)
+/// - BreakType::Exception: Exception (BRK, invalid opcode, etc)
+/// - Source: User break source
+/// - ExSource: Exception break source
+///
+/// Forbid breakpoints:
+/// - Can block exceptions but not user breaks
+/// - InternalOperation threshold: values > InternalOperation are exceptions
+/// </remarks>
+struct StepRequest {
+	int64_t BreakAddress = -1;         ///< Target address for break
+	int64_t BreakStackPointer = -1;    ///< Stack pointer for step out
+	int32_t StepCount = -1;            ///< Instruction step counter
+	int32_t PpuStepCount = -1;         ///< PPU step counter
+	int32_t CpuCycleStepCount = -1;    ///< CPU cycle step counter
+	int32_t BreakScanline = INT32_MIN; ///< Target scanline
+	StepType Type = StepType::Step;    ///< Step type
 
-	BreakType BreakNeeded = BreakType::None;
-	BreakSource Source = BreakSource::Unspecified;
-	BreakSource ExSource = BreakSource::Unspecified;
+	bool HasRequest = false; ///< True if step request active
 
-	StepRequest()
-	{
+	BreakType BreakNeeded = BreakType::None;         ///< Break classification
+	BreakSource Source = BreakSource::Unspecified;   ///< User break source
+	BreakSource ExSource = BreakSource::Unspecified; ///< Exception break source
+
+	/// <summary>
+	/// Default constructor.
+	/// </summary>
+	StepRequest() {
 	}
 
-	StepRequest(StepType type)
-	{
+	/// <summary>
+	/// Constructor with step type.
+	/// </summary>
+	StepRequest(StepType type) {
 		Type = type;
 	}
 
-	StepRequest(const StepRequest& obj)
-	{
+	/// <summary>
+	/// Copy constructor (sets HasRequest based on counters).
+	/// </summary>
+	StepRequest(const StepRequest& obj) {
 		Type = obj.Type;
 		StepCount = obj.StepCount;
 		PpuStepCount = obj.PpuStepCount;
@@ -417,41 +533,51 @@ struct StepRequest
 		HasRequest = (StepCount != -1 || PpuStepCount != -1 || BreakAddress != -1 || BreakScanline != INT32_MIN || CpuCycleStepCount != -1);
 	}
 
-	void ClearException()
-	{
+	/// <summary>
+	/// Clear exception break (allows continued execution).
+	/// </summary>
+	void ClearException() {
 		ExSource = BreakSource::Unspecified;
 		ClearBreakType(BreakType::Exception);
 	}
 
-	__forceinline void SetBreakSource(BreakSource source, bool breakNeeded)
-	{
-		if(source > BreakSource::InternalOperation) {
-			if(ExSource == BreakSource::Unspecified) {
+	/// <summary>
+	/// Set break source and break flag (hot path).
+	/// </summary>
+	/// <remarks>
+	/// Inline for performance - called every instruction.
+	/// Values > InternalOperation are exceptions, others are user breaks.
+	/// </remarks>
+	__forceinline void SetBreakSource(BreakSource source, bool breakNeeded) {
+		if (source > BreakSource::InternalOperation) {
+			if (ExSource == BreakSource::Unspecified) {
 				ExSource = source;
 			}
 
-			if(breakNeeded) {
+			if (breakNeeded) {
 				SetBreakType(BreakType::Exception);
 			}
 		} else {
-			if(Source == BreakSource::Unspecified) {
+			if (Source == BreakSource::Unspecified) {
 				Source = source;
 			}
 
-			if(breakNeeded) {
+			if (breakNeeded) {
 				SetBreakType(BreakType::User);
 			}
 		}
 	}
 
-	BreakSource GetBreakSource()
-	{
-		if(ExSource != BreakSource::Unspecified) {
+	/// <summary>
+	/// Get effective break source (exception > user).
+	/// </summary>
+	BreakSource GetBreakSource() {
+		if (ExSource != BreakSource::Unspecified) {
 			return ExSource;
 		}
 
-		if(Source == BreakSource::Unspecified) {
-			if(BreakScanline != INT32_MIN || PpuStepCount >= 0) {
+		if (Source == BreakSource::Unspecified) {
+			if (BreakScanline != INT32_MIN || PpuStepCount >= 0) {
 				return BreakSource::PpuStep;
 			}
 		}
@@ -459,36 +585,51 @@ struct StepRequest
 		return Source;
 	}
 
-	__forceinline void SetBreakType(BreakType type)
-	{
+	/// <summary>
+	/// Set break type flag (hot path).
+	/// </summary>
+	__forceinline void SetBreakType(BreakType type) {
 		BreakNeeded = (BreakType)((int)BreakNeeded | (int)type);
 	}
 
-	__forceinline void ClearBreakType(BreakType type)
-	{
+	/// <summary>
+	/// Clear break type flag (hot path).
+	/// </summary>
+	__forceinline void ClearBreakType(BreakType type) {
 		BreakNeeded = (BreakType)((int)BreakNeeded & ~(int)type);
 	}
 
-	__forceinline void Break(BreakSource src)
-	{
+	/// <summary>
+	/// Request break (hot path).
+	/// </summary>
+	__forceinline void Break(BreakSource src) {
 		SetBreakSource(src, true);
 	}
 
-	__forceinline void ProcessCpuExec()
-	{
-		if(StepCount > 0) {
+	/// <summary>
+	/// Process CPU instruction execution (hot path).
+	/// </summary>
+	/// <remarks>
+	/// Inline for performance - called every instruction.
+	/// Decrements step counter and sets break when 0.
+	/// </remarks>
+	__forceinline void ProcessCpuExec() {
+		if (StepCount > 0) {
 			StepCount--;
-			if(StepCount == 0) {
+			if (StepCount == 0) {
 				SetBreakSource(BreakSource::CpuStep, true);
 			}
 		}
 	}
 
-	__forceinline bool ProcessCpuCycle()
-	{
-		if(CpuCycleStepCount > 0) {
+	/// <summary>
+	/// Process CPU cycle (hot path).
+	/// </summary>
+	/// <returns>True if break reached</returns>
+	__forceinline bool ProcessCpuCycle() {
+		if (CpuCycleStepCount > 0) {
 			CpuCycleStepCount--;
-			if(CpuCycleStepCount == 0) {
+			if (CpuCycleStepCount == 0) {
 				SetBreakSource(BreakSource::CpuStep, true);
 				return true;
 			}
@@ -496,52 +637,62 @@ struct StepRequest
 		return false;
 	}
 
-	__forceinline void ProcessNmiIrq(bool forNmi)
-	{
-		if(forNmi) {
-			if(Type == StepType::RunToNmi) {
+	/// <summary>
+	/// Process NMI/IRQ interrupt (hot path).
+	/// </summary>
+	__forceinline void ProcessNmiIrq(bool forNmi) {
+		if (forNmi) {
+			if (Type == StepType::RunToNmi) {
 				SetBreakSource(BreakSource::Nmi, true);
 			}
 		} else {
-			if(Type == StepType::RunToIrq) {
+			if (Type == StepType::RunToIrq) {
 				SetBreakSource(BreakSource::Irq, true);
 			}
 		}
 	}
 
-	bool HasScanlineBreakRequest()
-	{
+	/// <summary>
+	/// Check if scanline break request active.
+	/// </summary>
+	bool HasScanlineBreakRequest() {
 		return BreakScanline != INT32_MIN;
 	}
 };
 
-struct CpuInstructionProgress
-{
-	uint64_t StartCycle = 0;
-	uint64_t CurrentCycle = 0;
-	uint32_t LastOpCode = 0;
-	MemoryOperationInfo LastMemOperation = {};
+/// <summary>
+/// CPU instruction progress tracking (for instruction-level debugging).
+/// </summary>
+struct CpuInstructionProgress {
+	uint64_t StartCycle = 0;                   ///< Cycle when instruction started
+	uint64_t CurrentCycle = 0;                 ///< Current cycle within instruction
+	uint32_t LastOpCode = 0;                   ///< Last opcode executed
+	MemoryOperationInfo LastMemOperation = {}; ///< Last memory operation
 };
 
-struct DebugControllerState
-{
-	bool A;
-	bool B;
-	bool X;
-	bool Y;
-	bool L;
-	bool R;
-	bool U;
-	bool D;
-	bool Up;
-	bool Down;
-	bool Left;
-	bool Right;
-	bool Select;
-	bool Start;
+/// <summary>
+/// Debug controller state (for input recording/playback).
+/// </summary>
+struct DebugControllerState {
+	bool A;      ///< A button
+	bool B;      ///< B button
+	bool X;      ///< X button (SNES/etc)
+	bool Y;      ///< Y button (SNES/etc)
+	bool L;      ///< L shoulder (SNES/etc)
+	bool R;      ///< R shoulder (SNES/etc)
+	bool U;      ///< U direction
+	bool D;      ///< D direction
+	bool Up;     ///< Up direction (D-pad)
+	bool Down;   ///< Down direction (D-pad)
+	bool Left;   ///< Left direction (D-pad)
+	bool Right;  ///< Right direction (D-pad)
+	bool Select; ///< Select button
+	bool Start;  ///< Start button
 
-	bool HasPressedButton()
-	{
+	/// <summary>
+	/// Check if any button pressed.
+	/// </summary>
+	bool HasPressedButton() {
 		return A || B || X || Y || L || R || U || D || Up || Down || Left || Right || Select || Start;
 	}
 };

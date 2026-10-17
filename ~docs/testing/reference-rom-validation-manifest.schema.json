@@ -1,0 +1,154 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "reference-rom-validation-manifest.schema.json",
+	"title": "Reference ROM Validation Manifest",
+	"description": "Schema for curated ROM validation manifests used by Nexen regression testing. Each entry describes a reference ROM with expected checksums, mapper type, and test harness bindings.",
+	"type": "object",
+	"required": ["manifestVersion", "systems"],
+	"properties": {
+		"manifestVersion": {
+			"type": "string",
+			"description": "Schema version for forward compatibility.",
+			"enum": ["1.0"]
+		},
+		"description": {
+			"type": "string",
+			"description": "Human-readable description of this manifest's purpose."
+		},
+		"plainLanguageNote": {
+			"type": "string",
+			"description": "Additional context for collaborators (e.g., provenance disclaimers)."
+		},
+		"systems": {
+			"type": "array",
+			"description": "List of platform sections, each containing ROM entries.",
+			"items": {
+				"$ref": "#/$defs/systemSection"
+			}
+		},
+		"nextStep": {
+			"type": "string",
+			"description": "Notes for manifest curators on next actions."
+		}
+	},
+	"$defs": {
+		"systemSection": {
+			"type": "object",
+			"required": ["platform", "entries"],
+			"properties": {
+				"platform": {
+					"type": "string",
+					"description": "Target platform identifier.",
+					"enum": [
+						"atari2600",
+						"genesis",
+						"nes",
+						"snes",
+						"gb",
+						"gba",
+						"sms",
+						"pce",
+						"ws",
+						"lynx"
+					]
+				},
+				"entries": {
+					"type": "array",
+					"description": "ROM entries for this platform.",
+					"items": {
+						"$ref": "#/$defs/romEntry"
+					}
+				}
+			}
+		},
+		"romEntry": {
+			"type": "object",
+			"required": ["id", "romFileHint", "sha256", "expected"],
+			"properties": {
+				"id": {
+					"type": "string",
+					"description": "Stable identifier for this entry (slug format, must be unique within the manifest).",
+					"pattern": "^[a-z0-9][a-z0-9-]*$"
+				},
+				"romFileHint": {
+					"type": "string",
+					"description": "Expected filename in the local reference ROM collection (C:\\~reference-roms\\{platform}\\). No path separators."
+				},
+				"sourceNote": {
+					"type": "string",
+					"description": "Provenance note describing the source of this ROM dump."
+				},
+				"sha256": {
+					"type": "string",
+					"description": "SHA-256 hash of the ROM file (lowercase hex, 64 chars). Use 'replace-with-real-sha256' as placeholder.",
+					"pattern": "^([a-f0-9]{64}|replace-with-real-sha256)$"
+				},
+				"crc32": {
+					"type": "string",
+					"description": "Optional CRC32 hash (lowercase hex, 8 chars).",
+					"pattern": "^[a-f0-9]{8}$"
+				},
+				"romSizeBytes": {
+					"type": "integer",
+					"description": "Expected ROM file size in bytes.",
+					"minimum": 1
+				},
+				"expected": {
+					"$ref": "#/$defs/expectedResults"
+				},
+				"tags": {
+					"type": "array",
+					"description": "Classification tags for filtering (e.g., 'mapper-edge', 'timing-sensitive', 'audio-heavy').",
+					"items": {
+						"type": "string"
+					}
+				},
+				"disabled": {
+					"type": "boolean",
+					"description": "Set to true to skip this entry during validation runs.",
+					"default": false
+				},
+				"disabledReason": {
+					"type": "string",
+					"description": "Explanation for why this entry is disabled."
+				}
+			}
+		},
+		"expectedResults": {
+			"type": "object",
+			"description": "Expected validation results for this ROM.",
+			"properties": {
+				"mapper": {
+					"type": "string",
+					"description": "Expected mapper identifier (e.g., '2k', '4k', 'f8', 'f6', 'e0', '3f', 'fe')."
+				},
+				"titleClass": {
+					"type": "string",
+					"description": "Game classification for regression grouping (e.g., 'sonic', 'platformer', 'rpg')."
+				},
+				"harness": {
+					"type": "string",
+					"description": "GTest test suite name that validates this ROM type."
+				},
+				"summaryDigest": {
+					"type": "string",
+					"description": "Expected deterministic digest from the harness (capture from known-good run)."
+				},
+				"frameCount": {
+					"type": "integer",
+					"description": "Number of frames to run for digest validation.",
+					"minimum": 1
+				},
+				"controllerType": {
+					"type": "string",
+					"description": "Expected controller type (e.g., 'joystick', 'paddle', 'keypad', 'driving', 'booster-grip')."
+				},
+				"audioChannels": {
+					"type": "integer",
+					"description": "Expected number of audio channels.",
+					"minimum": 1
+				}
+			}
+		}
+	}
+}

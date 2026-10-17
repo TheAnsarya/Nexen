@@ -2,19 +2,19 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
 	xmlns:sys="using:System"
-	xmlns:dv="using:Mesen.Debugger.Views"
-	xmlns:dbg="using:Mesen.Debugger"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:i="using:Mesen.Interop"
+	xmlns:dv="using:Nexen.Debugger.Views"
+	xmlns:dbg="using:Nexen.Debugger"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:i="using:Nexen.Interop"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels"
-	xmlns:dc="using:Mesen.Debugger.Controls"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="300"
-	x:Class="Mesen.Debugger.Windows.RegisterViewerWindow"
+	x:Class="Nexen.Debugger.Windows.RegisterViewerWindow"
 	Icon="/Assets/RegisterIcon.png"
 	Width="400" Height="500"
 	x:DataType="vm:RegisterViewerWindowViewModel"
@@ -25,26 +25,24 @@
 	</Design.DataContext>
 
 	<Window.Styles>
-		<Style Selector="DataBoxRow > Grid Rectangle#BackgroundRectangle">
-			<Setter Property="Fill" Value="{Binding Path=Background, DataType={x:Type vm:RegEntry}}"/>
-		</Style>
+		<!-- Row background styling is now handled via DataGrid.LoadingRow event in RegisterTabView.axaml.cs -->
 	</Window.Styles>
 
 	<DockPanel>
-		<c:MesenMenu DockPanel.Dock="Top" Name="ActionMenu">
+		<c:NexenMenu DockPanel.Dock="Top" Name="ActionMenu">
 			<MenuItem Header="{l:Translate mnuFile}" ItemsSource="{Binding FileMenuActions}" />
 			<MenuItem Header="{l:Translate mnuView}" ItemsSource="{Binding ViewMenuActions}" />
-		</c:MesenMenu>
+		</c:NexenMenu>
 
 		<dv:RefreshTimingView DataContext="{Binding RefreshTiming}" DockPanel.Dock="Bottom" />
-		
+
 		<TabControl ItemsSource="{Binding Tabs}" Padding="1">
 			<TabControl.ItemTemplate>
 				<DataTemplate>
 					<TextBlock Text="{Binding TabName}" />
 				</DataTemplate>
 			</TabControl.ItemTemplate>
-		
+
 			<TabControl.ContentTemplate>
 				<DataTemplate DataType="vm:RegisterViewerTab">
 					<dv:RegisterTabView DataContext="{Binding}" />

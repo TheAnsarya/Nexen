@@ -2,8 +2,7 @@
 #include "pch.h"
 #include "NES/BaseMapper.h"
 
-class UnlD1038 : public BaseMapper
-{
+class UnlD1038 : public BaseMapper {
 private:
 	bool _returnDipSwitch = false;
 
@@ -13,30 +12,26 @@ protected:
 	uint16_t GetChrPageSize() override { return 0x2000; }
 	bool AllowRegisterRead() override { return true; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		_returnDipSwitch = false;
 		WriteRegister(0x8000, 0);
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		BaseMapper::Serialize(s);
 		SV(_returnDipSwitch);
 	}
 
-	uint8_t ReadRegister(uint16_t addr) override
-	{
-		if(_returnDipSwitch) {
+	uint8_t ReadRegister(uint16_t addr) override {
+		if (_returnDipSwitch) {
 			return GetDipSwitches();
 		} else {
 			return InternalReadRam(addr);
 		}
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
-		if(addr & 0x80) {
+	void WriteRegister(uint16_t addr, uint8_t value) override {
+		if (addr & 0x80) {
 			SelectPrgPage(0, (addr & 0x70) >> 4);
 			SelectPrgPage(1, (addr & 0x70) >> 4);
 		} else {

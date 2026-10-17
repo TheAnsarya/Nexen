@@ -2,8 +2,7 @@
 #include "pch.h"
 #include "Utilities/VirtualFile.h"
 
-struct HesFileData
-{
+struct HesFileData {
 	uint32_t DataSize = 0;
 	uint32_t LoadAddress = 0;
 	uint16_t RequestAddress = 0;
@@ -13,32 +12,31 @@ struct HesFileData
 
 	vector<uint8_t> RomData;
 
-	bool LoadFile(VirtualFile& hesFile)
-	{
+	bool LoadFile(VirtualFile& hesFile) {
 		vector<uint8_t> fileData;
-		if(!hesFile.ReadFile(fileData) || fileData.size() < 0x20) {
+		if (!hesFile.ReadFile(fileData) || fileData.size() < 0x20) {
 			return false;
 		}
 
-		if(memcmp(fileData.data(), "HESM", 4) != 0) {
+		if (memcmp(fileData.data(), "HESM", 4) != 0) {
 			return false;
 		}
 
 		FirstSong = fileData[5];
 		CurrentTrack = FirstSong;
 		RequestAddress = fileData[6] | (fileData[7] << 8);
-		for(int i = 0; i < 8; i++) {
+		for (int i = 0; i < 8; i++) {
 			InitialMpr[i] = fileData[8 + i];
 		}
 
 		DataSize = fileData[0x14] | (fileData[0x15] << 8) | (fileData[0x16] << 16) | (fileData[0x17] << 24);
 		LoadAddress = fileData[0x18] | (fileData[0x19] << 8) | (fileData[0x1A] << 16) | (fileData[0x1B] << 24);
 
-		if(DataSize > 0x80 * 0x2000) {
+		if (DataSize > 0x80 * 0x2000) {
 			return false;
-		} else if(DataSize > hesFile.GetSize() - 0x20) {
+		} else if (DataSize > hesFile.GetSize() - 0x20) {
 			return false;
-		} else if(LoadAddress + DataSize > 0x80 * 0x2000) {
+		} else if (LoadAddress + DataSize > 0x80 * 0x2000) {
 			return false;
 		}
 
@@ -48,28 +46,31 @@ struct HesFileData
 		return true;
 	}
 
-	void ProcessAudioPlayerAction(AudioPlayerActionParams p, Emulator* emu)
-	{
+	void ProcessAudioPlayerAction(AudioPlayerActionParams p, Emulator* emu) {
 		int selectedTrack = CurrentTrack;
-		switch(p.Action) {
-			case AudioPlayerAction::NextTrack: selectedTrack++; break;
+		switch (p.Action) {
+			case AudioPlayerAction::NextTrack:
+				selectedTrack++;
+				break;
 			case AudioPlayerAction::PrevTrack:
-				if(emu->GetAudioTrackInfo().Position < 2) {
+				if (emu->GetAudioTrackInfo().Position < 2) {
 					selectedTrack--;
 				}
 				break;
-			case AudioPlayerAction::SelectTrack: selectedTrack = (int)p.TrackNumber; break;
+			case AudioPlayerAction::SelectTrack:
+				selectedTrack = (int)p.TrackNumber;
+				break;
 		}
 
-		if(selectedTrack < 0) {
+		if (selectedTrack < 0) {
 			selectedTrack = 255;
-		} else if(selectedTrack > 255) {
+		} else if (selectedTrack > 255) {
 			selectedTrack = 0;
 		}
 
-		//Asynchronously move to the next track
-		//Can't do this in the current thread in some contexts (e.g when track reaches end)
-		//because this is called from the emulation thread, which may cause infinite recursion
+		// Asynchronously move to the next track
+		// Can't do this in the current thread in some contexts (e.g when track reaches end)
+		// because this is called from the emulation thread, which may cause infinite recursion
 		thread switchTrackTask([emu, selectedTrack]() {
 			auto lock = emu->AcquireLock(false);
 			emu->ReloadRom(false);
@@ -78,8 +79,7 @@ struct HesFileData
 		switchTrackTask.detach();
 	}
 
-	AudioTrackInfo GetAudioTrackInfo(double position)
-	{
+	AudioTrackInfo GetAudioTrackInfo(double position) {
 		AudioTrackInfo info = {};
 		info.TrackNumber = CurrentTrack + 1;
 		info.TrackCount = 256;

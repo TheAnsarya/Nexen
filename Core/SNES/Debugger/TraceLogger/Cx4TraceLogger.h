@@ -8,18 +8,17 @@ class Debugger;
 class SnesPpu;
 class SnesMemoryManager;
 
-class Cx4TraceLogger : public BaseTraceLogger<Cx4TraceLogger, Cx4State>
-{
+class Cx4TraceLogger : public BaseTraceLogger<Cx4TraceLogger, Cx4State> {
 private:
 	SnesPpu* _ppu = nullptr;
 	SnesMemoryManager* _memoryManager = nullptr;
-	
+
 protected:
 	RowDataType GetFormatTagType(string& tag) override;
 
 public:
 	Cx4TraceLogger(Debugger* debugger, IDebugger* cpuDebugger, SnesPpu* ppu, SnesMemoryManager* memoryManager);
-	
+
 	void GetTraceRow(string& output, Cx4State& cpuState, TraceLogPpuState& ppuState, DisassemblyInfo& disassemblyInfo);
 	void LogPpuState();
 

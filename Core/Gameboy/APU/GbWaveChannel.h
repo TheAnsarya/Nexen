@@ -8,8 +8,7 @@
 class GbApu;
 class Gameboy;
 
-class GbWaveChannel final : public ISerializable
-{
+class GbWaveChannel final : public ISerializable {
 private:
 	GbWaveState _state = {};
 	GbChannelDac _dac = {};
@@ -26,7 +25,7 @@ public:
 	bool Enabled();
 	void Disable();
 	void ResetLengthCounter();
-	
+
 	uint8_t GetRawOutput();
 	double GetOutput();
 

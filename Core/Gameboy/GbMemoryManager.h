@@ -14,11 +14,11 @@ class GbDmaController;
 class EmuSettings;
 class Emulator;
 class GbControlManager;
+class CheatManager;
 
 enum class MemoryOperationType;
 
-class GbMemoryManager : public ISerializable
-{
+class GbMemoryManager : public ISerializable {
 private:
 	Emulator* _emu = nullptr;
 	EmuSettings* _settings = nullptr;
@@ -32,13 +32,15 @@ private:
 	GbTimer* _timer = nullptr;
 	GbDmaController* _dmaController = nullptr;
 
+	CheatManager* _cheatManager = nullptr;
+
 	uint8_t* _highRam = nullptr;
-	
+
 	uint8_t* _reads[0x100] = {};
 	uint8_t* _writes[0x100] = {};
 
 	GbMemoryManagerState _state = {};
-	
+
 	__forceinline void ExecTimerDmaSerial();
 
 public:
@@ -55,14 +57,14 @@ public:
 	void ExecMasterCycle();
 	void Exec();
 
-	template<MemoryOperationType type, GbOamCorruptionType oamCorruptionType = GbOamCorruptionType::Read>
+	template <MemoryOperationType type, GbOamCorruptionType oamCorruptionType = GbOamCorruptionType::Read>
 	uint8_t Read(uint16_t addr);
 
-	bool IsOamDmaRunning();
+	[[nodiscard]] bool IsOamDmaRunning();
 	void WriteDma(uint16_t addr, uint8_t value);
 	uint8_t ReadDma(uint16_t addr);
 
-	template<MemoryOperationType type = MemoryOperationType::Write>
+	template <MemoryOperationType type = MemoryOperationType::Write>
 	void Write(uint16_t addr, uint8_t value);
 
 	uint8_t PeekRegister(uint16_t addr);
@@ -78,11 +80,11 @@ public:
 	void ProcessHaltEnd();
 
 	void ToggleSpeed();
-	bool IsHighSpeed();
-	bool IsBootRomDisabled();
+	[[nodiscard]] bool IsHighSpeed();
+	[[nodiscard]] bool IsBootRomDisabled();
 
-	uint64_t GetApuCycleCount();
-	
+	[[nodiscard]] uint64_t GetApuCycleCount();
+
 	uint8_t DebugRead(uint16_t addr);
 	void DebugWrite(uint16_t addr, uint8_t value);
 

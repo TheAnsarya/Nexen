@@ -1,0 +1,37 @@
+{
+  "Issue": "#1414",
+  "CapturedAt": "2026-04-21T12:37:07-04:00",
+  "Label": "baseline",
+  "MetricsFile": "C:\\Users\\me\\Documents\\Nexen\\setup-wizard-metrics.json",
+  "SetupWizardMetrics": {
+    "LaunchCount": 0,
+    "ResumeLaunchCount": 0,
+    "CompletionCount": 0,
+    "CancelCount": 0,
+    "StartFreshCount": 0,
+    "ProfileToggleCount": 21,
+    "StorageToggleCount": 21,
+    "CustomizeToggleCount": 0,
+    "TotalBacktrackCount": 0
+  },
+  "DerivedUxMetrics": {
+    "CompletionRate": 0.0,
+    "ResumeRate": 0.0,
+    "BacktracksPerOutcome": 0.0,
+    "InteractionTogglesPerLaunch": 0.0
+  },
+  "RegressionThresholds": {
+    "MinCompletionRate": 0.7,
+    "MaxBacktracksPerOutcome": 1.5,
+    "MaxInteractionTogglesPerLaunch": 3.0
+  },
+  "Benchmark": {
+    "Skipped": false,
+    "Command": "dotnet run --project Benchmarks/Nexen.Benchmarks.csproj -c Release -- --filter *TasUiBenchmarks.Selection_ContiguousRange* *TasUiBenchmarks.Search_ButtonState* --job short",
+    "Reports": [
+      "BenchmarkDotNet.Artifacts\\results\\Nexen.Benchmarks.TasUiBenchmarks-report.html",
+      "BenchmarkDotNet.Artifacts\\results\\Nexen.Benchmarks.TasUiBenchmarks-report-github.md",
+      "BenchmarkDotNet.Artifacts\\results\\Nexen.Benchmarks.TasUiBenchmarks-report.csv"
+    ]
+  }
+}

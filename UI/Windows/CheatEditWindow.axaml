@@ -2,12 +2,12 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:l="using:Nexen.Localization"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d"
-	x:Class="Mesen.Windows.CheatEditWindow"
+	x:Class="Nexen.Windows.CheatEditWindow"
 	x:DataType="vm:CheatEditWindowViewModel"
 	Icon="/Assets/CheatCode.png"
 	Padding="2"
@@ -21,7 +21,7 @@
 	<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,*,Auto">
 		<TextBlock Text="{l:Translate lblDescription}" VerticalAlignment="Center" />
 		<TextBox Grid.Column="1" Text="{Binding Cheat.Description, Converter={StaticResource NullTextConverter}}" />
-	
+
 		<CheckBox
 			Grid.Row="1"
 			Grid.ColumnSpan="2"
@@ -56,23 +56,23 @@
 					ScrollViewer.HorizontalScrollBarVisibility="Auto"
 					AcceptsReturn="True"
 					IsReadOnly="True"
-					Background="{StaticResource MesenGrayBackgroundColor}"
+					Background="{StaticResource NexenGrayBackgroundColor}"
 					Height="NaN"
 					Text="{Binding ConvertedCodes}"
 				/>
 
 				<StackPanel Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" IsVisible="{Binding ShowInvalidCodeHint}">
-					<Image Source="/Assets/Warning.png" Stretch="None" Margin="3" />
+					<Image Source="{SvgImage /Assets/Warning.svg}" Stretch="None" Margin="3" />
 					<TextBlock Text="{l:Translate lblInvalidCodes}" VerticalAlignment="Center" />
 				</StackPanel>
-			
+
 				<StackPanel Grid.Row="3" Grid.ColumnSpan="2" Orientation="Horizontal">
-					<Image Source="/Assets/Help.png" Stretch="None" Margin="3" />
+					<Image Source="{SvgImage /Assets/Help.svg}" Stretch="None" Margin="3" />
 					<TextBlock Text="{l:Translate lblHint}" VerticalAlignment="Center" />
 				</StackPanel>
 			</Grid>
 		</c:GroupBox>
-		
+
 		<StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
 			<Button
 				MinWidth="70"
@@ -82,7 +82,7 @@
 				Content="{l:Translate btnOK}"
 				IsEnabled="{Binding OkButtonEnabled}"
 			/>
-			
+
 			<Button
 				MinWidth="70"
 				HorizontalContentAlignment="Center"

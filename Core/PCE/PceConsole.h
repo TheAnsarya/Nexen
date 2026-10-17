@@ -18,8 +18,39 @@ struct HesFileData;
 struct DiscInfo;
 enum class PceConsoleType;
 
-class PceConsole final: public IConsole
-{
+/// <summary>
+/// PC Engine / TurboGrafx-16 console emulator.
+/// Implements the complete PCE hardware including SuperGrafx and CD-ROM².
+/// </summary>
+/// <remarks>
+/// **System Variants:**
+/// - **PC Engine / TurboGrafx-16**: Standard HuCard-based console
+/// - **SuperGrafx**: Enhanced version with dual VDC chips
+/// - **PC Engine CD-ROM²**: CD-ROM add-on with ADPCM audio
+/// - **PC Engine Duo**: Integrated CD-ROM system
+///
+/// **Hardware Components:**
+/// - **CPU**: HuC6280 (65C02 variant) @ 7.16 MHz
+///   - Integrated PSG, timer, and memory mapper
+///   - 8KB zero-page accessible via MMU
+/// - **VDC**: HuC6270 - Video Display Controller
+///   - 64KB VRAM, 64 sprites, 2 background layers (via BAT)
+/// - **VCE**: HuC6260 - Video Color Encoder
+///   - 512-color palette, composite/RGB output
+/// - **PSG**: 6-channel wavetable synthesizer (in CPU)
+///
+/// **SuperGrafx Enhancements:**
+/// - Dual VDC chips (VDC1 + VDC2)
+/// - VPC (Video Priority Controller) for layer composition
+/// - 128KB VRAM total (64KB per VDC)
+///
+/// **CD-ROM² Features:**
+/// - 64KB RAM + 2KB battery-backed RAM
+/// - ADPCM audio playback
+/// - Red Book CD audio support
+/// - System Card/Arcade Card for expanded memory
+/// </remarks>
+class PceConsole final : public IConsole {
 private:
 	Emulator* _emu;
 
@@ -46,16 +77,16 @@ private:
 public:
 	PceConsole(Emulator* emu);
 	virtual ~PceConsole();
-	
-	static vector<string> GetSupportedExtensions() { return { ".pce", ".cue", ".sgx", ".hes" }; }
-	static vector<string> GetSupportedSignatures() { return { "HESM" }; }
+
+	static vector<string> GetSupportedExtensions() { return {".pce", ".cue", ".sgx", ".hes"}; }
+	static vector<string> GetSupportedSignatures() { return {"HESM"}; }
 
 	void Serialize(Serializer& s) override;
 
 	void InitializeRam(void* data, uint32_t length);
 
 	void Reset() override;
-	
+
 	LoadRomResult LoadRom(VirtualFile& romFile) override;
 
 	void RunFrame() override;
@@ -76,8 +107,8 @@ public:
 	PcePsg* GetPsg();
 	PceMemoryManager* GetMemoryManager();
 
-	bool IsSuperGrafx() { return _vdc2 != nullptr; }
-	
+	[[nodiscard]] bool IsSuperGrafx() { return _vdc2 != nullptr; }
+
 	uint64_t GetMasterClock() override;
 	uint32_t GetMasterClockRate() override;
 	double GetFps() override;
@@ -92,6 +123,7 @@ public:
 	void ProcessAudioPlayerAction(AudioPlayerActionParams p) override;
 
 	AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) override;
+	AddressInfo GetPcAbsoluteAddress() override;
 	AddressInfo GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) override;
 
 	PceVideoState GetVideoState();

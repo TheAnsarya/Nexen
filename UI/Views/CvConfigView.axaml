@@ -3,17 +3,17 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:v="using:Mesen.Views"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:v="using:Nexen.Views"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="350"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:OtherConsolesConfigViewModel"
-	x:Class="Mesen.Views.CvConfigView"
+	x:Class="Nexen.Views.CvConfigView"
 >
 	<Design.DataContext>
 		<vm:OtherConsolesConfigViewModel />
@@ -39,7 +39,7 @@
 				<c:GroupBox Header="{l:Translate grpVolume}" HorizontalAlignment="Left">
 					<StackPanel Orientation="Horizontal" Height="120">
 						<StackPanel.Styles>
-							<Style Selector="c|MesenSlider">
+							<Style Selector="c|NexenSlider">
 								<Setter Property="Minimum" Value="0" />
 								<Setter Property="Maximum" Value="100" />
 								<Setter Property="Orientation" Value="Vertical" />
@@ -47,10 +47,10 @@
 							</Style>
 						</StackPanel.Styles>
 
-						<c:MesenSlider Text="{l:Translate lblChannel1}" Value="{Binding CvConfig.Tone1Vol}" />
-						<c:MesenSlider Text="{l:Translate lblChannel2}" Value="{Binding CvConfig.Tone2Vol}" />
-						<c:MesenSlider Text="{l:Translate lblChannel3}" Value="{Binding CvConfig.Tone3Vol}" />
-						<c:MesenSlider Text="{l:Translate lblChannel4}" Value="{Binding CvConfig.NoiseVol}" />
+						<c:NexenSlider Text="{l:Translate lblChannel1}" Value="{Binding CvConfig.Tone1Vol}" />
+						<c:NexenSlider Text="{l:Translate lblChannel2}" Value="{Binding CvConfig.Tone2Vol}" />
+						<c:NexenSlider Text="{l:Translate lblChannel3}" Value="{Binding CvConfig.Tone3Vol}" />
+						<c:NexenSlider Text="{l:Translate lblChannel4}" Value="{Binding CvConfig.NoiseVol}" />
 					</StackPanel>
 				</c:GroupBox>
 			</c:OptionSection>

@@ -3,21 +3,21 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:v="using:Mesen.Views"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:cfg="using:Mesen.Config"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:v="using:Nexen.Views"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:cfg="using:Nexen.Config"
 	mc:Ignorable="d"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
-	x:Class="Mesen.Windows.GetKeyWindow"
+	x:Class="Nexen.Windows.GetKeyWindow"
   Name="root"
 	Width="350"
 	Height="100"
 	Title="{l:Translate Title}"
 >
-	<Border BorderBrush="{StaticResource MesenGrayBorderColor}" BorderThickness="1" Margin="3">
+	<Border BorderBrush="{StaticResource NexenGrayBorderColor}" BorderThickness="1" Margin="3">
 		<StackPanel VerticalAlignment="Center">
 			<Panel VerticalAlignment="Center" Height="40">
 				<TextBlock

@@ -3,28 +3,28 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:c="using:Mesen.Controls"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:c="using:Nexen.Controls"
 	mc:Ignorable="d" d:DesignWidth="280" d:DesignHeight="200"
 	x:Name="root"
-	x:Class="Mesen.Controls.OverscanInput"
+	x:Class="Nexen.Controls.OverscanInput"
 	HorizontalAlignment="Left"
 >
 	<StackPanel>
 		<TextBlock Text="{l:Translate lblTop}" HorizontalAlignment="Center" />
-		<c:MesenNumericUpDown Value="{Binding Overscan.Top, ElementName=root}" Minimum="0" Maximum="95" HorizontalAlignment="Center"/>
+		<c:NexenNumericUpDown Value="{Binding Overscan.Top, ElementName=root}" Minimum="0" Maximum="95" HorizontalAlignment="Center"/>
 
 		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 			<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 				<TextBlock Text="{l:Translate lblLeft}" HorizontalAlignment="Center" />
-				<c:MesenNumericUpDown Value="{Binding Overscan.Left, ElementName=root}" Minimum="0" Maximum="100" />
+				<c:NexenNumericUpDown Value="{Binding Overscan.Left, ElementName=root}" Minimum="0" Maximum="100" />
 			</StackPanel>
 
-			<Border Width="130" Height="122" BorderBrush="{StaticResource MesenGrayBorderColor}" BorderThickness="1">
+			<Border Width="130" Height="122" BorderBrush="{StaticResource NexenGrayBorderColor}" BorderThickness="1">
 				<Viewbox Width="128" Height="120">
 					<Canvas Width="256" Height="240">
-						<Rectangle Width="256" Height="240" Fill="{StaticResource MesenGrayBackgroundColor}" />
+						<Rectangle Width="256" Height="240" Fill="{StaticResource NexenGrayBackgroundColor}" />
 						<Rectangle Width="{Binding Overscan.Left, ElementName=root}" Height="240" Fill="DarkGray" Canvas.Left="0" />
 						<Rectangle Width="{Binding Overscan.Right, ElementName=root}" Height="240" Fill="DarkGray" Canvas.Right="0" />
 						<Rectangle Width="256" Height="{Binding Overscan.Top, ElementName=root}" Fill="DarkGray" Canvas.Top="0" />
@@ -35,11 +35,11 @@
 
 			<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 				<TextBlock Text="{l:Translate lblRight}" HorizontalAlignment="Center" />
-				<c:MesenNumericUpDown Value="{Binding Overscan.Right, ElementName=root}" Minimum="0" Maximum="100" />
+				<c:NexenNumericUpDown Value="{Binding Overscan.Right, ElementName=root}" Minimum="0" Maximum="100" />
 			</StackPanel>
 		</StackPanel>
 
 		<TextBlock Text="{l:Translate lblBottom}" HorizontalAlignment="Center" />
-		<c:MesenNumericUpDown Value="{Binding Overscan.Bottom, ElementName=root}" Minimum="0" Maximum="95" HorizontalAlignment="Center" />
+		<c:NexenNumericUpDown Value="{Binding Overscan.Bottom, ElementName=root}" Minimum="0" Maximum="95" HorizontalAlignment="Center" />
 	</StackPanel>
 </UserControl>

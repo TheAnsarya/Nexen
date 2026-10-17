@@ -2,26 +2,24 @@
 #include "pch.h"
 #include "Utilities/Serializer.h"
 
-struct GbaApuFifo : ISerializable
-{
+struct GbaApuFifo : ISerializable {
 private:
 	uint32_t _data[7] = {};
 	uint8_t _readPos = 0;
 	uint8_t _writePos = 0;
-	
+
 	uint32_t _writeBuffer = 0;
 	uint32_t _readValue = 0;
 	uint8_t _readCount = 0;
 	uint8_t _size = 0;
 
 public:
-	void Push(uint8_t value, uint8_t pos, bool commit)
-	{
-		_writeBuffer = (_writeBuffer & ~(0xFF << (pos * 8))) | (value << (pos*8));
-		
-		if(commit) {
-			if(_size >= 7) {
-				//Writing more than 7 values clears the FIFO (fifo_5)
+	void Push(uint8_t value, uint8_t pos, bool commit) {
+		_writeBuffer = (_writeBuffer & ~(0xFF << (pos * 8))) | (value << (pos * 8));
+
+		if (commit) {
+			if (_size >= 7) {
+				// Writing more than 7 values clears the FIFO (fifo_5)
 				_size = 0;
 				_readCount = 0;
 			} else {
@@ -32,9 +30,8 @@ public:
 		}
 	}
 
-	uint8_t Pop()
-	{
-		if(_readCount == 0) {
+	uint8_t Pop() {
+		if (_readCount == 0) {
 			_readValue = _data[_readPos];
 			_readPos = (_readPos + 1) % 7;
 			_size--;
@@ -45,18 +42,15 @@ public:
 		return value;
 	}
 
-	uint8_t Size()
-	{
+	uint8_t Size() {
 		return _size;
 	}
 
-	bool Empty()
-	{
+	bool Empty() {
 		return _size == 0 && _readCount == 0;
 	}
 
-	void Clear()
-	{
+	void Clear() {
 		_writePos = 0;
 		_readPos = 0;
 		_readCount = 0;
@@ -65,8 +59,7 @@ public:
 		_writeBuffer = 0;
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		SVArray(_data, 7);
 		SV(_readPos);
 		SV(_writePos);

@@ -12,13 +12,13 @@
 #include "InteropNotificationListeners.h"
 
 #ifdef _WIN32
-	#include "Windows/Renderer.h"
-	#include "Windows/SoundManager.h"
+#include "Windows/Renderer.h"
+#include "Windows/SoundManager.h"
 #elif __APPLE__
-	#include "Sdl/SdlSoundManager.h"
+#include "Sdl/SdlSoundManager.h"
 #else
-	#include "Sdl/SdlRenderer.h"
-	#include "Sdl/SdlSoundManager.h"
+#include "Sdl/SdlRenderer.h"
+#include "Sdl/SdlSoundManager.h"
 #endif
 
 extern unique_ptr<Emulator> _emu;
@@ -32,100 +32,88 @@ HistoryViewer* _historyViewer = nullptr;
 
 static InteropNotificationListeners _listeners;
 
-extern "C"
-{
-	DllExport bool __stdcall HistoryViewerEnabled()
-	{
-		return _emu->GetRewindManager()->HasHistory();
+extern "C" {
+DllExport bool __stdcall HistoryViewerEnabled() {
+	return _emu->GetRewindManager()->HasHistory();
+}
+
+DllExport void __stdcall HistoryViewerRelease() {
+	_historyPlayer->Release();
+	_historyRenderer.reset();
+	_historySoundManager.reset();
+	_historyPlayer.reset();
+	_historyViewer = nullptr;
+}
+
+DllExport void __stdcall HistoryViewerInitialize(void* windowHandle, void* viewerHandle) {
+	_historyPlayer = std::make_unique<Emulator>();
+	_historyPlayer->Initialize();
+	_historyPlayer->GetSettings()->CopySettings(*_emu->GetSettings());
+
+	_historyViewer = _historyPlayer->GetHistoryViewer();
+	if (!_historyViewer->Initialize(_emu.get())) {
+		HistoryViewerRelease();
+		return;
 	}
 
-	DllExport void __stdcall HistoryViewerRelease()
-	{
-		_historyPlayer->Release();
-		_historyRenderer.reset();
-		_historySoundManager.reset();
-		_historyPlayer.reset();
-		_historyViewer = nullptr;
+	_historyPlayer->GetSettings()->GetEmulationConfig().EmulationSpeed = 100;
+
+	if (_softwareRenderer) {
+		_historyRenderer = std::make_unique<SoftwareRenderer>(_historyPlayer.get());
+	} else {
+#ifdef _WIN32
+		_historyRenderer = std::make_unique<Renderer>(_historyPlayer.get(), (HWND)viewerHandle);
+#elif __APPLE__
+		_historyRenderer = std::make_unique<SoftwareRenderer>(_historyPlayer.get());
+#else
+		_historyRenderer = std::make_unique<SdlRenderer>(_historyPlayer.get(), viewerHandle);
+#endif
 	}
 
-	DllExport void __stdcall HistoryViewerInitialize(void* windowHandle, void* viewerHandle)
-	{
-		_historyPlayer.reset(new Emulator());
-		_historyPlayer->Initialize();
-		_historyPlayer->GetSettings()->CopySettings(*_emu->GetSettings());
+#ifdef _WIN32
+	_historySoundManager = std::make_unique<SoundManager>(_historyPlayer.get(), (HWND)windowHandle);
+#elif __APPLE__
+	_historySoundManager = std::make_unique<SdlSoundManager>(_historyPlayer.get());
+#else
+	_historySoundManager = std::make_unique<SdlSoundManager>(_historyPlayer.get());
+#endif
+}
 
-		_historyViewer = _historyPlayer->GetHistoryViewer();
-		if(!_historyViewer->Initialize(_emu.get())) {
-			HistoryViewerRelease();
-			return;
-		}
+DllExport void __stdcall HistoryViewerGetState(HistoryViewerState& state) {
+	state = _historyViewer ? _historyViewer->GetState() : HistoryViewerState{};
+}
 
-		_historyPlayer->GetSettings()->GetEmulationConfig().EmulationSpeed = 100;
-
-		if(_softwareRenderer) {
-			_historyRenderer.reset(new SoftwareRenderer(_historyPlayer.get()));
-		} else {
-			#ifdef _WIN32
-				_historyRenderer.reset(new Renderer(_historyPlayer.get(), (HWND)viewerHandle));
-			#elif __APPLE__
-				_historyRenderer.reset(new SoftwareRenderer(_historyPlayer.get()));
-			#else
-				_historyRenderer.reset(new SdlRenderer(_historyPlayer.get(), viewerHandle));
-			#endif
-		}
-
-		#ifdef _WIN32
-			_historySoundManager.reset(new SoundManager(_historyPlayer.get(), (HWND)windowHandle));
-		#elif __APPLE__
-			_historySoundManager.reset(new SdlSoundManager(_historyPlayer.get()));
-		#else
-			_historySoundManager.reset(new SdlSoundManager(_historyPlayer.get()));
-		#endif
+DllExport void __stdcall HistoryViewerSetOptions(HistoryViewerOptions options) {
+	if (_historyViewer) {
+		_historyViewer->SetOptions(options);
 	}
+}
 
-	DllExport HistoryViewerState __stdcall HistoryViewerGetState()
-	{
-		return _historyViewer ? _historyViewer->GetState() : HistoryViewerState {};
-	}
+DllExport bool __stdcall HistoryViewerCreateSaveState(const char* outputFile, uint32_t position) {
+	return _historyViewer ? _historyViewer->CreateSaveState(outputFile, position) : false;
+}
 
-	DllExport void __stdcall HistoryViewerSetOptions(HistoryViewerOptions options)
-	{
-		if(_historyViewer) {
-			_historyViewer->SetOptions(options);
-		}
-	}
+DllExport bool __stdcall HistoryViewerSaveMovie(const char* movieFile, uint32_t startPosition, uint32_t endPosition) {
+	return _historyViewer ? _historyViewer->SaveMovie(movieFile, startPosition, endPosition) : false;
+}
 
-	DllExport bool __stdcall HistoryViewerCreateSaveState(const char* outputFile, uint32_t position)
-	{
-		return _historyViewer ? _historyViewer->CreateSaveState(outputFile, position) : false;
+DllExport void __stdcall HistoryViewerResumeGameplay(uint32_t resumePosition) {
+	if (_historyViewer) {
+		_historyViewer->ResumeGameplay(resumePosition);
 	}
+}
 
-	DllExport bool __stdcall HistoryViewerSaveMovie(const char* movieFile, uint32_t startPosition, uint32_t endPosition)
-	{
-		return _historyViewer ? _historyViewer->SaveMovie(movieFile, startPosition, endPosition) : false;
+DllExport void __stdcall HistoryViewerSetPosition(uint32_t seekPosition) {
+	if (_historyViewer) {
+		_historyViewer->SeekTo(seekPosition);
 	}
+}
 
-	DllExport void __stdcall HistoryViewerResumeGameplay(uint32_t resumePosition)
-	{
-		if(_historyViewer) {
-			_historyViewer->ResumeGameplay(resumePosition);
-		}
-	}
+DllExport INotificationListener* __stdcall HistoryViewerRegisterNotificationCallback(NotificationListenerCallback callback) {
+	return _listeners.RegisterNotificationCallback(callback, _historyPlayer.get());
+}
 
-	DllExport void __stdcall HistoryViewerSetPosition(uint32_t seekPosition)
-	{
-		if(_historyViewer) {
-			_historyViewer->SeekTo(seekPosition);
-		}
-	}
-
-	DllExport INotificationListener* __stdcall HistoryViewerRegisterNotificationCallback(NotificationListenerCallback callback)
-	{
-		return _listeners.RegisterNotificationCallback(callback, _historyPlayer.get());
-	}
-
-	DllExport void __stdcall HistoryViewerUnregisterNotificationCallback(INotificationListener* listener)
-	{
-		_listeners.UnregisterNotificationCallback(listener);
-	}
+DllExport void __stdcall HistoryViewerUnregisterNotificationCallback(INotificationListener* listener) {
+	_listeners.UnregisterNotificationCallback(listener);
+}
 }

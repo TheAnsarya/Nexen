@@ -8,8 +8,7 @@
 #undef NesCpu
 #undef DUMMYCPU
 
-void DummyNesCpu::SetDummyState(NesCpu* c)
-{
+void DummyNesCpu::SetDummyState(NesCpu* c) {
 	_memOpCounter = 0;
 
 	_state = c->_state;
@@ -27,23 +26,19 @@ void DummyNesCpu::SetDummyState(NesCpu* c)
 	_runIrq = c->_runIrq;
 }
 
-uint32_t DummyNesCpu::GetOperationCount()
-{
+uint32_t DummyNesCpu::GetOperationCount() {
 	return _memOpCounter;
 }
 
-void DummyNesCpu::LogMemoryOperation(uint32_t addr, uint8_t value, MemoryOperationType type)
-{
+void DummyNesCpu::LogMemoryOperation(uint32_t addr, uint8_t value, MemoryOperationType type) {
 	_memOperations[_memOpCounter] = {
-		addr,
-		(int32_t)value,
-		type,
-		MemoryType::NesMemory
-	};
+	    addr,
+	    (int32_t)value,
+	    type,
+	    MemoryType::NesMemory};
 	_memOpCounter++;
 }
 
-MemoryOperationInfo DummyNesCpu::GetOperationInfo(uint32_t index)
-{
+MemoryOperationInfo DummyNesCpu::GetOperationInfo(uint32_t index) {
 	return _memOperations[index];
 }

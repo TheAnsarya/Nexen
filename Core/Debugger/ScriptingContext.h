@@ -9,15 +9,13 @@
 class Debugger;
 struct lua_State;
 
-enum class CallbackType
-{
+enum class CallbackType {
 	Read = 0,
 	Write = 1,
 	Exec = 2
 };
 
-struct MemoryCallback
-{
+struct MemoryCallback {
 	uint32_t StartAddress;
 	uint32_t EndAddress;
 	CpuType Cpu;
@@ -25,14 +23,12 @@ struct MemoryCallback
 	int Reference;
 };
 
-enum class ScriptDrawSurface
-{
+enum class ScriptDrawSurface {
 	ConsoleScreen,
 	ScriptHud
 };
 
-class ScriptingContext
-{
+class ScriptingContext {
 private:
 	static ScriptingContext* _context;
 	lua_State* _lua = nullptr;
@@ -60,16 +56,17 @@ protected:
 	vector<MemoryCallback> _callbacks[3];
 	vector<int> _eventCallbacks[(int)EventType::LastValue + 1];
 
-	template<typename T> void InternalCallMemoryCallback(AddressInfo relAddr, T& value, CallbackType type, CpuType cpuType);
+	template <typename T>
+	void InternalCallMemoryCallback(AddressInfo relAddr, T& value, CallbackType type, CpuType cpuType);
 
 	bool IsAddressMatch(MemoryCallback& callback, AddressInfo addr);
 
 public:
 	ScriptingContext(Debugger* debugger);
 	~ScriptingContext();
-	bool LoadScript(string scriptName, string path, string scriptContent, Debugger* debugger);
+	bool LoadScript(const string& scriptName, const string& path, const string& scriptContent, Debugger* debugger);
 
-	void Log(string message);
+	void Log(const string& message);
 	string GetLog();
 
 	Debugger* GetDebugger();
@@ -78,14 +75,15 @@ public:
 	void SetDrawSurface(ScriptDrawSurface surface) { _drawSurface = surface; }
 	ScriptDrawSurface GetDrawSurface() { return _drawSurface; }
 
-	template<typename T> void CallMemoryCallback(AddressInfo relAddr, T& value, CallbackType type, CpuType cpuType);
+	template <typename T>
+	void CallMemoryCallback(AddressInfo relAddr, T& value, CallbackType type, CpuType cpuType);
 	int CallEventCallback(EventType type, CpuType cpuType);
 	bool CheckInitDone();
 	bool IsSaveStateAllowed();
 
 	CpuType GetDefaultCpuType() { return _defaultCpuType; }
 	MemoryType GetDefaultMemType() { return _defaultMemType; }
-	
+
 	void RefreshMemoryCallbackFlags();
 
 	void RegisterMemoryCallback(CallbackType type, int startAddr, int endAddr, MemoryType memType, CpuType cpuType, int reference);

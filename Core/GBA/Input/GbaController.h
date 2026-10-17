@@ -6,20 +6,17 @@
 #include "Shared/InputHud.h"
 #include "Utilities/Serializer.h"
 
-class GbaController : public BaseControlDevice
-{
+class GbaController : public BaseControlDevice {
 private:
 	uint32_t _turboSpeed = 0;
 
 protected:
-	string GetKeyNames() override
-	{
+	string GetKeyNames() override {
 		return "UDLRSsBARL";
 	}
 
-	void InternalSetStateFromInput() override
-	{
-		for(KeyMapping& keyMapping : _keyMappings) {
+	void InternalSetStateFromInput() override {
+		for (KeyMapping& keyMapping : _keyMappings) {
 			SetPressedState(Buttons::A, keyMapping.A);
 			SetPressedState(Buttons::B, keyMapping.B);
 			SetPressedState(Buttons::Start, keyMapping.Start);
@@ -33,20 +30,20 @@ protected:
 
 			uint8_t turboFreq = 1 << (4 - _turboSpeed);
 			bool turboOn = (uint8_t)(_emu->GetFrameCount() % turboFreq) < turboFreq / 2;
-			if(turboOn) {
+			if (turboOn) {
 				SetPressedState(Buttons::A, keyMapping.TurboA);
 				SetPressedState(Buttons::B, keyMapping.TurboB);
 				SetPressedState(Buttons::L, keyMapping.TurboL);
 				SetPressedState(Buttons::R, keyMapping.TurboR);
 			}
 
-			if(!_emu->GetSettings()->GetGbaConfig().AllowInvalidInput) {
-				//If both U+D or L+R are pressed at the same time, act as if neither is pressed
-				if(IsPressed(Buttons::Up) && IsPressed(Buttons::Down)) {
+			if (!_emu->GetSettings()->GetGbaConfig().AllowInvalidInput) {
+				// If both U+D or L+R are pressed at the same time, act as if neither is pressed
+				if (IsPressed(Buttons::Up) && IsPressed(Buttons::Down)) {
 					ClearBit(Buttons::Down);
 					ClearBit(Buttons::Up);
 				}
-				if(IsPressed(Buttons::Left) && IsPressed(Buttons::Right)) {
+				if (IsPressed(Buttons::Left) && IsPressed(Buttons::Right)) {
 					ClearBit(Buttons::Left);
 					ClearBit(Buttons::Right);
 				}
@@ -54,27 +51,31 @@ protected:
 		}
 	}
 
-	void RefreshStateBuffer() override
-	{}
+	void RefreshStateBuffer() override {}
 
 public:
-	enum Buttons { Up = 0, Down, Left, Right, Start, Select, B, A, L, R };
+	enum Buttons { Up = 0,
+		           Down,
+		           Left,
+		           Right,
+		           Start,
+		           Select,
+		           B,
+		           A,
+		           L,
+		           R };
 
-	GbaController(Emulator* emu, uint8_t port, KeyMappingSet keyMappings) : BaseControlDevice(emu, ControllerType::GbaController, port, keyMappings)
-	{
+	GbaController(Emulator* emu, uint8_t port, KeyMappingSet keyMappings) : BaseControlDevice(emu, ControllerType::GbaController, port, keyMappings) {
 		_turboSpeed = keyMappings.TurboSpeed;
 	}
 
-	uint8_t ReadRam(uint16_t addr) override
-	{
+	uint8_t ReadRam(uint16_t addr) override {
 		return 0;
 	}
 
-	void WriteRam(uint16_t addr, uint8_t value) override
-	{}
+	void WriteRam(uint16_t addr, uint8_t value) override {}
 
-	void InternalDrawController(InputHud& hud) override
-	{
+	void InternalDrawController(InputHud& hud) override {
 		hud.DrawOutline(35, 14);
 
 		hud.DrawButton(5, 3, 3, 3, IsPressed(Buttons::Up));
@@ -95,19 +96,18 @@ public:
 		hud.DrawNumber(_port + 1, 16, 2);
 	}
 
-	vector<DeviceButtonName> GetKeyNameAssociations() override
-	{
+	vector<DeviceButtonName> GetKeyNameAssociations() override {
 		return {
-			{ "a", Buttons::A },
-			{ "b", Buttons::B },
-			{ "start", Buttons::Start },
-			{ "select", Buttons::Select },
-			{ "up", Buttons::Up },
-			{ "down", Buttons::Down },
-			{ "left", Buttons::Left },
-			{ "right", Buttons::Right },
-			{ "l", Buttons::L },
-			{ "r", Buttons::R },
+		    {"a",      Buttons::A     },
+		    {"b",      Buttons::B     },
+		    {"start",  Buttons::Start },
+		    {"select", Buttons::Select},
+		    {"up",     Buttons::Up    },
+		    {"down",   Buttons::Down  },
+		    {"left",   Buttons::Left  },
+		    {"right",  Buttons::Right },
+		    {"l",      Buttons::L     },
+		    {"r",      Buttons::R     },
 		};
 	}
 };

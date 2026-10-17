@@ -1,12 +1,9 @@
-﻿using Mesen.Interop;
-using ReactiveUI.Fody.Helpers;
+using Nexen.Interop;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.Config
-{
-	public class TileEditorConfig : BaseWindowConfig<TileEditorConfig>
-	{
-		[Reactive] public double ImageScale { get; set; } = 8;
-		[Reactive] public bool ShowGrid { get; set; } = false;
-		[Reactive] public TileBackground Background { get; set; } = TileBackground.Transparent;
-	}
+namespace Nexen.Config; 
+public sealed partial class TileEditorConfig : BaseWindowConfig<TileEditorConfig> {
+	[Reactive] public partial double ImageScale { get; set; } = 8;
+	[Reactive] public partial bool ShowGrid { get; set; } = false;
+	[Reactive] public partial TileBackground Background { get; set; } = TileBackground.Transparent;
 }

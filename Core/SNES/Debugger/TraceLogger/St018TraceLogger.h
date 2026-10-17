@@ -7,17 +7,16 @@ class DisassemblyInfo;
 class Debugger;
 class SnesPpu;
 
-class St018TraceLogger : public BaseTraceLogger<St018TraceLogger, ArmV3CpuState>
-{
+class St018TraceLogger : public BaseTraceLogger<St018TraceLogger, ArmV3CpuState> {
 private:
 	SnesPpu* _ppu = nullptr;
-	
+
 protected:
 	RowDataType GetFormatTagType(string& tag) override;
 
 public:
 	St018TraceLogger(Debugger* debugger, IDebugger* cpuDebugger, SnesPpu* ppu);
-	
+
 	void GetTraceRow(string& output, ArmV3CpuState& cpuState, TraceLogPpuState& ppuState, DisassemblyInfo& disassemblyInfo);
 	void LogPpuState();
 

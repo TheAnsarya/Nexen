@@ -1,37 +1,35 @@
-﻿using Mesen.Interop;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Nexen.Interop;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.Config;
+namespace Nexen.Config;
 
-public class CvConfig : BaseConfig<CvConfig>
-{
-	[Reactive] public ConsoleOverrideConfig ConfigOverrides { get; set; } = new();
+public sealed partial class CvConfig : BaseConfig<CvConfig> {
+	[Reactive] public partial ConsoleOverrideConfig ConfigOverrides { get; set; } = new();
 
-	[Reactive] public CvControllerConfig Port1 { get; set; } = new();
-	[Reactive] public CvControllerConfig Port2 { get; set; } = new();
+	[Reactive] public partial CvControllerConfig Port1 { get; set; } = new();
+	[Reactive] public partial CvControllerConfig Port2 { get; set; } = new();
 
 	[ValidValues(ConsoleRegion.Auto, ConsoleRegion.Ntsc, ConsoleRegion.Pal)]
-	[Reactive] public ConsoleRegion Region { get; set; } = ConsoleRegion.Auto;
+	[Reactive] public partial ConsoleRegion Region { get; set; } = ConsoleRegion.Auto;
 
-	[Reactive] public RamState RamPowerOnState { get; set; } = RamState.AllZeros;
+	[Reactive] public partial RamState RamPowerOnState { get; set; } = RamState.AllZeros;
 
-	[Reactive] public bool RemoveSpriteLimit { get; set; } = false;
-	[Reactive] public bool DisableSprites { get; set; } = false;
-	[Reactive] public bool DisableBackground { get; set; } = false;
+	[Reactive] public partial bool RemoveSpriteLimit { get; set; } = false;
+	[Reactive] public partial bool DisableSprites { get; set; } = false;
+	[Reactive] public partial bool DisableBackground { get; set; } = false;
 
-	[Reactive][MinMax(0, 100)] public UInt32 Tone1Vol { get; set; } = 100;
-	[Reactive][MinMax(0, 100)] public UInt32 Tone2Vol { get; set; } = 100;
-	[Reactive][MinMax(0, 100)] public UInt32 Tone3Vol { get; set; } = 100;
-	[Reactive][MinMax(0, 100)] public UInt32 NoiseVol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Tone1Vol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Tone2Vol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 Tone3Vol { get; set; } = 100;
+	[Reactive][MinMax(0, 100)] public partial UInt32 NoiseVol { get; set; } = 100;
 
-	public void ApplyConfig()
-	{
+	public void ApplyConfig() {
 		ConfigManager.Config.Video.ApplyConfig();
 
 		ConfigApi.SetCvConfig(new InteropCvConfig() {
@@ -52,15 +50,13 @@ public class CvConfig : BaseConfig<CvConfig>
 		});
 	}
 
-	internal void InitializeDefaults(DefaultKeyMappingType defaultMappings)
-	{
+	internal void InitializeDefaults(DefaultKeyMappingType defaultMappings) {
 		Port1.InitDefaults<CvKeyMapping>(defaultMappings, ControllerType.ColecoVisionController);
 	}
 }
 
 [StructLayout(LayoutKind.Sequential)]
-public struct InteropCvConfig
-{
+public struct InteropCvConfig {
 	public InteropControllerConfig Port1;
 	public InteropControllerConfig Port2;
 

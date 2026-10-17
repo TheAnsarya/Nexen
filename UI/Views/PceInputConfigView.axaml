@@ -3,16 +3,16 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:v="using:Mesen.Views"
-	xmlns:cfg="using:Mesen.Config"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:v="using:Nexen.Views"
+	xmlns:cfg="using:Nexen.Config"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:PceInputConfigViewModel"
-	x:Class="Mesen.Views.PceInputConfigView"
+	x:Class="Nexen.Views.PceInputConfigView"
 >
 	<Design.DataContext>
 		<vm:PceInputConfigViewModel />

@@ -2,14 +2,14 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:l="using:Nexen.Localization"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d"
-	x:Class="Mesen.Windows.VideoRecordWindow"
+	x:Class="Nexen.Windows.VideoRecordWindow"
 	Width="500" Height="170"
 	x:DataType="vm:VideoRecordConfigViewModel"
 	Title="{l:Translate wndTitle}"
@@ -35,7 +35,7 @@
 			<TextBlock Grid.Row="2" Text="{l:Translate lblCompressionLevel}" IsVisible="{Binding CompressionAvailable}" />
 			<Grid Grid.Row="2" Grid.Column="1" ColumnDefinitions="Auto,1*,Auto" Margin="5 0" IsVisible="{Binding CompressionAvailable}">
 				<TextBlock Text="{l:Translate lblLowCompression}" />
-				<c:MesenSlider
+				<c:NexenSlider
 					Grid.Column="1"
 					Margin="5 5"
 					HideValue="True"

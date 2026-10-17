@@ -1,8 +1,7 @@
 #pragma once
 #include "pch.h"
 
-class PlatformUtilities
-{
+class PlatformUtilities {
 public:
 	static void DisableScreensaver();
 	static void EnableScreensaver();

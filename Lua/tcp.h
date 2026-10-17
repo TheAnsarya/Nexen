@@ -21,20 +21,20 @@
 #include "socket.h"
 
 typedef struct t_tcp_ {
-    t_socket sock;
-    t_io io;
-    t_buffer buf;
-    t_timeout tm;
-    int family;
+	t_socket sock;
+	t_io io;
+	t_buffer buf;
+	t_timeout tm;
+	int family;
 } t_tcp;
 
-typedef t_tcp *p_tcp;
+typedef t_tcp* p_tcp;
 
 #ifndef _WIN32
 #pragma GCC visibility push(hidden)
 #endif
 
-int tcp_open(lua_State *L);
+int tcp_open(lua_State* L);
 
 #ifndef _WIN32
 #pragma GCC visibility pop

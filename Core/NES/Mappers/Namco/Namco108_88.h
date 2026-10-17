@@ -2,11 +2,9 @@
 #include "pch.h"
 #include "NES/Mappers/Namco/Namco108.h"
 
-class Namco108_88 : public Namco108
-{
+class Namco108_88 : public Namco108 {
 protected:
-	virtual void UpdateChrMapping() override
-	{
+	virtual void UpdateChrMapping() override {
 		_registers[0] &= 0x3F;
 		_registers[1] &= 0x3F;
 

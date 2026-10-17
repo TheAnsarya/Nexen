@@ -3,14 +3,14 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:dc="using:Mesen.Debugger.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	mc:Ignorable="d"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="cfg:NesEventViewerConfig"
-	x:Class="Mesen.Debugger.Views.NesEventViewerConfigView"
+	x:Class="Nexen.Debugger.Views.NesEventViewerConfigView"
 	Design.Height="600"
 >
 	<Design.DataContext>

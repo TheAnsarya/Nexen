@@ -1,8 +1,7 @@
 #pragma once
 #include "Shared/Interfaces/IMouseManager.h"
 
-class WindowsMouseManager : public IMouseManager
-{
+class WindowsMouseManager : public IMouseManager {
 private:
 	void* _arrowCursor;
 	void* _crossCursor;

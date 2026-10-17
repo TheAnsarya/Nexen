@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
-namespace Mesen.Interop;
+namespace Nexen.Interop;
 
-public struct GbaTimerState
-{
+public struct GbaTimerState {
 	public UInt16 ReloadValue;
 	public UInt16 NewReloadValue;
 	public UInt16 PrescaleMask;
@@ -19,30 +18,26 @@ public struct GbaTimerState
 	[MarshalAs(UnmanagedType.I1)] public bool ProcessTimer;
 }
 
-public struct GbaTimersState
-{
+public struct GbaTimersState {
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
 	public GbaTimerState[] Timer;
 }
 
-public enum GbaDmaTrigger : byte
-{
+public enum GbaDmaTrigger : byte {
 	Immediate = 0,
 	VBlank = 1,
 	HBlank = 2,
 	Audio = 3
 }
 
-public enum GbaDmaAddrMode : byte
-{
+public enum GbaDmaAddrMode : byte {
 	Increment,
 	Decrement,
 	Fixed,
 	IncrementReload
 }
 
-public struct GbaDmaChannel
-{
+public struct GbaDmaChannel {
 	public UInt64 StartClock;
 	public UInt32 ReadValue;
 
@@ -69,14 +64,12 @@ public struct GbaDmaChannel
 	[MarshalAs(UnmanagedType.I1)] public bool Active;
 }
 
-public struct GbaDmaControllerState
-{
+public struct GbaDmaControllerState {
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
 	public GbaDmaChannel[] Ch;
 }
 
-public struct GbaApuState
-{
+public struct GbaApuState {
 	public sbyte DmaSampleA;
 	public sbyte DmaSampleB;
 
@@ -115,8 +108,7 @@ public struct GbaApuState
 	public byte SamplingRate;
 }
 
-public struct GbaSquareState
-{
+public struct GbaSquareState {
 	public UInt16 Frequency;
 	public UInt16 Timer;
 
@@ -147,8 +139,7 @@ public struct GbaSquareState
 	public byte Output;
 }
 
-public struct GbaNoiseState
-{
+public struct GbaNoiseState {
 	public byte Volume;
 	public byte EnvVolume;
 	[MarshalAs(UnmanagedType.I1)] public bool EnvRaiseVolume;
@@ -170,8 +161,7 @@ public struct GbaNoiseState
 	public byte Output;
 }
 
-public struct GbaWaveState
-{
+public struct GbaWaveState {
 	[MarshalAs(UnmanagedType.I1)] public bool DacEnabled;
 	[MarshalAs(UnmanagedType.I1)] public bool DoubleLength;
 	public byte SelectedBank;
@@ -195,8 +185,7 @@ public struct GbaWaveState
 	public byte Output;
 }
 
-public struct GbaApuDebugState
-{
+public struct GbaApuDebugState {
 	public GbaApuState Common;
 	public GbaSquareState Square1;
 	public GbaSquareState Square2;
@@ -204,27 +193,23 @@ public struct GbaApuDebugState
 	public GbaNoiseState Noise;
 }
 
-public struct GbaControlManagerState
-{
+public struct GbaControlManagerState {
 	public UInt16 KeyControl;
 	public UInt16 ActiveKeys;
 }
 
-public struct GbaGpioState
-{
+public struct GbaGpioState {
 	public byte Data;
 	public byte WritablePins;
 	[MarshalAs(UnmanagedType.I1)] public bool ReadWrite;
 }
 
-public struct GbaCartState
-{
+public struct GbaCartState {
 	[MarshalAs(UnmanagedType.I1)] public bool HasGpio;
 	public GbaGpioState Gpio;
 }
 
-public struct GbaState : BaseState
-{
+public struct GbaState : BaseState {
 	public GbaCpuState Cpu;
 	public GbaPpuState Ppu;
 	public GbaApuDebugState Apu;
@@ -236,8 +221,7 @@ public struct GbaState : BaseState
 	public GbaCartState Cart;
 }
 
-public enum GbaCpuMode : byte
-{
+public enum GbaCpuMode : byte {
 	User = 0b10000,
 	Fiq = 0b10001,
 	Irq = 0b10010,
@@ -247,8 +231,7 @@ public enum GbaCpuMode : byte
 	System = 0b11111,
 }
 
-public struct GbaCpuFlags
-{
+public struct GbaCpuFlags {
 	public GbaCpuMode Mode;
 	[MarshalAs(UnmanagedType.I1)] public bool Thumb;
 	[MarshalAs(UnmanagedType.I1)] public bool FiqDisable;
@@ -260,14 +243,12 @@ public struct GbaCpuFlags
 	[MarshalAs(UnmanagedType.I1)] public bool Negative;
 }
 
-public struct GbaInstructionData
-{
+public struct GbaInstructionData {
 	public UInt32 Address;
 	public UInt32 OpCode;
 }
 
-public struct GbaCpuPipeline
-{
+public struct GbaCpuPipeline {
 	public GbaInstructionData Fetch;
 	public GbaInstructionData Decode;
 	public GbaInstructionData Execute;
@@ -275,8 +256,7 @@ public struct GbaCpuPipeline
 	public byte Mode;
 }
 
-public struct GbaCpuState : BaseState
-{
+public struct GbaCpuState : BaseState {
 	public GbaCpuPipeline Pipeline;
 
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
@@ -308,16 +288,14 @@ public struct GbaCpuState : BaseState
 	public UInt64 CycleCount;
 }
 
-public enum GbaBgStereoMode : byte
-{
+public enum GbaBgStereoMode : byte {
 	Disabled,
 	EvenColumns,
 	OddColumns,
 	Both
 }
 
-public struct GbaBgConfig
-{
+public struct GbaBgConfig {
 	public UInt16 Control;
 	public UInt16 TilemapAddr;
 	public UInt16 TilesetAddr;
@@ -336,8 +314,7 @@ public struct GbaBgConfig
 	public GbaBgStereoMode StereoMode;
 }
 
-public struct GbaTransformConfig
-{
+public struct GbaTransformConfig {
 	public UInt32 OriginX;
 	public UInt32 OriginY;
 
@@ -352,24 +329,21 @@ public struct GbaTransformConfig
 	[MarshalAs(UnmanagedType.I1)] public bool NeedInit;
 }
 
-public enum GbaPpuBlendEffect : byte
-{
+public enum GbaPpuBlendEffect : byte {
 	None,
 	AlphaBlend,
 	IncreaseBrightness,
 	DecreaseBrightness
 }
 
-public struct GbaWindowConfig
-{
+public struct GbaWindowConfig {
 	public byte LeftX;
 	public byte RightX;
 	public byte TopY;
 	public byte BottomY;
 }
 
-public struct GbaPpuState : BaseState
-{
+public struct GbaPpuState : BaseState {
 	public UInt32 FrameCount;
 	public UInt16 Cycle;
 	public UInt16 Scanline;
@@ -428,8 +402,7 @@ public struct GbaPpuState : BaseState
 	public byte[] WindowActiveLayers;
 }
 
-public struct GbaMemoryManagerState
-{
+public struct GbaMemoryManagerState {
 	public UInt16 IE;
 	public UInt16 IF;
 	public UInt16 NewIE;
@@ -461,8 +434,7 @@ public struct GbaMemoryManagerState
 	public byte[] IwramOpenBus;
 }
 
-public struct GbaRomPrefetchState
-{
+public struct GbaRomPrefetchState {
 	public UInt32 ReadAddr;
 	public UInt32 PrefetchAddr;
 	public byte ClockCounter;

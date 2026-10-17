@@ -3,8 +3,7 @@
 
 enum class MemoryType;
 
-struct AddressInfo
-{
+struct AddressInfo {
 	int32_t Address;
 	MemoryType Type;
 };

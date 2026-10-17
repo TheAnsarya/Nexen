@@ -3,27 +3,23 @@
 #include "Netplay/NetMessage.h"
 #include "Shared/ControlDeviceState.h"
 
-class InputDataMessage : public NetMessage
-{
+class InputDataMessage : public NetMessage {
 private:
 	ControlDeviceState _inputState;
 
-protected:	
-	void Serialize(Serializer &s) override
-	{
+protected:
+	void Serialize(Serializer& s) override {
 		SVVector(_inputState.State);
 	}
 
 public:
-	InputDataMessage(void* buffer, uint32_t length) : NetMessage(buffer, length) { }
+	InputDataMessage(void* buffer, uint32_t length) : NetMessage(buffer, length) {}
 
-	InputDataMessage(ControlDeviceState inputState) : NetMessage(MessageType::InputData)
-	{
+	InputDataMessage(ControlDeviceState inputState) : NetMessage(MessageType::InputData) {
 		_inputState = inputState;
 	}
 
-	ControlDeviceState GetInputState()
-	{
+	ControlDeviceState GetInputState() {
 		return _inputState;
 	}
 };

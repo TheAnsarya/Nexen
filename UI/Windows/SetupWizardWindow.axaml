@@ -1,94 +1,331 @@
-<Window
+﻿<Window
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:v="using:Mesen.Views"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:v="using:Nexen.Views"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d"
-	x:Class="Mesen.Windows.SetupWizardWindow"
-	Width="400" Height="515"
-	SystemDecorations="None"
-	CanResize="False"
+	x:Class="Nexen.Windows.SetupWizardWindow"
+	Width="1020" Height="980"
+	MinWidth="900" MinHeight="900"
+	WindowDecorations="None"
+	CanResize="True"
 	WindowStartupLocation="CenterScreen"
 	x:DataType="vm:SetupWizardViewModel"
 	Title="{l:Translate wndTitle}"
 	Name="root"
+	Background="{DynamicResource NexenStartupWindowBackgroundBrush}"
+	Foreground="{DynamicResource NexenStartupTextBrush}"
 >
 	<Design.DataContext>
 		<vm:SetupWizardViewModel />
 	</Design.DataContext>
 
-	<Border BorderThickness="3" BorderBrush="Gray">
-		<DockPanel Margin="10">
-			<DockPanel DockPanel.Dock="Top">
-				<Image
-					DockPanel.Dock="Right"
-					Source="/Assets/Icon.ico"
-					Height="32"
-					Width="32"
-				/>
-				<StackPanel>
-					<TextBlock Text="{l:Translate lblMesen}" FontSize="12" />
-					<TextBlock Text="{l:Translate lblConfigWizard}" FontSize="18" />
-				</StackPanel>
-			</DockPanel>
-
-			<DockPanel DockPanel.Dock="Bottom">
-				<TextBlock
-					Foreground="CornflowerBlue"
-					Text="{l:Translate lblCancel}"
-					Cursor="Hand"
-					DockPanel.Dock="Left"
-					VerticalAlignment="Center"
-					Tapped="lblCancel_Tapped"
-				/>
-				<Button
-					MinWidth="70"
-					HorizontalAlignment="Right"
-					HorizontalContentAlignment="Center"
-					Click="btnOk_OnClick"
-					Content="{l:Translate btnOk}"
-				/>
-			</DockPanel>
-
-			<StackPanel Margin="0 30 0 0">
-				<TextBlock Text="{l:Translate lblInitialSetup}" />
-
-				<c:OptionSection Header="{l:Translate lblStorageLocation}">
-					<TextBlock Text="{l:Translate lblStorageHint}" />
-					<StackPanel Margin="5 5 0 0">
-						<RadioButton Content="{l:Translate radStorageDocuments}" IsChecked="{Binding StoreInUserProfile}" />
-						<RadioButton Content="{l:Translate radStoragePortable}" IsChecked="{Binding !StoreInUserProfile}" />
-					</StackPanel>
-					<StackPanel Orientation="Horizontal" Margin="0 10 0 10">
-						<TextBlock Text="{l:Translate lblDataLocation}" />
-						<TextBlock Foreground="CornflowerBlue" Margin="5 0 0 0" Text="{Binding InstallLocation}" />
-					</StackPanel>
-				</c:OptionSection>
-
-				<c:OptionSection Header="{l:Translate lblInputMappings}">
-					<TextBlock Text="{l:Translate lblInputHint}" />
-					<Grid ColumnDefinitions="1*,1*,1*,1*" RowDefinitions="Auto,Auto">
-						<Image Source="/Assets/XbIcon.png" Stretch="None" Tapped="XboxIcon_Tapped" Cursor="Hand" />
-						<Image Source="/Assets/PsIcon.png" Stretch="None" Grid.Column="1" Tapped="PsIcon_Tapped" Cursor="Hand" />
-						<Image Source="/Assets/WasdKeys.png" Stretch="None" Grid.Column="2" Tapped="WasdIcon_Tapped" Cursor="Hand" />
-						<Image Source="/Assets/ArrowKeys.png" Stretch="None" Grid.Column="3" Tapped="ArrowIcon_Tapped" Cursor="Hand" />
-						<CheckBox Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center" IsChecked="{Binding EnableXboxMappings}" />
-						<CheckBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center" IsChecked="{Binding EnablePsMappings}" />
-						<CheckBox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" IsChecked="{Binding EnableWasdMappings}" />
-						<CheckBox Grid.Row="1" Grid.Column="3" HorizontalAlignment="Center" IsChecked="{Binding EnableArrowMappings}" />
+	<Window.Styles>
+		<Style Selector="RadioButton.choiceCard">
+			<Setter Property="Foreground" Value="{DynamicResource NexenStartupTextBrush}" />
+			<Setter Property="Background" Value="{DynamicResource NexenStartupCardBackgroundBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource NexenStartupCardBorderBrush}" />
+			<Setter Property="BorderThickness" Value="2" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="HorizontalAlignment" Value="Stretch" />
+			<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+			<Setter Property="MinHeight" Value="66" />
+			<Setter Property="Margin" Value="8,2,8,2" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Grid MinHeight="{TemplateBinding MinHeight}" Cursor="Hand">
+						<Border
+							x:Name="CardBody"
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="2"
+							CornerRadius="9"
+						>
+							<Border.RenderTransform>
+								<SkewTransform AngleX="14" />
+							</Border.RenderTransform>
+						</Border>
+						<ContentPresenter
+							Content="{TemplateBinding Content}"
+							ContentTemplate="{TemplateBinding ContentTemplate}"
+							Margin="20,10"
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Center"
+						/>
 					</Grid>
-				</c:OptionSection>
+				</ControlTemplate>
+			</Setter>
+		</Style>
 
-				<c:OptionSection Header="{l:Translate lblMiscOptions}" Margin="0 25 0 0" IsVisible="{Binding !IsOsx}">
-					<CheckBox Content="{l:Translate chkCreateShortcut}" IsChecked="{Binding CreateShortcut}" />
-					<CheckBox Content="{l:Translate chkCheckForUpdates}" IsChecked="{Binding CheckForUpdates}" />
-				</c:OptionSection>
-			</StackPanel>
-		</DockPanel>
+		<Style Selector="RadioButton.choiceCard /template/ ContentPresenter TextBlock">
+			<Setter Property="Foreground" Value="{DynamicResource NexenStartupTextBrush}" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:pointerover /template/ Border#CardBody">
+			<Setter Property="Background" Value="{DynamicResource NexenStartupCardPointerOverBackgroundBrush}" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:pointerover /template/ Border#CardBody">
+			<Setter Property="BorderBrush" Value="{DynamicResource NexenStartupCardPointerOverBorderBrush}" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:pointerover /template/ ContentPresenter TextBlock">
+			<Setter Property="Foreground" Value="{DynamicResource NexenStartupMutedTextBrush}" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:checked /template/ Border#CardBody">
+			<Setter Property="Background" Value="{DynamicResource NexenStartupCardCheckedBackgroundBrush}" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:checked /template/ Border#CardBody">
+			<Setter Property="BorderBrush" Value="{DynamicResource NexenStartupCardCheckedBorderBrush}" />
+		</Style>
+
+		<Style Selector="RadioButton.choiceCard:checked /template/ ContentPresenter TextBlock">
+			<Setter Property="Foreground" Value="{DynamicResource NexenStartupTextBrush}" />
+		</Style>
+
+		<Style Selector="Button.angledAction">
+			<Setter Property="Foreground" Value="{DynamicResource NexenStartupTextBrush}" />
+			<Setter Property="Background" Value="{DynamicResource NexenStartupActionBackgroundBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource NexenStartupActionBorderBrush}" />
+			<Setter Property="BorderThickness" Value="2" />
+			<Setter Property="Padding" Value="24,12" />
+			<Setter Property="FontWeight" Value="SemiBold" />
+			<Setter Property="FontSize" Value="{DynamicResource NexenSetupSectionTitleFontSize}" />
+			<Setter Property="MinHeight" Value="54" />
+			<Setter Property="Margin" Value="8,2,8,2" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Grid MinHeight="{TemplateBinding MinHeight}" Cursor="Hand">
+						<Border
+							x:Name="ActionBody"
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="2"
+							CornerRadius="10"
+						>
+							<Border.RenderTransform>
+								<SkewTransform AngleX="14" />
+							</Border.RenderTransform>
+						</Border>
+						<ContentPresenter
+							Content="{TemplateBinding Content}"
+							ContentTemplate="{TemplateBinding ContentTemplate}"
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center"
+							Margin="12,0"
+						/>
+					</Grid>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="Button.angledAction:pointerover /template/ Border#ActionBody">
+			<Setter Property="Background" Value="{DynamicResource NexenStartupActionBackgroundPointerOverBrush}" />
+		</Style>
+
+		<Style Selector="Button.angledAction:pointerover /template/ Border#ActionBody">
+			<Setter Property="BorderBrush" Value="{DynamicResource NexenStartupActionBorderPointerOverBrush}" />
+		</Style>
+
+		<Style Selector="Button.angledAction.secondaryAction">
+			<Setter Property="FontSize" Value="{DynamicResource NexenSetupOptionBodyFontSize}" />
+			<Setter Property="Padding" Value="18,8" />
+			<Setter Property="MinHeight" Value="42" />
+		</Style>
+
+		<Style Selector="Button.angledAction.primaryAction">
+			<Setter Property="FontSize" Value="{DynamicResource NexenSetupPrimaryActionFontSize}" />
+			<Setter Property="Padding" Value="52,20" />
+			<Setter Property="MinHeight" Value="84" />
+			<Setter Property="MinWidth" Value="500" />
+			<Setter Property="Background" Value="{DynamicResource NexenStartupPrimaryActionBackgroundBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource NexenStartupPrimaryActionBorderBrush}" />
+		</Style>
+
+		<Style Selector="Button.angledAction.cancelAction">
+			<Setter Property="FontSize" Value="24" />
+			<Setter Property="Padding" Value="30,14" />
+			<Setter Property="MinHeight" Value="64" />
+		</Style>
+
+		<Style Selector="Button.closeCircle">
+			<Setter Property="Width" Value="42" />
+			<Setter Property="Height" Value="42" />
+			<Setter Property="Background" Value="{DynamicResource NexenStartupActionBackgroundBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource NexenStartupActionBorderBrush}" />
+			<Setter Property="BorderThickness" Value="2" />
+			<Setter Property="Foreground" Value="{DynamicResource NexenStartupTextBrush}" />
+			<Setter Property="FontSize" Value="20" />
+			<Setter Property="FontWeight" Value="Bold" />
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border
+						Background="{TemplateBinding Background}"
+						BorderBrush="{TemplateBinding BorderBrush}"
+						BorderThickness="{TemplateBinding BorderThickness}"
+						CornerRadius="999"
+					>
+						<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="Button.closeCircle:pointerover">
+			<Setter Property="Background" Value="{DynamicResource NexenStartupActionBackgroundPointerOverBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource NexenStartupActionBorderPointerOverBrush}" />
+		</Style>
+
+	</Window.Styles>
+
+	<Border BorderThickness="2" BorderBrush="{DynamicResource NexenStartupBorderBrush}" Background="{DynamicResource NexenStartupWindowBackgroundBrush}">
+		<Grid Margin="22" RowDefinitions="Auto,*,Auto">
+			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+				<Image
+					Grid.Column="0"
+					Source="/Assets/NexenIcon.ico"
+					Height="92"
+					Width="92"
+					VerticalAlignment="Top"
+				/>
+				<StackPanel Grid.Column="1" Spacing="4">
+					<TextBlock Text="Nexen" FontSize="{DynamicResource NexenSetupCaptionFontSize}" Foreground="{DynamicResource NexenStartupMutedTextBrush}" />
+					<TextBlock Text="First Start Options" FontSize="{DynamicResource NexenSetupTitleFontSize}" FontWeight="Bold" />
+					<TextBlock Text="Pick what you need now. You can change everything later." Foreground="{DynamicResource NexenStartupMutedTextBrush}" FontSize="{DynamicResource NexenSetupSubtitleFontSize}" />
+				</StackPanel>
+				<Button Grid.Column="2" Classes="closeCircle" Click="Cancel_OnClick" HorizontalAlignment="Right" VerticalAlignment="Top">
+					<TextBlock Text="X" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource NexenStartupTextBrush}" />
+				</Button>
+				<Border Grid.Row="1" Grid.ColumnSpan="3" IsVisible="{Binding HasResumedDraft}" Background="{DynamicResource NexenStartupCardBackgroundBrush}" BorderBrush="{DynamicResource NexenStartupCardBorderBrush}" BorderThickness="1" CornerRadius="10" Padding="12" Margin="0,14,0,0">
+					<DockPanel LastChildFill="False">
+						<TextBlock DockPanel.Dock="Left" Width="700" Text="Saved setup found. Continue or start over." TextWrapping="Wrap" Foreground="{DynamicResource NexenStartupTextBrush}" FontSize="16" />
+						<Button DockPanel.Dock="Right" Classes="angledAction secondaryAction" Click="StartFresh_OnClick" Content="Start Fresh" />
+					</DockPanel>
+				</Border>
+			</Grid>
+
+			<ScrollViewer Grid.Row="1" Margin="0,16,0,16" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+				<Border Background="{DynamicResource NexenStartupSurfaceBackgroundBrush}" BorderBrush="{DynamicResource NexenStartupBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="16">
+					<StackPanel Spacing="12">
+						<TextBlock FontSize="20" FontWeight="SemiBold" Text="How will you use Nexen?" />
+						<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+							<RadioButton Classes="choiceCard" GroupName="PrimaryUsage" IsChecked="{Binding UsePlayingProfile}">
+								<StackPanel Spacing="4">
+									<TextBlock Text="Play Games" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" />
+									<TextBlock Text="Good defaults for normal play." FontSize="16" Foreground="{DynamicResource NexenStartupMutedTextBrush}" />
+								</StackPanel>
+							</RadioButton>
+							<RadioButton Classes="choiceCard" GroupName="PrimaryUsage" IsChecked="{Binding UseDebuggingProfile}" Grid.Column="1">
+								<StackPanel Spacing="4">
+									<TextBlock Text="Hacking" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" />
+									<TextBlock Text="More tools and debug defaults." FontSize="16" Foreground="{DynamicResource NexenStartupMutedTextBrush}" />
+								</StackPanel>
+							</RadioButton>
+						</Grid>
+
+						<Border Height="1" Background="{DynamicResource NexenStartupDividerBrush}" Margin="0,2,0,2" />
+
+						<Grid ColumnDefinitions="*">
+							<TextBlock FontSize="20" FontWeight="SemiBold" Text="Where should Nexen save your data?" />
+						</Grid>
+						<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+							<RadioButton Classes="choiceCard" GroupName="Storage" IsChecked="{Binding StoreInUserProfile}">
+								<StackPanel Spacing="4">
+									<TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" Text="Use Documents (Recommended)" TextWrapping="Wrap" />
+									<TextBlock FontSize="16" Foreground="{DynamicResource NexenStartupMutedTextBrush}" Text="Best for most users." />
+								</StackPanel>
+							</RadioButton>
+							<RadioButton Classes="choiceCard" GroupName="Storage" IsChecked="{Binding UsePortableMode}" Grid.Column="1" IsEnabled="{Binding CanUsePortableMode}">
+								<StackPanel Spacing="4">
+									<TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" Text="Use Current Folder" />
+									<TextBlock FontSize="16" Foreground="{DynamicResource NexenStartupMutedTextBrush}" Text="Keep data next to Nexen." />
+								</StackPanel>
+							</RadioButton>
+						</Grid>
+							<TextBlock IsVisible="{Binding !CanUsePortableMode}" Foreground="{DynamicResource NexenStartupWarningTextBrush}" FontSize="16" Text="Portable mode is unavailable in AppImage environments." />
+						<StackPanel Orientation="Horizontal" Spacing="8">
+							<TextBlock Text="Selected path:" Foreground="{DynamicResource NexenStartupMutedTextBrush}" FontSize="19" FontWeight="SemiBold" />
+							<TextBlock Text="{Binding InstallLocation}" FontSize="19" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" />
+						</StackPanel>
+
+						<Border Height="1" Background="{DynamicResource NexenStartupDividerBrush}" Margin="0,2,0,2" />
+
+						<TextBlock FontSize="20" FontWeight="SemiBold" Text="Configure input" />
+						<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+							<RadioButton Classes="choiceCard" GroupName="InputSetup" IsChecked="{Binding ConfigureInputMappingsNow}">
+								<StackPanel Spacing="4">
+									<TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" Text="Configure Now" />
+									<TextBlock FontSize="16" Foreground="{DynamicResource NexenStartupMutedTextBrush}" Text="Pick prompt and keyboard style." />
+								</StackPanel>
+							</RadioButton>
+							<RadioButton Classes="choiceCard" GroupName="InputSetup" IsChecked="{Binding UseInputDefaultsNow}" Grid.Column="1">
+								<StackPanel Spacing="4">
+									<TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" Text="Use Defaults" />
+									<TextBlock FontSize="16" Foreground="{DynamicResource NexenStartupMutedTextBrush}" Text="Quick start input setup." />
+								</StackPanel>
+							</RadioButton>
+						</Grid>
+
+						<StackPanel IsVisible="{Binding ConfigureInputMappingsNow}" Spacing="10" Margin="0,2,0,0">
+							<TextBlock FontSize="18" FontWeight="SemiBold" Text="Prompt Style" />
+							<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+								<RadioButton Classes="choiceCard" GroupName="ControllerStyle" IsChecked="{Binding UseXboxPromptStyle}">
+									<TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" Text="Xbox" />
+								</RadioButton>
+								<RadioButton Classes="choiceCard" GroupName="ControllerStyle" IsChecked="{Binding UsePlayStationPromptStyle}" Grid.Column="1">
+									<TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" Text="PlayStation" />
+								</RadioButton>
+							</Grid>
+
+							<TextBlock FontSize="18" FontWeight="SemiBold" Text="Keyboard" />
+							<Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+								<RadioButton Classes="choiceCard" GroupName="KeyboardStyle" IsChecked="{Binding EnableWasdMappings}">
+									<TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" Text="WASD" />
+								</RadioButton>
+								<RadioButton Classes="choiceCard" GroupName="KeyboardStyle" IsChecked="{Binding EnableArrowMappings}" Grid.Column="1">
+									<TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" Text="Arrow Keys" />
+								</RadioButton>
+							</Grid>
+						</StackPanel>
+
+						<Border Height="1" Background="{DynamicResource NexenStartupDividerBrush}" Margin="0,2,0,2" />
+
+						<Grid ColumnDefinitions="2*,*,*" ColumnSpacing="12" IsVisible="{Binding !IsOsx}">
+							<TextBlock VerticalAlignment="Center" FontSize="18" FontWeight="SemiBold" Text="Desktop Shortcut" />
+							<RadioButton Grid.Column="1" Classes="choiceCard" GroupName="Shortcut" IsChecked="{Binding CreateShortcutYes}" MinHeight="54">
+								<TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" Text="Yes" />
+							</RadioButton>
+							<RadioButton Grid.Column="2" Classes="choiceCard" GroupName="Shortcut" IsChecked="{Binding CreateShortcutNo}" MinHeight="54">
+								<TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" Text="No" />
+							</RadioButton>
+						</Grid>
+
+						<Grid ColumnDefinitions="2*,*,*" ColumnSpacing="12">
+							<TextBlock VerticalAlignment="Center" FontSize="18" FontWeight="SemiBold" Text="Auto Update" />
+							<RadioButton Grid.Column="1" Classes="choiceCard" GroupName="Updates" IsChecked="{Binding CheckForUpdatesYes}" MinHeight="54">
+								<TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" Text="Yes" />
+							</RadioButton>
+							<RadioButton Grid.Column="2" Classes="choiceCard" GroupName="Updates" IsChecked="{Binding CheckForUpdatesNo}" MinHeight="54">
+								<TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource NexenStartupTextBrush}" Text="No" />
+							</RadioButton>
+						</Grid>
+					</StackPanel>
+				</Border>
+			</ScrollViewer>
+
+			<Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+				<Button Classes="angledAction cancelAction" Content="Cancel" Click="Cancel_OnClick" />
+				<TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="Setup takes less than a minute." Foreground="{DynamicResource NexenStartupMutedTextBrush}" FontSize="20" FontWeight="SemiBold" />
+				<Button Grid.Column="2" Classes="angledAction primaryAction" HorizontalAlignment="Right" Click="btnOk_OnClick">
+					<TextBlock Text="Save and Launch" FontSize="36" FontWeight="Bold" Foreground="{DynamicResource NexenStartupTextBrush}" />
+				</Button>
+			</Grid>
+		</Grid>
 	</Border>
 </Window>

@@ -1,76 +1,78 @@
+using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Mesen.Debugger.ViewModels;
-using Mesen.Debugger.Labels;
-using Mesen.Debugger.Windows;
-using System;
-using static Mesen.Debugger.ViewModels.LabelListViewModel;
-using Avalonia.Input;
-using DataBoxControl;
-using Mesen.Debugger.Utilities;
-using System.Collections.Generic;
 using AvaloniaEdit.Editing;
-using Mesen.Interop;
-using Mesen.Config;
-using Mesen.Utilities;
+using Nexen.Config;
+using Nexen.Debugger.Labels;
+using Nexen.Debugger.Utilities;
+using Nexen.Debugger.ViewModels;
+using Nexen.Debugger.Windows;
+using Nexen.Interop;
+using Nexen.Utilities;
+using static Nexen.Debugger.ViewModels.LabelListViewModel;
 
-namespace Mesen.Debugger.Views
-{
-	public class RegisterTabView : MesenUserControl
-	{
-		public RegisterViewerTab Model => (RegisterViewerTab)DataContext!;
+namespace Nexen.Debugger.Views;
+public partial class RegisterTabView : NexenUserControl {
+	public RegisterViewerTab Model => (RegisterViewerTab)DataContext!;
 
-		public RegisterTabView()
-		{
-			InitializeComponent();
+	public RegisterTabView() {
+		InitializeComponent();
 
-			DataBox dataBox = this.GetControl<DataBox>("lstRegisterTab");
-			AddDisposables(DebugShortcutManager.CreateContextMenu(dataBox, new List<ContextMenuAction>() {
-				new ContextMenuAction() {
-					ActionType = ActionType.EditBreakpoint,
-					IsEnabled = () => Model.CpuType.HasValue && Model.MemoryType.HasValue && Model.Selection.SelectedItem is RegEntry entry && entry.StartAddress >= 0,
-					Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.RegisterViewer_EditBreakpoint),
-					HintText = () => {
-						if(Model.CpuType.HasValue && Model.MemoryType.HasValue && Model.Selection.SelectedItem is RegEntry entry && entry.StartAddress >= 0) {
-							string hint = $"${entry.StartAddress:X4}";
-							if(entry.EndAddress > entry.StartAddress) {
-								hint += $" - ${entry.EndAddress:X4}";
-							}
-							return hint;
+		DataGrid dataGrid = this.GetControl<DataGrid>("lstRegisterTab");
+
+		// Apply row background styling for header rows
+		dataGrid.LoadingRow += (_, e) => {
+			if (e.Row.DataContext is RegEntry entry) {
+				e.Row.Background = entry.Background;
+			}
+		};
+
+		AddDisposables(DebugShortcutManager.CreateContextMenu(dataGrid, new List<ContextMenuAction>() {
+			new ContextMenuAction() {
+				ActionType = ActionType.EditBreakpoint,
+				IsEnabled = () => Model.CpuType.HasValue && Model.MemoryType.HasValue && Model.SelectedItem is RegEntry entry && entry.StartAddress >= 0,
+				Shortcut = () => ConfigManager.Config.Debug.Shortcuts.Get(DebuggerShortcut.RegisterViewer_EditBreakpoint),
+				HintText = () => {
+					if(Model.CpuType.HasValue && Model.MemoryType.HasValue && Model.SelectedItem is RegEntry entry && entry.StartAddress >= 0) {
+						string hint = $"${entry.StartAddress:X4}";
+						if(entry.EndAddress > entry.StartAddress) {
+							hint += $" - ${entry.EndAddress:X4}";
 						}
-						return "";
-					},
-					OnClick = async () => {
-						if(Model.CpuType.HasValue && Model.MemoryType.HasValue && Model.Selection.SelectedItem is RegEntry entry) {
-							uint startAddress = (uint)entry.StartAddress;
-							uint endAddress = (uint)entry.EndAddress;
 
-							Breakpoint? bp = BreakpointManager.GetMatchingBreakpoint(startAddress, endAddress, Model.MemoryType.Value);
-							if(bp == null) {
-								bp = new Breakpoint() {
-									BreakOnRead = true,
-									BreakOnWrite = true,
-									CpuType = Model.CpuType.Value,
-									StartAddress = (uint)entry.StartAddress,
-									EndAddress = (uint)entry.EndAddress,
-									MemoryType = Model.MemoryType.Value
-								};
-							}
+						return hint;
+					}
 
-							bool result = await BreakpointEditWindow.EditBreakpointAsync(bp, this);
-							if(result && DebugWindowManager.GetDebugWindow<DebuggerWindow>(x => x.CpuType == Model.CpuType) == null) {
-								DebuggerWindow.GetOrOpenWindow(Model.CpuType.Value);
-							}
+					return "";
+				},
+				OnClick = async () => {
+					if(Model.CpuType.HasValue && Model.MemoryType.HasValue && Model.SelectedItem is RegEntry entry) {
+						uint startAddress = (uint)entry.StartAddress;
+						uint endAddress = (uint)entry.EndAddress;
+
+						Breakpoint? bp = BreakpointManager.GetMatchingBreakpoint(startAddress, endAddress, Model.MemoryType.Value);
+						bp ??= new Breakpoint() {
+								BreakOnRead = true,
+								BreakOnWrite = true,
+								CpuType = Model.CpuType.Value,
+								StartAddress = (uint)entry.StartAddress,
+								EndAddress = (uint)entry.EndAddress,
+								MemoryType = Model.MemoryType.Value
+							};
+
+						bool result = await BreakpointEditWindow.EditBreakpointAsync(bp, this);
+						if(result && DebugWindowManager.GetDebugWindow<DebuggerWindow>(x => x.CpuType == Model.CpuType) == null) {
+							DebuggerWindow.GetOrOpenWindow(Model.CpuType.Value);
 						}
 					}
 				}
-			}));
-		}
+			}
+		}));
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
 	}
 }

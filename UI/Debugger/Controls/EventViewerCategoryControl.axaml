@@ -3,13 +3,13 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:u="using:Mesen.Utilities"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:u="using:Nexen.Utilities"
 	xmlns:cp="using:ThemeEditor.Controls.ColorPicker"
 	mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="50"
 	x:Name="root"
 	HorizontalAlignment="Stretch"
-	x:Class="Mesen.Debugger.Controls.EventViewerCategoryControl"
+	x:Class="Nexen.Debugger.Controls.EventViewerCategoryControl"
 >
 	<UserControl.Resources>
 		<u:ArgbColorToBrushConverter x:Key="BrushConverter" />
@@ -25,7 +25,7 @@
 			Click="OnColorClick"
 		>
 			<Border
-				BorderBrush="{DynamicResource MesenBlackBorderColor}"
+				BorderBrush="{DynamicResource NexenBlackBorderColor}"
 				BorderThickness="1"
 				Background="{Binding Config.Color, ElementName=root, Converter={StaticResource BrushConverter}}"
 				Width="16"

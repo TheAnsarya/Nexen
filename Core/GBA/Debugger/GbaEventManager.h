@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "GBA/GbaTypes.h"
 #include "Debugger/DebugTypes.h"
 #include "Debugger/BaseEventManager.h"
@@ -13,8 +14,7 @@ class GbaMemoryManager;
 class GbaDmaController;
 class Debugger;
 
-struct GbaEventViewerConfig : public BaseEventViewerConfig
-{
+struct GbaEventViewerConfig : public BaseEventViewerConfig {
 	EventViewerCategoryCfg Irq;
 	EventViewerCategoryCfg MarkedBreakpoints;
 
@@ -53,11 +53,10 @@ struct GbaEventViewerConfig : public BaseEventViewerConfig
 	bool ShowPreviousFrameEvents;
 };
 
-class GbaEventManager final : public BaseEventManager
-{
+class GbaEventManager final : public BaseEventManager {
 private:
-	static constexpr int ScanlineWidth = 308*4;
-	
+	static constexpr int ScanlineWidth = 308 * 4;
+
 	GbaEventViewerConfig _config = {};
 
 	GbaPpu* _ppu = nullptr;
@@ -67,7 +66,7 @@ private:
 	Debugger* _debugger = nullptr;
 
 	uint32_t _scanlineCount = GbaConstants::ScanlineCount;
-	uint16_t* _ppuBuffer = nullptr;
+	std::unique_ptr<uint16_t[]> _ppuBuffer;
 
 protected:
 	bool ShowPreviousFrameEvents() override;

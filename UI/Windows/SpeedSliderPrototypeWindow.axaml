@@ -1,0 +1,36 @@
+﻿<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	d:DesignWidth="560"
+	d:DesignHeight="260"
+	x:Class="Nexen.Windows.SpeedSliderPrototypeWindow"
+	Width="560"
+	MinWidth="520"
+	MinHeight="240"
+	CanResize="True"
+	WindowStartupLocation="CenterOwner"
+	Title="{l:Translate wndTitle}"
+>
+	<StackPanel Margin="16" Spacing="10">
+		<TextBlock Text="{l:Translate lblPrototype}" FontWeight="Bold" />
+		<TextBlock Text="{l:Translate lblSemantics}" TextWrapping="Wrap" />
+
+		<Slider Name="SpeedSlider" Minimum="0" Maximum="6" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="OnSpeedSliderChanged" />
+
+		<Grid ColumnDefinitions="Auto,Auto,*" RowDefinitions="Auto" ColumnSpacing="8">
+			<TextBlock Grid.Column="0" Text="{l:Translate lblCurrentSelection}" VerticalAlignment="Center" />
+			<TextBlock Grid.Column="1" Name="CurrentSelectionLabel" Text="100%" FontWeight="Bold" VerticalAlignment="Center" />
+			<TextBlock Grid.Column="2" Name="RiskHintLabel" Text="{l:Translate lblRiskHint}" HorizontalAlignment="Right" Opacity="0.8" />
+		</Grid>
+
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0 8 0 0">
+			<Button Name="ApplyButton" MinHeight="36" MinWidth="90" Content="{l:Translate btnApply}" Click="OnApplyClick" />
+			<Button Name="ApplyAndCloseButton" MinHeight="36" MinWidth="130" Content="{l:Translate btnApplyAndClose}" Click="OnApplyAndCloseClick" />
+			<Button Name="CancelButton" MinHeight="36" MinWidth="90" Content="{l:Translate btnClose}" Click="OnCloseClick" />
+		</StackPanel>
+	</StackPanel>
+</Window>

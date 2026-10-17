@@ -1,0 +1,124 @@
+<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	d:DesignWidth="600"
+	d:DesignHeight="400"
+	x:Class="Nexen.Windows.PlaybackInterruptDialog"
+	SizeToContent="WidthAndHeight"
+	CanResize="False"
+	Focusable="True"
+	WindowStartupLocation="CenterOwner"
+	Title="Input Detected During Playback"
+	Background="{StaticResource NexenDarkBackgroundColor}"
+>
+	<StackPanel Margin="30" HorizontalAlignment="Center">
+		<!-- Header -->
+		<TextBlock
+			Text="Input Detected"
+			FontSize="24"
+			FontWeight="Bold"
+			Foreground="{StaticResource NexenAccentHighlightColor}"
+			HorizontalAlignment="Center"
+			Margin="0,0,0,10"
+		/>
+
+		<TextBlock
+			Name="txtFrameInfo"
+			Text="Frame 1,234 of 10,000"
+			FontSize="14"
+			Foreground="Gray"
+			HorizontalAlignment="Center"
+			Margin="0,0,0,5"
+		/>
+
+		<TextBlock
+			Text="You pressed a button during movie playback."
+			FontSize="12"
+			Foreground="LightGray"
+			HorizontalAlignment="Center"
+			Margin="0,0,0,25"
+		/>
+
+		<!-- Card-style buttons -->
+		<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
+			<StackPanel.Styles>
+				<Style Selector="Button.card">
+					<Setter Property="Width" Value="150"/>
+					<Setter Property="Height" Value="140"/>
+					<Setter Property="Background" Value="{StaticResource NexenGrayBackgroundColor}"/>
+					<Setter Property="BorderBrush" Value="{StaticResource NexenBorderColor}"/>
+					<Setter Property="BorderThickness" Value="2"/>
+					<Setter Property="CornerRadius" Value="12"/>
+					<Setter Property="Padding" Value="15"/>
+					<Setter Property="HorizontalContentAlignment" Value="Center"/>
+					<Setter Property="Cursor" Value="Hand"/>
+				</Style>
+				<Style Selector="Button.card:pointerover">
+					<Setter Property="Background" Value="{StaticResource NexenHighlightBackgroundColor}"/>
+					<Setter Property="BorderBrush" Value="{StaticResource NexenAccentColor}"/>
+				</Style>
+				<Style Selector="Button.card:pressed">
+					<Setter Property="Background" Value="{StaticResource NexenPressedBackgroundColor}"/>
+				</Style>
+				<Style Selector="TextBlock.card-icon">
+					<Setter Property="FontSize" Value="36"/>
+					<Setter Property="HorizontalAlignment" Value="Center"/>
+					<Setter Property="Margin" Value="0,0,0,10"/>
+				</Style>
+				<Style Selector="TextBlock.card-title">
+					<Setter Property="FontSize" Value="16"/>
+					<Setter Property="FontWeight" Value="SemiBold"/>
+					<Setter Property="Foreground" Value="White"/>
+					<Setter Property="HorizontalAlignment" Value="Center"/>
+					<Setter Property="Margin" Value="0,0,0,5"/>
+				</Style>
+				<Style Selector="TextBlock.card-desc">
+					<Setter Property="FontSize" Value="10"/>
+					<Setter Property="Foreground" Value="Gray"/>
+					<Setter Property="HorizontalAlignment" Value="Center"/>
+					<Setter Property="TextWrapping" Value="Wrap"/>
+					<Setter Property="TextAlignment" Value="Center"/>
+				</Style>
+			</StackPanel.Styles>
+
+			<!-- Fork Button -->
+			<Button Classes="card" Name="btnFork" Click="OnForkClick">
+				<StackPanel>
+					<TextBlock Classes="card-icon" Text="🔀"/>
+					<TextBlock Classes="card-title" Text="Fork"/>
+					<TextBlock Classes="card-desc" Text="Start recording from this frame"/>
+				</StackPanel>
+			</Button>
+
+			<!-- Edit Button -->
+			<Button Classes="card" Name="btnEdit" Click="OnEditClick">
+				<StackPanel>
+					<TextBlock Classes="card-icon" Text="✏️"/>
+					<TextBlock Classes="card-title" Text="Edit"/>
+					<TextBlock Classes="card-desc" Text="Open piano roll at this frame"/>
+				</StackPanel>
+			</Button>
+
+			<!-- Continue Button -->
+			<Button Classes="card" Name="btnContinue" Click="OnContinueClick">
+				<StackPanel>
+					<TextBlock Classes="card-icon" Text="▶️"/>
+					<TextBlock Classes="card-title" Text="Continue"/>
+					<TextBlock Classes="card-desc" Text="Resume playback, ignore input"/>
+				</StackPanel>
+			</Button>
+		</StackPanel>
+
+		<!-- Footer hint -->
+		<TextBlock
+			Text="Press Escape to continue playback"
+			FontSize="10"
+			Foreground="DimGray"
+			HorizontalAlignment="Center"
+			Margin="0,20,0,0"
+		/>
+	</StackPanel>
+</Window>

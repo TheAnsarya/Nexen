@@ -8,67 +8,90 @@
 #include "Utilities/HexUtilities.h"
 #include "Utilities/FastString.h"
 
-WsTraceLogger::WsTraceLogger(Debugger* debugger, IDebugger* cpuDebugger, WsPpu* ppu) : BaseTraceLogger(debugger, cpuDebugger, CpuType::Ws)
-{
+WsTraceLogger::WsTraceLogger(Debugger* debugger, IDebugger* cpuDebugger, WsPpu* ppu) : BaseTraceLogger(debugger, cpuDebugger, CpuType::Ws) {
 	_ppu = ppu;
 }
 
-RowDataType WsTraceLogger::GetFormatTagType(string& tag)
-{
-	if(tag == "AX") {
+RowDataType WsTraceLogger::GetFormatTagType(string& tag) {
+	if (tag == "AX") {
 		return RowDataType::AX;
-	} else if(tag == "BX") {
+	} else if (tag == "BX") {
 		return RowDataType::BX;
-	} else if(tag == "CX") {
+	} else if (tag == "CX") {
 		return RowDataType::CX;
-	} else if(tag == "DX") {
+	} else if (tag == "DX") {
 		return RowDataType::DX;
-	} else if(tag == "CS") {
+	} else if (tag == "CS") {
 		return RowDataType::CS;
-	} else if(tag == "IP") {
+	} else if (tag == "IP") {
 		return RowDataType::IP;
-	} else if(tag == "SS") {
+	} else if (tag == "SS") {
 		return RowDataType::SS;
-	} else if(tag == "SP") {
+	} else if (tag == "SP") {
 		return RowDataType::SP;
-	} else if(tag == "BP") {
+	} else if (tag == "BP") {
 		return RowDataType::BP;
-	} else if(tag == "DS") {
+	} else if (tag == "DS") {
 		return RowDataType::DS;
-	} else if(tag == "ES") {
+	} else if (tag == "ES") {
 		return RowDataType::ES;
-	} else if(tag == "SI") {
+	} else if (tag == "SI") {
 		return RowDataType::SI;
-	} else if(tag == "DI") {
+	} else if (tag == "DI") {
 		return RowDataType::DI;
-	} else if(tag == "F") {
+	} else if (tag == "F") {
 		return RowDataType::F;
-	} else if(tag == "PC") {
+	} else if (tag == "PC") {
 		return RowDataType::PC;
 	} else {
 		return RowDataType::Text;
 	}
 }
 
-void WsTraceLogger::GetTraceRow(string &output, WsCpuState &cpuState, TraceLogPpuState &ppuState, DisassemblyInfo &disassemblyInfo)
-{
-	for(RowPart& rowPart : _rowParts) {
-		switch(rowPart.DataType) {
-			case RowDataType::AX: WriteIntValue(output, cpuState.AX, rowPart); break;
-			case RowDataType::BX: WriteIntValue(output, cpuState.BX, rowPart); break;
-			case RowDataType::CX: WriteIntValue(output, cpuState.CX, rowPart); break;
-			case RowDataType::DX: WriteIntValue(output, cpuState.DX, rowPart); break;
-			case RowDataType::CS: WriteIntValue(output, cpuState.CS, rowPart); break;
-			case RowDataType::IP: WriteIntValue(output, cpuState.IP, rowPart); break;
-			case RowDataType::SS: WriteIntValue(output, cpuState.SS, rowPart); break;
-			case RowDataType::SP: WriteIntValue(output, cpuState.SP, rowPart); break;
-			case RowDataType::BP: WriteIntValue(output, cpuState.BP, rowPart); break;
-			case RowDataType::DS: WriteIntValue(output, cpuState.DS, rowPart); break;
-			case RowDataType::ES: WriteIntValue(output, cpuState.ES, rowPart); break;
-			case RowDataType::SI: WriteIntValue(output, cpuState.SI, rowPart); break;
-			case RowDataType::DI: WriteIntValue(output, cpuState.DI, rowPart); break;
+void WsTraceLogger::GetTraceRow(string& output, WsCpuState& cpuState, TraceLogPpuState& ppuState, DisassemblyInfo& disassemblyInfo) {
+	for (RowPart& rowPart : _rowParts) {
+		switch (rowPart.DataType) {
+			case RowDataType::AX:
+				WriteIntValue(output, cpuState.AX, rowPart);
+				break;
+			case RowDataType::BX:
+				WriteIntValue(output, cpuState.BX, rowPart);
+				break;
+			case RowDataType::CX:
+				WriteIntValue(output, cpuState.CX, rowPart);
+				break;
+			case RowDataType::DX:
+				WriteIntValue(output, cpuState.DX, rowPart);
+				break;
+			case RowDataType::CS:
+				WriteIntValue(output, cpuState.CS, rowPart);
+				break;
+			case RowDataType::IP:
+				WriteIntValue(output, cpuState.IP, rowPart);
+				break;
+			case RowDataType::SS:
+				WriteIntValue(output, cpuState.SS, rowPart);
+				break;
+			case RowDataType::SP:
+				WriteIntValue(output, cpuState.SP, rowPart);
+				break;
+			case RowDataType::BP:
+				WriteIntValue(output, cpuState.BP, rowPart);
+				break;
+			case RowDataType::DS:
+				WriteIntValue(output, cpuState.DS, rowPart);
+				break;
+			case RowDataType::ES:
+				WriteIntValue(output, cpuState.ES, rowPart);
+				break;
+			case RowDataType::SI:
+				WriteIntValue(output, cpuState.SI, rowPart);
+				break;
+			case RowDataType::DI:
+				WriteIntValue(output, cpuState.DI, rowPart);
+				break;
 			case RowDataType::F:
-				if(rowPart.DisplayInHex) {
+				if (rowPart.DisplayInHex) {
 					WriteIntValue(output, cpuState.Flags.Get(), rowPart);
 				} else {
 					FastString flags;
@@ -88,17 +111,17 @@ void WsTraceLogger::GetTraceRow(string &output, WsCpuState &cpuState, TraceLogPp
 				}
 				break;
 
-			default: ProcessSharedTag(rowPart, output, cpuState, ppuState, disassemblyInfo); break;
+			default:
+				ProcessSharedTag(rowPart, output, cpuState, ppuState, disassemblyInfo);
+				break;
 		}
 	}
 }
 
-void WsTraceLogger::LogPpuState()
-{
+void WsTraceLogger::LogPpuState() {
 	_ppuState[_currentPos] = {
-		_ppu->GetCycle(),
-		_ppu->GetCycle(),
-		_ppu->GetScanline(),
-		_ppu->GetFrameCount()
-	};
+	    _ppu->GetCycle(),
+	    _ppu->GetCycle(),
+	    _ppu->GetScanline(),
+	    _ppu->GetFrameCount()};
 }

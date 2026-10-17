@@ -1,0 +1,76 @@
+﻿{
+	"$schema": "./test-manifest.schema.json",
+	"version": 1,
+	"tests": [
+		{
+			"name": "ws-boot-smoke",
+			"system": "ws",
+			"rom": "custom/ws/ws-boot-smoke.ws",
+			"strategy": "memory-read",
+			"address": "0x0000",
+			"memType": "WsMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 600,
+			"tags": ["cpu", "v30mz", "critical", "custom"]
+		},
+		{
+			"name": "ws-cpu-arith",
+			"system": "ws",
+			"rom": "custom/ws/ws-cpu-arith.ws",
+			"strategy": "memory-read",
+			"address": "0x0000",
+			"memType": "WsMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 600,
+			"tags": ["cpu", "v30mz", "custom"]
+		},
+		{
+			"name": "ws-display-test",
+			"system": "ws",
+			"rom": "custom/ws/ws-display-test.ws",
+			"strategy": "memory-read",
+			"address": "0x0000",
+			"memType": "WsMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 600,
+			"tags": ["display", "lcd", "custom"]
+		},
+		{
+			"name": "ws-test-suite-cpu",
+			"system": "ws",
+			"rom": "ws/ws-test-suite/cpu/cpu_test.ws",
+			"strategy": "memory-read",
+			"address": "0x0000",
+			"memType": "WsMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 36000,
+			"tags": ["cpu", "v30mz", "critical"]
+		},
+		{
+			"name": "ws-test-suite-timer",
+			"system": "ws",
+			"rom": "ws/ws-test-suite/timer/timer_test.ws",
+			"strategy": "memory-read",
+			"address": "0x0000",
+			"memType": "WsMemory",
+			"passValue": "0x00",
+			"runningValue": "0x80",
+			"maxFrames": 36000,
+			"tags": ["timer"]
+		},
+		{
+			"name": "ws-timing-order-scaffold-trace",
+			"system": "ws",
+			"rom": "custom/ws/ws-timing-order-scaffold.ws",
+			"strategy": "lua-script",
+			"script": "ws/ws-timing-trace.lua",
+			"maxFrames": 6000,
+			"tags": ["timing", "ppu", "irq", "hblank", "vblank", "custom", "trace"],
+			"notes": "Scaffold trace ROM for #1285. Emits ws-trace-json records for comparer workflow."
+		}
+	]
+}

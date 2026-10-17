@@ -25,11 +25,46 @@ class SufamiTurbo;
 enum class ConsoleRegion;
 enum class RamState;
 
-class BaseCartridge : public ISerializable
-{
+/// <summary>
+/// SNES cartridge base class - handles ROM loading, memory mapping, and coprocessors.
+/// Supports all SNES cartridge types including special chips and add-ons.
+/// </summary>
+/// <remarks>
+/// **Memory Layout:**
+/// - **PRG ROM**: Program ROM, up to 6MB (48Mbit)
+/// - **Save RAM**: Battery-backed SRAM, up to 512KB
+/// - **Coprocessor RAM**: Additional RAM for enhancement chips
+///
+/// **Mapping Modes:**
+/// - **LoROM**: Banks $00-$7D, $80-$FF with 32KB windows
+/// - **HiROM**: Banks $40-$7D, $C0-$FF with 64KB windows
+/// - **ExLoROM/ExHiROM**: Extended addressing for large ROMs
+/// - **Special mappings**: SA-1, Super FX, BS-X, etc.
+///
+/// **Supported Coprocessors:**
+/// - **DSP-1/2/3/4**: Math coprocessors (fixed-point, matrix ops)
+/// - **SA-1**: 10.74 MHz 65816 with bank switching and math
+/// - **Super FX (GSU)**: RISC processor for 3D graphics
+/// - **Cx4**: Wireframe 3D (Mega Man X2/X3)
+/// - **ST010/ST011**: AI processors (racing games)
+/// - **S-DD1**: Decompression chip (Star Ocean)
+/// - **SPC7110**: Decompression + RTC (Far East of Eden)
+/// - **OBC1**: Sprite management (Metal Combat)
+/// - **S-RTC**: Real-time clock
+///
+/// **Add-ons:**
+/// - **Super Game Boy**: Play Game Boy games
+/// - **Sufami Turbo**: Mini-cartridge adapter
+/// - **Satellaview (BS-X)**: Satellite download add-on
+///
+/// **Battery Management:**
+/// - Save RAM persisted to .srm files
+/// - RTC data saved for games with real-time clocks
+/// </remarks>
+class BaseCartridge : public ISerializable {
 private:
-	Emulator *_emu = nullptr;
-	SnesConsole *_console = nullptr;
+	Emulator* _emu = nullptr;
+	SnesConsole* _console = nullptr;
 
 	vector<unique_ptr<IMemoryHandler>> _prgRomHandlers;
 	vector<unique_ptr<IMemoryHandler>> _saveRamHandlers;
@@ -38,13 +73,13 @@ private:
 
 	bool _needCoprocSync = false;
 	unique_ptr<BaseCoprocessor> _coprocessor;
-	
-	NecDsp *_necDsp = nullptr;
-	Sa1 *_sa1 = nullptr;
-	Gsu *_gsu = nullptr;
+
+	NecDsp* _necDsp = nullptr;
+	Sa1* _sa1 = nullptr;
+	Gsu* _gsu = nullptr;
 	Cx4* _cx4 = nullptr;
-	St018 *_st018 = nullptr;
-	SuperGameboy *_sgb = nullptr;
+	St018* _st018 = nullptr;
+	SuperGameboy* _sgb = nullptr;
 	BsxCart* _bsx = nullptr;
 	unique_ptr<BsxMemoryPack> _bsxMemPack;
 	unique_ptr<Gameboy> _gameboy;
@@ -58,11 +93,11 @@ private:
 
 	uint8_t* _prgRom = nullptr;
 	uint8_t* _saveRam = nullptr;
-	
+
 	uint32_t _prgRomSize = 0;
 	uint32_t _saveRamSize = 0;
 	uint32_t _coprocessorRamSize = 0;
-	
+
 	unique_ptr<SpcFileData> _spcData;
 	vector<uint8_t> _embeddedFirmware;
 
@@ -87,7 +122,7 @@ private:
 	void LoadRom();
 
 	void LoadSpc();
-	
+
 	bool LoadSufamiTurbo(VirtualFile& romFile);
 
 	bool LoadGameboy(VirtualFile& romFile);
@@ -102,7 +137,7 @@ private:
 public:
 	virtual ~BaseCartridge();
 
-	static unique_ptr<BaseCartridge> CreateCartridge(SnesConsole* console, VirtualFile &romFile);
+	static unique_ptr<BaseCartridge> CreateCartridge(SnesConsole* console, VirtualFile& romFile);
 
 	static void EnsureValidPrgRomSize(uint32_t& size, uint8_t*& rom);
 
@@ -110,7 +145,7 @@ public:
 
 	void SaveBattery();
 
-	void Init(MemoryMappings &mm);
+	void Init(MemoryMappings& mm);
 
 	SnesCartInformation GetHeader();
 	uint32_t GetHeaderOffset();
@@ -122,7 +157,7 @@ public:
 	string GetSha1Hash();
 	CartFlags::CartFlags GetCartFlags();
 
-	void RegisterHandlers(MemoryMappings &mm);
+	void RegisterHandlers(MemoryMappings& mm);
 
 	uint8_t* DebugGetPrgRom() { return _prgRom; }
 	uint8_t* DebugGetSaveRam() { return _saveRam; }
@@ -140,10 +175,9 @@ public:
 	Gameboy* GetGameboy();
 
 	void RunCoprocessors();
-	
-	__forceinline void SyncCoprocessors()
-	{
-		if(_needCoprocSync) {
+
+	__forceinline void SyncCoprocessors() {
+		if (_needCoprocSync) [[unlikely]] {
 			_coprocessor->Run();
 		}
 	}
@@ -155,5 +189,5 @@ public:
 
 	SpcFileData* GetSpcData();
 
-	void Serialize(Serializer &s) override;
+	void Serialize(Serializer& s) override;
 };

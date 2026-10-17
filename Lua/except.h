@@ -37,7 +37,7 @@
 #pragma GCC visibility push(hidden)
 #endif
 
-int except_open(lua_State *L);
+int except_open(lua_State* L);
 
 #ifndef _WIN32
 #pragma GCC visibility pop

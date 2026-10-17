@@ -5,32 +5,30 @@
 #include "Utilities/BitUtilities.h"
 #include "Utilities/Serializer.h"
 
-void WsDmaController::Init(WsMemoryManager* memoryManager, WsApu* apu)
-{
+void WsDmaController::Init(WsMemoryManager* memoryManager, WsApu* apu) {
 	_memoryManager = memoryManager;
 	_apu = apu;
 }
 
-void WsDmaController::RunGeneralDma()
-{
+void WsDmaController::RunGeneralDma() {
 	int offset = (_state.GdmaControl & 0x40) ? -2 : 2;
-	
-	if(_state.GdmaLength == 0 || _memoryManager->GetWaitStates(_state.GdmaSrc) > 1 || !_memoryManager->IsWordBus(_state.GdmaSrc)) {
-		//When length is 0, or if transfer has an invalid source address, stop processing immediately
-		//The 5 cycles of setup time aren't executed in this scenario
+
+	if (_state.GdmaLength == 0 || _memoryManager->GetWaitStates(_state.GdmaSrc) > 1 || !_memoryManager->IsWordBus(_state.GdmaSrc)) {
+		// When length is 0, or if transfer has an invalid source address, stop processing immediately
+		// The 5 cycles of setup time aren't executed in this scenario
 		return;
 	}
 
-	//GDMA takes 5+2*length cycles
+	// GDMA takes 5+2*length cycles
 	_memoryManager->Exec();
 	_memoryManager->Exec();
 	_memoryManager->Exec();
 	_memoryManager->Exec();
 	_memoryManager->Exec();
 
-	while(_state.GdmaLength) {
-		if(_memoryManager->GetWaitStates(_state.GdmaSrc) > 1 || !_memoryManager->IsWordBus(_state.GdmaSrc)) {
-			//ROM with wait states and 8-bit buses are not allowed (SRAM, cart when 16-bit flag isn't set)
+	while (_state.GdmaLength) {
+		if (_memoryManager->GetWaitStates(_state.GdmaSrc) > 1 || !_memoryManager->IsWordBus(_state.GdmaSrc)) {
+			// ROM with wait states and 8-bit buses are not allowed (SRAM, cart when 16-bit flag isn't set)
 			break;
 		}
 
@@ -43,17 +41,16 @@ void WsDmaController::RunGeneralDma()
 	}
 }
 
-void WsDmaController::ProcessSoundDma()
-{
-	if(!_state.SdmaEnabled) {
+void WsDmaController::ProcessSoundDma() {
+	if (!_state.SdmaEnabled) {
 		return;
 	}
 
-	if(_state.SdmaTimer == 0) {
+	if (_state.SdmaTimer == 0) {
 		_state.SdmaTimer = _state.SdmaFrequency;
-		
-		//Sound DMA steals 6 cycles + N access cycles to run
-		//4 cycles at the start + N read cycles + 1 dma write cycle
+
+		// Sound DMA steals 6 cycles + N access cycles to run
+		// 4 cycles at the start + N read cycles + 1 dma write cycle
 		_memoryManager->Exec();
 		_memoryManager->Exec();
 		_memoryManager->Exec();
@@ -62,17 +59,17 @@ void WsDmaController::ProcessSoundDma()
 
 		uint8_t sampleValue = _memoryManager->Read<uint8_t>((_state.SdmaSrc >> 4) & 0xF000, (uint16_t)_state.SdmaSrc, MemoryOperationType::DmaRead);
 
-		if(_state.SdmaHold) {
+		if (_state.SdmaHold) {
 			sampleValue = 0;
 		}
 
-		if(!_state.SdmaHold) {
+		if (!_state.SdmaHold) {
 			int offset = _state.SdmaDecrement ? -1 : 1;
 			_state.SdmaSrc = (_state.SdmaSrc + offset) & 0xFFFFF;
 			_state.SdmaLength--;
 
-			if(_state.SdmaLength == 0) {
-				if(_state.SdmaRepeat) {
+			if (_state.SdmaLength == 0) {
+				if (_state.SdmaRepeat) {
 					_state.SdmaSrc = _state.SdmaSrcReloadValue;
 					_state.SdmaLength = _state.SdmaLengthReloadValue;
 				} else {
@@ -91,49 +88,81 @@ void WsDmaController::ProcessSoundDma()
 	}
 }
 
-uint8_t WsDmaController::ReadPort(uint16_t port)
-{
-	switch(port) {
-		case 0x40: return BitUtilities::GetBits<0>(_state.GdmaSrc);
-		case 0x41: return BitUtilities::GetBits<8>(_state.GdmaSrc);
-		case 0x42: return BitUtilities::GetBits<16>(_state.GdmaSrc);
-		case 0x43: return 0;
-		case 0x44: return BitUtilities::GetBits<0>(_state.GdmaDest);
-		case 0x45: return BitUtilities::GetBits<8>(_state.GdmaDest);
-		case 0x46: return BitUtilities::GetBits<0>(_state.GdmaLength);
-		case 0x47: return BitUtilities::GetBits<8>(_state.GdmaLength);
-		case 0x48: return _state.GdmaControl;
+uint8_t WsDmaController::ReadPort(uint16_t port) {
+	switch (port) {
+		case 0x40:
+			return BitUtilities::GetBits<0>(_state.GdmaSrc);
+		case 0x41:
+			return BitUtilities::GetBits<8>(_state.GdmaSrc);
+		case 0x42:
+			return BitUtilities::GetBits<16>(_state.GdmaSrc);
+		case 0x43:
+			return 0;
+		case 0x44:
+			return BitUtilities::GetBits<0>(_state.GdmaDest);
+		case 0x45:
+			return BitUtilities::GetBits<8>(_state.GdmaDest);
+		case 0x46:
+			return BitUtilities::GetBits<0>(_state.GdmaLength);
+		case 0x47:
+			return BitUtilities::GetBits<8>(_state.GdmaLength);
+		case 0x48:
+			return _state.GdmaControl;
 
-		case 0x4A: return BitUtilities::GetBits<0>(_state.SdmaSrc);
-		case 0x4B: return BitUtilities::GetBits<8>(_state.SdmaSrc);
-		case 0x4C: return BitUtilities::GetBits<16>(_state.SdmaSrc);
-		case 0x4D: return 0;
-		case 0x4E: return BitUtilities::GetBits<0>(_state.SdmaLength);
-		case 0x4F: return BitUtilities::GetBits<8>(_state.SdmaLength);
-		case 0x50: return BitUtilities::GetBits<16>(_state.SdmaLength);
-		case 0x51: return 0;
-		
-		case 0x52: return _state.SdmaControl;
-		case 0x53: return 0;
+		case 0x4A:
+			return BitUtilities::GetBits<0>(_state.SdmaSrc);
+		case 0x4B:
+			return BitUtilities::GetBits<8>(_state.SdmaSrc);
+		case 0x4C:
+			return BitUtilities::GetBits<16>(_state.SdmaSrc);
+		case 0x4D:
+			return 0;
+		case 0x4E:
+			return BitUtilities::GetBits<0>(_state.SdmaLength);
+		case 0x4F:
+			return BitUtilities::GetBits<8>(_state.SdmaLength);
+		case 0x50:
+			return BitUtilities::GetBits<16>(_state.SdmaLength);
+		case 0x51:
+			return 0;
+
+		case 0x52:
+			return _state.SdmaControl;
+		case 0x53:
+			return 0;
 	}
 
 	return _memoryManager->GetUnmappedPort();
 }
 
-void WsDmaController::WritePort(uint16_t port, uint8_t value)
-{
-	switch(port) {
-		case 0x40: BitUtilities::SetBits<0>(_state.GdmaSrc, value & 0xFE); break;
-		case 0x41: BitUtilities::SetBits<8>(_state.GdmaSrc, value); break;
-		case 0x42: BitUtilities::SetBits<16>(_state.GdmaSrc, value & 0x0F); break;
-		case 0x43: break;
-		case 0x44: BitUtilities::SetBits<0>(_state.GdmaDest, value & 0xFE); break;
-		case 0x45: BitUtilities::SetBits<8>(_state.GdmaDest, value); break;
-		case 0x46: BitUtilities::SetBits<0>(_state.GdmaLength, value & 0xFE); break;
-		case 0x47: BitUtilities::SetBits<8>(_state.GdmaLength, value); break;
+void WsDmaController::WritePort(uint16_t port, uint8_t value) {
+	switch (port) {
+		case 0x40:
+			BitUtilities::SetBits<0>(_state.GdmaSrc, value & 0xFE);
+			break;
+		case 0x41:
+			BitUtilities::SetBits<8>(_state.GdmaSrc, value);
+			break;
+		case 0x42:
+			BitUtilities::SetBits<16>(_state.GdmaSrc, value & 0x0F);
+			break;
+		case 0x43:
+			break;
+		case 0x44:
+			BitUtilities::SetBits<0>(_state.GdmaDest, value & 0xFE);
+			break;
+		case 0x45:
+			BitUtilities::SetBits<8>(_state.GdmaDest, value);
+			break;
+		case 0x46:
+			BitUtilities::SetBits<0>(_state.GdmaLength, value & 0xFE);
+			break;
+		case 0x47:
+			BitUtilities::SetBits<8>(_state.GdmaLength, value);
+			break;
 		case 0x48:
 			_state.GdmaControl = value & 0x40;
-			if(value & 0x80) {
+			if (value & 0x80) {
 				RunGeneralDma();
 			}
 			break;
@@ -147,7 +176,7 @@ void WsDmaController::WritePort(uint16_t port, uint8_t value)
 			BitUtilities::SetBits<8>(_state.SdmaSrc, value);
 			BitUtilities::SetBits<8>(_state.SdmaSrcReloadValue, value);
 			break;
-		
+
 		case 0x4C:
 			BitUtilities::SetBits<16>(_state.SdmaSrc, value & 0x0F);
 			BitUtilities::SetBits<16>(_state.SdmaSrcReloadValue, value & 0x0F);
@@ -169,21 +198,29 @@ void WsDmaController::WritePort(uint16_t port, uint8_t value)
 			break;
 
 		case 0x52:
-			if(_state.SdmaLength == 0) {
-				//Clear enable flag if length is 0 (based on sound_dma + WSHSTest results)
+			if (_state.SdmaLength == 0) {
+				// Clear enable flag if length is 0 (based on sound_dma + WSHSTest results)
 				value &= ~0x80;
 			}
 
 			_state.SdmaControl = value & 0xDF;
 
-			switch(value & 0x03) {
+			switch (value & 0x03) {
 				default:
-				case 0: _state.SdmaFrequency = 5; break;
-				case 1: _state.SdmaFrequency = 3; break;
-				case 2: _state.SdmaFrequency = 1; break;
-				case 3: _state.SdmaFrequency = 0; break;
+				case 0:
+					_state.SdmaFrequency = 5;
+					break;
+				case 1:
+					_state.SdmaFrequency = 3;
+					break;
+				case 2:
+					_state.SdmaFrequency = 1;
+					break;
+				case 3:
+					_state.SdmaFrequency = 0;
+					break;
 			}
-		
+
 			_state.SdmaHold = value & 0x04;
 			_state.SdmaRepeat = value & 0x08;
 			_state.SdmaHyperVoice = value & 0x10;
@@ -193,8 +230,7 @@ void WsDmaController::WritePort(uint16_t port, uint8_t value)
 	}
 }
 
-void WsDmaController::Serialize(Serializer& s)
-{
+void WsDmaController::Serialize(Serializer& s) {
 	SV(_state.GdmaSrc);
 	SV(_state.SdmaSrc);
 	SV(_state.SdmaLength);

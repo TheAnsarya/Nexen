@@ -1,0 +1,100 @@
+name: Platform Parity Phase Gate
+description: Track implementation phases with required correctness and benchmark evidence
+title: "[Platform Parity] Phase: "
+labels:
+  - cpp
+  - modernization
+  - performance
+  - medium-priority
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for Atari 2600 and Genesis implementation phases.
+        Fill in all gate sections before requesting review.
+
+  - type: input
+    id: parent_issue
+    attributes:
+      label: Parent Issue
+      description: Link the parent tracking issue (for example #695, #696, or #673)
+      placeholder: "#695"
+    validations:
+      required: true
+
+  - type: input
+    id: phase_name
+    attributes:
+      label: Phase Name
+      description: Short name for this phase
+      placeholder: "Atari TIA timing harness"
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is included and excluded in this phase
+      placeholder: |
+        Included:
+        -
+
+        Excluded:
+        -
+    validations:
+      required: true
+
+  - type: textarea
+    id: correctness_gate
+    attributes:
+      label: Correctness Gate Evidence
+      description: Commands and deterministic checkpoint output
+      placeholder: |
+        Command:
+        Summary:
+        Digest:
+        Result: PASS/FAIL
+    validations:
+      required: true
+
+  - type: textarea
+    id: build_gate
+    attributes:
+      label: Build Gate Evidence
+      description: Release build command and result
+      placeholder: |
+        Command:
+        Result: PASS/FAIL
+        Notes:
+    validations:
+      required: true
+
+  - type: textarea
+    id: performance_gate
+    attributes:
+      label: Performance Gate Evidence
+      description: Before/after benchmark snapshot with conclusion
+      placeholder: |
+        Baseline commit:
+        Candidate commit:
+        Benchmark command:
+        Before metrics:
+        After metrics:
+        Result: PASS/FAIL
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Completion Checklist
+      options:
+        - label: Correctness gate is satisfied
+          required: true
+        - label: Build gate is satisfied
+          required: true
+        - label: Performance gate is satisfied
+          required: true
+        - label: Regression gate re-ran prior phase tests
+          required: true

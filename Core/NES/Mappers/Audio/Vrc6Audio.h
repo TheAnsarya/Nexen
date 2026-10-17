@@ -6,8 +6,11 @@
 #include "NES/NesConsole.h"
 #include "Utilities/Serializer.h"
 
-class Vrc6Audio : public BaseExpansionAudio
-{
+/// <summary>
+/// Konami VRC6 expansion audio (2 pulse + 1 sawtooth channels).
+/// Emulates the VRC6 sound hardware used in some Famicom games.
+/// </summary>
+class Vrc6Audio : public BaseExpansionAudio {
 private:
 	Vrc6Pulse _pulse1;
 	Vrc6Pulse _pulse2;
@@ -16,18 +19,16 @@ private:
 	int32_t _lastOutput = 0;
 
 protected:
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		SV(_pulse1);
 		SV(_pulse2);
 		SV(_saw);
 		SV(_lastOutput);
 		SV(_haltAudio);
 	}
-	
-	void ClockAudio() override
-	{
-		if(!_haltAudio) {
+
+	void ClockAudio() override {
+		if (!_haltAudio) {
 			_pulse1.Clock();
 			_pulse2.Clock();
 			_saw.Clock();
@@ -39,21 +40,20 @@ protected:
 	}
 
 public:
-	Vrc6Audio(NesConsole* console) : BaseExpansionAudio(console)
-	{
+	Vrc6Audio(NesConsole* console) : BaseExpansionAudio(console) {
 		Reset();
 	}
 
-	void Reset()
-	{
+	void Reset() {
 		_lastOutput = 0;
 		_haltAudio = false;
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value)
-	{
-		switch(addr & 0xF003) {
-			case 0x9000: case 0x9001: case 0x9002:
+	void WriteRegister(uint16_t addr, uint8_t value) {
+		switch (addr & 0xF003) {
+			case 0x9000:
+			case 0x9001:
+			case 0x9002:
 				_pulse1.WriteReg(addr, value);
 				break;
 
@@ -66,11 +66,15 @@ public:
 				break;
 			}
 
-			case 0xA000: case 0xA001: case 0xA002:
+			case 0xA000:
+			case 0xA001:
+			case 0xA002:
 				_pulse2.WriteReg(addr, value);
 				break;
 
-			case 0xB000: case 0xB001: case 0xB002:
+			case 0xB000:
+			case 0xB001:
+			case 0xB002:
 				_saw.WriteReg(addr, value);
 				break;
 		}

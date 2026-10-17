@@ -2,8 +2,7 @@
 #include "pch.h"
 #include "Utilities/Audio/HermiteResampler.h"
 
-class WavReader
-{
+class WavReader {
 private:
 	uint8_t* _fileData = nullptr;
 

@@ -9,35 +9,29 @@
 #undef GbaCpu
 #undef DUMMYCPU
 
-void DummyGbaCpu::SetDummyState(GbaCpuState& state)
-{
+void DummyGbaCpu::SetDummyState(GbaCpuState& state) {
 	_memOpCounter = 0;
 	_state = state;
 }
 
-uint32_t DummyGbaCpu::GetOperationCount()
-{
+uint32_t DummyGbaCpu::GetOperationCount() {
 	return _memOpCounter;
 }
 
-void DummyGbaCpu::LogMemoryOperation(uint32_t addr, uint32_t value, GbaAccessModeVal mode, MemoryOperationType type)
-{
+void DummyGbaCpu::LogMemoryOperation(uint32_t addr, uint32_t value, GbaAccessModeVal mode, MemoryOperationType type) {
 	_memOperations[_memOpCounter] = {
-		addr,
-		(int32_t)value,
-		type,
-		MemoryType::GbaMemory
-	};
+	    addr,
+	    (int32_t)value,
+	    type,
+	    MemoryType::GbaMemory};
 	_memAccessMode[_memOpCounter] = mode;
 	_memOpCounter++;
 }
 
-MemoryOperationInfo DummyGbaCpu::GetOperationInfo(uint32_t index)
-{
+MemoryOperationInfo DummyGbaCpu::GetOperationInfo(uint32_t index) {
 	return _memOperations[index];
 }
 
-GbaAccessModeVal DummyGbaCpu::GetOperationMode(uint32_t index)
-{
+GbaAccessModeVal DummyGbaCpu::GetOperationMode(uint32_t index) {
 	return _memAccessMode[index];
 }

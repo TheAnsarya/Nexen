@@ -3,29 +3,24 @@
 #include "Utilities/VirtualFile.h"
 #include "Utilities/Audio/HermiteResampler.h"
 
-PcmReader::PcmReader()
-{
+PcmReader::PcmReader() {
 	_done = true;
 	_loopOffset = 8;
-	_outputBuffer = new int16_t[20000];
+	_outputBuffer = std::make_unique<int16_t[]>(20000);
 }
 
-PcmReader::~PcmReader()
-{
-	delete[] _outputBuffer;
-}
+PcmReader::~PcmReader() = default;
 
-bool PcmReader::Init(string filename, bool loop, uint32_t startOffset)
-{
-	if(_file) {
+bool PcmReader::Init(const string& filename, bool loop, uint32_t startOffset) {
+	if (_file) {
 		_file.close();
 	}
 
 	_file.open(filename, ios::binary);
-	if(_file) {
+	if (_file) {
 		_file.seekg(0, ios::end);
 		_fileSize = (uint32_t)_file.tellg();
-		if(_fileSize < 12) {
+		if (_fileSize < 12) {
 			return false;
 		}
 
@@ -55,27 +50,23 @@ bool PcmReader::Init(string filename, bool loop, uint32_t startOffset)
 	}
 }
 
-bool PcmReader::IsPlaybackOver()
-{
+bool PcmReader::IsPlaybackOver() {
 	return _done;
 }
 
-void PcmReader::SetSampleRate(uint32_t sampleRate)
-{
-	if(sampleRate != _sampleRate) {
+void PcmReader::SetSampleRate(uint32_t sampleRate) {
+	if (sampleRate != _sampleRate) {
 		_sampleRate = sampleRate;
 
 		_resampler.SetSampleRates(PcmReader::PcmSampleRate, _sampleRate);
 	}
 }
 
-void PcmReader::SetLoopFlag(bool loop)
-{
+void PcmReader::SetLoopFlag(bool loop) {
 	_loop = loop;
 }
 
-void PcmReader::ReadSample(int16_t &left, int16_t &right)
-{
+void PcmReader::ReadSample(int16_t& left, int16_t& right) {
 	uint8_t val[4];
 	_file.get(((char*)val)[0]);
 	_file.get(((char*)val)[1]);
@@ -86,13 +77,14 @@ void PcmReader::ReadSample(int16_t &left, int16_t &right)
 	right = val[2] | (val[3] << 8);
 }
 
-void PcmReader::LoadSamples(uint32_t samplesToLoad)
-{
+void PcmReader::LoadSamples(uint32_t samplesToLoad) {
 	uint32_t samplesRead = 0;
+
+	_pcmBuffer.reserve(_pcmBuffer.size() + samplesToLoad * 2);
 
 	int16_t left = 0;
 	int16_t right = 0;
-	for(uint32_t i = _fileOffset; i < _fileSize && samplesRead < samplesToLoad; i+=4) {
+	for (uint32_t i = _fileOffset; i < _fileSize && samplesRead < samplesToLoad; i += 4) {
 		ReadSample(left, right);
 
 		_pcmBuffer.push_back(left);
@@ -104,8 +96,8 @@ void PcmReader::LoadSamples(uint32_t samplesToLoad)
 		_fileOffset += 4;
 		samplesRead++;
 
-		if(samplesRead < samplesToLoad && i + 4 >= _fileSize) {
-			if(_loop) {
+		if (samplesRead < samplesToLoad && i + 4 >= _fileSize) {
+			if (_loop) {
 				i = _loopOffset * 4 + 8;
 				_fileOffset = i;
 				_file.seekg(_fileOffset, ios::beg);
@@ -116,28 +108,26 @@ void PcmReader::LoadSamples(uint32_t samplesToLoad)
 	}
 }
 
-void PcmReader::ApplySamples(int16_t *buffer, size_t sampleCount, uint8_t volume)
-{
-	if(_done) {
+void PcmReader::ApplySamples(int16_t* buffer, size_t sampleCount, uint8_t volume) {
+	if (_done) {
 		return;
 	}
 
 	int32_t samplesNeeded = (int32_t)sampleCount - _resampler.GetPendingCount();
-	if(samplesNeeded > 0) {
+	if (samplesNeeded > 0) {
 		uint32_t samplesToLoad = samplesNeeded * PcmReader::PcmSampleRate / _sampleRate + 2;
 		LoadSamples(samplesToLoad);
 	}
 
-	uint32_t samplesRead = _resampler.Resample<false>(_pcmBuffer.data(), (uint32_t)_pcmBuffer.size() / 2, _outputBuffer, sampleCount);
+	uint32_t samplesRead = _resampler.Resample<false>(_pcmBuffer.data(), (uint32_t)_pcmBuffer.size() / 2, _outputBuffer.get(), sampleCount);
 	_pcmBuffer.clear();
 
 	uint32_t samplesToProcess = (uint32_t)samplesRead * 2;
-	for(uint32_t i = 0; i < samplesToProcess; i++) {
+	for (uint32_t i = 0; i < samplesToProcess; i++) {
 		buffer[i] += (int16_t)((int32_t)_outputBuffer[i] * volume / 255);
 	}
 }
 
-uint32_t PcmReader::GetOffset()
-{
+uint32_t PcmReader::GetOffset() {
 	return _fileOffset;
 }

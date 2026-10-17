@@ -1,12 +1,9 @@
-﻿using Avalonia.Media;
+using Avalonia.Media;
 
-namespace Mesen.Config;
+namespace Nexen.Config;
 
-public static class EventViewerColors
-{
-	public static Color[] Colors => _colors;
-
-	private static readonly Color[] _colors = new Color[] {
+public static class EventViewerColors {
+	public static Color[] Colors { get; } = new Color[] {
 		//Pairs
 		Color.FromRgb(0x00, 0x6E, 0x8E),
 		Color.FromRgb(0x78, 0xA5, 0xB2),

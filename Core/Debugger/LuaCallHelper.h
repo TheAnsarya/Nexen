@@ -1,16 +1,14 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
-#include "Lua/lua.hpp"
+#include "Debugger/LuaInterop.h"
 
-template<typename T>
-struct Nullable
-{
+template <typename T>
+struct Nullable {
 	bool HasValue = false;
 	T Value = {};
 };
 
-class LuaCallHelper
-{
+class LuaCallHelper {
 private:
 	int _stackSize = 0;
 	int _paramCount = 0;
@@ -35,7 +33,7 @@ public:
 	void Return(bool value);
 	void Return(int value);
 	void Return(uint32_t value);
-	void Return(string value);
+	void Return(const string& value);
 
 	int ReturnCount();
 };

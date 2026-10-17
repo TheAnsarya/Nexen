@@ -1,85 +1,75 @@
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Mesen.Controls;
-using Mesen.Interop;
-using Mesen.Utilities;
-using ReactiveUI.Fody.Helpers;
-using System;
+using Nexen.Controls;
+using Nexen.Interop;
+using Nexen.Utilities;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.Debugger.Windows
-{
-	public class BreakInWindow : MesenWindow
-	{
-		public static int _lastValue { get; set; } = 0;
-		public static StepType _lastStepType { get; set; } = StepType.Step;
-		
-		public static readonly StyledProperty<int> ValueProperty = AvaloniaProperty.Register<BreakInWindow, int>(nameof(Value), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
-		public static readonly StyledProperty<StepType> StepTypeProperty = AvaloniaProperty.Register<BreakInWindow, StepType>(nameof(StepType));
+namespace Nexen.Debugger.Windows; 
+public partial class BreakInWindow : NexenWindow {
+	public static int _lastValue { get; set; } = 0;
+	public static StepType _lastStepType { get; set; } = StepType.Step;
 
-		public int Value
-		{
-			get { return GetValue(ValueProperty); }
-			set { SetValue(ValueProperty, value); }
-		}
+	public static readonly StyledProperty<int> ValueProperty = AvaloniaProperty.Register<BreakInWindow, int>(nameof(Value), defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
+	public static readonly StyledProperty<StepType> StepTypeProperty = AvaloniaProperty.Register<BreakInWindow, StepType>(nameof(StepType));
 
-		public StepType StepType
-		{
-			get { return GetValue(StepTypeProperty); }
-			set { SetValue(StepTypeProperty, value); }
-		}
+	public int Value {
+		get { return GetValue(ValueProperty); }
+		set { SetValue(ValueProperty, value); }
+	}
 
-		public bool ShowCpuCycles { get; } = false;
+	public StepType StepType {
+		get { return GetValue(StepTypeProperty); }
+		set { SetValue(StepTypeProperty, value); }
+	}
 
-		private CpuType _cpuType;
+	public bool ShowCpuCycles { get; } = false;
 
-		[Obsolete("For designer only")]
-		public BreakInWindow() : this(CpuType.Snes) { }
+	private CpuType _cpuType;
 
-		public BreakInWindow(CpuType cpuType)
-		{
-			_cpuType = cpuType;
-			StepType = _lastStepType;
-			Value = _lastValue;
+	[Obsolete("For designer only")]
+	public BreakInWindow() : this(CpuType.Snes) { }
 
-			if(!Design.IsDesignMode) {
-				ShowCpuCycles = DebugApi.GetDebuggerFeatures(cpuType).CpuCycleStep;
-				if(!ShowCpuCycles && StepType == StepType.CpuCycleStep) {
-					StepType = StepType.Step;
-				}
+	public BreakInWindow(CpuType cpuType) {
+		_cpuType = cpuType;
+		StepType = _lastStepType;
+		Value = _lastValue;
+
+		if (!Design.IsDesignMode) {
+			ShowCpuCycles = DebugApi.GetDebuggerFeatures(cpuType).CpuCycleStep;
+			if (!ShowCpuCycles && StepType == StepType.CpuCycleStep) {
+				StepType = StepType.Step;
 			}
+		}
 
-			InitializeComponent();
+		InitializeComponent();
 #if DEBUG
-			this.AttachDevTools();
+		this.AttachDeveloperTools();
 #endif
-		}
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
+	}
 
-		protected override void OnOpened(EventArgs e)
-		{
-			base.OnOpened(e);
-			this.GetControl<MesenNumericTextBox>("txtValue").FocusAndSelectAll();
-		}
+	protected override void OnOpened(EventArgs e) {
+		base.OnOpened(e);
+		this.GetControl<NexenNumericTextBox>("txtValue").FocusAndSelectAll();
+	}
 
-		private void Ok_OnClick(object sender, RoutedEventArgs e)
-		{
-			_lastValue = Value;
-			_lastStepType = StepType;
+	private void Ok_OnClick(object sender, RoutedEventArgs e) {
+		_lastValue = Value;
+		_lastStepType = StepType;
 
-			DebugApi.Step(_cpuType, Value, StepType);
+		DebugApi.Step(_cpuType, Value, StepType);
 
-			Close();
-		}
+		Close();
+	}
 
-		private void Cancel_OnClick(object sender, RoutedEventArgs e)
-		{
-			Close();
-		}
+	private void Cancel_OnClick(object sender, RoutedEventArgs e) {
+		Close();
 	}
 }

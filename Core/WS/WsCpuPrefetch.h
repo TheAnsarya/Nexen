@@ -5,8 +5,7 @@
 class WsCpu;
 class WsMemoryManager;
 
-class WsCpuPrefetch final : public ISerializable
-{
+class WsCpuPrefetch final : public ISerializable {
 private:
 	uint16_t _fetchCs = 0;
 	uint16_t _fetchIp = 0;

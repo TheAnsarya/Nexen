@@ -4,19 +4,18 @@
 #include "BpsPatcher.h"
 #include "CRC32.h"
 
-int64_t BpsPatcher::ReadBase128Number(std::istream &file)
-{
+int64_t BpsPatcher::ReadBase128Number(std::istream& file) {
 	int64_t result = 0;
 	int shift = 0;
 	uint8_t buffer;
-	while(true) {
+	while (true) {
 		file.read((char*)&buffer, 1);
-		if(file.eof()) {
+		if (file.eof()) {
 			return -1;
 		}
 		result += (buffer & 0x7F) << shift;
 		shift += 7;
-		if(buffer & 0x80) {
+		if (buffer & 0x80) {
 			break;
 		}
 		result += (int64_t)1 << shift;
@@ -25,37 +24,35 @@ int64_t BpsPatcher::ReadBase128Number(std::istream &file)
 	return result;
 }
 
-bool BpsPatcher::PatchBuffer(string bpsFilepath, vector<uint8_t> &input, vector<uint8_t> &output)
-{
+bool BpsPatcher::PatchBuffer(const string& bpsFilepath, vector<uint8_t>& input, vector<uint8_t>& output) {
 	ifstream bpsFile(bpsFilepath, std::ios::in | std::ios::binary);
-	if(bpsFile) {
+	if (bpsFile) {
 		return PatchBuffer(bpsFile, input, output);
 	}
 	return false;
 }
 
-bool BpsPatcher::PatchBuffer(std::istream &bpsFile, vector<uint8_t> &input, vector<uint8_t> &output)
-{
+bool BpsPatcher::PatchBuffer(std::istream& bpsFile, vector<uint8_t>& input, vector<uint8_t>& output) {
 	bpsFile.seekg(0, std::ios::end);
 	size_t fileSize = (size_t)bpsFile.tellg();
 	bpsFile.seekg(0, std::ios::beg);
 
 	char header[4];
 	bpsFile.read((char*)&header, 4);
-	if(memcmp((char*)&header, "BPS1", 4) != 0) {
-		//Invalid BPS file
+	if (memcmp((char*)&header, "BPS1", 4) != 0) {
+		// Invalid BPS file
 		return false;
 	}
 
 	int64_t inputFileSize = ReadBase128Number(bpsFile);
 	int64_t outputFileSize = ReadBase128Number(bpsFile);
-	if(inputFileSize == -1 || outputFileSize == -1) {
-		//Invalid file
+	if (inputFileSize == -1 || outputFileSize == -1) {
+		// Invalid file
 		return false;
 	}
 
 	int64_t metadataSize = ReadBase128Number(bpsFile);
-	if(metadataSize == -1) {
+	if (metadataSize == -1) {
 		return false;
 	}
 
@@ -66,20 +63,20 @@ bool BpsPatcher::PatchBuffer(std::istream &bpsFile, vector<uint8_t> &input, vect
 	uint32_t outputOffset = 0;
 	uint32_t inputRelativeOffset = 0;
 	uint32_t outputRelativeOffset = 0;
-	while((size_t)bpsFile.tellg() < fileSize - 12) {
+	while ((size_t)bpsFile.tellg() < fileSize - 12) {
 		int64_t data = ReadBase128Number(bpsFile);
-		if(data == -1) {
-			//Invalid file
+		if (data == -1) {
+			// Invalid file
 			return false;
 		}
 
 		uint8_t command = data & 0x03;
 		uint64_t length = (data >> 2) + 1;
-		switch(command) {
+		switch (command) {
 			case 0:
-				//SourceRead
-				while(length--) {
-					if(outputOffset >= output.size()) {
+				// SourceRead
+				while (length--) {
+					if (outputOffset >= output.size()) {
 						return false;
 					}
 
@@ -89,9 +86,9 @@ bool BpsPatcher::PatchBuffer(std::istream &bpsFile, vector<uint8_t> &input, vect
 				break;
 
 			case 1:
-				//TargetRead
-				while(length--) {
-					if(outputOffset >= output.size()) {
+				// TargetRead
+				while (length--) {
+					if (outputOffset >= output.size()) {
 						return false;
 					}
 
@@ -103,15 +100,15 @@ bool BpsPatcher::PatchBuffer(std::istream &bpsFile, vector<uint8_t> &input, vect
 				break;
 
 			case 2: {
-				//SourceCopy
-				int32_t data = (int32_t)ReadBase128Number(bpsFile);
-				if(data == -1) {
+				// SourceCopy
+				int32_t srcData = (int32_t)ReadBase128Number(bpsFile);
+				if (srcData == -1) {
 					return false;
 				}
 
-				inputRelativeOffset += (data & 1 ? -1 : +1) * (data >> 1);
-				while(length--) {
-					if(outputOffset >= output.size() || inputRelativeOffset >= input.size()) {
+				inputRelativeOffset += (srcData & 1 ? -1 : +1) * (srcData >> 1);
+				while (length--) {
+					if (outputOffset >= output.size() || inputRelativeOffset >= input.size()) {
 						return false;
 					}
 
@@ -121,15 +118,15 @@ bool BpsPatcher::PatchBuffer(std::istream &bpsFile, vector<uint8_t> &input, vect
 			}
 
 			case 3: {
-				//TargetCopy
-				int32_t data = (int32_t)ReadBase128Number(bpsFile);
-				if(data == -1) {
+				// TargetCopy
+				int32_t tgtData = (int32_t)ReadBase128Number(bpsFile);
+				if (tgtData == -1) {
 					return false;
 				}
 
-				outputRelativeOffset += (data & 1 ? -1 : +1) * (data >> 1);
-				while(length--) {
-					if(outputOffset >= output.size() || outputRelativeOffset >= output.size()) {
+				outputRelativeOffset += (tgtData & 1 ? -1 : +1) * (tgtData >> 1);
+				while (length--) {
+					if (outputOffset >= output.size() || outputRelativeOffset >= output.size()) {
 						return false;
 					}
 
@@ -137,7 +134,7 @@ bool BpsPatcher::PatchBuffer(std::istream &bpsFile, vector<uint8_t> &input, vect
 				}
 				break;
 			}
-		}			
+		}
 	}
 
 	uint8_t inputChecksum[4];
@@ -149,7 +146,7 @@ bool BpsPatcher::PatchBuffer(std::istream &bpsFile, vector<uint8_t> &input, vect
 	uint32_t inputCrc = CRC32::GetCRC(input.data(), input.size());
 	uint32_t outputCrc = CRC32::GetCRC(output.data(), output.size());
 
-	if(patchInputCrc != inputCrc || patchOutputCrc != outputCrc) {
+	if (patchInputCrc != inputCrc || patchOutputCrc != outputCrc) {
 		return false;
 	}
 	return true;

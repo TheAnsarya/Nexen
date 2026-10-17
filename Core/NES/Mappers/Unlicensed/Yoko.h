@@ -5,8 +5,7 @@
 #include "NES/NesConsole.h"
 #include "NES/NesMemoryManager.h"
 
-class Yoko : public BaseMapper
-{
+class Yoko : public BaseMapper {
 	uint8_t _regs[7] = {};
 	uint8_t _exRegs[4] = {};
 	uint8_t _mode = 0;
@@ -23,8 +22,7 @@ protected:
 	bool AllowRegisterRead() override { return true; }
 	bool EnableCpuClockHook() override { return true; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		memset(_regs, 0, sizeof(_regs));
 		memset(_exRegs, 0, sizeof(_exRegs));
 		_mode = 0;
@@ -38,8 +36,7 @@ protected:
 		UpdateState();
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		BaseMapper::Serialize(s);
 
 		SVArray(_regs, 7);
@@ -50,21 +47,19 @@ protected:
 		SV(_irqEnabled);
 	}
 
-	void Reset(bool softReset) override
-	{
-		if(softReset) {
+	void Reset(bool softReset) override {
+		if (softReset) {
 			_mode = 0;
 			_bank = 0;
 		}
 	}
 
-	void ProcessCpuClock() override
-	{
+	void ProcessCpuClock() override {
 		BaseProcessCpuClock();
 
-		if(_irqEnabled) {
+		if (_irqEnabled) {
 			_irqCounter--;
-			if(_irqCounter == 0) {
+			if (_irqCounter == 0) {
 				_irqEnabled = false;
 				_irqCounter = 0xFFFF;
 				_console->GetCpu()->SetIrqSource(IRQSource::External);
@@ -72,8 +67,7 @@ protected:
 		}
 	}
 
-	void UpdateState()
-	{
+	void UpdateState() {
 		SetMirroringType(_mode & 0x01 ? MirroringType::Horizontal : MirroringType::Vertical);
 
 		SelectChrPage(0, _regs[3]);
@@ -81,13 +75,13 @@ protected:
 		SelectChrPage(2, _regs[5]);
 		SelectChrPage(3, _regs[6]);
 
-		if(_mode & 0x10) {
+		if (_mode & 0x10) {
 			uint32_t outer = (_bank & 0x08) << 1;
 			SelectPrgPage(0, outer | (_regs[0] & 0x0F));
 			SelectPrgPage(1, outer | (_regs[1] & 0x0F));
 			SelectPrgPage(2, outer | (_regs[2] & 0x0F));
 			SelectPrgPage(3, outer | 0x0F);
-		} else if(_mode & 0x08) {
+		} else if (_mode & 0x08) {
 			SelectPrgPage4x(0, (_bank & 0xFE) << 1);
 		} else {
 			SelectPrgPage2x(0, _bank << 1);
@@ -95,23 +89,27 @@ protected:
 		}
 	}
 
-	uint8_t ReadRegister(uint16_t addr) override
-	{
-		if(addr <= 0x53FF) {
+	uint8_t ReadRegister(uint16_t addr) override {
+		if (addr <= 0x53FF) {
 			return (_console->GetMemoryManager()->GetOpenBus() & 0xFC) | GetDipSwitches();
 		} else {
 			return _exRegs[addr & 0x03];
 		}
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
-		if(addr < 0x8000) {
+	void WriteRegister(uint16_t addr, uint8_t value) override {
+		if (addr < 0x8000) {
 			_exRegs[addr & 0x03] = value;
 		} else {
-			switch(addr & 0x8C17) {
-				case 0x8000: _bank = value; UpdateState(); break;
-				case 0x8400: _mode = value; UpdateState(); break;
+			switch (addr & 0x8C17) {
+				case 0x8000:
+					_bank = value;
+					UpdateState();
+					break;
+				case 0x8400:
+					_mode = value;
+					UpdateState();
+					break;
 				case 0x8800:
 					_irqCounter = (_irqCounter & 0xFF00) | value;
 					_console->GetCpu()->ClearIrqSource(IRQSource::External);
@@ -120,13 +118,34 @@ protected:
 					_irqEnabled = (_mode & 0x80) != 0;
 					_irqCounter = (_irqCounter & 0xFF) | (value << 8);
 					break;
-				case 0x8c00: _regs[0] = value; UpdateState(); break;
-				case 0x8c01: _regs[1] = value; UpdateState(); break;
-				case 0x8c02: _regs[2] = value; UpdateState(); break;
-				case 0x8c10: _regs[3] = value; UpdateState(); break;
-				case 0x8c11: _regs[4] = value; UpdateState(); break;
-				case 0x8c16: _regs[5] = value; UpdateState(); break;
-				case 0x8c17: _regs[6] = value; UpdateState(); break;
+				case 0x8c00:
+					_regs[0] = value;
+					UpdateState();
+					break;
+				case 0x8c01:
+					_regs[1] = value;
+					UpdateState();
+					break;
+				case 0x8c02:
+					_regs[2] = value;
+					UpdateState();
+					break;
+				case 0x8c10:
+					_regs[3] = value;
+					UpdateState();
+					break;
+				case 0x8c11:
+					_regs[4] = value;
+					UpdateState();
+					break;
+				case 0x8c16:
+					_regs[5] = value;
+					UpdateState();
+					break;
+				case 0x8c17:
+					_regs[6] = value;
+					UpdateState();
+					break;
 			}
 		}
 	}

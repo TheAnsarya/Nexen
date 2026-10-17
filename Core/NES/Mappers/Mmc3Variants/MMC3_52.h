@@ -2,8 +2,7 @@
 #include "pch.h"
 #include "NES/Mappers/Nintendo/MMC3.h"
 
-class MMC3_52 : public MMC3
-{
+class MMC3_52 : public MMC3 {
 private:
 	uint8_t _extraReg = 0;
 
@@ -11,21 +10,18 @@ protected:
 	uint16_t RegisterStartAddress() override { return 0x6000; }
 	uint16_t RegisterEndAddress() override { return 0xFFFF; }
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		MMC3::Serialize(s);
 		SV(_extraReg);
 	}
 
-	void Reset(bool softReset) override
-	{
+	void Reset(bool softReset) override {
 		_extraReg = 0;
 		UpdateState();
 	}
 
-	void SelectChrPage(uint16_t slot, uint16_t page, ChrMemoryType memoryType = ChrMemoryType::Default) override
-	{
-		if(_extraReg & 0x40) {
+	void SelectChrPage(uint16_t slot, uint16_t page, ChrMemoryType memoryType = ChrMemoryType::Default) override {
+		if (_extraReg & 0x40) {
 			page &= 0x7F;
 			page |= ((_extraReg & 0x04) | ((_extraReg >> 4) & 0x03)) << 7;
 		} else {
@@ -35,9 +31,8 @@ protected:
 		MMC3::SelectChrPage(slot, page, memoryType);
 	}
 
-	void SelectPrgPage(uint16_t slot, uint16_t page, PrgMemoryType memoryType = PrgMemoryType::PrgRom) override
-	{
-		if(_extraReg & 0x08) {
+	void SelectPrgPage(uint16_t slot, uint16_t page, PrgMemoryType memoryType = PrgMemoryType::PrgRom) override {
+		if (_extraReg & 0x08) {
 			page &= 0x0F;
 			page |= (_extraReg & 0x07) << 4;
 		} else {
@@ -47,11 +42,10 @@ protected:
 		MMC3::SelectPrgPage(slot, page, memoryType);
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
-		if(addr < 0x8000) {
-			if(CanWriteToWorkRam()) {
-				if((_extraReg & 0x80) == 0) {
+	void WriteRegister(uint16_t addr, uint8_t value) override {
+		if (addr < 0x8000) {
+			if (CanWriteToWorkRam()) {
+				if ((_extraReg & 0x80) == 0) {
 					_extraReg = value;
 					UpdateState();
 				} else {

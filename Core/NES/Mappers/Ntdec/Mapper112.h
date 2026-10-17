@@ -2,8 +2,7 @@
 #include "pch.h"
 #include "NES/BaseMapper.h"
 
-class Mapper112 : public BaseMapper
-{
+class Mapper112 : public BaseMapper {
 private:
 	uint8_t _currentReg = 0;
 	uint8_t _outerChrBank = 0;
@@ -15,8 +14,7 @@ protected:
 	uint16_t GetPrgPageSize() override { return 0x2000; }
 	uint16_t GetChrPageSize() override { return 0x400; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		_currentReg = 0;
 		_outerChrBank = 0;
 		memset(_registers, 0, sizeof(_registers));
@@ -28,17 +26,15 @@ protected:
 		SelectPrgPage(3, -1);
 		UpdateState();
 	}
-	
-	void Serialize(Serializer& s) override
-	{
+
+	void Serialize(Serializer& s) override {
 		BaseMapper::Serialize(s);
 		SVArray(_registers, 8);
 		SV(_currentReg);
 		SV(_outerChrBank);
 	}
 
-	void UpdateState()
-	{
+	void UpdateState() {
 		SelectPrgPage(0, _registers[0]);
 		SelectPrgPage(1, _registers[1]);
 
@@ -50,15 +46,22 @@ protected:
 		SelectChrPage(7, _registers[7] | ((_outerChrBank & 0x80) << 1));
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
-		switch(addr & 0xE001) {
-			case 0x8000: _currentReg = value & 0x07; break;
-			case 0xA000: _registers[_currentReg] = value; break;
-			case 0xC000: _outerChrBank = value; break;
-			case 0xE000: SetMirroringType(value & 0x01 ? MirroringType::Horizontal : MirroringType::Vertical); break;
+	void WriteRegister(uint16_t addr, uint8_t value) override {
+		switch (addr & 0xE001) {
+			case 0x8000:
+				_currentReg = value & 0x07;
+				break;
+			case 0xA000:
+				_registers[_currentReg] = value;
+				break;
+			case 0xC000:
+				_outerChrBank = value;
+				break;
+			case 0xE000:
+				SetMirroringType(value & 0x01 ? MirroringType::Horizontal : MirroringType::Vertical);
+				break;
 		}
-	
+
 		UpdateState();
 	}
 };

@@ -3,31 +3,28 @@
 #include "WS/APU/WsApu.h"
 #include "WS/WsTypes.h"
 
-class WsApuCh3
-{
+class WsApuCh3 {
 private:
 	WsApu* _apu = nullptr;
 	WsApuCh3State* _state = nullptr;
 
 public:
-	WsApuCh3(WsApu* apu, WsApuCh3State& state)
-	{
+	WsApuCh3(WsApu* apu, WsApuCh3State& state) {
 		_state = &state;
 		_apu = apu;
 	}
 
-	void Exec()
-	{
-		if(!_state->Enabled) {
+	void Exec() {
+		if (!_state->Enabled) {
 			return;
 		}
 
-		if(_state->SweepEnabled) {
+		if (_state->SweepEnabled) {
 			_state->SweepScaler++;
-			if(_state->UseSweepCpuClock || _state->SweepScaler >= 0x2000) {
+			if (_state->UseSweepCpuClock || _state->SweepScaler >= 0x2000) {
 				_state->SweepScaler = 0;
-				
-				if(_state->SweepTimer == 0) {
+
+				if (_state->SweepTimer == 0) {
 					_state->SweepTimer = _state->SweepPeriod;
 					_state->Frequency = (_state->Frequency + _state->SweepValue) & 0xFFF;
 				} else {
@@ -36,7 +33,7 @@ public:
 			}
 		}
 
-		if(_state->Timer == 0) {
+		if (_state->Timer == 0) {
 			_state->Timer = 2047 - _state->Frequency;
 			_state->SamplePosition = (_state->SamplePosition + 1) & 0x1F;
 		} else {
@@ -44,9 +41,8 @@ public:
 		}
 	}
 
-	void UpdateOutput()
-	{
-		if(!_state->Enabled) {
+	void UpdateOutput() {
+		if (!_state->Enabled) {
 			_state->LeftOutput = 0;
 			_state->RightOutput = 0;
 			return;

@@ -1,19 +1,21 @@
-<Window
+﻿<Window
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels"
-	xmlns:v="using:Mesen.Views"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:dc="using:Mesen.Debugger.Controls"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels"
+	xmlns:v="using:Nexen.Views"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d" d:DesignWidth="620" d:DesignHeight="500"
 	x:DataType="dvm:DebuggerConfigWindowViewModel"
-	x:Class="Mesen.Debugger.Windows.DebuggerConfigWindow"
-	Width="620" Height="500"
+	x:Class="Nexen.Debugger.Windows.DebuggerConfigWindow"
+	Width="760" Height="620"
+	MinWidth="700" MinHeight="560"
+	CanResize="True"
 	Title="{l:Translate wndTitle}"
 >
 	<Design.DataContext>
@@ -23,68 +25,71 @@
 	<DockPanel>
 		<Panel DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Background="#2888">
 			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="5 3">
-				<Button MinWidth="70" HorizontalContentAlignment="Center" Click="Ok_OnClick" Content="{l:Translate btnOK}" />
-				<Button MinWidth="70" HorizontalContentAlignment="Center" Click="Cancel_OnClick" Content="{l:Translate btnCancel}" />
+				<Button MinWidth="70" MinHeight="36" Margin="0 0 8 0" HorizontalContentAlignment="Center" Click="Ok_OnClick" Content="{l:Translate btnOK}" />
+				<Button MinWidth="70" MinHeight="36" HorizontalContentAlignment="Center" Click="Cancel_OnClick" Content="{l:Translate btnCancel}" />
 			</StackPanel>
 		</Panel>
-		
-		<TabControl TabStripPlacement="Left" Background="#20888888" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}" Padding="0">
+
+		<TabControl Name="SettingsTabControl" TabStripPlacement="Left" Background="{DynamicResource SettingsTabStripBackgroundBrush}" SelectedIndex="{ReflectionBinding SelectedIndex, Mode=TwoWay}" Padding="0">
 			<TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/Debugger.png" Margin="0 0 10 0" />
+						<Image Source="{SvgImage /Assets/Debugger.svg}" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabDebugger}"/>
 					</StackPanel>
 				</TabItem.Header>
 
-				<StackPanel Margin="5">
-					<c:OptionSection Header="{l:Translate lblGeneralSettings}" Margin="0">
-						<CheckBox
-							IsChecked="{Binding Debugger.AutoResetCdl}"
-							Content="{l:Translate chkAutoResetCdl}"
-						/>
-						<CheckBox
-							IsChecked="{Binding Debugger.DisableDefaultLabels}"
-							Content="{l:Translate chkDisableDefaultLabels}"
-						/>
-					</c:OptionSection>
-					
-					<c:OptionSection Header="{l:Translate lblDisassemblySettings}">
-						<CheckBox
-							IsChecked="{Binding Debugger.KeepActiveStatementInCenter}"
-							Content="{l:Translate chkKeepActiveStatementInCenter}"
-						/>
-					</c:OptionSection>
-					
-					<c:OptionSection Header="{l:Translate lblCopyCodeSettings}">
-						<CheckBox
-							IsChecked="{Binding Debugger.CopyAddresses}"
-							Content="{l:Translate chkCopyAddresses}"
-						/>
-						<CheckBox
-							IsChecked="{Binding Debugger.CopyBlockHeaders}"
-							Content="{l:Translate chkCopyBlockHeaders}"
-						/>
-						<CheckBox
-							IsChecked="{Binding Debugger.CopyByteCode}"
-							Content="{l:Translate chkCopyByteCode}"
-						/>
-						<CheckBox
-							IsChecked="{Binding Debugger.CopyComments}"
-							Content="{l:Translate chkCopyComments}"
-						/>
-					</c:OptionSection>
-				</StackPanel>
+				<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+					<StackPanel Margin="5">
+						<c:OptionSection Header="{l:Translate lblGeneralSettings}" Margin="0">
+							<CheckBox
+								IsChecked="{Binding Debugger.AutoResetCdl}"
+								Content="{l:Translate chkAutoResetCdl}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Debugger.DisableDefaultLabels}"
+								Content="{l:Translate chkDisableDefaultLabels}"
+							/>
+						</c:OptionSection>
+
+						<c:OptionSection Header="{l:Translate lblDisassemblySettings}">
+							<CheckBox
+								IsChecked="{Binding Debugger.KeepActiveStatementInCenter}"
+								Content="{l:Translate chkKeepActiveStatementInCenter}"
+							/>
+						</c:OptionSection>
+
+						<c:OptionSection Header="{l:Translate lblCopyCodeSettings}">
+							<CheckBox
+								IsChecked="{Binding Debugger.CopyAddresses}"
+								Content="{l:Translate chkCopyAddresses}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Debugger.CopyBlockHeaders}"
+								Content="{l:Translate chkCopyBlockHeaders}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Debugger.CopyByteCode}"
+								Content="{l:Translate chkCopyByteCode}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Debugger.CopyComments}"
+								Content="{l:Translate chkCopyComments}"
+							/>
+						</c:OptionSection>
+					</StackPanel>
+				</ScrollViewer>
 			</TabItem>
 			<TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<Image Source="/Assets/Script.png" Margin="0 0 10 0" />
+						<Image Source="{SvgImage /Assets/Script.svg}" Margin="0 0 10 0" />
 						<TextBlock VerticalAlignment="Center" Text="{l:Translate tabScriptWindow}" />
 					</StackPanel>
 				</TabItem.Header>
 
-				<StackPanel Margin="5">
+				<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+					<StackPanel Margin="5">
 					<c:OptionSection Header="{l:Translate lblGeneralSettings}" Margin="0">
 						<WrapPanel>
 							<TextBlock Text="{l:Translate lblScriptStartupBehavior}" VerticalAlignment="Center" />
@@ -99,11 +104,11 @@
 					<c:OptionSection Header="{l:Translate lblDisplaySettings}">
 						<CheckBox IsChecked="{Binding Script.ShowLineNumbers}" Content="{l:Translate chkShowLineNumbers}" />
 					</c:OptionSection>
-					
+
 					<c:OptionSection Header="{l:Translate lblRestrictions}">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock Text="{l:Translate lblMaxExecutionTime}" />
-							<c:MesenNumericUpDown Margin="3 0" Minimum="1" Maximum="100" Value="{Binding Script.ScriptTimeout}" />
+							<c:NexenNumericUpDown Margin="3 0" Minimum="1" Maximum="100" Value="{Binding Script.ScriptTimeout}" />
 							<TextBlock Text="{l:Translate lblSeconds}" />
 						</StackPanel>
 						<CheckBox IsChecked="{Binding Script.AllowIoOsAccess}" Content="{l:Translate chkAllowIoOsAccess}" />
@@ -118,15 +123,16 @@
 							Content="{l:Translate chkAllowNetworkAccess}"
 						/>
 					</c:OptionSection>
-				</StackPanel>
+					</StackPanel>
+				</ScrollViewer>
 			</TabItem>
 
 			<TabItem IsEnabled="False" MinHeight="10">
 				<TabItem.Header>
-					<Rectangle Fill="{StaticResource MesenGrayBorderColor}" Height="1" />
+					<Rectangle Fill="{StaticResource NexenGrayBorderColor}" Height="1" />
 				</TabItem.Header>
 			</TabItem>
-			
+
 			<TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
@@ -135,7 +141,8 @@
 					</StackPanel>
 				</TabItem.Header>
 
-				<StackPanel Margin="5">
+				<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+					<StackPanel Margin="5">
 					<c:OptionSection Header="{l:Translate lblFontSettings}" Margin="0">
 						<Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
 							<TextBlock Text="{l:Translate lblDisassemblyFont}" />
@@ -146,7 +153,7 @@
 
 							<TextBlock Text="{l:Translate lblAssemblerFont}" Grid.Row="2" />
 							<v:FontOptionsView Grid.Column="1" Grid.Row="2" DataContext="{Binding Fonts.AssemblerFont}" />
-							
+
 							<TextBlock Text="{l:Translate lblScriptWindowFont}" Grid.Row="3" />
 							<v:FontOptionsView Grid.Column="1" Grid.Row="3" DataContext="{Binding Fonts.ScriptWindowFont}" />
 
@@ -184,7 +191,8 @@
 							</StackPanel>
 						</StackPanel>
 					</c:OptionSection>
-				</StackPanel>
+					</StackPanel>
+				</ScrollViewer>
 			</TabItem>
 
 			<TabItem>
@@ -195,16 +203,18 @@
 					</StackPanel>
 				</TabItem.Header>
 
-				<StackPanel Margin="5">
+				<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
+					<StackPanel Margin="5" Spacing="8">
 					<c:OptionSection Header="{l:Translate lblIntegrationSettings}" Margin="0">
 						<CheckBox
 							IsChecked="{Binding Integration.ResetLabelsOnImport}"
 							Content="{l:Translate chkResetLabelsOnImport}"
 						/>
+						<TextBlock Text="{l:Translate lblIntegrationDefaultsHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
 					</c:OptionSection>
 					<c:OptionSection Header="{l:Translate lblAutoLoadSettings}">
 						<TextBlock Text="{l:Translate lblAutoLoadHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
-						<StackPanel Margin="10 5 0 0">
+						<StackPanel Margin="12 5 0 0" Spacing="4">
 							<CheckBox
 								IsChecked="{Binding Integration.AutoLoadDbgFiles}"
 								Content="{l:Translate chkAutoLoadDbgFiles}"
@@ -222,8 +232,8 @@
 								Content="{l:Translate chkAutoLoadCdbFiles}"
 							/>
 							<CheckBox
-								IsChecked="{Binding Integration.AutoLoadMlbFiles}"
-								Content="{l:Translate chkAutoLoadMlbFiles}"
+								IsChecked="{Binding Integration.AutoLoadLabelFiles}"
+								Content="{l:Translate chkAutoLoadLabelFiles}"
 							/>
 							<CheckBox
 								IsChecked="{Binding Integration.AutoLoadFnsFiles}"
@@ -235,9 +245,106 @@
 							/>
 						</StackPanel>
 					</c:OptionSection>
+					<c:OptionSection Header="{l:Translate lblAutoExportSettings}">
+						<CheckBox
+							IsChecked="{Binding Integration.AutoExportPansy}"
+							Content="{l:Translate chkAutoExportPansy}"
+						/>
+						<CheckBox
+							IsChecked="{Binding Integration.BackgroundCdlRecording}"
+							Content="{l:Translate chkBackgroundCdlRecording}"
+							Margin="0 5 0 0"
+						/>
+						<TextBlock Text="{l:Translate lblAutoExportHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
+						<StackPanel Orientation="Horizontal" Margin="20 5 0 0" IsEnabled="{Binding Integration.BackgroundCdlRecording}">
+							<TextBlock Text="{l:Translate lblAutoSaveInterval}" VerticalAlignment="Center" />
+							<NumericUpDown
+								Value="{Binding Integration.AutoSaveIntervalMinutes}"
+								Minimum="1"
+								Maximum="60"
+								Width="80"
+								Margin="5 0"
+							/>
+							<TextBlock Text="{l:Translate lblMinutes}" VerticalAlignment="Center" />
+						</StackPanel>
+						<CheckBox
+							IsChecked="{Binding Integration.SavePansyOnRomUnload}"
+							Content="{l:Translate chkSavePansyOnRomUnload}"
+							Margin="0 5 0 0"
+						/>
+						<TextBlock Text="{l:Translate lblPansyLifecycleHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
+						<TextBlock Text="{l:Translate lblPansyExportOptions}" FontWeight="SemiBold" Margin="0 10 0 5" />
+						<StackPanel Margin="12 0 0 0" Spacing="4">
+							<CheckBox
+								IsChecked="{Binding Integration.PansyIncludeMemoryRegions}"
+								Content="{l:Translate chkPansyIncludeMemoryRegions}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.PansyIncludeCrossReferences}"
+								Content="{l:Translate chkPansyIncludeCrossReferences}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.PansyIncludeDataBlocks}"
+								Content="{l:Translate chkPansyIncludeDataBlocks}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.PansyUseCompression}"
+								Content="{l:Translate chkPansyUseCompression}"
+								Margin="0 5 0 0"
+							/>
+						</StackPanel>
+						<TextBlock Text="{l:Translate lblPansyCompressionHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
+						<TextBlock Text="{l:Translate lblPansySyncSettings}" FontWeight="SemiBold" Margin="0 10 0 5" />
+						<StackPanel Margin="12 0 0 0" Spacing="4">
+							<CheckBox
+								IsChecked="{Binding Integration.UseFolderStorage}"
+								Content="{l:Translate chkUseFolderStorage}"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.SyncLabelFiles}"
+								Content="{l:Translate chkSyncLabelFiles}"
+								IsEnabled="{Binding Integration.UseFolderStorage}"
+								Margin="20 0 0 0"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.SyncCdlFiles}"
+								Content="{l:Translate chkSyncCdlFiles}"
+								IsEnabled="{Binding Integration.UseFolderStorage}"
+								Margin="20 0 0 0"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.KeepVersionHistory}"
+								Content="{l:Translate chkKeepVersionHistory}"
+								IsEnabled="{Binding Integration.UseFolderStorage}"
+								Margin="20 0 0 0"
+							/>
+							<StackPanel Orientation="Horizontal" Margin="40 5 0 0" IsEnabled="{Binding Integration.KeepVersionHistory}">
+								<TextBlock Text="{l:Translate lblMaxHistoryEntries}" VerticalAlignment="Center" />
+								<NumericUpDown
+									Value="{Binding Integration.MaxHistoryEntries}"
+									Minimum="1"
+									Maximum="100"
+									Width="80"
+									Margin="5 0"
+								/>
+							</StackPanel>
+							<CheckBox
+								IsChecked="{Binding Integration.EnableFileWatching}"
+								Content="{l:Translate chkEnableFileWatching}"
+								IsEnabled="{Binding Integration.UseFolderStorage}"
+								Margin="20 5 0 0"
+							/>
+							<CheckBox
+								IsChecked="{Binding Integration.AutoReloadOnExternalChange}"
+								Content="{l:Translate chkAutoReloadOnExternalChange}"
+								IsEnabled="{Binding Integration.EnableFileWatching}"
+								Margin="40 0 0 0"
+							/>
+						</StackPanel>
+					</c:OptionSection>
 					<c:OptionSection Header="{l:Translate lblImportFilters}">
 						<TextBlock Text="{l:Translate lblImportFiltersHint}" TextWrapping="Wrap" Margin="0 5 0 0" />
-						<StackPanel Margin="10 5 0 0">
+						<StackPanel Margin="12 5 0 0" Spacing="4">
 							<CheckBox
 								IsChecked="{Binding Integration.ImportPrgRomLabels}"
 								Content="{l:Translate chkImportPrgRomLabels}"
@@ -264,15 +371,16 @@
 					<c:OptionSection Header="{l:Translate lblSourceView}">
 						<StackPanel Orientation="Horizontal">
 							<TextBlock VerticalAlignment="Center" Text="{l:Translate lblTabSize}" />
-							<c:MesenNumericUpDown Value="{Binding Integration.TabSize}" Minimum="1" Maximum="16" />
+							<c:NexenNumericUpDown Value="{Binding Integration.TabSize}" Minimum="1" Maximum="16" />
 						</StackPanel>
 					</c:OptionSection>
-				</StackPanel>
+					</StackPanel>
+				</ScrollViewer>
 			</TabItem>
 
 			<TabItem IsEnabled="False" MinHeight="10">
 				<TabItem.Header>
-					<Rectangle Fill="{StaticResource MesenGrayBorderColor}" Height="1" />
+					<Rectangle Fill="{StaticResource NexenGrayBorderColor}" Height="1" />
 				</TabItem.Header>
 			</TabItem>
 

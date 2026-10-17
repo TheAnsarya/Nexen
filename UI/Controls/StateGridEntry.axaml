@@ -4,10 +4,10 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="100"
-	xmlns:c="using:Mesen.Controls"
+	xmlns:c="using:Nexen.Controls"
 	x:Name="root"
 	HorizontalAlignment="Stretch"
-	x:Class="Mesen.Controls.StateGridEntry"
+	x:Class="Nexen.Controls.StateGridEntry"
 >
 	<UserControl.Resources>
 		<Color x:Key="ButtonBorderBrushDisabled">Gray</Color>
@@ -30,7 +30,7 @@
 			<Setter Property="Background" Value="#FF3A3A3A" />
 		</Style>
 	</UserControl.Styles>
-	
+
 	<DockPanel Margin="2 2 2 7">
 		<TextBlock
 			DockPanel.Dock="Bottom"
@@ -47,24 +47,59 @@
 			TextTrimming="CharacterEllipsis"
 			IsEnabled="{Binding Enabled, ElementName=root}"
 		/>
-		<Button
-			Classes.activeEntry="{Binding IsActiveEntry, ElementName=root}"
-			BorderThickness="2"
-			Height="NaN"
-			Click="OnImageClick"
-			IsEnabled="{Binding Enabled, ElementName=root}"
-			HorizontalAlignment="Center"
-			VerticalAlignment="Stretch"
-			Padding="0"
-		>
-			<c:ImageAspectRatio
-				Source="{Binding Image, ElementName=root}"
-				AspectRatio="{Binding AspectRatio, ElementName=root}"
-				RenderOptions.BitmapInterpolationMode="LowQuality"
-				Stretch="Fill"
-				StretchDirection="Both"
-				VerticalAlignment="Center"
-			/>
-		</Button>
+		<!-- Image with overlaid origin badge -->
+		<Grid>
+			<Button
+				Classes.activeEntry="{Binding IsActiveEntry, ElementName=root}"
+				BorderThickness="2"
+				Height="NaN"
+				Click="OnImageClick"
+				IsEnabled="{Binding Enabled, ElementName=root}"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Stretch"
+				Padding="0"
+			>
+				<c:ImageAspectRatio
+					Source="{Binding Image, ElementName=root}"
+					AspectRatio="{Binding AspectRatio, ElementName=root}"
+					RenderOptions.BitmapInterpolationMode="LowQuality"
+					Stretch="Fill"
+					StretchDirection="Both"
+					VerticalAlignment="Center"
+				/>
+			</Button>
+			<!-- Origin badge (Auto=Blue, Save=Green, Recent=Red, Lua=Yellow) positioned at top-left of image -->
+			<Border
+				IsVisible="{Binding ShowBadge, ElementName=root}"
+				Background="{Binding BadgeBackground, ElementName=root}"
+				CornerRadius="3"
+				Padding="4 1"
+				HorizontalAlignment="Left"
+				VerticalAlignment="Top"
+				Margin="6 6 0 0"
+			>
+				<TextBlock
+					Text="{Binding BadgeText, ElementName=root}"
+					FontSize="10"
+					FontWeight="SemiBold"
+					Foreground="White"
+				/>
+			</Border>
+			<!-- Pause badge positioned at top-right of image -->
+			<Border
+				IsVisible="{Binding ShowPauseBadge, ElementName=root}"
+				Background="#ffc107"
+				CornerRadius="3"
+				Padding="4 2"
+				HorizontalAlignment="Right"
+				VerticalAlignment="Top"
+				Margin="0 6 6 0"
+			>
+				<StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+					<Border Width="3" Height="10" Background="#000000" CornerRadius="0.5" />
+					<Border Width="3" Height="10" Background="#000000" CornerRadius="0.5" />
+				</StackPanel>
+			</Border>
+		</Grid>
 	</DockPanel>
 </UserControl>

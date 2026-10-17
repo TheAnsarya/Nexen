@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "WS/WsTypes.h"
 #include "Debugger/DebugTypes.h"
 #include "Debugger/BaseEventManager.h"
@@ -12,8 +13,7 @@ class WsPpu;
 class WsConsole;
 class Debugger;
 
-struct WsEventViewerConfig : public BaseEventViewerConfig
-{
+struct WsEventViewerConfig : public BaseEventViewerConfig {
 	EventViewerCategoryCfg PpuPaletteRead;
 	EventViewerCategoryCfg PpuPaletteWrite;
 	EventViewerCategoryCfg PpuVramRead;
@@ -50,10 +50,9 @@ struct WsEventViewerConfig : public BaseEventViewerConfig
 	bool ShowPreviousFrameEvents;
 };
 
-class WsEventManager final : public BaseEventManager
-{
+class WsEventManager final : public BaseEventManager {
 private:
-	static constexpr int ScanlineWidth = WsConstants::ClocksPerScanline*2;
+	static constexpr int ScanlineWidth = WsConstants::ClocksPerScanline * 2;
 	static constexpr int ScreenHeight = WsConstants::ScanlineCount;
 
 	WsEventViewerConfig _config;
@@ -64,7 +63,7 @@ private:
 	Debugger* _debugger;
 
 	uint32_t _scanlineCount = 159;
-	uint16_t* _ppuBuffer = nullptr;
+	std::unique_ptr<uint16_t[]> _ppuBuffer;
 
 protected:
 	bool ShowPreviousFrameEvents() override;

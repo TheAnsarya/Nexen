@@ -1,21 +1,19 @@
 #include "Common.h"
 #include "WindowsMouseManager.h"
 
-WindowsMouseManager::WindowsMouseManager()
-{
+WindowsMouseManager::WindowsMouseManager() {
 	_arrowCursor = LoadCursor(nullptr, IDC_ARROW);
 	_crossCursor = LoadCursor(nullptr, IDC_CROSS);
 }
 
 WindowsMouseManager::~WindowsMouseManager() {}
 
-SystemMouseState WindowsMouseManager::GetSystemMouseState(void* rendererHandle)
-{
+SystemMouseState WindowsMouseManager::GetSystemMouseState(void* rendererHandle) {
 	SystemMouseState state = {};
 	POINT point;
 	GetCursorPos(&point);
-	if(rendererHandle != nullptr && WindowFromPoint(point) != (HWND) rendererHandle) {
-		//Mouse is over another window
+	if (rendererHandle != nullptr && WindowFromPoint(point) != (HWND)rendererHandle) {
+		// Mouse is over another window
 		state.XPosition = -1;
 		state.YPosition = -1;
 	} else {
@@ -30,11 +28,10 @@ SystemMouseState WindowsMouseManager::GetSystemMouseState(void* rendererHandle)
 	return state;
 }
 
-bool WindowsMouseManager::CaptureMouse(int32_t x, int32_t y, int32_t width, int32_t height, void* rendererHandle)
-{
-	if(rendererHandle == nullptr) {
-		//TODO Attempting to capture the cursor when using the sofware renderer behaves really erratically
-		//cursor is not actually locked but clicks outside the window do nothing, and movement is really odd (not usable)
+bool WindowsMouseManager::CaptureMouse(int32_t x, int32_t y, int32_t width, int32_t height, void* rendererHandle) {
+	if (rendererHandle == nullptr) {
+		// TODO Attempting to capture the cursor when using the sofware renderer behaves really erratically
+		// cursor is not actually locked but clicks outside the window do nothing, and movement is really odd (not usable)
 		return false;
 	}
 	RECT rect;
@@ -46,26 +43,28 @@ bool WindowsMouseManager::CaptureMouse(int32_t x, int32_t y, int32_t width, int3
 	return true;
 }
 
-void WindowsMouseManager::ReleaseMouse()
-{
+void WindowsMouseManager::ReleaseMouse() {
 	ClipCursor(nullptr);
 }
 
-void WindowsMouseManager::SetSystemMousePosition(int32_t x, int32_t y)
-{
+void WindowsMouseManager::SetSystemMousePosition(int32_t x, int32_t y) {
 	SetCursorPos(x, y);
 }
 
-void WindowsMouseManager::SetCursorImage(CursorImage cursor)
-{
-	switch(cursor) {
-		case CursorImage::Hidden: SetCursor(nullptr); break;
-		case CursorImage::Arrow: SetCursor((HCURSOR) _arrowCursor); break;
-		case CursorImage::Cross: SetCursor((HCURSOR) _crossCursor); break;
+void WindowsMouseManager::SetCursorImage(CursorImage cursor) {
+	switch (cursor) {
+		case CursorImage::Hidden:
+			SetCursor(nullptr);
+			break;
+		case CursorImage::Arrow:
+			SetCursor((HCURSOR)_arrowCursor);
+			break;
+		case CursorImage::Cross:
+			SetCursor((HCURSOR)_crossCursor);
+			break;
 	}
 }
 
-double WindowsMouseManager::GetPixelScale()
-{
+double WindowsMouseManager::GetPixelScale() {
 	return 1.0;
 }

@@ -1,29 +1,38 @@
-﻿using Mesen.Config;
-using Mesen.Interop;
-using Mesen.Utilities;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
 using System;
 using System.IO;
 using System.Reactive.Linq;
+using Nexen.Config;
+using Nexen.Interop;
+using Nexen.Utilities;
+using ReactiveUI;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.ViewModels
-{
-	public class MovieRecordConfigViewModel : ViewModelBase
-	{
-		[Reactive] public string SavePath { get; set; }
-		[Reactive] public MovieRecordConfig Config { get; set; }
-		
-		public MovieRecordConfigViewModel()
-		{
-			Config = ConfigManager.Config.MovieRecord.Clone();
+namespace Nexen.ViewModels;
+public sealed partial class MovieRecordConfigViewModel : ViewModelBase {
+	[Reactive] public partial string SavePath { get; set; }
+	[Reactive] public partial MovieRecordConfig Config { get; set; }
+	public bool CanRecord => !string.IsNullOrWhiteSpace(SavePath);
 
-			SavePath = Path.Join(ConfigManager.MovieFolder, EmuApi.GetRomInfo().GetRomName() + "." + FileDialogHelper.MesenMovieExt);
+	public MovieRecordConfigViewModel() {
+		Config = ConfigManager.Config.MovieRecord.Clone();
+
+		string romName = "";
+		try {
+			romName = EmuApi.GetRomInfo().GetRomName();
+		} catch (DllNotFoundException) {
+			// Core not loaded
 		}
-
-		public void SaveConfig()
-		{
-			ConfigManager.Config.MovieRecord = Config.Clone();
+		if (string.IsNullOrWhiteSpace(romName)) {
+			romName = "untitled";
 		}
-   }
+		SavePath = Path.Join(ConfigManager.MovieFolder, romName + "." + FileDialogHelper.NexenMovieExt);
+
+		this.WhenAnyValue(x => x.SavePath).Subscribe(_ => {
+			this.RaisePropertyChanged(nameof(CanRecord));
+		});
+	}
+
+	public void SaveConfig() {
+		ConfigManager.Config.MovieRecord = Config.Clone();
+	}
 }

@@ -1,73 +1,67 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <algorithm>
 #include "Utilities/FolderUtilities.h"
 #include "Utilities/VirtualFile.h"
 #include "Utilities/ZipReader.h"
 #include "Shared/Emulator.h"
 #include "Shared/Movies/MovieManager.h"
-#include "Shared/Movies/MesenMovie.h"
+#include "Shared/Movies/NexenMovie.h"
 #include "Shared/Movies/MovieRecorder.h"
 
-MovieManager::MovieManager(Emulator* emu)
-{
+MovieManager::MovieManager(Emulator* emu) {
 	_emu = emu;
 }
 
-void MovieManager::Record(RecordMovieOptions options)
-{
-	//Stop any active recording/playback before starting playback for this movie
+void MovieManager::Record(RecordMovieOptions options) {
+	// Stop any active recording/playback before starting playback for this movie
 	Stop();
 
-	shared_ptr<MovieRecorder> recorder(new MovieRecorder(_emu));
-	if(recorder->Record(options)) {
+	auto recorder = std::make_shared<MovieRecorder>(_emu);
+	if (recorder->Record(options)) {
 		_recorder.reset(recorder);
 	}
 }
 
-void MovieManager::Play(VirtualFile file, bool forTest)
-{
+void MovieManager::Play(VirtualFile file, bool silent) {
 	vector<uint8_t> fileData;
-	if(file.IsValid() && file.ReadFile(fileData)) {
+	if (file.IsValid() && file.ReadFile(fileData)) {
 		shared_ptr<IMovie> player;
-		if(memcmp(fileData.data(), "PK", 2) == 0) {
-			//Mesen movie
+		if (memcmp(fileData.data(), "PK", 2) == 0) {
+			// Nexen movie
 			ZipReader reader;
 			reader.LoadArchive(fileData);
 
 			vector<string> files = reader.GetFileList();
-			if(std::find(files.begin(), files.end(), "GameSettings.txt") != files.end()) {
-				player.reset(new MesenMovie(_emu, forTest));
+			if (std::ranges::contains(files, string_view{"GameSettings.txt"})) {
+				player = std::make_unique<NexenMovie>(_emu, silent);
 			}
 		}
 
-		//Stop any active recording/playback before starting playback for this movie
+		// Stop any active recording/playback before starting playback for this movie
 		Stop();
 
-		if(player && player->Play(file)) {
+		if (player && player->Play(file)) {
 			_player.reset(player);
-			if(!forTest) {
+			if (!silent) {
 				MessageManager::DisplayMessage("Movies", "MoviePlaying", file.GetFileName());
 			}
 		}
 	}
 }
 
-void MovieManager::Stop()
-{
+void MovieManager::Stop() {
 	shared_ptr<IMovie> player = _player.lock();
-	if(player) {
+	if (player) {
 		player->Stop();
 	}
 	_player.reset();
 	_recorder.reset();
 }
 
-bool MovieManager::Playing()
-{
+bool MovieManager::Playing() {
 	return _player != nullptr;
 }
 
-bool MovieManager::Recording()
-{
+bool MovieManager::Recording() {
 	return _recorder != nullptr;
 }

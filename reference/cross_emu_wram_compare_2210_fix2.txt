@@ -1,0 +1,156 @@
+GENESIS_CROSS_EMU_WRAM_TRACE_COMPARE
+rom=C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md
+frameStart=0
+frameEnd=600
+autoStopTimeoutSeconds=15
+maxLines=1200000
+nexenRefTrace=c:\Users\me\source\repos\Nexen\reference\trace-captures\2210_fix2_mesen_wram.log
+nexenTrace=c:\Users\me\source\repos\Nexen\reference\trace-captures\2210_fix2_nexen_wram.log
+nexenRefStartupTrace=c:\Users\me\source\repos\Nexen\reference\trace-captures\2210_fix2_mesen_startup.log
+nexenStartupTrace=c:\Users\me\source\repos\Nexen\reference\trace-captures\2210_fix2_nexen_startup.log
+nexenRefTraceSourceKind=fallback-search-copy
+nexenTraceSourceKind=direct-candidate
+nexenRefStartupTraceSourceKind=direct-candidate
+nexenStartupTraceSourceKind=direct-candidate
+nexenRefTraceSourcePath=C:\Users\me\Documents\Mesen2\reference\cpu_ram_trace.log
+nexenTraceSourcePath=c:\Users\me\source\repos\Nexen\reference\trace-captures\2210_fix2_nexen_wram.log
+nexenRefStartupTraceSourcePath=c:\Users\me\source\repos\Nexen\reference\trace-captures\2210_fix2_mesen_startup.log
+nexenStartupTraceSourcePath=c:\Users\me\source\repos\Nexen\reference\trace-captures\2210_fix2_nexen_startup.log
+nexenRefLines=245760
+nexenLines=152030
+nexenRefNormalizedLines=245760
+nexenNormalizedLines=152030
+nexenRefFrameAgnosticLines=245760
+nexenFrameAgnosticLines=152030
+nexenRefStartupLines=9533
+nexenStartupLines=289026
+snapshotFrame=180
+nexenRefStartupNormalizedLines=9533
+nexenStartupNormalizedLines=282965
+nexenRefStartupCheckpointCount=600
+nexenStartupCheckpointCount=427
+nexenRefStartupDisplayTransitionCount=1
+nexenStartupDisplayTransitionCount=1
+nexenRefStartupPaletteCheckpointCount=1200
+nexenStartupPaletteCheckpointCount=854
+nexenRefStartupVdpSnapshotCount=1200
+nexenStartupVdpSnapshotCount=854
+nexenRefStartupVdpRegisterWriteCount=3580
+nexenStartupVdpRegisterWriteCount=15460
+nexenRefStartupTmssUnlockCount=0
+nexenStartupTmssUnlockCount=0
+nexenRefStartupZ80RuntimeToggleCount=1297
+nexenStartupZ80RuntimeToggleCount=1209
+nexenRefStartupZ80BusReqEventCount=1298
+nexenStartupZ80BusReqEventCount=1199
+nexenRefStartupZ80ResetEventCount=603
+nexenStartupZ80ResetEventCount=441
+nexenRefHash=10cb85fa169ca727bca929581c561454a039f278e94ea71ace4839b27c9df456
+nexenHash=cfda64bc3974383674b8390c3322061a2415bff86f10304260a082a85b5f741d
+nexenRefStartupHash=1492cb03aa29d67d9aa666baeaec3fe08cd720e4a3ecb02c00bf58c01122b2f4
+nexenStartupHash=a018bb40ef4ab3c680f1db70610efedd9db70d4fe4db2ae5ec862e922064a83e
+nexenRefFrontendMissing=False
+nexenRefRunSkipped=False
+nexenRefTraceMissing=False
+nexenTraceMissing=False
+nexenRefStartupTraceMissing=False
+nexenStartupTraceMissing=False
+nexenRefTimedOut=True
+nexenTimedOut=True
+nexenRefExitCode=
+nexenExitCode=
+nexenRefLaunchTarget=C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Release\Mesen.exe
+nexenRefLaunchArgs=--testRunner --timeout=35 "C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md"
+nexenLaunchTarget=C:\Users\me\source\repos\Nexen\bin\win-x64\Release\Nexen.exe
+nexenLaunchArgs=--testRunner --timeout=35 "C:\~reference-roms\genesis\Sonic The Hedgehog (USA, Europe).md"
+nexenRefStartupTraceEnvSupported=False
+nexenRefSearchRoots=C:\Users\me\source\repos\Mesen2-Expanded;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Release;C:\Users\me\Documents;C:\Users\me\AppData\Local
+nexenSearchRoots=C:\Users\me\source\repos\Nexen;C:\Users\me\source\repos\Nexen\bin\win-x64\Release
+nexenRefTraceCandidates=c:\Users\me\source\repos\Nexen\reference\trace-captures\2210_fix2_mesen_wram.log;C:\Users\me\source\repos\Mesen2-Expanded\reference\cpu_ram_trace.log;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Release\reference\cpu_ram_trace.log
+nexenRefStartupTraceCandidates=c:\Users\me\source\repos\Nexen\reference\trace-captures\2210_fix2_mesen_startup.log;C:\Users\me\source\repos\Mesen2-Expanded\reference\genesis_startup_trace.log;C:\Users\me\source\repos\Mesen2-Expanded\bin\win-x64\Release\reference\genesis_startup_trace.log;C:\Users\me\Documents\reference\genesis_startup_trace.log
+nexenTraceCandidates=c:\Users\me\source\repos\Nexen\reference\trace-captures\2210_fix2_nexen_wram.log;C:\Users\me\source\repos\Nexen\reference\cpu_ram_trace.log;C:\Users\me\source\repos\Nexen\bin\win-x64\Release\reference\cpu_ram_trace.log
+nexenStartupTraceCandidates=c:\Users\me\source\repos\Nexen\reference\trace-captures\2210_fix2_nexen_startup.log;C:\Users\me\source\repos\Nexen\reference\genesis_startup_trace.log;C:\Users\me\source\repos\Nexen\bin\win-x64\Release\reference\genesis_startup_trace.log
+nexenRefAttempts=attempt[0]=configured-args;trace=;startup=c:\Users\me\source\repos\Nexen\reference\trace-captures\2210_fix2_mesen_startup.log;exit=;timeout=True
+firstDiffIndex=1
+normalizedFirstDiffIndex=14701
+frameAgnosticFirstDiffIndex=65521
+startupFirstDiffIndex=1
+startupNormalizedFirstDiffIndex=1
+nexenRefFirstDiff=F0001 L006 WRAM addr=FFFFFC data=00 pc=000264 mclk=23940
+nexenFirstDiff=F0000 L006 WRAM addr=FFFFFC data=00 pc=000264 mclk=2932
+nexenRefNormalizedFirstDiff=F0000 WRAM addr=FFC690 data=00 pc=000264
+nexenNormalizedFirstDiff=F0001 WRAM addr=FFC690 data=00 pc=000264
+nexenRefFrameAgnosticFirstDiff=WRAM addr=FFFE00 data=00 pc=00034A
+nexenFrameAgnosticFirstDiff=WRAM addr=FF000C data=00 pc=000264
+frameAgnosticContextStart=65516
+frameAgnosticContextEnd=65526
+frameAgnosticContext[65516].ref=WRAM addr=FF0017 data=00 pc=000264
+frameAgnosticContext[65516].nexen=WRAM addr=FF0017 data=00 pc=000264
+frameAgnosticContext[65517].ref=WRAM addr=FF0010 data=00 pc=000264
+frameAgnosticContext[65517].nexen=WRAM addr=FF0010 data=00 pc=000264
+frameAgnosticContext[65518].ref=WRAM addr=FF0011 data=00 pc=000264
+frameAgnosticContext[65518].nexen=WRAM addr=FF0011 data=00 pc=000264
+frameAgnosticContext[65519].ref=WRAM addr=FF0012 data=00 pc=000264
+frameAgnosticContext[65519].nexen=WRAM addr=FF0012 data=00 pc=000264
+frameAgnosticContext[65520].ref=WRAM addr=FF0013 data=00 pc=000264
+frameAgnosticContext[65520].nexen=WRAM addr=FF0013 data=00 pc=000264
+frameAgnosticContext[65521].ref=WRAM addr=FFFE00 data=00 pc=00034A
+frameAgnosticContext[65521].nexen=WRAM addr=FF000C data=00 pc=000264
+frameAgnosticContext[65522].ref=WRAM addr=FFFE01 data=00 pc=00034A
+frameAgnosticContext[65522].nexen=WRAM addr=FF000D data=00 pc=000264
+frameAgnosticContext[65523].ref=WRAM addr=FFFE02 data=00 pc=00034A
+frameAgnosticContext[65523].nexen=WRAM addr=FF000E data=00 pc=000264
+frameAgnosticContext[65524].ref=WRAM addr=FFFE03 data=00 pc=00034A
+frameAgnosticContext[65524].nexen=WRAM addr=FF000F data=00 pc=000264
+frameAgnosticContext[65525].ref=WRAM addr=FFFE04 data=00 pc=00034A
+frameAgnosticContext[65525].nexen=WRAM addr=FF0008 data=00 pc=000264
+frameAgnosticContext[65526].ref=WRAM addr=FFFE05 data=00 pc=00034A
+frameAgnosticContext[65526].nexen=WRAM addr=FF0009 data=00 pc=000264
+nexenRefStartupFirstDiff=F0001 L000 STARTUP_PAL addr=C00000 data=8D07 aux=4 pc=000206 mclk=0
+nexenStartupFirstDiff=F0000 L000 VDP_CTRL_W addr=C00004 data=8004 aux=4 pc=000242 mclk=282
+nexenRefStartupNormalizedFirstDiff=F0001 L000 STARTUP_PAL addr=C00000 data=8D07 aux=4 pc=000206 mclk=0
+nexenStartupNormalizedFirstDiff=F0000 L000 VDP_REG_W addr=C00004 data=0004 aux=0 pc=000242 mclk=282
+nexenRefSnapshot_STARTUP_PAL=F0180 L261 STARTUP_PAL addr=C00000 data=7870 aux=116 pc=0029AC mclk=160391160
+nexenSnapshot_STARTUP_PAL=F0180 L261 STARTUP_PAL addr=C00000 data=539B aux=116 pc=071FC6 mclk=23141452
+nexenRefSnapshot_STARTUP_VDP=F0180 L261 STARTUP_VDP addr=C00004 data=360C aux=29700 pc=0029AC mclk=160391160
+nexenSnapshot_STARTUP_VDP=F0180 L261 STARTUP_VDP addr=C00004 data=368C aux=29700 pc=071FC6 mclk=23141452
+nexenRefSnapshot_VDP_REG_W=F0180 L228 VDP_REG_W addr=C00004 data=C040 aux=19 pc=0010D4 mclk=161170920
+nexenSnapshot_VDP_REG_W=<missing>
+nexenRefSnapshot_VDP_STAT_W=F0180 L001 VDP_STAT_W addr=C00004 data=3600 aux=12 pc=0029B0 mclk=160394580
+nexenSnapshot_VDP_STAT_W=F0180 L000 VDP_STAT_W addr=C00004 data=3680 aux=28 pc=071FC6 mclk=23014082
+nexenRefSnapshot_LOOP_POLL8=<missing>
+nexenSnapshot_LOOP_POLL8=<missing>
+nexenRefSnapshot_LOOP_POLL16=<missing>
+nexenSnapshot_LOOP_POLL16=F0180 L000 LOOP_POLL16 addr=071FC6 data=51C8 aux=8134 pc=071FC6 mclk=23014082
+nexenRefSnapshot_CPU_PRELOOP=<missing>
+nexenSnapshot_CPU_PRELOOP=<missing>
+nexenRefSnapshot_CPU_LOOP=<missing>
+nexenSnapshot_CPU_LOOP=F0180 L000 CPU_LOOP addr=071FC6 data=63D7 aux=4 pc=071FC4 mclk=23014096
+nexenRefLoopPoll16Count=0
+nexenLoopPoll16Count=58
+nexenRefLoopPoll16First=<missing>
+nexenLoopPoll16First=F0180 L000 LOOP_POLL16 addr=071FC6 data=51C8 aux=8134 pc=071FC6 mclk=23014082
+nexenRefLoopPoll16Last=<missing>
+nexenLoopPoll16Last=F0180 L001 LOOP_POLL16 addr=071FC6 data=51C8 aux=8134 pc=071FC6 mclk=23014576
+nexenRefCpuPreloopCount=0
+nexenCpuPreloopCount=0
+nexenRefCpuPreloopFirst=<missing>
+nexenCpuPreloopFirst=<missing>
+nexenRefCpuPreloopLast=<missing>
+nexenCpuPreloopLast=<missing>
+nexenRefCpuPreloopGlobalCount=0
+nexenCpuPreloopGlobalCount=7
+nexenRefCpuPreloopGlobalFirstFrame=-1
+nexenCpuPreloopGlobalFirstFrame=171
+nexenRefCpuPreloopGlobalLastFrame=-1
+nexenCpuPreloopGlobalLastFrame=171
+nexenRefCpuPreloopGlobalFirst=<missing>
+nexenCpuPreloopGlobalFirst=F0171 L227 CPU_PRELOOP addr=071F82 data=007F aux=9744 pc=071F86 mclk=21974554
+nexenRefCpuPreloopGlobalLast=<missing>
+nexenCpuPreloopGlobalLast=F0171 L228 CPU_PRELOOP addr=071F9C data=007F aux=9728 pc=071FAC mclk=21974648
+nexenRefCpuLoopCount=0
+nexenCpuLoopCount=38
+nexenRefCpuLoopFirst=<missing>
+nexenCpuLoopFirst=F0180 L000 CPU_LOOP addr=071FC6 data=63D7 aux=4 pc=071FC4 mclk=23014096
+nexenRefCpuLoopLast=<missing>
+nexenCpuLoopLast=F0180 L001 CPU_LOOP addr=071FC4 data=63C5 aux=4 pc=071FC6 mclk=23014572

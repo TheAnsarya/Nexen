@@ -7,15 +7,14 @@
 
 class GbApu;
 
-class GbSquareChannel final : public ISerializable
-{
+class GbSquareChannel final : public ISerializable {
 private:
 	static constexpr uint8_t _dutySequences[4][8] = {
-		{ 0, 0, 0, 0, 0, 0, 1, 0 },
-		{ 0, 0, 0, 0, 0, 0, 1, 1 },
-		{ 0, 0, 0, 0, 1, 1, 1, 1 },
-		{ 1, 1, 1, 1, 1, 1, 0, 0 }
-	};
+	    {0, 0, 0, 0, 0, 0, 1, 0},
+	    {0, 0, 0, 0, 0, 0, 1, 1},
+	    {0, 0, 0, 0, 1, 1, 1, 1},
+	    {1, 1, 1, 1, 1, 1, 0, 0}
+    };
 
 	GbSquareState _state = {};
 	GbChannelDac _dac = {};
@@ -31,7 +30,7 @@ public:
 	void Disable();
 	void ResetLengthCounter();
 
-	void ClockSweepUnit();	
+	void ClockSweepUnit();
 	uint16_t GetSweepTargetFrequency();
 
 	void ClockLengthCounter();

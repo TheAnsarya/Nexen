@@ -1,18 +1,13 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace Mesen.Views
-{
-	public class PceControllerView : UserControl
-	{
-		public PceControllerView()
-		{
-			InitializeComponent();
-		}
+namespace Nexen.Views; 
+public partial class PceControllerView : UserControl {
+	public PceControllerView() {
+		InitializeComponent();
+	}
 
-		private void InitializeComponent()
-		{
-			AvaloniaXamlLoader.Load(this);
-		}
+	private void InitializeComponent() {
+		AvaloniaXamlLoader.Load(this);
 	}
 }

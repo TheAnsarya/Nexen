@@ -2,16 +2,14 @@
 #include "PceCpu.h"
 #include "PCE/PceMemoryManager.h"
 
-void PceCpu::WriteMemoryModeValue(uint8_t value)
-{
+void PceCpu::WriteMemoryModeValue(uint8_t value) {
 	ClearFlags(PceCpuFlags::Zero | PceCpuFlags::Negative);
 	SetZeroNegativeFlags(value);
 	MemoryWrite(PceCpu::ZeroPage + X(), value);
 }
 
-void PceCpu::AND()
-{
-	if(_memoryFlag) {
+void PceCpu::AND() {
+	if (_memoryFlag) {
 		uint8_t op1 = GetOperandValue();
 		uint8_t op2 = MemoryRead(PceCpu::ZeroPage + X());
 		Idle();
@@ -21,9 +19,8 @@ void PceCpu::AND()
 	}
 }
 
-void PceCpu::EOR()
-{
-	if(_memoryFlag) {
+void PceCpu::EOR() {
+	if (_memoryFlag) {
 		uint8_t op1 = GetOperandValue();
 		uint8_t op2 = MemoryRead(PceCpu::ZeroPage + X());
 		Idle();
@@ -33,9 +30,8 @@ void PceCpu::EOR()
 	}
 }
 
-void PceCpu::ORA()
-{
-	if(_memoryFlag) {
+void PceCpu::ORA() {
+	if (_memoryFlag) {
 		uint8_t op1 = GetOperandValue();
 		uint8_t op2 = MemoryRead(PceCpu::ZeroPage + X());
 		Idle();
@@ -45,10 +41,9 @@ void PceCpu::ORA()
 	}
 }
 
-void PceCpu::ADD(uint8_t value)
-{
+void PceCpu::ADD(uint8_t value) {
 	uint8_t source;
-	if(_memoryFlag) {
+	if (_memoryFlag) {
 		source = MemoryRead(PceCpu::ZeroPage + X());
 		Idle();
 	} else {
@@ -56,21 +51,23 @@ void PceCpu::ADD(uint8_t value)
 	}
 
 	uint16_t result;
-	if(CheckFlag(PceCpuFlags::Decimal)) {
-		if(_memoryFlag) {
+	if (CheckFlag(PceCpuFlags::Decimal)) {
+		if (_memoryFlag) {
 			Idle();
 		} else {
 			DummyRead();
 		}
 
 		result = (uint16_t)(source & 0x0F) + (uint16_t)(value & 0x0F) + (_state.PS & PceCpuFlags::Carry);
-		if(result > 0x09) result += 0x06;
+		if (result > 0x09)
+			result += 0x06;
 		result = (uint16_t)(source & 0xF0) + (uint16_t)(value & 0xF0) + (result > 0x0F ? 0x10 : 0) + (result & 0x0F);
-		if(result > 0x9F) result += 0x60;
+		if (result > 0x9F)
+			result += 0x60;
 	} else {
 		result = (uint16_t)source + (uint16_t)value + (CheckFlag(PceCpuFlags::Carry) ? PceCpuFlags::Carry : 0x00);
-		
-		if(~(source ^ value) & (source ^ result) & 0x80) {
+
+		if (~(source ^ value) & (source ^ result) & 0x80) {
 			SetFlags(PceCpuFlags::Overflow);
 		} else {
 			ClearFlags(PceCpuFlags::Overflow);
@@ -80,35 +77,36 @@ void PceCpu::ADD(uint8_t value)
 	ClearFlags(PceCpuFlags::Carry | PceCpuFlags::Negative | PceCpuFlags::Zero);
 	SetZeroNegativeFlags((uint8_t)result);
 
-	if(result > 0xFF) {
+	if (result > 0xFF) {
 		SetFlags(PceCpuFlags::Carry);
 	}
 
-	if(_memoryFlag) {
+	if (_memoryFlag) {
 		WriteMemoryModeValue((uint8_t)result);
 	} else {
 		SetA((uint8_t)result);
 	}
 }
 
-void PceCpu::SUB(uint8_t value)
-{
+void PceCpu::SUB(uint8_t value) {
 	int32_t result;
-	if(CheckFlag(PceCpuFlags::Decimal)) {
-		if(_memoryFlag) {
+	if (CheckFlag(PceCpuFlags::Decimal)) {
+		if (_memoryFlag) {
 			Idle();
 		} else {
 			DummyRead();
 		}
 
 		result = (A() & 0x0F) + (value & 0x0F) + (_state.PS & PceCpuFlags::Carry);
-		if(result <= 0x0F) result -= 0x06;
+		if (result <= 0x0F)
+			result -= 0x06;
 		result = (A() & 0xF0) + (value & 0xF0) + (result > 0x0F ? 0x10 : 0) + (result & 0x0F);
-		if(result <= 0xFF) result -= 0x60;
+		if (result <= 0xFF)
+			result -= 0x60;
 	} else {
 		result = (uint16_t)A() + (uint16_t)value + (_state.PS & PceCpuFlags::Carry);
 
-		if(~(A() ^ value) & (A() ^ result) & 0x80) {
+		if (~(A() ^ value) & (A() ^ result) & 0x80) {
 			SetFlags(PceCpuFlags::Overflow);
 		} else {
 			ClearFlags(PceCpuFlags::Overflow);
@@ -118,46 +116,45 @@ void PceCpu::SUB(uint8_t value)
 	ClearFlags(PceCpuFlags::Carry | PceCpuFlags::Negative | PceCpuFlags::Zero);
 	SetZeroNegativeFlags((uint8_t)result);
 
-	if(result > 0xFF) {
+	if (result > 0xFF) {
 		SetFlags(PceCpuFlags::Carry);
 	}
 
 	SetA((uint8_t)result);
 }
 
-void PceCpu::ADC()
-{
+void PceCpu::ADC() {
 	ADD(GetOperandValue());
 }
 
-void PceCpu::SBC()
-{
+void PceCpu::SBC() {
 	SUB(~GetOperandValue());
 }
 
-void PceCpu::CMP(uint8_t reg, uint8_t value)
-{
+void PceCpu::CMP(uint8_t reg, uint8_t value) {
 	ClearFlags(PceCpuFlags::Carry | PceCpuFlags::Negative | PceCpuFlags::Zero);
 
 	auto result = reg - value;
 
-	if(reg >= value) {
-		SetFlags(PceCpuFlags::Carry);
-	}
-	if(reg == value) {
-		SetFlags(PceCpuFlags::Zero);
-	}
-	if((result & 0x80) == 0x80) {
-		SetFlags(PceCpuFlags::Negative);
-	}
+	// Branchless: Carry=0x01 maps directly to bool(reg >= value)
+	_state.PS |= static_cast<uint8_t>(reg >= value);
+	// Branchless: Zero=0x02, shift bool left by 1
+	_state.PS |= static_cast<uint8_t>(reg == value) << 1;
+	// Branchless: Negative=0x80 maps directly to result bit 7
+	_state.PS |= (result & PceCpuFlags::Negative);
 }
 
-void PceCpu::CPA() { CMP(A(), GetOperandValue()); }
-void PceCpu::CPX() { CMP(X(), GetOperandValue()); }
-void PceCpu::CPY() { CMP(Y(), GetOperandValue()); }
+void PceCpu::CPA() {
+	CMP(A(), GetOperandValue());
+}
+void PceCpu::CPX() {
+	CMP(X(), GetOperandValue());
+}
+void PceCpu::CPY() {
+	CMP(Y(), GetOperandValue());
+}
 
-void PceCpu::INC()
-{
+void PceCpu::INC() {
 	uint16_t addr = GetOperand();
 	ClearFlags(PceCpuFlags::Negative | PceCpuFlags::Zero);
 	uint8_t value = MemoryRead(addr);
@@ -169,8 +166,7 @@ void PceCpu::INC()
 	MemoryWrite(addr, value);
 }
 
-void PceCpu::DEC()
-{
+void PceCpu::DEC() {
 	uint16_t addr = GetOperand();
 	ClearFlags(PceCpuFlags::Negative | PceCpuFlags::Zero);
 	uint8_t value = MemoryRead(addr);
@@ -182,93 +178,80 @@ void PceCpu::DEC()
 	MemoryWrite(addr, value);
 }
 
-uint8_t PceCpu::ASL(uint8_t value)
-{
+uint8_t PceCpu::ASL(uint8_t value) {
 	ClearFlags(PceCpuFlags::Carry | PceCpuFlags::Negative | PceCpuFlags::Zero);
-	if(value & 0x80) {
-		SetFlags(PceCpuFlags::Carry);
-	}
+	// Branchless: bit 7 → Carry (bit 0)
+	_state.PS |= (value >> 7);
 
 	uint8_t result = value << 1;
 	SetZeroNegativeFlags(result);
 	return result;
 }
 
-uint8_t PceCpu::LSR(uint8_t value)
-{
+uint8_t PceCpu::LSR(uint8_t value) {
 	ClearFlags(PceCpuFlags::Carry | PceCpuFlags::Negative | PceCpuFlags::Zero);
-	if(value & 0x01) {
-		SetFlags(PceCpuFlags::Carry);
-	}
+	// Branchless: bit 0 maps directly to Carry (bit 0)
+	_state.PS |= (value & PceCpuFlags::Carry);
 
 	uint8_t result = value >> 1;
 	SetZeroNegativeFlags(result);
 	return result;
 }
 
-uint8_t PceCpu::ROL(uint8_t value)
-{
+uint8_t PceCpu::ROL(uint8_t value) {
 	bool carryFlag = CheckFlag(PceCpuFlags::Carry);
 	ClearFlags(PceCpuFlags::Carry | PceCpuFlags::Negative | PceCpuFlags::Zero);
 
-	if(value & 0x80) {
-		SetFlags(PceCpuFlags::Carry);
-	}
+	// Branchless: bit 7 → Carry (bit 0)
+	_state.PS |= (value >> 7);
 
-	uint8_t result = (value << 1 | (carryFlag ? 0x01 : 0x00));
+	uint8_t result = (value << 1 | static_cast<uint8_t>(carryFlag));
 	SetZeroNegativeFlags(result);
 	return result;
 }
 
-uint8_t PceCpu::ROR(uint8_t value)
-{
+uint8_t PceCpu::ROR(uint8_t value) {
 	bool carryFlag = CheckFlag(PceCpuFlags::Carry);
 	ClearFlags(PceCpuFlags::Carry | PceCpuFlags::Negative | PceCpuFlags::Zero);
-	if(value & 0x01) {
-		SetFlags(PceCpuFlags::Carry);
-	}
+	// Branchless: bit 0 maps directly to Carry (bit 0)
+	_state.PS |= (value & PceCpuFlags::Carry);
 
-	uint8_t result = (value >> 1 | (carryFlag ? 0x80 : 0x00));
+	uint8_t result = (value >> 1 | (static_cast<uint8_t>(carryFlag) << 7));
 	SetZeroNegativeFlags(result);
 	return result;
 }
 
-void PceCpu::ASLAddr()
-{
+void PceCpu::ASLAddr() {
 	uint16_t addr = GetOperand();
 	uint8_t value = MemoryRead(addr);
 	Idle();
 	MemoryWrite(addr, ASL(value));
 }
 
-void PceCpu::LSRAddr()
-{
+void PceCpu::LSRAddr() {
 	uint16_t addr = GetOperand();
 	uint8_t value = MemoryRead(addr);
 	Idle();
 	MemoryWrite(addr, LSR(value));
 }
 
-void PceCpu::ROLAddr()
-{
+void PceCpu::ROLAddr() {
 	uint16_t addr = GetOperand();
 	uint8_t value = MemoryRead(addr);
 	Idle();
 	MemoryWrite(addr, ROL(value));
 }
 
-void PceCpu::RORAddr()
-{
+void PceCpu::RORAddr() {
 	uint16_t addr = GetOperand();
 	uint8_t value = MemoryRead(addr);
 	Idle();
 	MemoryWrite(addr, ROR(value));
 }
 
-void PceCpu::BranchRelative(bool branch)
-{
+void PceCpu::BranchRelative(bool branch) {
 	int8_t offset = (int8_t)GetOperand();
-	if(branch) {
+	if (branch) {
 		DummyRead();
 		Idle();
 
@@ -276,196 +259,221 @@ void PceCpu::BranchRelative(bool branch)
 	}
 }
 
-void PceCpu::BIT()
-{
+void PceCpu::BIT() {
 	uint8_t value = GetOperandValue();
 	ClearFlags(PceCpuFlags::Zero | PceCpuFlags::Overflow | PceCpuFlags::Negative);
-	if((A() & value) == 0) {
-		SetFlags(PceCpuFlags::Zero);
-	}
-	if(value & 0x40) {
-		SetFlags(PceCpuFlags::Overflow);
-	}
-	if(value & 0x80) {
-		SetFlags(PceCpuFlags::Negative);
-	}
+	// Branchless: Zero=0x02, shift bool left by 1
+	_state.PS |= static_cast<uint8_t>((A() & value) == 0) << 1;
+	// Branchless: Overflow=0x40 and Negative=0x80 map directly to value bits
+	_state.PS |= (value & (PceCpuFlags::Overflow | PceCpuFlags::Negative));
 }
 
-void PceCpu::TSB()
-{
+void PceCpu::TSB() {
 	uint8_t value = MemoryRead(_operand);
 
 	ClearFlags(PceCpuFlags::Zero | PceCpuFlags::Overflow | PceCpuFlags::Negative);
-	if(value & 0x40) {
-		SetFlags(PceCpuFlags::Overflow);
-	}
-	if(value & 0x80) {
-		SetFlags(PceCpuFlags::Negative);
-	}
+	// Branchless: Overflow=0x40 and Negative=0x80 from original value
+	_state.PS |= (value & (PceCpuFlags::Overflow | PceCpuFlags::Negative));
 
 	value |= A();
-	if(value == 0) {
-		SetFlags(PceCpuFlags::Zero);
-	}
+	// Branchless: Zero=0x02 from result after OR
+	_state.PS |= static_cast<uint8_t>(value == 0) << 1;
 
 	Idle();
 	MemoryWrite(_operand, value);
 }
 
-void PceCpu::TRB()
-{
+void PceCpu::TRB() {
 	uint8_t value = MemoryRead(_operand);
 
 	ClearFlags(PceCpuFlags::Zero | PceCpuFlags::Overflow | PceCpuFlags::Negative);
-	if(value & 0x40) {
-		SetFlags(PceCpuFlags::Overflow);
-	}
-	if(value & 0x80) {
-		SetFlags(PceCpuFlags::Negative);
-	}
+	// Branchless: Overflow=0x40 and Negative=0x80 from original value
+	_state.PS |= (value & (PceCpuFlags::Overflow | PceCpuFlags::Negative));
 
 	value &= ~A();
-	if(value == 0) {
-		SetFlags(PceCpuFlags::Zero);
-	}
+	// Branchless: Zero=0x02 from result after AND-NOT
+	_state.PS |= static_cast<uint8_t>(value == 0) << 1;
 
 	Idle();
 	MemoryWrite(_operand, value);
 }
 
-void PceCpu::TST()
-{
+void PceCpu::TST() {
 	Idle();
 	uint8_t value = MemoryRead(_operand2);
 	Idle();
 
 	ClearFlags(PceCpuFlags::Zero | PceCpuFlags::Overflow | PceCpuFlags::Negative);
-	if(value & 0x40) {
-		SetFlags(PceCpuFlags::Overflow);
-	}
-	if(value & 0x80) {
-		SetFlags(PceCpuFlags::Negative);
-	}
+	// Branchless: Overflow=0x40 and Negative=0x80 from original value
+	_state.PS |= (value & (PceCpuFlags::Overflow | PceCpuFlags::Negative));
 
 	value &= _operand;
 
-	if(value == 0) {
-		SetFlags(PceCpuFlags::Zero);
-	}
+	// Branchless: Zero=0x02 from result after AND
+	_state.PS |= static_cast<uint8_t>(value == 0) << 1;
 }
 
-void PceCpu::CSL()
-{
+void PceCpu::CSL() {
 #ifndef DUMMYCPU
 	_memoryManager->SetSpeed(true);
 #endif
 
-	//CSH/CSL take 3 cycles, last idle cycle is after the speed change takes effect
+	// CSH/CSL take 3 cycles, last idle cycle is after the speed change takes effect
 	Idle();
 }
 
-void PceCpu::CSH()
-{
+void PceCpu::CSH() {
 #ifndef DUMMYCPU
 	_memoryManager->SetSpeed(false);
 #endif
 
-	//CSH/CSL take 3 cycles, last idle cycle is after the speed change takes effect
+	// CSH/CSL take 3 cycles, last idle cycle is after the speed change takes effect
 	Idle();
 }
 
-//OP Codes
-void PceCpu::LDA() { SetA(GetOperandValue()); }
-void PceCpu::LDX() { SetX(GetOperandValue()); }
-void PceCpu::LDY() { SetY(GetOperandValue()); }
+// OP Codes
+void PceCpu::LDA() {
+	SetA(GetOperandValue());
+}
+void PceCpu::LDX() {
+	SetX(GetOperandValue());
+}
+void PceCpu::LDY() {
+	SetY(GetOperandValue());
+}
 
-void PceCpu::STA() { MemoryWrite(GetOperand(), A()); }
-void PceCpu::STX() { MemoryWrite(GetOperand(), X()); }
-void PceCpu::STY() { MemoryWrite(GetOperand(), Y()); }
-void PceCpu::STZ() { MemoryWrite(GetOperand(), 0); }
+void PceCpu::STA() {
+	MemoryWrite(GetOperand(), A());
+}
+void PceCpu::STX() {
+	MemoryWrite(GetOperand(), X());
+}
+void PceCpu::STY() {
+	MemoryWrite(GetOperand(), Y());
+}
+void PceCpu::STZ() {
+	MemoryWrite(GetOperand(), 0);
+}
 
-void PceCpu::TAX() { SetX(A()); }
-void PceCpu::TAY() { SetY(A()); }
-void PceCpu::TSX() { SetX(SP()); }
-void PceCpu::TXA() { SetA(X()); }
-void PceCpu::TXS() { SetSP(X()); }
-void PceCpu::TYA() { SetA(Y()); }
+void PceCpu::TAX() {
+	SetX(A());
+}
+void PceCpu::TAY() {
+	SetY(A());
+}
+void PceCpu::TSX() {
+	SetX(SP());
+}
+void PceCpu::TXA() {
+	SetA(X());
+}
+void PceCpu::TXS() {
+	SetSP(X());
+}
+void PceCpu::TYA() {
+	SetA(Y());
+}
 
-void PceCpu::PHA() { Push(A()); }
-void PceCpu::PHX() { Push(X()); }
-void PceCpu::PHY() { Push(Y()); }
+void PceCpu::PHA() {
+	Push(A());
+}
+void PceCpu::PHX() {
+	Push(X());
+}
+void PceCpu::PHY() {
+	Push(Y());
+}
 
-void PceCpu::PHP()
-{
+void PceCpu::PHP() {
 	uint8_t flags = PS() | PceCpuFlags::Break;
 	Push((uint8_t)flags);
 }
 
-void PceCpu::PLA()
-{
+void PceCpu::PLA() {
 	Idle();
 	SetA(Pop());
 }
 
-void PceCpu::PLP()
-{
+void PceCpu::PLP() {
 	Idle();
 	SetPS(Pop());
 }
 
-void PceCpu::PLX()
-{
+void PceCpu::PLX() {
 	Idle();
 	SetX(Pop());
 }
 
-void PceCpu::PLY()
-{
+void PceCpu::PLY() {
 	Idle();
 	SetY(Pop());
 }
 
-void PceCpu::INC_Acc() { SetA(A() + 1); }
-void PceCpu::INX() { SetX(X() + 1); }
-void PceCpu::INY() { SetY(Y() + 1); }
+void PceCpu::INC_Acc() {
+	SetA(A() + 1);
+}
+void PceCpu::INX() {
+	SetX(X() + 1);
+}
+void PceCpu::INY() {
+	SetY(Y() + 1);
+}
 
-void PceCpu::DEC_Acc() { SetA(A() - 1); }
-void PceCpu::DEX() { SetX(X() - 1); }
-void PceCpu::DEY() { SetY(Y() - 1); }
+void PceCpu::DEC_Acc() {
+	SetA(A() - 1);
+}
+void PceCpu::DEX() {
+	SetX(X() - 1);
+}
+void PceCpu::DEY() {
+	SetY(Y() - 1);
+}
 
-void PceCpu::ASL_Acc() { SetA(ASL(A())); }
-void PceCpu::ASL_Memory() { ASLAddr(); }
+void PceCpu::ASL_Acc() {
+	SetA(ASL(A()));
+}
+void PceCpu::ASL_Memory() {
+	ASLAddr();
+}
 
-void PceCpu::LSR_Acc() { SetA(LSR(A())); }
-void PceCpu::LSR_Memory() { LSRAddr(); }
+void PceCpu::LSR_Acc() {
+	SetA(LSR(A()));
+}
+void PceCpu::LSR_Memory() {
+	LSRAddr();
+}
 
-void PceCpu::ROL_Acc() { SetA(ROL(A())); }
-void PceCpu::ROL_Memory() { ROLAddr(); }
+void PceCpu::ROL_Acc() {
+	SetA(ROL(A()));
+}
+void PceCpu::ROL_Memory() {
+	ROLAddr();
+}
 
-void PceCpu::ROR_Acc() { SetA(ROR(A())); }
-void PceCpu::ROR_Memory() { RORAddr(); }
+void PceCpu::ROR_Acc() {
+	SetA(ROR(A()));
+}
+void PceCpu::ROR_Memory() {
+	RORAddr();
+}
 
-void PceCpu::JMP_Abs()
-{
+void PceCpu::JMP_Abs() {
 	SetPC(GetOperand());
 }
 
-void PceCpu::JMP_Ind()
-{
-	//Unlike the 6502 CPU, this CPU works normally when crossing a page during indirect jumps
+void PceCpu::JMP_Ind() {
+	// Unlike the 6502 CPU, this CPU works normally when crossing a page during indirect jumps
 	Idle();
 	SetPC(MemoryReadWord(_operand));
 	Idle();
 }
 
-void PceCpu::JMP_AbsX()
-{
+void PceCpu::JMP_AbsX() {
 	SetPC(MemoryReadWord(_operand));
 	Idle();
 }
 
-void PceCpu::JSR()
-{
+void PceCpu::JSR() {
 	uint8_t lo = ReadByte();
 	Idle();
 	Push(PC());
@@ -474,8 +482,7 @@ void PceCpu::JSR()
 	SetPC(addr);
 }
 
-void PceCpu::RTS()
-{
+void PceCpu::RTS() {
 	Idle();
 	uint16_t addr = PopWord();
 	Idle();
@@ -483,75 +490,79 @@ void PceCpu::RTS()
 	SetPC(addr + 1);
 }
 
-void PceCpu::BCC()
-{
+void PceCpu::BCC() {
 	BranchRelative(!CheckFlag(PceCpuFlags::Carry));
 }
 
-void PceCpu::BCS()
-{
+void PceCpu::BCS() {
 	BranchRelative(CheckFlag(PceCpuFlags::Carry));
 }
 
-void PceCpu::BEQ()
-{
+void PceCpu::BEQ() {
 	BranchRelative(CheckFlag(PceCpuFlags::Zero));
 }
 
-void PceCpu::BMI()
-{
+void PceCpu::BMI() {
 	BranchRelative(CheckFlag(PceCpuFlags::Negative));
 }
 
-void PceCpu::BNE()
-{
+void PceCpu::BNE() {
 	BranchRelative(!CheckFlag(PceCpuFlags::Zero));
 }
 
-void PceCpu::BPL()
-{
+void PceCpu::BPL() {
 	BranchRelative(!CheckFlag(PceCpuFlags::Negative));
 }
 
-void PceCpu::BVC()
-{
+void PceCpu::BVC() {
 	BranchRelative(!CheckFlag(PceCpuFlags::Overflow));
 }
 
-void PceCpu::BVS()
-{
+void PceCpu::BVS() {
 	BranchRelative(CheckFlag(PceCpuFlags::Overflow));
 }
 
-void PceCpu::CLC() { ClearFlags(PceCpuFlags::Carry); }
-void PceCpu::CLD() { ClearFlags(PceCpuFlags::Decimal); }
-void PceCpu::CLI() { ClearFlags(PceCpuFlags::Interrupt); }
-void PceCpu::CLV() { ClearFlags(PceCpuFlags::Overflow); }
-void PceCpu::SEC() { SetFlags(PceCpuFlags::Carry); }
-void PceCpu::SED() { SetFlags(PceCpuFlags::Decimal); }
-void PceCpu::SEI() { SetFlags(PceCpuFlags::Interrupt); }
-void PceCpu::SET() { SetFlags(PceCpuFlags::Memory); }
+void PceCpu::CLC() {
+	ClearFlags(PceCpuFlags::Carry);
+}
+void PceCpu::CLD() {
+	ClearFlags(PceCpuFlags::Decimal);
+}
+void PceCpu::CLI() {
+	ClearFlags(PceCpuFlags::Interrupt);
+}
+void PceCpu::CLV() {
+	ClearFlags(PceCpuFlags::Overflow);
+}
+void PceCpu::SEC() {
+	SetFlags(PceCpuFlags::Carry);
+}
+void PceCpu::SED() {
+	SetFlags(PceCpuFlags::Decimal);
+}
+void PceCpu::SEI() {
+	SetFlags(PceCpuFlags::Interrupt);
+}
+void PceCpu::SET() {
+	SetFlags(PceCpuFlags::Memory);
+}
 
-void PceCpu::BRK()
-{
+void PceCpu::BRK() {
 	ProcessIrq(true);
 }
 
-void PceCpu::RTI()
-{
+void PceCpu::RTI() {
 	Idle();
 	SetPS(Pop());
 	SetPC(PopWord());
 	Idle();
 }
 
-void PceCpu::NOP()
-{
-	//NOP
+void PceCpu::NOP() {
+	// NOP
 }
 
-void PceCpu::BSR()
-{
+void PceCpu::BSR() {
 	int8_t relAddr = (int8_t)GetOperand();
 	Idle();
 	Push((uint16_t)(PC() - 1));
@@ -561,76 +572,65 @@ void PceCpu::BSR()
 	SetPC(PC() + relAddr);
 }
 
-void PceCpu::BRA()
-{
+void PceCpu::BRA() {
 	int8_t offset = (int8_t)GetOperand();
 	Idle();
 	Idle();
 	SetPC(PC() + offset);
 }
 
-void PceCpu::SXY()
-{
+void PceCpu::SXY() {
 	Idle();
 	std::swap(_state.X, _state.Y);
 }
 
-void PceCpu::SAX()
-{
+void PceCpu::SAX() {
 	Idle();
 	std::swap(_state.A, _state.X);
 }
 
-void PceCpu::SAY()
-{
+void PceCpu::SAY() {
 	Idle();
 	std::swap(_state.A, _state.Y);
 }
 
-void PceCpu::CLA()
-{
+void PceCpu::CLA() {
 	_state.A = 0;
 }
 
-void PceCpu::CLX()
-{
+void PceCpu::CLX() {
 	_state.X = 0;
 }
 
-void PceCpu::CLY()
-{
+void PceCpu::CLY() {
 	_state.Y = 0;
 }
 
-void PceCpu::ST0()
-{
+void PceCpu::ST0() {
 #ifndef DUMMYCPU
 	Idle();
-	ProcessCpuCycle(); //1 write cycle
+	ProcessCpuCycle(); // 1 write cycle
 	_memoryManager->WriteVdc(0, _operand);
 #endif
 }
 
-void PceCpu::ST1()
-{
+void PceCpu::ST1() {
 #ifndef DUMMYCPU
 	Idle();
-	ProcessCpuCycle(); //1 write cycle
+	ProcessCpuCycle(); // 1 write cycle
 	_memoryManager->WriteVdc(2, _operand);
 #endif
 }
 
-void PceCpu::ST2()
-{
+void PceCpu::ST2() {
 #ifndef DUMMYCPU
 	Idle();
-	ProcessCpuCycle(); //1 write cycle
+	ProcessCpuCycle(); // 1 write cycle
 	_memoryManager->WriteVdc(3, _operand);
 #endif
 }
 
-void PceCpu::TMA()
-{
+void PceCpu::TMA() {
 	Idle();
 	Idle();
 #ifndef DUMMYCPU
@@ -638,8 +638,7 @@ void PceCpu::TMA()
 #endif
 }
 
-void PceCpu::TAM()
-{
+void PceCpu::TAM() {
 	Idle();
 	Idle();
 	Idle();
@@ -648,8 +647,7 @@ void PceCpu::TAM()
 #endif
 }
 
-void PceCpu::StartBlockTransfer()
-{
+void PceCpu::StartBlockTransfer() {
 	DummyRead();
 	Idle();
 
@@ -664,16 +662,14 @@ void PceCpu::StartBlockTransfer()
 	Idle();
 }
 
-void PceCpu::EndBlockTransfer()
-{
+void PceCpu::EndBlockTransfer() {
 	Idle();
 	_state.X = Pop();
 	_state.A = Pop();
 	_state.Y = Pop();
 }
 
-void PceCpu::TAI()
-{
+void PceCpu::TAI() {
 	StartBlockTransfer();
 
 	uint16_t src = _operand;
@@ -695,13 +691,12 @@ void PceCpu::TAI()
 
 		count++;
 		length--;
-	} while(length);
+	} while (length);
 
 	EndBlockTransfer();
 }
 
-void PceCpu::TDD()
-{
+void PceCpu::TDD() {
 	StartBlockTransfer();
 
 	uint16_t src = _operand;
@@ -721,13 +716,12 @@ void PceCpu::TDD()
 		dst--;
 
 		length--;
-	} while(length);
+	} while (length);
 
 	EndBlockTransfer();
 }
 
-void PceCpu::TIA()
-{
+void PceCpu::TIA() {
 	StartBlockTransfer();
 
 	uint16_t src = _operand;
@@ -749,13 +743,12 @@ void PceCpu::TIA()
 
 		count++;
 		length--;
-	} while(length);
+	} while (length);
 
 	EndBlockTransfer();
 }
 
-void PceCpu::TII()
-{
+void PceCpu::TII() {
 	StartBlockTransfer();
 
 	uint16_t src = _operand;
@@ -775,13 +768,12 @@ void PceCpu::TII()
 		dst++;
 
 		length--;
-	} while(length);
+	} while (length);
 
 	EndBlockTransfer();
 }
 
-void PceCpu::TIN()
-{
+void PceCpu::TIN() {
 	StartBlockTransfer();
 
 	uint16_t src = _operand;
@@ -800,43 +792,40 @@ void PceCpu::TIN()
 		src++;
 
 		length--;
-	} while(length);
+	} while (length);
 
 	EndBlockTransfer();
 }
 
-void PceCpu::BBR(uint8_t bit)
-{
+void PceCpu::BBR(uint8_t bit) {
 	uint8_t addr = ReadByte();
 	Idle();
 	int8_t offset = (int8_t)ReadByte();
 	Idle();
 
 	uint8_t value = MemoryRead(PceCpu::ZeroPage + addr);
-	if((value & (1 << bit)) == 0) {
+	if ((value & (1 << bit)) == 0) {
 		Idle();
 		Idle();
 		SetPC(PC() + offset);
 	}
 }
 
-void PceCpu::BBS(uint8_t bit)
-{
+void PceCpu::BBS(uint8_t bit) {
 	uint8_t addr = ReadByte();
 	Idle();
 	int8_t offset = (int8_t)ReadByte();
 	Idle();
 
 	uint8_t value = MemoryRead(PceCpu::ZeroPage + addr);
-	if((value & (1 << bit)) != 0) {
+	if ((value & (1 << bit)) != 0) {
 		Idle();
 		Idle();
 		SetPC(PC() + offset);
 	}
 }
 
-void PceCpu::RMB(uint8_t bit)
-{
+void PceCpu::RMB(uint8_t bit) {
 	uint8_t value = MemoryRead(_operand);
 	value &= ~(1 << bit);
 	Idle();
@@ -844,8 +833,7 @@ void PceCpu::RMB(uint8_t bit)
 	MemoryWrite(_operand, value);
 }
 
-void PceCpu::SMB(uint8_t bit)
-{
+void PceCpu::SMB(uint8_t bit) {
 	uint8_t value = MemoryRead(_operand);
 	value |= (1 << bit);
 	Idle();

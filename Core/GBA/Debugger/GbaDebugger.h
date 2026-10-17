@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "Debugger/DebugTypes.h"
 #include "Debugger/IDebugger.h"
@@ -23,8 +23,7 @@ class DummyGbaCpu;
 
 enum class MemoryOperationType;
 
-class GbaDebugger final : public IDebugger
-{
+class GbaDebugger final : public IDebugger {
 	Debugger* _debugger;
 	Emulator* _emu;
 	GbaCpu* _cpu;
@@ -51,7 +50,8 @@ class GbaDebugger final : public IDebugger
 	string _cdlFile;
 
 	__forceinline void ProcessCallStackUpdates(AddressInfo& destAddr, uint32_t destPc);
-	template<uint8_t accessWidth> void ProcessInstruction();
+	template <uint8_t accessWidth>
+	void ProcessInstruction();
 
 public:
 	GbaDebugger(Debugger* debugger);
@@ -61,8 +61,10 @@ public:
 	void Reset() override;
 
 	void ProcessInstruction();
-	template<uint8_t accessWidth> void ProcessRead(uint32_t addr, uint32_t value, MemoryOperationType type);
-	template<uint8_t accessWidth> void ProcessWrite(uint32_t addr, uint32_t value, MemoryOperationType type);
+	template <uint8_t accessWidth>
+	void ProcessRead(uint32_t addr, uint32_t value, MemoryOperationType type);
+	template <uint8_t accessWidth>
+	void ProcessWrite(uint32_t addr, uint32_t value, MemoryOperationType type);
 
 	void ProcessInterrupt(uint32_t originalPc, uint32_t currentPc, bool forNmi) override;
 	void ProcessPpuCycle();
@@ -73,7 +75,7 @@ public:
 
 	void DrawPartialFrame() override;
 
-	bool SaveRomToDisk(string filename, bool saveAsIps, CdlStripOption stripOption);
+	bool SaveRomToDisk(const string& filename, bool saveAsIps, CdlStripOption stripOption) override;
 
 	void ProcessInputOverrides(DebugControllerState inputOverrides[8]) override;
 

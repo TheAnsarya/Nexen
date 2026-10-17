@@ -1,18 +1,18 @@
-<UserControl
+﻿<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="250" d:DesignHeight="50"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="dvm:QuickSearchViewModel"
-	x:Class="Mesen.Debugger.Views.QuickSearchView"
+	x:Class="Nexen.Debugger.Views.QuickSearchView"
 >
 	<Design.DataContext>
 		<dvm:QuickSearchViewModel />
@@ -24,18 +24,18 @@
 		</Style>
 	</UserControl.Styles>
 
-	<Border 
+	<Border
 		IsVisible="{Binding IsSearchBoxVisible}"
-		BorderBrush="{DynamicResource MesenGrayBorderColor}"
+		BorderBrush="{DynamicResource NexenGrayBorderColor}"
 		BorderThickness="1"
 		Background="{DynamicResource ThemeBackgroundBrush}"
-		Padding="2 1"
+		Padding="6 4"
 	>
 		<DockPanel>
 			<TextBlock Text="{l:Translate lblSearch}" VerticalAlignment="Center" />
 			<TextBox
 				Name="txtSearch"
-				Width="120"
+				Width="160"
 				Text="{Binding SearchString, Converter={StaticResource NullTextConverter}}"
 				Classes.highlight="{Binding IsErrorVisible}"
 		  />

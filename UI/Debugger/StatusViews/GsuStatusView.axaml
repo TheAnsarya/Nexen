@@ -3,14 +3,14 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:du="using:Mesen.Debugger.Utilities"
-	xmlns:vm="using:Mesen.Debugger.StatusViews"
-	xmlns:c="using:Mesen.Controls"
+	xmlns:du="using:Nexen.Debugger.Utilities"
+	xmlns:vm="using:Nexen.Debugger.StatusViews"
+	xmlns:c="using:Nexen.Controls"
 	mc:Ignorable="d" d:DesignWidth="350"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:GsuStatusViewModel"
-	x:Class="Mesen.Debugger.StatusViews.GsuStatusView"
+	x:Class="Nexen.Debugger.StatusViews.GsuStatusView"
 >
 	<Design.DataContext>
 		<vm:GsuStatusViewModel />
@@ -35,112 +35,112 @@
 					
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R0:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg0}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg0}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R1:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg1}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg1}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R2:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg2}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg2}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R3:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg3}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg3}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R4:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg4}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg4}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R5:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg5}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg5}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R6:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg6}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg6}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R7:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg7}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg7}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R8:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg8}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg8}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R9:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg9}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg9}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R10:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg10}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg10}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R11:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg11}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg11}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R12:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg12}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg12}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R13:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg13}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg13}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R14:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg14}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg14}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>R15:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding Reg15}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding Reg15}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 				</WrapPanel>
 
-				<Rectangle Stroke="{StaticResource MesenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" />
+				<Rectangle Stroke="{StaticResource NexenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" />
 
 				<WrapPanel Margin="0 5">
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>SRC:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RegSrc}" Hex="True" Max="0xFF" />
+						<c:NexenNumericTextBox Value="{Binding RegSrc}" Hex="True" Max="0xFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>DST:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RegDst}" Hex="True" Max="0xFF" />
+						<c:NexenNumericTextBox Value="{Binding RegDst}" Hex="True" Max="0xFF" />
 					</StackPanel>
 				</WrapPanel>
 				
 				<WrapPanel Margin="0 5">
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>PBR:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RegPbr}" Hex="True" Max="0xFF" />
+						<c:NexenNumericTextBox Value="{Binding RegPbr}" Hex="True" Max="0xFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>ROMBR:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RomBank}" Hex="True" Max="0xFF" />
+						<c:NexenNumericTextBox Value="{Binding RomBank}" Hex="True" Max="0xFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>RAMBR:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RamBank}" Hex="True" Max="0xFF" />
+						<c:NexenNumericTextBox Value="{Binding RamBank}" Hex="True" Max="0xFF" />
 					</StackPanel>
 				</WrapPanel>
 				<WrapPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>RAM ADDR:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RamAddrCache}" Hex="True" Max="0xFFFF" />
+						<c:NexenNumericTextBox Value="{Binding RamAddrCache}" Hex="True" Max="0xFFFF" />
 					</StackPanel>
 				</WrapPanel>
-				<Rectangle Stroke="{StaticResource MesenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" />
+				<Rectangle Stroke="{StaticResource NexenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" />
 
 				<WrapPanel Margin="0 2 0 0" DockPanel.Dock="Top">
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>SFR:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RegSfr}" Hex="True" Max="0xFFFF" IsEnabled="False" />
+						<c:NexenNumericTextBox Value="{Binding RegSfr}" Hex="True" Max="0xFFFF" IsEnabled="False" />
 					</StackPanel>
 					<WrapPanel>
 						<StackPanel>
@@ -169,15 +169,15 @@
 						</StackPanel>
 					</WrapPanel>
 				</WrapPanel>
-				<Rectangle Stroke="{StaticResource MesenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" />
+				<Rectangle Stroke="{StaticResource NexenGrayBorderColor}" StrokeThickness="1" Margin="5 5 5 2" />
 				<WrapPanel Margin="0 2 0 0" DockPanel.Dock="Top">
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>COLOR:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RegColor}" Hex="True" Max="0xFF" />
+						<c:NexenNumericTextBox Value="{Binding RegColor}" Hex="True" Max="0xFF" />
 					</StackPanel>
 					<StackPanel Orientation="Horizontal">
 						<TextBlock>POR:</TextBlock>
-						<c:MesenNumericTextBox Value="{Binding RegPor}" Hex="True" Max="0xFF" IsEnabled="False" />
+						<c:NexenNumericTextBox Value="{Binding RegPor}" Hex="True" Max="0xFF" IsEnabled="False" />
 					</StackPanel>
 					<WrapPanel>
 						<StackPanel>

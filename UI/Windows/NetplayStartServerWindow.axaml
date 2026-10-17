@@ -2,15 +2,15 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:i="using:Mesen.Interop"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:i="using:Nexen.Interop"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:l="using:Nexen.Localization"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d" d:DesignWidth="250" d:DesignHeight="150"
-	x:Class="Mesen.Windows.NetplayStartServerWindow"
+	x:Class="Nexen.Windows.NetplayStartServerWindow"
 	Width="300" Height="150"
 	x:DataType="cfg:NetplayConfig"
 	Title="{l:Translate wndTitle}"
@@ -23,7 +23,7 @@
 
 		<Grid ColumnDefinitions="Auto,1*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
 			<TextBlock Text="{l:Translate lblPort}" />
-			<c:MesenNumericTextBox Grid.Column="1" Value="{Binding ServerPort}" />
+			<c:NexenNumericTextBox Grid.Column="1" Value="{Binding ServerPort}" />
 
 			<TextBlock Grid.Row="1" Text="{l:Translate lblPassword}" />
 			<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding ServerPassword, Converter={StaticResource NullTextConverter}}" />

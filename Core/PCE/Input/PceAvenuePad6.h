@@ -6,8 +6,7 @@
 #include "Shared/InputHud.h"
 #include "Utilities/Serializer.h"
 
-class PceAvenuePad6 : public BaseControlDevice
-{
+class PceAvenuePad6 : public BaseControlDevice {
 private:
 	uint32_t _turboSpeed = 0;
 	bool _disableInput = false;
@@ -15,14 +14,12 @@ private:
 	bool _selectExtraButtons = false;
 
 protected:
-	string GetKeyNames() override
-	{
+	string GetKeyNames() override {
 		return "UDLRSr123456";
 	}
 
-	void InternalSetStateFromInput() override
-	{
-		for(KeyMapping& keyMapping : _keyMappings) {
+	void InternalSetStateFromInput() override {
+		for (KeyMapping& keyMapping : _keyMappings) {
 			SetPressedState(Buttons::I, keyMapping.A);
 			SetPressedState(Buttons::II, keyMapping.B);
 			SetPressedState(Buttons::III, keyMapping.X);
@@ -38,7 +35,7 @@ protected:
 
 			uint8_t turboFreq = 1 << (4 - _turboSpeed);
 			bool turboOn = (uint8_t)(_emu->GetFrameCount() % turboFreq) < turboFreq / 2;
-			if(turboOn) {
+			if (turboOn) {
 				SetPressedState(Buttons::I, keyMapping.TurboA);
 				SetPressedState(Buttons::II, keyMapping.TurboB);
 				SetPressedState(Buttons::III, keyMapping.TurboX);
@@ -49,18 +46,16 @@ protected:
 		}
 
 		PcEngineConfig& cfg = _emu->GetSettings()->GetPcEngineConfig();
-		if(cfg.PreventSelectRunReset && IsPressed(Buttons::Run) && IsPressed(Buttons::Select)) {
+		if (cfg.PreventSelectRunReset && IsPressed(Buttons::Run) && IsPressed(Buttons::Select)) {
 			ClearBit(Buttons::Run);
 			ClearBit(Buttons::Select);
 		}
 	}
 
-	void RefreshStateBuffer() override
-	{
+	void RefreshStateBuffer() override {
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		BaseControlDevice::Serialize(s);
 		SV(_disableInput);
 		SV(_selectDPad);
@@ -68,22 +63,31 @@ protected:
 	}
 
 public:
-	enum Buttons { Up = 0, Down, Left, Right, Select, Run, I, II, III, IV, V, VI };
+	enum Buttons { Up = 0,
+		           Down,
+		           Left,
+		           Right,
+		           Select,
+		           Run,
+		           I,
+		           II,
+		           III,
+		           IV,
+		           V,
+		           VI };
 
-	PceAvenuePad6(Emulator* emu, uint8_t port, KeyMappingSet keyMappings) : BaseControlDevice(emu, ControllerType::PceAvenuePad6, port, keyMappings)
-	{
+	PceAvenuePad6(Emulator* emu, uint8_t port, KeyMappingSet keyMappings) : BaseControlDevice(emu, ControllerType::PceAvenuePad6, port, keyMappings) {
 		_turboSpeed = keyMappings.TurboSpeed;
 	}
 
-	uint8_t ReadRam(uint16_t addr) override
-	{
-		if(_disableInput) {
+	uint8_t ReadRam(uint16_t addr) override {
+		if (_disableInput) {
 			return 0x0F;
 		}
 
 		uint8_t result = 0x0F;
-		if(_selectExtraButtons) {
-			if(_selectDPad) {
+		if (_selectExtraButtons) {
+			if (_selectDPad) {
 				result = 0;
 			} else {
 				result &= ~(IsPressed(PceAvenuePad6::III) ? 0x01 : 0);
@@ -92,7 +96,7 @@ public:
 				result &= ~(IsPressed(PceAvenuePad6::VI) ? 0x08 : 0);
 			}
 		} else {
-			if(_selectDPad) {
+			if (_selectDPad) {
 				result &= ~(IsPressed(PceAvenuePad6::Up) ? 0x01 : 0);
 				result &= ~(IsPressed(PceAvenuePad6::Right) ? 0x02 : 0);
 				result &= ~(IsPressed(PceAvenuePad6::Down) ? 0x04 : 0);
@@ -108,18 +112,16 @@ public:
 		return result;
 	}
 
-	void WriteRam(uint16_t addr, uint8_t value) override
-	{
+	void WriteRam(uint16_t addr, uint8_t value) override {
 		bool disableInput = (value & 0x02) != 0;
-		if(disableInput && !_disableInput) {
+		if (disableInput && !_disableInput) {
 			_selectExtraButtons = !_selectExtraButtons;
 		}
 		_disableInput = disableInput;
 		_selectDPad = (value & 0x01) != 0;
 	}
 
-	void InternalDrawController(InputHud& hud) override
-	{
+	void InternalDrawController(InputHud& hud) override {
 		hud.DrawOutline(35, 14);
 
 		hud.DrawButton(5, 3, 3, 3, IsPressed(Buttons::Up));
@@ -142,21 +144,20 @@ public:
 		hud.DrawNumber(hud.GetControllerIndex() + 1, 15, 2);
 	}
 
-	vector<DeviceButtonName> GetKeyNameAssociations() override
-	{
+	vector<DeviceButtonName> GetKeyNameAssociations() override {
 		return {
-			{ "i", Buttons::I },
-			{ "ii", Buttons::II },
-			{ "iii", Buttons::III },
-			{ "iv", Buttons::IV },
-			{ "v", Buttons::V },
-			{ "vi", Buttons::VI },
-			{ "run", Buttons::Run },
-			{ "select", Buttons::Select },
-			{ "up", Buttons::Up },
-			{ "down", Buttons::Down },
-			{ "left", Buttons::Left },
-			{ "right", Buttons::Right },
+		    {"i",      Buttons::I     },
+		    {"ii",     Buttons::II    },
+		    {"iii",    Buttons::III   },
+		    {"iv",     Buttons::IV    },
+		    {"v",      Buttons::V     },
+		    {"vi",     Buttons::VI    },
+		    {"run",    Buttons::Run   },
+		    {"select", Buttons::Select},
+		    {"up",     Buttons::Up    },
+		    {"down",   Buttons::Down  },
+		    {"left",   Buttons::Left  },
+		    {"right",  Buttons::Right },
 		};
 	}
 };

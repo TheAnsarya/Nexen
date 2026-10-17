@@ -2,27 +2,24 @@
 #include "Shared/Audio/WaveRecorder.h"
 #include "Shared/MessageManager.h"
 
-WaveRecorder::WaveRecorder(string outputFile, uint32_t sampleRate, bool isStereo)
-{
+WaveRecorder::WaveRecorder(const string& outputFile, uint32_t sampleRate, bool isStereo) {
 	_stream = ofstream(outputFile, ios::out | ios::binary);
 	_outputFile = outputFile;
 	_streamSize = 0;
 	_sampleRate = sampleRate;
 	_isStereo = isStereo;
-	
-	if(_stream) {
+
+	if (_stream) {
 		WriteHeader();
 		MessageManager::DisplayMessage("SoundRecorder", "SoundRecorderStarted", _outputFile);
 	}
 }
 
-WaveRecorder::~WaveRecorder()
-{
+WaveRecorder::~WaveRecorder() {
 	CloseFile();
 }
 
-void WaveRecorder::WriteHeader()
-{
+void WaveRecorder::WriteHeader() {
 	_stream << "RIFF";
 	uint32_t size = 0;
 	_stream.write((char*)&size, sizeof(size));
@@ -33,7 +30,7 @@ void WaveRecorder::WriteHeader()
 	uint32_t chunkSize = 16;
 	_stream.write((char*)&chunkSize, sizeof(chunkSize));
 
-	uint16_t format = 1; //PCM
+	uint16_t format = 1; // PCM
 	uint16_t channelCount = _isStereo ? 2 : 1;
 	uint16_t bytesPerSample = 2;
 	uint16_t blockAlign = channelCount * bytesPerSample;
@@ -52,10 +49,9 @@ void WaveRecorder::WriteHeader()
 	_stream.write((char*)&size, sizeof(size));
 }
 
-bool WaveRecorder::WriteSamples(int16_t * samples, uint32_t sampleCount, uint32_t sampleRate, bool isStereo)
-{
-	if(_sampleRate != sampleRate || _isStereo != isStereo) {
-		//Format changed, stop recording
+bool WaveRecorder::WriteSamples(int16_t* samples, uint32_t sampleCount, uint32_t sampleRate, bool isStereo) {
+	if (_sampleRate != sampleRate || _isStereo != isStereo) {
+		// Format changed, stop recording
 		return false;
 	} else {
 		uint32_t sampleBytes = sampleCount * (isStereo ? 4 : 2);
@@ -65,8 +61,7 @@ bool WaveRecorder::WriteSamples(int16_t * samples, uint32_t sampleCount, uint32_
 	}
 }
 
-void WaveRecorder::UpdateSizeValues()
-{
+void WaveRecorder::UpdateSizeValues() {
 	_stream.seekp(4, ios::beg);
 	uint32_t fileSize = _streamSize + 36;
 	_stream.write((char*)&fileSize, sizeof(fileSize));
@@ -75,9 +70,8 @@ void WaveRecorder::UpdateSizeValues()
 	_stream.write((char*)&_streamSize, sizeof(_streamSize));
 }
 
-void WaveRecorder::CloseFile()
-{
-	if(_stream && _stream.is_open()) {
+void WaveRecorder::CloseFile() {
+	if (_stream && _stream.is_open()) {
 		UpdateSizeValues();
 		_stream.close();
 

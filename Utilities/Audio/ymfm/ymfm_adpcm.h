@@ -35,8 +35,7 @@
 
 #include "ymfm.h"
 
-namespace ymfm
-{
+namespace ymfm {
 
 //*********************************************************
 //  INTERFACE CLASSES
@@ -45,7 +44,6 @@ namespace ymfm
 // forward declarations
 class adpcm_a_engine;
 class adpcm_b_engine;
-
 
 // ======================> adpcm_a_registers
 
@@ -65,8 +63,7 @@ class adpcm_b_engine;
 //        20-25 xxxxxxxx End address (low)
 //        28-2D xxxxxxxx End address (high)
 //
-class adpcm_a_registers
-{
+class adpcm_a_registers {
 public:
 	// constants
 	static constexpr uint32_t OUTPUTS = 2;
@@ -75,17 +72,16 @@ public:
 	static constexpr uint32_t ALL_CHANNELS = (1 << CHANNELS) - 1;
 
 	// constructor
-	adpcm_a_registers() { }
+	adpcm_a_registers() {}
 
 	// reset to initial state
 	void reset();
 
 	// save/restore
-	void save_restore(ymfm_saved_state &state);
+	void save_restore(ymfm_saved_state& state);
 
 	// map channel number to register offset
-	static constexpr uint32_t channel_offset(uint32_t chnum)
-	{
+	static constexpr uint32_t channel_offset(uint32_t chnum) {
 		assert(chnum < CHANNELS);
 		return chnum;
 	}
@@ -94,49 +90,45 @@ public:
 	void write(uint32_t index, uint8_t data) { m_regdata[index] = data; }
 
 	// system-wide registers
-	uint32_t dump() const                               { return bitfield(m_regdata[0x00], 7); }
-	uint32_t dump_mask() const                          { return bitfield(m_regdata[0x00], 0, 6); }
-	uint32_t total_level() const                        { return bitfield(m_regdata[0x01], 0, 6); }
-	uint32_t test() const                               { return m_regdata[0x02]; }
+	uint32_t dump() const { return bitfield(m_regdata[0x00], 7); }
+	uint32_t dump_mask() const { return bitfield(m_regdata[0x00], 0, 6); }
+	uint32_t total_level() const { return bitfield(m_regdata[0x01], 0, 6); }
+	uint32_t test() const { return m_regdata[0x02]; }
 
 	// per-channel registers
-	uint32_t ch_pan_left(uint32_t choffs) const         { return bitfield(m_regdata[choffs + 0x08], 7); }
-	uint32_t ch_pan_right(uint32_t choffs) const        { return bitfield(m_regdata[choffs + 0x08], 6); }
+	uint32_t ch_pan_left(uint32_t choffs) const { return bitfield(m_regdata[choffs + 0x08], 7); }
+	uint32_t ch_pan_right(uint32_t choffs) const { return bitfield(m_regdata[choffs + 0x08], 6); }
 	uint32_t ch_instrument_level(uint32_t choffs) const { return bitfield(m_regdata[choffs + 0x08], 0, 5); }
-	uint32_t ch_start(uint32_t choffs) const            { return m_regdata[choffs + 0x10] | (m_regdata[choffs + 0x18] << 8); }
-	uint32_t ch_end(uint32_t choffs) const              { return m_regdata[choffs + 0x20] | (m_regdata[choffs + 0x28] << 8); }
+	uint32_t ch_start(uint32_t choffs) const { return m_regdata[choffs + 0x10] | (m_regdata[choffs + 0x18] << 8); }
+	uint32_t ch_end(uint32_t choffs) const { return m_regdata[choffs + 0x20] | (m_regdata[choffs + 0x28] << 8); }
 
 	// per-channel writes
-	void write_start(uint32_t choffs, uint32_t address)
-	{
+	void write_start(uint32_t choffs, uint32_t address) {
 		write(choffs + 0x10, address);
 		write(choffs + 0x18, address >> 8);
 	}
-	void write_end(uint32_t choffs, uint32_t address)
-	{
+	void write_end(uint32_t choffs, uint32_t address) {
 		write(choffs + 0x20, address);
 		write(choffs + 0x28, address >> 8);
 	}
 
 private:
 	// internal state
-	uint8_t m_regdata[REGISTERS] = {};         // register data
+	uint8_t m_regdata[REGISTERS] = {}; // register data
 };
-
 
 // ======================> adpcm_a_channel
 
-class adpcm_a_channel
-{
+class adpcm_a_channel {
 public:
 	// constructor
-	adpcm_a_channel(adpcm_a_engine &owner, uint32_t choffs, uint32_t addrshift);
+	adpcm_a_channel(adpcm_a_engine& owner, uint32_t choffs, uint32_t addrshift);
 
 	// reset the channel state
 	void reset();
 
 	// save/restore
-	void save_restore(ymfm_saved_state &state);
+	void save_restore(ymfm_saved_state& state);
 
 	// signal key on/off
 	void keyonoff(bool on);
@@ -145,71 +137,67 @@ public:
 	bool clock();
 
 	// return the computed output value, with panning applied
-	template<int NumOutputs>
-	void output(ymfm_output<NumOutputs> &output) const;
+	template <int NumOutputs>
+	void output(ymfm_output<NumOutputs>& output) const;
 
 private:
 	// internal state
-	uint32_t const m_choffs;              // channel offset
-	uint32_t const m_address_shift;       // address bits shift-left
-	uint32_t m_playing;                   // currently playing?
-	uint32_t m_curnibble;                 // index of the current nibble
-	uint32_t m_curbyte;                   // current byte of data
-	uint32_t m_curaddress;                // current address
-	int32_t m_accumulator;                // accumulator
-	int32_t m_step_index;                 // index in the stepping table
-	adpcm_a_registers &m_regs;            // reference to registers
-	adpcm_a_engine &m_owner;              // reference to our owner
+	uint32_t const m_choffs;        // channel offset
+	uint32_t const m_address_shift; // address bits shift-left
+	uint32_t m_playing;             // currently playing?
+	uint32_t m_curnibble;           // index of the current nibble
+	uint32_t m_curbyte;             // current byte of data
+	uint32_t m_curaddress;          // current address
+	int32_t m_accumulator;          // accumulator
+	int32_t m_step_index;           // index in the stepping table
+	adpcm_a_registers& m_regs;      // reference to registers
+	adpcm_a_engine& m_owner;        // reference to our owner
 };
-
 
 // ======================> adpcm_a_engine
 
-class adpcm_a_engine
-{
+class adpcm_a_engine {
 public:
 	static constexpr int CHANNELS = adpcm_a_registers::CHANNELS;
 
 	// constructor
-	adpcm_a_engine(ymfm_interface &intf, uint32_t addrshift);
+	adpcm_a_engine(ymfm_interface& intf, uint32_t addrshift);
 
 	// reset our status
 	void reset();
 
 	// save/restore
-	void save_restore(ymfm_saved_state &state);
+	void save_restore(ymfm_saved_state& state);
 
 	// master clocking function
 	uint32_t clock(uint32_t chanmask);
 
 	// compute sum of channel outputs
-	template<int NumOutputs>
-	void output(ymfm_output<NumOutputs> &output, uint32_t chanmask);
+	template <int NumOutputs>
+	void output(ymfm_output<NumOutputs>& output, uint32_t chanmask);
 
 	// write to the ADPCM-A registers
 	void write(uint32_t regnum, uint8_t data);
 
 	// set the start/end address for a channel (for hardcoded YM2608 percussion)
-	void set_start_end(uint8_t chnum, uint16_t start, uint16_t end)
-	{
+	void set_start_end(uint8_t chnum, uint16_t start, uint16_t end) {
 		uint32_t choffs = adpcm_a_registers::channel_offset(chnum);
 		m_regs.write_start(choffs, start);
 		m_regs.write_end(choffs, end);
 	}
 
 	// return a reference to our interface
-	ymfm_interface &intf() { return m_intf; }
+	ymfm_interface& intf() { return m_intf; }
 
 	// return a reference to our registers
-	adpcm_a_registers &regs() { return m_regs; }
+	adpcm_a_registers& regs() { return m_regs; }
 
 private:
 	// internal state
-	ymfm_interface &m_intf;                                 // reference to the interface
+	ymfm_interface& m_intf;                               // reference to the interface
 	std::unique_ptr<adpcm_a_channel> m_channel[CHANNELS]; // array of channels
 	adpcm_a_registers m_regs;                             // registers
 };
-
 
 // ======================> adpcm_b_registers
 
@@ -247,57 +235,54 @@ private:
 //           0f xx------ DAC data low [Y8950]
 //           10 -----xxx DAC data exponent [Y8950]
 //
-class adpcm_b_registers
-{
+class adpcm_b_registers {
 public:
 	// constants
 	static constexpr uint32_t REGISTERS = 0x11;
 
 	// constructor
-	adpcm_b_registers() { }
+	adpcm_b_registers() {}
 
 	// reset to initial state
 	void reset();
 
 	// save/restore
-	void save_restore(ymfm_saved_state &state);
+	void save_restore(ymfm_saved_state& state);
 
 	// direct read/write access
 	void write(uint32_t index, uint8_t data) { m_regdata[index] = data; }
 
 	// system-wide registers
-	uint32_t execute() const          { return bitfield(m_regdata[0x00], 7); }
-	uint32_t record() const           { return bitfield(m_regdata[0x00], 6); }
-	uint32_t external() const         { return bitfield(m_regdata[0x00], 5); }
-	uint32_t repeat() const           { return bitfield(m_regdata[0x00], 4); }
-	uint32_t speaker() const          { return bitfield(m_regdata[0x00], 3); }
-	uint32_t resetflag() const        { return bitfield(m_regdata[0x00], 0); }
-	uint32_t pan_left() const         { return bitfield(m_regdata[0x01], 7); }
-	uint32_t pan_right() const        { return bitfield(m_regdata[0x01], 6); }
+	uint32_t execute() const { return bitfield(m_regdata[0x00], 7); }
+	uint32_t record() const { return bitfield(m_regdata[0x00], 6); }
+	uint32_t external() const { return bitfield(m_regdata[0x00], 5); }
+	uint32_t repeat() const { return bitfield(m_regdata[0x00], 4); }
+	uint32_t speaker() const { return bitfield(m_regdata[0x00], 3); }
+	uint32_t resetflag() const { return bitfield(m_regdata[0x00], 0); }
+	uint32_t pan_left() const { return bitfield(m_regdata[0x01], 7); }
+	uint32_t pan_right() const { return bitfield(m_regdata[0x01], 6); }
 	uint32_t start_conversion() const { return bitfield(m_regdata[0x01], 3); }
-	uint32_t dac_enable() const       { return bitfield(m_regdata[0x01], 2); }
-	uint32_t dram_8bit() const        { return bitfield(m_regdata[0x01], 1); }
-	uint32_t rom_ram() const          { return bitfield(m_regdata[0x01], 0); }
-	uint32_t start() const            { return m_regdata[0x02] | (m_regdata[0x03] << 8); }
-	uint32_t end() const              { return m_regdata[0x04] | (m_regdata[0x05] << 8); }
-	uint32_t prescale() const         { return m_regdata[0x06] | (bitfield(m_regdata[0x07], 0, 3) << 8); }
-	uint32_t cpudata() const          { return m_regdata[0x08]; }
-	uint32_t delta_n() const          { return m_regdata[0x09] | (m_regdata[0x0a] << 8); }
-	uint32_t level() const            { return m_regdata[0x0b]; }
-	uint32_t limit() const            { return m_regdata[0x0c] | (m_regdata[0x0d] << 8); }
-	uint32_t dac() const              { return m_regdata[0x0e]; }
-	uint32_t pcm() const              { return m_regdata[0x0f]; }
+	uint32_t dac_enable() const { return bitfield(m_regdata[0x01], 2); }
+	uint32_t dram_8bit() const { return bitfield(m_regdata[0x01], 1); }
+	uint32_t rom_ram() const { return bitfield(m_regdata[0x01], 0); }
+	uint32_t start() const { return m_regdata[0x02] | (m_regdata[0x03] << 8); }
+	uint32_t end() const { return m_regdata[0x04] | (m_regdata[0x05] << 8); }
+	uint32_t prescale() const { return m_regdata[0x06] | (bitfield(m_regdata[0x07], 0, 3) << 8); }
+	uint32_t cpudata() const { return m_regdata[0x08]; }
+	uint32_t delta_n() const { return m_regdata[0x09] | (m_regdata[0x0a] << 8); }
+	uint32_t level() const { return m_regdata[0x0b]; }
+	uint32_t limit() const { return m_regdata[0x0c] | (m_regdata[0x0d] << 8); }
+	uint32_t dac() const { return m_regdata[0x0e]; }
+	uint32_t pcm() const { return m_regdata[0x0f]; }
 
 private:
 	// internal state
-	uint8_t m_regdata[REGISTERS] = {};         // register data
+	uint8_t m_regdata[REGISTERS] = {}; // register data
 };
-
 
 // ======================> adpcm_b_channel
 
-class adpcm_b_channel
-{
+class adpcm_b_channel {
 	static constexpr int32_t STEP_MIN = 127;
 	static constexpr int32_t STEP_MAX = 24576;
 
@@ -307,13 +292,13 @@ public:
 	static constexpr uint8_t STATUS_PLAYING = 0x04;
 
 	// constructor
-	adpcm_b_channel(adpcm_b_engine &owner, uint32_t addrshift);
+	adpcm_b_channel(adpcm_b_engine& owner, uint32_t addrshift);
 
 	// reset the channel state
 	void reset();
 
 	// save/restore
-	void save_restore(ymfm_saved_state &state);
+	void save_restore(ymfm_saved_state& state);
 
 	// signal key on/off
 	void keyonoff(bool on);
@@ -322,8 +307,8 @@ public:
 	void clock();
 
 	// return the computed output value, with panning applied
-	template<int NumOutputs>
-	void output(ymfm_output<NumOutputs> &output, uint32_t rshift) const;
+	template <int NumOutputs>
+	void output(ymfm_output<NumOutputs>& output, uint32_t rshift) const;
 
 	// return the status register
 	uint8_t status() const { return m_status; }
@@ -358,31 +343,29 @@ private:
 	int32_t m_accumulator;          // accumulator
 	int32_t m_prev_accum;           // previous accumulator (for linear interp)
 	int32_t m_adpcm_step;           // next forecast
-	adpcm_b_registers &m_regs;      // reference to registers
-	adpcm_b_engine &m_owner;        // reference to our owner
+	adpcm_b_registers& m_regs;      // reference to registers
+	adpcm_b_engine& m_owner;        // reference to our owner
 };
-
 
 // ======================> adpcm_b_engine
 
-class adpcm_b_engine
-{
+class adpcm_b_engine {
 public:
 	// constructor
-	adpcm_b_engine(ymfm_interface &intf, uint32_t addrshift = 0);
+	adpcm_b_engine(ymfm_interface& intf, uint32_t addrshift = 0);
 
 	// reset our status
 	void reset();
 
 	// save/restore
-	void save_restore(ymfm_saved_state &state);
+	void save_restore(ymfm_saved_state& state);
 
 	// master clocking function
 	void clock();
 
 	// compute sum of channel outputs
-	template<int NumOutputs>
-	void output(ymfm_output<NumOutputs> &output, uint32_t rshift);
+	template <int NumOutputs>
+	void output(ymfm_output<NumOutputs>& output, uint32_t rshift);
 
 	// read from the ADPCM-B registers
 	uint32_t read(uint32_t regnum) { return m_channel->read(regnum); }
@@ -394,18 +377,18 @@ public:
 	uint8_t status() const { return m_channel->status(); }
 
 	// return a reference to our interface
-	ymfm_interface &intf() { return m_intf; }
+	ymfm_interface& intf() { return m_intf; }
 
 	// return a reference to our registers
-	adpcm_b_registers &regs() { return m_regs; }
+	adpcm_b_registers& regs() { return m_regs; }
 
 private:
 	// internal state
-	ymfm_interface &m_intf;                     // reference to our interface
+	ymfm_interface& m_intf;                     // reference to our interface
 	std::unique_ptr<adpcm_b_channel> m_channel; // channel pointer
 	adpcm_b_registers m_regs;                   // registers
 };
 
-}
+} // namespace ymfm
 
 #endif // YMFM_ADPCM_H

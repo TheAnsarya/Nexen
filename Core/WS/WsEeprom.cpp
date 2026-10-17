@@ -7,8 +7,7 @@
 #include "Utilities/BitUtilities.h"
 #include "Utilities/Serializer.h"
 
-WsEeprom::WsEeprom(Emulator* emu, WsConsole* console, WsEepromSize size, uint8_t* eepromData, bool isInternal)
-{
+WsEeprom::WsEeprom(Emulator* emu, WsConsole* console, WsEepromSize size, uint8_t* eepromData, bool isInternal) {
 	_emu = emu;
 	_console = console;
 	_isInternal = isInternal;
@@ -18,9 +17,9 @@ WsEeprom::WsEeprom(Emulator* emu, WsConsole* console, WsEepromSize size, uint8_t
 	_state.ReadDone = true;
 	_state.WriteDisabled = true;
 
-	if(_isInternal) {
-		if(!emu->GetSettings()->GetWsConfig().UseBootRom) {
-			//Boot ROM leaves writes enabled
+	if (_isInternal) {
+		if (!emu->GetSettings()->GetWsConfig().UseBootRom) {
+			// Boot ROM leaves writes enabled
 			_state.WriteDisabled = false;
 		}
 
@@ -28,53 +27,79 @@ WsEeprom::WsEeprom(Emulator* emu, WsConsole* console, WsEepromSize size, uint8_t
 	}
 }
 
-WsEepromCommand WsEeprom::GetCommand()
-{
+WsEepromCommand WsEeprom::GetCommand() {
 	uint16_t command = _state.Command;
-	if(GetSize() != WsEepromSize::Size128) {
+	if (GetSize() != WsEepromSize::Size128) {
 		command >>= 4;
 	}
 
-	switch(command & 0xFFC0) {
-		case 0x0180: return WsEepromCommand::Read;
-		case 0x0140: return WsEepromCommand::Write;
-		case 0x01C0: return WsEepromCommand::Erase;
+	switch (command & 0xFFC0) {
+		case 0x0180:
+			return WsEepromCommand::Read;
+		case 0x0140:
+			return WsEepromCommand::Write;
+		case 0x01C0:
+			return WsEepromCommand::Erase;
 		case 0x0100:
-			switch((command >> 4) & 0x03) {
-				case 0x00: return WsEepromCommand::WriteDisable;
-				case 0x01: return WsEepromCommand::WriteAll;
-				case 0x02: return WsEepromCommand::EraseAll;
-				case 0x03: return WsEepromCommand::WriteEnable;
+			switch ((command >> 4) & 0x03) {
+				case 0x00:
+					return WsEepromCommand::WriteDisable;
+				case 0x01:
+					return WsEepromCommand::WriteAll;
+				case 0x02:
+					return WsEepromCommand::EraseAll;
+				case 0x03:
+					return WsEepromCommand::WriteEnable;
 			}
 	}
 
 	return WsEepromCommand::Unknown;
 }
 
-WsEepromSize WsEeprom::GetSize()
-{
-	if(_isInternal && _state.Size == WsEepromSize::Size2kb && !_console->IsColorMode()) {
-		//Process commands as is the eeprom was the monochrome model's 128-byte eeprom when color mode is disabled
+WsEepromSize WsEeprom::GetSize() {
+	if (_isInternal && _state.Size == WsEepromSize::Size2kb && !_console->IsColorMode()) {
+		// Process commands as is the eeprom was the monochrome model's 128-byte eeprom when color mode is disabled
 		return WsEepromSize::Size128;
 	}
 	return _state.Size;
 }
 
-uint16_t WsEeprom::GetCommandAddress()
-{
-	switch(GetSize()) {
-		case WsEepromSize::Size128: return _state.Command & 0x3F;
-		case WsEepromSize::Size1kb: return _state.Command & 0x1FF;
-		case WsEepromSize::Size2kb: return _state.Command & 0x3FF;
+uint16_t WsEeprom::GetCommandAddress() {
+	switch (GetSize()) {
+		case WsEepromSize::Size128:
+			return _state.Command & 0x3F;
+		case WsEepromSize::Size1kb:
+			return _state.Command & 0x1FF;
+		case WsEepromSize::Size2kb:
+			return _state.Command & 0x3FF;
 	}
 
 	return 0;
 }
 
-void WsEeprom::WriteValue(uint16_t addr, uint16_t value)
-{
-	if(!_state.WriteDisabled && (!_state.InternalEepromWriteProtected || addr < 0x30)) {
-		if(_isInternal) {
+uint32_t WsEeprom::GetCommandDelay(WsEepromCommand cmd) const {
+	// Use operation-class buckets instead of a single hardcoded delay.
+	// Read commands are shortest, write/erase medium, and bulk operations longest.
+	switch (cmd) {
+		case WsEepromCommand::Read:
+			return 6;
+
+		case WsEepromCommand::Write:
+		case WsEepromCommand::Erase:
+			return 10;
+
+		case WsEepromCommand::WriteAll:
+		case WsEepromCommand::EraseAll:
+			return 20;
+
+		default:
+			return 10;
+	}
+}
+
+void WsEeprom::WriteValue(uint16_t addr, uint16_t value) {
+	if (!_state.WriteDisabled && (!_state.InternalEepromWriteProtected || addr < 0x30)) {
+		if (_isInternal) {
 			_emu->ProcessMemoryAccess<CpuType::Ws, MemoryType::WsInternalEeprom, MemoryOperationType::Write>(addr << 1, value);
 		} else {
 			_emu->ProcessMemoryAccess<CpuType::Ws, MemoryType::WsCartEeprom, MemoryOperationType::Write>(addr << 1, value);
@@ -84,30 +109,28 @@ void WsEeprom::WriteValue(uint16_t addr, uint16_t value)
 	}
 }
 
-string WsEeprom::ConvertToEepromString(string in)
-{
-	for(size_t i = 0; i < in.size(); i++) {
+string WsEeprom::ConvertToEepromString(string in) {
+	for (size_t i = 0; i < in.size(); i++) {
 		in[i] = in[i] - 0x36;
 	}
 	return in;
 }
 
-void WsEeprom::InitInternalEepromData()
-{
+void WsEeprom::InitInternalEepromData() {
 	memset(_data, 0, (uint32_t)_state.Size);
 
 	string name;
-	switch(_console->GetModel()) {
+	switch (_console->GetModel()) {
 		case WsModel::Monochrome:
 			name = "WONDERSWAN";
 			break;
 
 		case WsModel::Color:
 		case WsModel::SwanCrystal:
-			//Set volume to max by default
+			// Set volume to max by default
 			_data[0x83] = 0x03;
 
-			if(_console->GetModel() == WsModel::Color) {
+			if (_console->GetModel() == WsModel::Color) {
 				name = "WONDERSWANCOLOR";
 			} else {
 				name = "SWANCRYSTAL";
@@ -118,19 +141,18 @@ void WsEeprom::InitInternalEepromData()
 	memcpy(_data + 0x60, ConvertToEepromString(name).c_str(), name.size());
 }
 
-void WsEeprom::Run()
-{
-	if(!_emu->IsEmulationThread()) {
+void WsEeprom::Run() {
+	if (!_emu->IsEmulationThread()) {
 		return;
 	}
 
-	if(_state.CmdStartClock) {
+	if (_state.CmdStartClock) {
 		WsEepromCommand cmd = GetCommand();
-		int cmdDelay = 10; //TODOWS timing
-		if(_console->GetMasterClock() - _state.CmdStartClock > cmdDelay) {
+		uint32_t cmdDelay = GetCommandDelay(cmd);
+		if (_console->GetMasterClock() - _state.CmdStartClock > cmdDelay) {
 			uint16_t addr = GetCommandAddress();
 
-			switch(cmd) {
+			switch (cmd) {
 				case WsEepromCommand::Read:
 					_state.ReadBuffer = _data[addr << 1] | (_data[(addr << 1) + 1] << 8);
 					_state.ReadDone = true;
@@ -141,7 +163,7 @@ void WsEeprom::Run()
 					break;
 
 				case WsEepromCommand::WriteAll:
-					for(int i = 0; i < (int)_state.Size; i += 2) {
+					for (int i = 0; i < (int)_state.Size; i += 2) {
 						WriteValue(i >> 1, _state.WriteBuffer);
 					}
 					break;
@@ -151,7 +173,7 @@ void WsEeprom::Run()
 					break;
 
 				case WsEepromCommand::EraseAll:
-					for(int i = 0; i < (int)_state.Size; i += 2) {
+					for (int i = 0; i < (int)_state.Size; i += 2) {
 						WriteValue(i >> 1, 0xFFFF);
 					}
 					break;
@@ -163,66 +185,78 @@ void WsEeprom::Run()
 	}
 }
 
-void WsEeprom::WritePort(uint8_t port, uint8_t value)
-{ 
+void WsEeprom::WritePort(uint8_t port, uint8_t value) {
 	Run();
 
-	switch(port) {
-		case 0x00: BitUtilities::SetBits<0>(_state.WriteBuffer, value); break;
-		case 0x01: BitUtilities::SetBits<8>(_state.WriteBuffer, value); break;
-		case 0x02: BitUtilities::SetBits<0>(_state.Command, value); break;
-		case 0x03: BitUtilities::SetBits<8>(_state.Command, value); break;
+	switch (port) {
+		case 0x00:
+			BitUtilities::SetBits<0>(_state.WriteBuffer, value);
+			break;
+		case 0x01:
+			BitUtilities::SetBits<8>(_state.WriteBuffer, value);
+			break;
+		case 0x02:
+			BitUtilities::SetBits<0>(_state.Command, value);
+			break;
+		case 0x03:
+			BitUtilities::SetBits<8>(_state.Command, value);
+			break;
 
 		case 0x04:
 			bool read = value & 0x10;
 			bool write = value & 0x20;
 			bool other = value & 0x40;
 			bool writeProtect = value & 0x80;
-			if((uint8_t)read + (uint8_t)write + (uint8_t)other + (uint8_t)writeProtect > 1) {
-				//Invalid operation, do nothing
+			if ((uint8_t)read + (uint8_t)write + (uint8_t)other + (uint8_t)writeProtect > 1) {
+				// Invalid operation, do nothing
 				return;
 			}
 
-			//TODOWS abort (cart eeprom)
-			if(writeProtect && _isInternal) {
-				_state.InternalEepromWriteProtected = true;
+			if (writeProtect) {
+				if (_isInternal) {
+					_state.InternalEepromWriteProtected = true;
+				} else {
+					// Cartridge EEPROM abort command (0x001f): cancel in-flight operation.
+					_state.CmdStartClock = 0;
+					_state.Idle = true;
+				}
 				return;
 			}
 
-			if(!_state.Idle) {
+			if (!_state.Idle) {
 				return;
 			}
 
 			WsEepromCommand cmd = GetCommand();
 			uint16_t addr = GetCommandAddress();
 
-			if(read) {
-				if(cmd == WsEepromCommand::Read) {
+			if (read) {
+				if (cmd == WsEepromCommand::Read) {
 					_state.CmdStartClock = _console->GetMasterClock();
 
-					if(_isInternal) {
-						//For the internal eeprom, "ReadDone" flag should be cleared here, and set again after a small delay
-						//For the cartridge eeprom, the flag is bugged and not reset when a read starts
+					if (_isInternal) {
+						// For the internal eeprom, "ReadDone" flag should be cleared here, and set again after a small delay
+						// For the cartridge eeprom, the flag is bugged and not reset when a read starts
 						_state.ReadDone = false;
 					}
 					_state.Idle = false;
 
-					if(_isInternal) {
+					if (_isInternal) {
 						_emu->ProcessMemoryAccess<CpuType::Ws, MemoryType::WsInternalEeprom, MemoryOperationType::Read>(addr << 1, _state.ReadBuffer);
 					} else {
 						_emu->ProcessMemoryAccess<CpuType::Ws, MemoryType::WsCartEeprom, MemoryOperationType::Read>(addr << 1, _state.ReadBuffer);
 					}
 				}
-			} else if(write) {
-				if(cmd == WsEepromCommand::Write || cmd == WsEepromCommand::WriteAll) {
+			} else if (write) {
+				if (cmd == WsEepromCommand::Write || cmd == WsEepromCommand::WriteAll) {
 					_state.ReadDone = false;
 					_state.CmdStartClock = _console->GetMasterClock();
 					_state.Idle = false;
 				}
-			} else if(other) {
+			} else if (other) {
 				_state.ReadDone = false;
 
-				switch(cmd) {
+				switch (cmd) {
 					case WsEepromCommand::Erase:
 					case WsEepromCommand::EraseAll:
 						_state.CmdStartClock = _console->GetMasterClock();
@@ -241,39 +275,38 @@ void WsEeprom::WritePort(uint8_t port, uint8_t value)
 	}
 }
 
-uint8_t WsEeprom::ReadPort(uint8_t port)
-{
+uint8_t WsEeprom::ReadPort(uint8_t port) {
 	Run();
 
-	switch(port) {
-		case 0x00: return BitUtilities::GetBits<0>(_state.ReadBuffer);
-		case 0x01: return BitUtilities::GetBits<8>(_state.ReadBuffer);
-		case 0x02: return BitUtilities::GetBits<0>(_state.Command);
-		case 0x03: return BitUtilities::GetBits<8>(_state.Command);
+	switch (port) {
+		case 0x00:
+			return BitUtilities::GetBits<0>(_state.ReadBuffer);
+		case 0x01:
+			return BitUtilities::GetBits<8>(_state.ReadBuffer);
+		case 0x02:
+			return BitUtilities::GetBits<0>(_state.Command);
+		case 0x03:
+			return BitUtilities::GetBits<8>(_state.Command);
 
 		case 0x04:
 			return (
-				(_state.ReadDone ? 0x01 : 0) |
-				(_state.Idle ? 0x02 : 0) |
-				(_state.InternalEepromWriteProtected ? 0x80 : 0)
-			);
+			    (_state.ReadDone ? 0x01 : 0) |
+			    (_state.Idle ? 0x02 : 0) |
+			    (_state.InternalEepromWriteProtected ? 0x80 : 0));
 	}
 
 	return 0;
 }
 
-void WsEeprom::LoadBattery()
-{
-	_emu->GetBatteryManager()->LoadBattery(_isInternal ? ".ieeprom" : ".eeprom", _data, (uint32_t)_state.Size);
+void WsEeprom::LoadBattery() {
+	_emu->GetBatteryManager()->LoadBattery(_isInternal ? ".ieeprom" : ".eeprom", std::span<uint8_t>(_data, static_cast<size_t>(_state.Size)));
 }
 
-void WsEeprom::SaveBattery()
-{
-	_emu->GetBatteryManager()->SaveBattery(_isInternal ? ".ieeprom" : ".eeprom", _data, (uint32_t)_state.Size);
+void WsEeprom::SaveBattery() {
+	_emu->GetBatteryManager()->SaveBattery(_isInternal ? ".ieeprom" : ".eeprom", std::span<const uint8_t>(_data, static_cast<size_t>(_state.Size)));
 }
 
-void WsEeprom::Serialize(Serializer& s)
-{
+void WsEeprom::Serialize(Serializer& s) {
 	SV(_state.Size);
 	SV(_state.ReadBuffer);
 	SV(_state.WriteBuffer);

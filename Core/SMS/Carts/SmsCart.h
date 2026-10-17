@@ -6,8 +6,7 @@
 enum class SmsRegisterAccess;
 class SmsMemoryManager;
 
-class SmsCart : public ISerializable
-{
+class SmsCart : public ISerializable {
 protected:
 	SmsMemoryManager* _memoryManager = nullptr;
 

@@ -1,0 +1,14 @@
+GENESIS_CROSS_EMU_WRAM_TRACE_COMPARE
+rom=C:\~reference-roms\genesis\Sonic The Hedgehog (W) (REV00) [!].bin
+nexenTrace=
+nexenTrace=
+nexenLines=0
+nexenLines=0
+nexenHash=missing
+nexenHash=missing
+nexenTraceMissing=True
+nexenTraceMissing=True
+nexenTimedOut=True
+nexenTimedOut=True
+firstDiffIndex=-1
+status=identical

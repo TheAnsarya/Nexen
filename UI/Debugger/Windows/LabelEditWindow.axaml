@@ -2,19 +2,19 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
 	xmlns:sys="using:System"
-	xmlns:v="using:Mesen.Views"
-	xmlns:du="using:Mesen.Debugger.Utilities"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:i="using:Mesen.Interop"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:v="using:Nexen.Views"
+	xmlns:du="using:Nexen.Debugger.Utilities"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:i="using:Nexen.Interop"
+	xmlns:l="using:Nexen.Localization"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels"
-	xmlns:dc="using:Mesen.Debugger.Controls"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	mc:Ignorable="d" d:DesignWidth="350" d:DesignHeight="250"
-	x:Class="Mesen.Debugger.Windows.LabelEditWindow"
+	x:Class="Nexen.Debugger.Windows.LabelEditWindow"
 	x:DataType="vm:LabelEditViewModel"
 	Icon="/Assets/EditLabel.png"
 	Width="350" Height="250"
@@ -39,7 +39,7 @@
 			Margin="5 0 5 0"
 		>
 			<TextBlock Grid.Column="0" Grid.Row="0" Text="{l:Translate lblMemoryType}" />
-			<c:EnumComboBox 
+			<c:EnumComboBox
 				Grid.Column="1" Grid.Row="0"
 				SelectedItem="{Binding Label.MemoryType}"
 				AvailableValues="{Binding AvailableMemoryTypes}"
@@ -48,7 +48,7 @@
 			<TextBlock Grid.Column="0" Grid.Row="1" Text="{l:Translate lblAddress}" />
 			<StackPanel Grid.Column="1" Grid.Row="1" Orientation="Horizontal">
 				<TextBlock Margin="0 0 3 0">$</TextBlock>
-				<c:MesenNumericTextBox Value="{Binding Label.Address}" Hex="True" Trim="True" Width="60" />
+				<c:NexenNumericTextBox Value="{Binding Label.Address}" Hex="True" Trim="True" Width="60" />
 				<TextBlock Margin="3 0 0 0" Text="{Binding MaxAddress}" Foreground="Gray" />
 			</StackPanel>
 
@@ -68,13 +68,13 @@
 				MinHeight="100"
 				VerticalContentAlignment="Top"
 				Text="{Binding Label.Comment, Converter={StaticResource NullTextConverter}}"
-				FontFamily="{DynamicResource MesenMonospaceFont}"
-				FontSize="{DynamicResource MesenMonospaceFontSize}"
+				FontFamily="{DynamicResource NexenMonospaceFont}"
+				FontSize="{DynamicResource NexenMonospaceFontSize}"
 			/>
 
 			<TextBlock Grid.Column="0" Grid.Row="4" Text="{l:Translate lblLength}" />
 			<StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="4">
-				<c:MesenNumericUpDown
+				<c:NexenNumericUpDown
 					Value="{Binding Label.Length}"
 					Minimum="1"
 					Maximum="65536"
@@ -83,7 +83,7 @@
 			</StackPanel>
 
 			<Grid Grid.Row="5" Margin="0 5" Grid.ColumnSpan="2" ColumnDefinitions="Auto,*" RowDefinitions="Auto" IsVisible="{Binding ErrorMessage.Length}" >
-				<Image Source="/Assets/Warning.png" Stretch="None" />
+				<Image Source="{SvgImage /Assets/Warning.svg}" Stretch="None" />
 				<TextBlock Grid.Column="1" Text="{Binding ErrorMessage}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="3 0 0 0" />
 			</Grid>
 		</Grid>

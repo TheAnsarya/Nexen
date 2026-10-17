@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "Debugger/DebugTypes.h"
 #include "Debugger/BaseEventManager.h"
 #include "Utilities/SimpleLock.h"
@@ -10,8 +11,7 @@ class GbCpu;
 class GbPpu;
 class Debugger;
 
-struct GbEventViewerConfig : public BaseEventViewerConfig
-{
+struct GbEventViewerConfig : public BaseEventViewerConfig {
 	EventViewerCategoryCfg Irq;
 	EventViewerCategoryCfg MarkedBreakpoints;
 
@@ -47,10 +47,9 @@ struct GbEventViewerConfig : public BaseEventViewerConfig
 	bool ShowPreviousFrameEvents;
 };
 
-class GbEventManager final : public BaseEventManager
-{
+class GbEventManager final : public BaseEventManager {
 private:
-	static constexpr int ScanlineWidth = 456*2;
+	static constexpr int ScanlineWidth = 456 * 2;
 	static constexpr int ScreenHeight = 154;
 	static constexpr int VBlankScanline = 144;
 
@@ -61,7 +60,7 @@ private:
 	Debugger* _debugger;
 
 	uint32_t _scanlineCount = GbEventManager::ScreenHeight;
-	uint16_t* _ppuBuffer = nullptr;
+	std::unique_ptr<uint16_t[]> _ppuBuffer;
 
 protected:
 	bool ShowPreviousFrameEvents() override;

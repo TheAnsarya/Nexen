@@ -8,8 +8,7 @@
 class Emulator;
 class BaseMapper;
 
-struct HdPackBuilderOptions
-{
+struct HdPackBuilderOptions {
 	char* SaveFolder;
 	ScaleFilterType FilterType;
 	uint32_t Scale;
@@ -21,8 +20,7 @@ struct HdPackBuilderOptions
 	bool IgnoreOverscan;
 };
 
-class HdPackBuilder
-{
+class HdPackBuilder {
 private:
 	Emulator* _emu = nullptr;
 
@@ -36,13 +34,13 @@ private:
 	HdPackBuilderOptions _options = {};
 	uint32_t _palette[512] = {};
 
-	//Used to group blank tiles together
+	// Used to group blank tiles together
 	uint32_t _blankTileIndex = 0;
 	int _blankTilePalette = 0;
 
-	void AddTile(HdPackTileInfo *tile, uint32_t usageCount);
-	void GenerateHdTile(HdPackTileInfo *tile);
-	void DrawTile(HdPackTileInfo *tile, int tileIndex, uint32_t* pngBuffer, int pageNumber, bool containsSpritesOnly);
+	void AddTile(HdPackTileInfo* tile, uint32_t usageCount);
+	void GenerateHdTile(HdPackTileInfo* tile);
+	void DrawTile(HdPackTileInfo* tile, int tileIndex, uint32_t* pngBuffer, int pageNumber, bool containsSpritesOnly);
 
 public:
 	HdPackBuilder(Emulator* emu, PpuModel ppuModel, bool isChrRam, HdPackBuilderOptions options);
@@ -50,7 +48,7 @@ public:
 
 	void ProcessTile(uint32_t x, uint32_t y, uint16_t tileAddr, HdPpuTileInfo& tile, BaseMapper* mapper, bool isSprite, uint32_t chrBankHash, bool transparencyRequired);
 	void SaveHdPack();
-	
-	//static void GetChrBankList(uint32_t *banks);
-	//static void GetBankPreview(uint32_t bankNumber, uint32_t pageNumber, uint32_t *rgbBuffer);
+
+	// static void GetChrBankList(uint32_t *banks);
+	// static void GetBankPreview(uint32_t bankNumber, uint32_t pageNumber, uint32_t *rgbBuffer);
 };

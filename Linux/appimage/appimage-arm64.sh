@@ -1,20 +1,25 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-export PUBLISHFLAGS="-r linux-arm64 --no-self-contained false -p:PublishSingleFile=true -p:PublishReadyToRun=true"
-make -j$(nproc) -O LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false
+export PUBLISHFLAGS="-r linux-arm64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=false -p:PublishReadyToRun=true"
+# Use clang-18 for C++23 support on ubuntu-22.04 with libc++ for <format>
+make -j$(nproc) -O LTO=true STATICLINK=true SYSTEM_LIBEVDEV=false CC=clang-18 CXX=clang++-18 EXTRA_CXXFLAGS="-stdlib=libc++ ${NEXEN_EXTRA_CXXFLAGS:-}" EXTRA_LDFLAGS="${NEXEN_EXTRA_LDFLAGS:-}"
 
 curl -SL https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage -o appimagetool
+chmod +x appimagetool
 
 mkdir -p AppDir/usr/bin
-cp bin/linux-arm64/Release/linux-arm64/publish/Mesen AppDir/usr/bin
+cp bin/linux-arm64/Release/linux-arm64/publish/Nexen AppDir/usr/bin
+# Copy any native libraries that weren't bundled into the single-file executable
+cp bin/linux-arm64/Release/linux-arm64/publish/*.so* AppDir/usr/bin/ 2>/dev/null || true
 chmod +x AppDir/usr/bin
-ln -sr AppDir/usr/bin/Mesen AppDir/AppRun
+cp Linux/appimage/AppRun.sh AppDir/AppRun
+chmod +x AppDir/AppRun
 
-cp Linux/appimage/Mesen.48x48.png AppDir/Mesen.png
-cp Linux/appimage/Mesen.desktop AppDir/Mesen.desktop
-mkdir -p AppDir/usr/share/applications && cp ./AppDir/Mesen.desktop ./AppDir/usr/share/applications
-mkdir -p AppDir/usr/share/icons && cp ./AppDir/Mesen.png ./AppDir/usr/share/icons
-mkdir -p AppDir/usr/share/icons/hicolor/48x48/apps && cp ./AppDir/Mesen.png ./AppDir/usr/share/icons/hicolor/48x48/apps
+cp Linux/appimage/Nexen.48x48.png AppDir/Nexen.png
+cp Linux/appimage/Nexen.desktop AppDir/Nexen.desktop
+mkdir -p AppDir/usr/share/applications && cp ./AppDir/Nexen.desktop ./AppDir/usr/share/applications
+mkdir -p AppDir/usr/share/icons && cp ./AppDir/Nexen.png ./AppDir/usr/share/icons
+mkdir -p AppDir/usr/share/icons/hicolor/48x48/apps && cp ./AppDir/Nexen.png ./AppDir/usr/share/icons/hicolor/48x48/apps
 
 chmod a+x appimagetool
-./appimagetool AppDir/ Mesen.AppImage
+ARCH=aarch64 ./appimagetool AppDir/ Nexen.AppImage

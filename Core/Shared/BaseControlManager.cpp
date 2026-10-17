@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "Shared/BaseControlManager.h"
 #include "Shared/Emulator.h"
 #include "Shared/EmuSettings.h"
@@ -12,8 +12,7 @@
 #include "Shared/MessageManager.h"
 #include "Utilities/Serializer.h"
 
-BaseControlManager::BaseControlManager(Emulator* emu, CpuType cpuType)
-{
+BaseControlManager::BaseControlManager(Emulator* emu, CpuType cpuType) {
 	_emu = emu;
 	_cpuType = cpuType;
 	_pollCounter = 0;
@@ -21,64 +20,52 @@ BaseControlManager::BaseControlManager(Emulator* emu, CpuType cpuType)
 	UpdateControlDevices();
 }
 
-BaseControlManager::~BaseControlManager()
-{
+BaseControlManager::~BaseControlManager() {
 }
 
-void BaseControlManager::AddSystemControlDevice(shared_ptr<BaseControlDevice> device)
-{
+void BaseControlManager::AddSystemControlDevice(shared_ptr<BaseControlDevice> device) {
 	_controlDevices.clear();
 	_systemDevices.push_back(device);
 	UpdateControlDevices();
 }
 
-void BaseControlManager::RegisterInputProvider(IInputProvider* provider)
-{
+void BaseControlManager::RegisterInputProvider(IInputProvider* provider) {
 	auto lock = _deviceLock.AcquireSafe();
 	_inputProviders.push_back(provider);
 }
 
-void BaseControlManager::UnregisterInputProvider(IInputProvider* provider)
-{
+void BaseControlManager::UnregisterInputProvider(IInputProvider* provider) {
 	auto lock = _deviceLock.AcquireSafe();
-	vector<IInputProvider*>& vec = _inputProviders;
-	vec.erase(std::remove(vec.begin(), vec.end(), provider), vec.end());
+	std::erase(_inputProviders, provider);
 }
 
-void BaseControlManager::RegisterInputRecorder(IInputRecorder* provider)
-{
+void BaseControlManager::RegisterInputRecorder(IInputRecorder* provider) {
 	auto lock = _deviceLock.AcquireSafe();
 	_inputRecorders.push_back(provider);
 }
 
-void BaseControlManager::UnregisterInputRecorder(IInputRecorder* provider)
-{
+void BaseControlManager::UnregisterInputRecorder(IInputRecorder* provider) {
 	auto lock = _deviceLock.AcquireSafe();
-	vector<IInputRecorder*>& vec = _inputRecorders;
-	vec.erase(std::remove(vec.begin(), vec.end(), provider), vec.end());
+	std::erase(_inputRecorders, provider);
 }
 
-vector<ControllerData> BaseControlManager::GetPortStates()
-{
-	vector<ControllerData> states;
-	for(shared_ptr<BaseControlDevice>& device : _controlDevices) {
-		states.push_back({
-			device->GetControllerType(),
-			device->GetRawState(),
-			device->GetPort()
-		});
+const vector<ControllerData>& BaseControlManager::GetPortStates() {
+	_portStatesBuffer.clear();
+	for (shared_ptr<BaseControlDevice>& device : _controlDevices) {
+		_portStatesBuffer.push_back({device->GetControllerType(),
+		                             device->GetRawState(),
+		                             device->GetPort()});
 	}
-	return states;
+	return _portStatesBuffer;
 }
 
-shared_ptr<BaseControlDevice> BaseControlManager::GetControlDevice(uint8_t port, uint8_t subPort)
-{
+shared_ptr<BaseControlDevice> BaseControlManager::GetControlDevice(uint8_t port, uint8_t subPort) {
 	auto lock = _deviceLock.AcquireSafe();
 
-	for(size_t i = 0; i < _controlDevices.size(); i++) {
-		if(_controlDevices[i] && _controlDevices[i]->GetPort() == port) {
+	for (size_t i = 0; i < _controlDevices.size(); i++) {
+		if (_controlDevices[i] && _controlDevices[i]->GetPort() == port) {
 			shared_ptr<IControllerHub> hub = std::dynamic_pointer_cast<IControllerHub>(_controlDevices[i]);
-			if(hub) {
+			if (hub) {
 				return hub->GetController(subPort);
 			} else {
 				return subPort == 0 ? _controlDevices[i] : nullptr;
@@ -88,25 +75,24 @@ shared_ptr<BaseControlDevice> BaseControlManager::GetControlDevice(uint8_t port,
 	return nullptr;
 }
 
-shared_ptr<BaseControlDevice> BaseControlManager::GetControlDeviceByIndex(uint8_t index)
-{
+shared_ptr<BaseControlDevice> BaseControlManager::GetControlDeviceByIndex(uint8_t index) {
 	auto lock = _deviceLock.AcquireSafe();
 
 	int counter = 0;
-	for(size_t i = 0; i < _controlDevices.size(); i++) {
-		if(_controlDevices[i] && _controlDevices[i]->GetPort() <= 2) {
+	for (size_t i = 0; i < _controlDevices.size(); i++) {
+		if (_controlDevices[i] && _controlDevices[i]->GetPort() <= 2) {
 			shared_ptr<IControllerHub> hub = std::dynamic_pointer_cast<IControllerHub>(_controlDevices[i]);
-			if(hub) {
+			if (hub) {
 				int portCount = hub->GetHubPortCount();
-				for(int j = 0; j < portCount; j++) {
+				for (int j = 0; j < portCount; j++) {
 					shared_ptr<BaseControlDevice> device = hub->GetController(j);
-					if(counter == index) {
+					if (counter == index) {
 						return device;
 					}
 					counter++;
 				}
 			} else {
-				if(counter == index) {
+				if (counter == index) {
 					return _controlDevices[i];
 				}
 				counter++;
@@ -116,122 +102,108 @@ shared_ptr<BaseControlDevice> BaseControlManager::GetControlDeviceByIndex(uint8_
 	return nullptr;
 }
 
-void BaseControlManager::RefreshHubState()
-{
+void BaseControlManager::RefreshHubState() {
 	auto lock = _deviceLock.AcquireSafe();
 
-	for(size_t i = 0; i < _controlDevices.size(); i++) {
-		if(_controlDevices[i] && _controlDevices[i]->GetPort() <= 2) {
+	for (size_t i = 0; i < _controlDevices.size(); i++) {
+		if (_controlDevices[i] && _controlDevices[i]->GetPort() <= 2) {
 			shared_ptr<IControllerHub> hub = std::dynamic_pointer_cast<IControllerHub>(_controlDevices[i]);
-			if(hub) {
+			if (hub) {
 				hub->RefreshHubState();
 			}
 		}
 	}
 }
 
-vector<shared_ptr<BaseControlDevice>> BaseControlManager::GetControlDevices()
-{
+const vector<shared_ptr<BaseControlDevice>>& BaseControlManager::GetControlDevices() {
 	return _controlDevices;
 }
 
-void BaseControlManager::Serialize(Serializer& s)
-{
+void BaseControlManager::Serialize(Serializer& s) {
 	SV(_pollCounter);
 }
 
-void BaseControlManager::RegisterControlDevice(shared_ptr<BaseControlDevice> controlDevice)
-{
+void BaseControlManager::RegisterControlDevice(shared_ptr<BaseControlDevice> controlDevice) {
 	controlDevice->Init();
 	_controlDevices.push_back(controlDevice);
 }
 
-void BaseControlManager::ClearDevices()
-{
+void BaseControlManager::ClearDevices() {
 	_controlDevices.clear();
 
-	for(shared_ptr<BaseControlDevice> device : _systemDevices) {
-		RegisterControlDevice(device);
+	for (const shared_ptr<BaseControlDevice>& device : _systemDevices) {
+		if (device) {
+			RegisterControlDevice(device);
+		}
 	}
 }
 
-void BaseControlManager::UpdateInputState()
-{
+void BaseControlManager::UpdateInputState() {
 	KeyManager::RefreshKeyState();
 
 	auto lock = _deviceLock.AcquireSafe();
 
-	//string log = "F: " + std::to_string(_emu->GetFrameCount()) + " C:" + std::to_string(_pollCounter) + " ";
-	for(shared_ptr<BaseControlDevice>& device : _controlDevices) {
+	// string log = "F: " + std::to_string(_emu->GetFrameCount()) + " C:" + std::to_string(_pollCounter) + " ";
+	for (shared_ptr<BaseControlDevice>& device : _controlDevices) {
 		device->ClearState();
 		device->SetStateFromInput();
 
-		for(size_t i = 0; i < _inputProviders.size(); i++) {
+		for (size_t i = 0; i < _inputProviders.size(); i++) {
 			IInputProvider* provider = _inputProviders[i];
-			if(provider->SetInput(device.get())) {
+			if (provider->SetInput(device.get())) {
 				break;
 			}
 		}
 
 		device->OnAfterSetState();
-		//log += "|" + device->GetTextState();
+		// log += "|" + device->GetTextState();
 	}
 
 	_emu->ProcessEvent(EventType::InputPolled, _cpuType);
 
-	if(!_emu->IsRunAheadFrame()) {
-		for(IInputRecorder* recorder : _inputRecorders) {
+	if (!_emu->IsRunAheadFrame()) {
+		for (IInputRecorder* recorder : _inputRecorders) {
 			recorder->RecordInput(_controlDevices);
 		}
 	}
 
-	//MessageManager::Log(log);
+	// MessageManager::Log(log);
 
 	_pollCounter++;
 }
 
-void BaseControlManager::ProcessEndOfFrame()
-{
-	if(!_wasInputRead) {
+void BaseControlManager::ProcessEndOfFrame() {
+	if (!_wasInputRead) {
 		_lagCounter++;
 	}
 	_wasInputRead = false;
 }
 
-void BaseControlManager::SetInputReadFlag()
-{
-	//Used for lag counter - any frame where the input is read does not count as lag
+void BaseControlManager::SetInputReadFlag() {
+	// Used for lag counter - any frame where the input is read does not count as lag
 	_wasInputRead = true;
 }
 
-uint32_t BaseControlManager::GetLagCounter()
-{
+uint32_t BaseControlManager::GetLagCounter() {
 	return _lagCounter;
 }
 
-void BaseControlManager::ResetLagCounter()
-{
+void BaseControlManager::ResetLagCounter() {
 	_lagCounter = 0;
 }
 
-bool BaseControlManager::HasControlDevice(ControllerType type)
-{
+bool BaseControlManager::HasControlDevice(ControllerType type) {
 	auto lock = _deviceLock.AcquireSafe();
 
-	for(shared_ptr<BaseControlDevice>& device : _controlDevices) {
-		if(device->HasControllerType(type)) {
-			return true;
-		}
-	}
-	return false;
+	return std::ranges::any_of(_controlDevices, [type](const auto& device) {
+		return device->HasControllerType(type);
+	});
 }
 
-uint32_t BaseControlManager::GetPollCounter()
-{
+uint32_t BaseControlManager::GetPollCounter() {
 	return _pollCounter;
 }
 
-void BaseControlManager::SetPollCounter(uint32_t value)
-{
+void BaseControlManager::SetPollCounter(uint32_t value) {
 	_pollCounter = value;
 }

@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 
-namespace Mesen.Interop;
+namespace Nexen.Interop;
 
-public enum GbMemoryType
-{
+public enum GbMemoryType {
 	None = 0,
 	PrgRom = (int)MemoryType.GbPrgRom,
 	WorkRam = (int)MemoryType.GbWorkRam,
@@ -12,16 +11,14 @@ public enum GbMemoryType
 	BootRom = (int)MemoryType.GbBootRom,
 }
 
-public enum GbRegisterAccess
-{
+public enum GbRegisterAccess {
 	None = 0,
 	Read = 1,
 	Write = 2,
 	ReadWrite = 3
 }
 
-public struct GbMemoryManagerState
-{
+public struct GbMemoryManagerState {
 	public UInt64 ApuCycleCount;
 
 	public byte CgbWorkRamBank;
@@ -59,13 +56,11 @@ public struct GbMemoryManagerState
 	public GbRegisterAccess[] MemoryAccessType;
 }
 
-public struct GbControlManagerState
-{
+public struct GbControlManagerState {
 	public byte InputSelect;
 }
 
-public struct GbDmaControllerState
-{
+public struct GbDmaControllerState {
 	public byte OamDmaSource;
 	public byte DmaStartDelay;
 	public byte InternalDest;
@@ -81,8 +76,7 @@ public struct GbDmaControllerState
 	[MarshalAs(UnmanagedType.I1)] public bool CgbHdmaTrigger;
 };
 
-public struct GbTimerState
-{
+public struct GbTimerState {
 	public UInt16 Divider;
 
 	[MarshalAs(UnmanagedType.I1)] public bool NeedReload;
@@ -95,14 +89,12 @@ public struct GbTimerState
 	public UInt16 TimerDivider;
 };
 
-public enum GbType
-{
+public enum GbType {
 	Gb = 0,
 	Cgb = 1,
 }
 
-public struct GbState : BaseState
-{
+public struct GbState : BaseState {
 	public GbType Type;
 	public GbCpuState Cpu;
 	public GbPpuState Ppu;
@@ -115,16 +107,14 @@ public struct GbState : BaseState
 }
 
 [Flags]
-public enum GameboyFlags : byte
-{
+public enum GameboyFlags : byte {
 	Carry = 0x10,
 	HalfCarry = 0x20,
 	AddSub = 0x40,
 	Zero = 0x80
 }
 
-public struct GbCpuState : BaseState
-{
+public struct GbCpuState : BaseState {
 	public UInt64 CycleCount;
 	public UInt16 PC;
 	public UInt16 SP;
@@ -147,8 +137,7 @@ public struct GbCpuState : BaseState
 	[MarshalAs(UnmanagedType.I1)] public bool Stopped;
 }
 
-public enum PpuMode
-{
+public enum PpuMode {
 	HBlank,
 	VBlank,
 	OamEvaluation,
@@ -156,8 +145,7 @@ public enum PpuMode
 	NoIrq
 }
 
-public struct GbPpuState : BaseState
-{
+public struct GbPpuState : BaseState {
 	public byte Scanline;
 	public UInt16 Cycle;
 	public UInt16 IdleCycles;
@@ -207,8 +195,7 @@ public struct GbPpuState : BaseState
 	public UInt16[] CgbObjPalettes;
 }
 
-public struct GbSquareState
-{
+public struct GbSquareState {
 	public UInt16 Frequency;
 	public UInt16 Timer;
 
@@ -240,8 +227,7 @@ public struct GbSquareState
 	public byte Output;
 }
 
-public struct GbNoiseState
-{
+public struct GbNoiseState {
 	public byte Volume;
 	public byte EnvVolume;
 	[MarshalAs(UnmanagedType.I1)] public bool EnvRaiseVolume;
@@ -263,8 +249,7 @@ public struct GbNoiseState
 	public byte Output;
 }
 
-public struct GbWaveState
-{
+public struct GbWaveState {
 	[MarshalAs(UnmanagedType.I1)] public bool DacEnabled;
 
 	public byte SampleBuffer;
@@ -285,8 +270,7 @@ public struct GbWaveState
 	public byte Output;
 }
 
-public struct GbApuState
-{
+public struct GbApuState {
 	[MarshalAs(UnmanagedType.I1)] public bool ApuEnabled;
 
 	public byte EnableLeftSq1;
@@ -308,8 +292,7 @@ public struct GbApuState
 	public byte FrameSequenceStep;
 }
 
-public struct GbApuDebugState
-{
+public struct GbApuDebugState {
 	public GbApuState Common;
 	public GbSquareState Square1;
 	public GbSquareState Square2;

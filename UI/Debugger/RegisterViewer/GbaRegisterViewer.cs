@@ -1,14 +1,12 @@
-﻿using Mesen.Debugger.ViewModels;
-using Mesen.Interop;
 using System.Collections.Generic;
-using static Mesen.Debugger.ViewModels.RegEntry;
+using Nexen.Debugger.ViewModels;
+using Nexen.Interop;
+using static Nexen.Debugger.ViewModels.RegEntry;
 
-namespace Mesen.Debugger.RegisterViewer;
+namespace Nexen.Debugger.RegisterViewer;
 
-public class GbaRegisterViewer
-{
-	public static List<RegisterViewerTab> GetTabs(ref GbaState gbaState)
-	{
+public sealed class GbaRegisterViewer {
+	public static List<RegisterViewerTab> GetTabs(ref GbaState gbaState) {
 		List<RegisterViewerTab> tabs = new List<RegisterViewerTab>() {
 			GetGbaPpuTab(ref gbaState),
 			GetGbaApuTab(ref gbaState),
@@ -19,9 +17,8 @@ public class GbaRegisterViewer
 		return tabs;
 	}
 
-	private static RegisterViewerTab GetGbaMiscTab(ref GbaState gbaState)
-	{
-		List<RegEntry> entries = new List<RegEntry>();
+	private static RegisterViewerTab GetGbaMiscTab(ref GbaState gbaState) {
+		List<RegEntry> entries = [];
 
 		GbaMemoryManagerState memManager = gbaState.MemoryManager;
 		GbaGpioState gpio = gbaState.Cart.Gpio;
@@ -99,7 +96,7 @@ public class GbaRegisterViewer
 			new RegEntry("$4000205.6", "Prefetch Enabled", memManager.PrefetchEnabled),
 		});
 
-		if(gbaState.Cart.HasGpio) {
+		if (gbaState.Cart.HasGpio) {
 			entries.AddRange(new List<RegEntry>() {
 				new RegEntry("", "Cart - GPIO"),
 				new RegEntry("$80000C4.0", "SCK (RTC)", (gpio.Data & 0x01) != 0),
@@ -117,9 +114,8 @@ public class GbaRegisterViewer
 		return new RegisterViewerTab("Misc", entries, CpuType.Gba, MemoryType.GbaMemory);
 	}
 
-	private static RegisterViewerTab GetGbaPpuTab(ref GbaState gbaState)
-	{
-		List<RegEntry> entries = new List<RegEntry>();
+	private static RegisterViewerTab GetGbaPpuTab(ref GbaState gbaState) {
+		List<RegEntry> entries = [];
 
 		GbaPpuState ppu = gbaState.Ppu;
 		entries.AddRange(new List<RegEntry>() {
@@ -144,7 +140,7 @@ public class GbaRegisterViewer
 			new RegEntry($"$4000004", "Status", ppu.DispStat, Format.X8),
 
 			//TODOGBA fix this to always match real value
-			new RegEntry($"$4000004.0", "Vertical Blank", ppu.Scanline >= 160 && ppu.Scanline != 227),
+			new RegEntry($"$4000004.0", "Vertical Blank", ppu.Scanline is >= 160 and not 227),
 			new RegEntry($"$4000004.1", "Horizontal Blank", ppu.Cycle > 1007),
 			new RegEntry($"$4000004.2", "LYC Match", ppu.Scanline == ppu.Lyc),
 
@@ -157,9 +153,9 @@ public class GbaRegisterViewer
 			new RegEntry($"", "Frame Number", ppu.FrameCount),
 		});
 
-		for(int i = 0; i < 4; i++) {
+		for (int i = 0; i < 4; i++) {
 			GbaBgConfig layer = ppu.BgLayers[i];
-			int baseAddr = 0x4000008 + i * 2;
+			int baseAddr = 0x4000008 + (i * 2);
 			entries.AddRange(new List<RegEntry>() {
 				new RegEntry("", "BG Layer " + i),
 				new RegEntry($"$4000001." + i, "BG" + i + " Enabled", ppu.BgLayers[i].Enabled),
@@ -173,11 +169,11 @@ public class GbaRegisterViewer
 				new RegEntry($"${baseAddr+1:X}.0-4", "Tilemap Address", layer.TilemapAddr),
 			});
 
-			if(i >= 2) {
+			if (i >= 2) {
 				entries.Add(new RegEntry($"${baseAddr + 1:X}.5", "Wraparound", layer.WrapAround));
 			}
 
-			if(ppu.BgMode == 0 || i < 2) {
+			if (ppu.BgMode == 0 || i < 2) {
 				entries.Add(new RegEntry($"${baseAddr + 1:X}.6-7", "Size",
 					(layer.DoubleWidth ? "512" : "256") + "x" +
 					(layer.DoubleHeight ? "512" : "256")
@@ -187,18 +183,18 @@ public class GbaRegisterViewer
 				entries.Add(new RegEntry($"${baseAddr + 1:X}.6-7", "Size", size + "x" + size, layer.ScreenSize));
 			}
 
-			baseAddr = 0x4000010 + i * 4;
+			baseAddr = 0x4000010 + (i * 4);
 			entries.Add(new RegEntry($"${baseAddr:X}.0-15", "Scroll X", layer.ScrollX));
 			entries.Add(new RegEntry($"${baseAddr + 2:X}.0-15", "Scroll Y", layer.ScrollY));
 
-			if(i >= 2) {
+			if (i >= 2) {
 				GbaTransformConfig cfg = ppu.Transform[i - 2];
-				entries.Add(new RegEntry($"${0x4000020 + (i - 2) * 0x10:X}-1", "Param A", cfg.Matrix[0]));
-				entries.Add(new RegEntry($"${0x4000022 + (i - 2) * 0x10:X}-3", "Param B", cfg.Matrix[1]));
-				entries.Add(new RegEntry($"${0x4000024 + (i - 2) * 0x10:X}-5", "Param C", cfg.Matrix[2]));
-				entries.Add(new RegEntry($"${0x4000026 + (i - 2) * 0x10:X}-7", "Param D", cfg.Matrix[3]));
-				entries.Add(new RegEntry($"${0x4000028 + (i - 2) * 0x10:X}-B.0-27", "Origin X", ((int)cfg.OriginX << 4) >> 4, Format.X28));
-				entries.Add(new RegEntry($"${0x400002C + (i - 2) * 0x10:X}-F.0-27", "Origin Y", ((int)cfg.OriginY << 4) >> 4, Format.X28));
+				entries.Add(new RegEntry($"${0x4000020 + ((i - 2) * 0x10):X}-1", "Param A", cfg.Matrix[0]));
+				entries.Add(new RegEntry($"${0x4000022 + ((i - 2) * 0x10):X}-3", "Param B", cfg.Matrix[1]));
+				entries.Add(new RegEntry($"${0x4000024 + ((i - 2) * 0x10):X}-5", "Param C", cfg.Matrix[2]));
+				entries.Add(new RegEntry($"${0x4000026 + ((i - 2) * 0x10):X}-7", "Param D", cfg.Matrix[3]));
+				entries.Add(new RegEntry($"${0x4000028 + ((i - 2) * 0x10):X}-B.0-27", "Origin X", ((int)cfg.OriginX << 4) >> 4, Format.X28));
+				entries.Add(new RegEntry($"${0x400002C + ((i - 2) * 0x10):X}-F.0-27", "Origin Y", ((int)cfg.OriginY << 4) >> 4, Format.X28));
 			}
 		}
 
@@ -272,9 +268,8 @@ public class GbaRegisterViewer
 		return new RegisterViewerTab("PPU", entries, CpuType.Gba, MemoryType.GbaMemory);
 	}
 
-	private static RegisterViewerTab GetGbaApuTab(ref GbaState gbaState)
-	{
-		List<RegEntry> entries = new List<RegEntry>();
+	private static RegisterViewerTab GetGbaApuTab(ref GbaState gbaState) {
+		List<RegEntry> entries = [];
 
 		GbaApuState apu = gbaState.Apu.Common;
 		entries.AddRange(new List<RegEntry>() {
@@ -419,14 +414,13 @@ public class GbaRegisterViewer
 		return new RegisterViewerTab("APU", entries, CpuType.Gba, MemoryType.GbaMemory);
 	}
 
-	private static RegisterViewerTab GetGbaTimerTab(ref GbaState gbaState)
-	{
-		List<RegEntry> entries = new List<RegEntry>();
+	private static RegisterViewerTab GetGbaTimerTab(ref GbaState gbaState) {
+		List<RegEntry> entries = [];
 
 		GbaTimersState timers = gbaState.Timer;
-		for(int i = 0; i < 4; i++) {
+		for (int i = 0; i < 4; i++) {
 			GbaTimerState timer = timers.Timer[i];
-			int baseAddr = 0x4000100 + i * 4;
+			int baseAddr = 0x4000100 + (i * 4);
 
 			byte prescaler = timer.PrescaleMask switch {
 				0 => 0,
@@ -449,14 +443,13 @@ public class GbaRegisterViewer
 		return new RegisterViewerTab("Timers", entries, CpuType.Gba, MemoryType.GbaMemory);
 	}
 
-	private static RegisterViewerTab GetGbaDmaTab(ref GbaState gbaState)
-	{
-		List<RegEntry> entries = new List<RegEntry>();
+	private static RegisterViewerTab GetGbaDmaTab(ref GbaState gbaState) {
+		List<RegEntry> entries = [];
 
 		GbaDmaControllerState state = gbaState.Dma;
-		for(int i = 0; i < 4; i++) {
+		for (int i = 0; i < 4; i++) {
 			GbaDmaChannel ch = state.Ch[i];
-			int baseAddr = 0x40000B0 + i * 12;
+			int baseAddr = 0x40000B0 + (i * 12);
 			entries.AddRange(new List<RegEntry>() {
 				new RegEntry("", "DMA Channel " + i),
 				new RegEntry($"${baseAddr:X}-{(baseAddr+3)&0xF:X}", "Source", ch.Source),

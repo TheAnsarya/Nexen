@@ -3,8 +3,7 @@
 #include "Utilities/ISerializable.h"
 #include "Utilities/Serializer.h"
 
-class IPceMapper : public ISerializable
-{
+class IPceMapper : public ISerializable {
 protected:
 	bool _mappedBanks[0x100] = {};
 

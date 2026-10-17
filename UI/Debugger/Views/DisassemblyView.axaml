@@ -3,15 +3,15 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:dv="using:Mesen.Debugger.Views"
-	xmlns:c="using:Mesen.Controls"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:dv="using:Nexen.Debugger.Views"
+	xmlns:c="using:Nexen.Controls"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:DisassemblyViewModel"
-	x:Class="Mesen.Debugger.Views.DisassemblyView"
+	x:Class="Nexen.Debugger.Views.DisassemblyView"
 >
 	<Design.DataContext>
 		<vm:DisassemblyViewModel />
@@ -45,8 +45,8 @@
 				Lines="{Binding Lines}"
 				SearchString="{Binding QuickSearch.SearchString}"
 				StyleProvider="{Binding StyleProvider}"
-				FontFamily="{DynamicResource MesenDisassemblyFont}"
-				FontSize="{DynamicResource MesenDisassemblyFontSize}"
+				FontFamily="{DynamicResource NexenDisassemblyFont}"
+				FontSize="{DynamicResource NexenDisassemblyFontSize}"
 				ShowByteCode="{Binding Config.Debugger.ShowByteCode}"
 				AddressDisplayType="{Binding Config.Debugger.AddressDisplayType}"
 			/>

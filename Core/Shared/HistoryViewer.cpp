@@ -13,23 +13,20 @@
 #include "Shared/Movies/MovieRecorder.h"
 #include "Shared/SaveStateManager.h"
 
-HistoryViewer::HistoryViewer(Emulator* emu)
-{
+HistoryViewer::HistoryViewer(Emulator* emu) {
 	_emu = emu;
 	_position = 0;
 	_pollCounter = 0;
 }
 
-HistoryViewer::~HistoryViewer()
-{
+HistoryViewer::~HistoryViewer() {
 }
 
-bool HistoryViewer::Initialize(Emulator* mainEmu)
-{
+bool HistoryViewer::Initialize(Emulator* mainEmu) {
 	auto mainLock = mainEmu->AcquireLock();
 	auto subLock = _emu->AcquireLock();
 
-	if(!_emu->LoadRom(mainEmu->GetRomInfo().RomFile, mainEmu->GetRomInfo().PatchFile)) {
+	if (!_emu->LoadRom(mainEmu->GetRomInfo().RomFile, mainEmu->GetRomInfo().PatchFile)) {
 		return false;
 	}
 
@@ -38,25 +35,33 @@ bool HistoryViewer::Initialize(Emulator* mainEmu)
 	vector<CheatCode> cheats = _mainEmu->GetCheatManager()->GetCheats();
 	_emu->GetCheatManager()->SetCheats(cheats);
 
-	//Disable rewind history to reduce memory usage
+	// Disable rewind history to reduce memory usage
 	_emu->GetSettings()->GetPreferences().RewindBufferSize = 0;
 
-	//Disable battery saving for this instance
+	// Disable battery saving for this instance
 	_emu->GetBatteryManager()->Initialize("");
-	
+
 	_history = mainEmu->GetRewindManager()->GetHistory();
-	
+
+	// Cache segment boundaries (immutable after init)
+	_segmentFrames.clear();
+	_segmentFrames.reserve(_history.size());
+	for (size_t i = 0; i < _history.size(); i++) {
+		if (_history[i].EndOfSegment || i == _history.size() - 1) {
+			_segmentFrames.push_back((uint32_t)i * RewindManager::BufferSize);
+		}
+	}
+
 	_emu->UnregisterInputProvider(this);
 	_emu->RegisterInputProvider(this);
-	
+
 	SeekTo(0);
 
 	return true;
 }
 
-void HistoryViewer::SetOptions(HistoryViewerOptions options)
-{
-	if(options.IsPaused) {
+void HistoryViewer::SetOptions(HistoryViewerOptions options) {
+	if (options.IsPaused) {
 		_emu->Pause();
 	} else {
 		_emu->Resume();
@@ -66,8 +71,7 @@ void HistoryViewer::SetOptions(HistoryViewerOptions options)
 	_emu->GetVideoRenderer()->SetRendererSize(options.Width, options.Height);
 }
 
-HistoryViewerState HistoryViewer::GetState()
-{
+HistoryViewerState HistoryViewer::GetState() {
 	HistoryViewerState state = {};
 	state.Volume = _emu->GetSettings()->GetAudioConfig().MasterVolume;
 	state.IsPaused = _emu->IsPaused();
@@ -75,31 +79,21 @@ HistoryViewerState HistoryViewer::GetState()
 	state.Length = (uint32_t)(_history.size() * RewindManager::BufferSize);
 	state.Fps = _emu->GetTimingInfo(_emu->GetCpuTypes()[0]).Fps;
 
-	uint32_t segmentCount = 0;
-	for(size_t i = 0; i < _history.size(); i++) {
-		if(_history[i].EndOfSegment || i == _history.size() - 1) {
-			state.Segments[segmentCount] = (uint32_t)i * RewindManager::BufferSize;
-			segmentCount++;
-
-			if(segmentCount == 1000) {
-				//Reached max count, can't return any more values
-				break;
-			}
-		}
+	uint32_t segmentCount = std::min((uint32_t)_segmentFrames.size(), (uint32_t)1000);
+	for (uint32_t i = 0; i < segmentCount; i++) {
+		state.Segments[i] = _segmentFrames[i];
 	}
-
 	state.SegmentCount = segmentCount;
 
 	return state;
 }
 
-void HistoryViewer::SeekTo(uint32_t seekPosition)
-{
-	//Seek to the specified position
+void HistoryViewer::SeekTo(uint32_t seekPosition) {
+	// Seek to the specified position
 	seekPosition /= RewindManager::BufferSize;
-	if(seekPosition < _history.size()) {
+	if (seekPosition < _history.size()) {
 		auto lock = _emu->AcquireLock();
-		
+
 		_position = seekPosition;
 		RewindData rewindData = _history[_position];
 		rewindData.LoadState(_emu, _history, _position);
@@ -109,9 +103,8 @@ void HistoryViewer::SeekTo(uint32_t seekPosition)
 	}
 }
 
-bool HistoryViewer::CreateSaveState(string outputFile, uint32_t position)
-{
-	if(_history.empty()) {
+bool HistoryViewer::CreateSaveState(const string& outputFile, uint32_t position) {
+	if (_history.empty()) {
 		return false;
 	}
 
@@ -123,7 +116,7 @@ bool HistoryViewer::CreateSaveState(string outputFile, uint32_t position)
 	_history[position].GetStateData(stateData, _history, position);
 
 	ofstream output(outputFile, ios::binary);
-	if(output) {
+	if (output) {
 		output << stateData.rdbuf();
 		output.close();
 		return true;
@@ -131,76 +124,72 @@ bool HistoryViewer::CreateSaveState(string outputFile, uint32_t position)
 	return false;
 }
 
-bool HistoryViewer::SaveMovie(string movieFile, uint32_t startPosition, uint32_t endPosition)
-{
+bool HistoryViewer::SaveMovie(const string& movieFile, uint32_t startPosition, uint32_t endPosition) {
 	startPosition /= RewindManager::BufferSize;
 	endPosition /= RewindManager::BufferSize;
 
-	//Take a savestate to be able to restore it after generating the movie file
+	// Take a savestate to be able to restore it after generating the movie file
 	//(the movie generation uses the console's inputs, which could affect the emulation otherwise)
 	stringstream state;
 	auto lock = _emu->AcquireLock();
 	_emu->Serialize(state, true, false);
 
-	//Convert the rewind data to a .mmo file
-	unique_ptr<MovieRecorder> recorder(new MovieRecorder(_emu));
+	// Convert the rewind data to a .nexen-movie file
+	auto recorder = std::make_unique<MovieRecorder>(_emu);
 	bool result = recorder->CreateMovie(movieFile, _history, startPosition, endPosition, _mainEmu->GetBatteryManager()->HasBattery());
 
-	//Resume the state and resume
-	_emu->Deserialize(state, SaveStateManager::FileFormatVersion, true);
+	// Resume the state and resume
+	(void)_emu->Deserialize(state, SaveStateManager::FileFormatVersion, true);
 	return result;
 }
 
-void HistoryViewer::ResumeGameplay(uint32_t resumePosition)
-{
+void HistoryViewer::ResumeGameplay(uint32_t resumePosition) {
 	resumePosition /= RewindManager::BufferSize;
 
 	auto lock = _mainEmu->AcquireLock();
 	RomInfo mainRom = _mainEmu->GetRomInfo();
 	RomInfo viewerRom = _emu->GetRomInfo();
 
-	if(!_mainEmu->IsRunning() || (string)mainRom.RomFile != (string)viewerRom.RomFile || (string)mainRom.PatchFile != (string)viewerRom.PatchFile) {
-		//Load game on the main window if they aren't the same
-		if(!_mainEmu->LoadRom(_emu->GetRomInfo().RomFile, _emu->GetRomInfo().PatchFile)) {
+	if (!_mainEmu->IsRunning() || (string)mainRom.RomFile != (string)viewerRom.RomFile || (string)mainRom.PatchFile != (string)viewerRom.PatchFile) {
+		// Load game on the main window if they aren't the same
+		if (!_mainEmu->LoadRom(_emu->GetRomInfo().RomFile, _emu->GetRomInfo().PatchFile)) {
 			return;
 		}
 	}
 
-	if(resumePosition < _history.size()) {
+	if (resumePosition < _history.size()) {
 		_history[resumePosition].LoadState(_mainEmu, _history, resumePosition);
 	} else {
 		_history[_history.size() - 1].LoadState(_mainEmu, _history, (int32_t)_history.size() - 1);
 	}
 }
 
-bool HistoryViewer::SetInput(BaseControlDevice *device)
-{
+bool HistoryViewer::SetInput(BaseControlDevice* device) {
 	uint8_t port = device->GetPort();
-	if(_position < _history.size()) {
-		std::deque<ControlDeviceState> &stateData = _history[_position].InputLogs[port];
-		if(_pollCounter < stateData.size()) {
+	if (_position < _history.size()) {
+		std::deque<ControlDeviceState>& stateData = _history[_position].InputLogs[port];
+		if (_pollCounter < stateData.size()) {
 			ControlDeviceState state = stateData[_pollCounter];
 			device->SetRawState(state);
 		}
 	}
-	if(port == 0 && _pollCounter < RewindManager::BufferSize) {
+	if (port == 0 && _pollCounter < RewindManager::BufferSize) {
 		_pollCounter++;
 	}
 	return true;
 }
 
-void HistoryViewer::ProcessEndOfFrame()
-{
-	if(_history.empty()) {
+void HistoryViewer::ProcessEndOfFrame() {
+	if (_history.empty()) {
 		return;
 	}
 
-	if(_pollCounter >= (uint32_t)_history[_position].FrameCount) {
+	if (_pollCounter >= (uint32_t)_history[_position].FrameCount) {
 		_pollCounter = 0;
 		_position++;
 
-		if(_position >= _history.size()) {
-			//Reached the end of history data
+		if (_position >= _history.size()) {
+			// Reached the end of history data
 			SeekTo(0);
 			_emu->Pause();
 			return;

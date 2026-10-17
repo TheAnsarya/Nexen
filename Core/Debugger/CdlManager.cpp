@@ -4,103 +4,92 @@
 #include "Debugger/DebugBreakHelper.h"
 #include "Debugger/Disassembler.h"
 
-void CdlManager::SetCdlData(MemoryType memType, uint8_t* cdlData, uint32_t length)
-{
+void CdlManager::SetCdlData(MemoryType memType, uint8_t* cdlData, uint32_t length) {
 	DebugBreakHelper helper(_debugger);
 	CodeDataLogger* cdl = GetCodeDataLogger(memType);
-	if(cdl) {
+	if (cdl) {
 		cdl->SetCdlData(cdlData, length);
 		RefreshCodeCache();
 	}
 }
 
-void CdlManager::MarkBytesAs(MemoryType memType, uint32_t start, uint32_t end, uint8_t flags)
-{
+void CdlManager::MarkBytesAs(MemoryType memType, uint32_t start, uint32_t end, uint8_t flags) {
 	DebugBreakHelper helper(_debugger);
 	CodeDataLogger* cdl = GetCodeDataLogger(memType);
-	if(cdl) {
+	if (cdl) {
 		cdl->MarkBytesAs(start, end, flags);
 		RefreshCodeCache();
 	}
 }
 
-CdlStatistics CdlManager::GetCdlStatistics(MemoryType memType)
-{
+CdlStatistics CdlManager::GetCdlStatistics(MemoryType memType) {
 	CodeDataLogger* cdl = GetCodeDataLogger(memType);
-	return cdl ? cdl->GetStatistics() : CdlStatistics {};
+	return cdl ? cdl->GetStatistics() : CdlStatistics{};
 }
 
-uint32_t CdlManager::GetCdlFunctions(MemoryType memType, uint32_t functions[], uint32_t maxSize)
-{
+uint32_t CdlManager::GetCdlFunctions(MemoryType memType, uint32_t functions[], uint32_t maxSize) {
 	CodeDataLogger* cdl = GetCodeDataLogger(memType);
 	return cdl ? cdl->GetFunctions(functions, maxSize) : 0;
 }
 
-void CdlManager::ResetCdl(MemoryType memType)
-{
+void CdlManager::ResetCdl(MemoryType memType) {
 	DebugBreakHelper helper(_debugger);
 	CodeDataLogger* cdl = GetCodeDataLogger(memType);
-	if(cdl) {
+	if (cdl) {
 		cdl->Reset();
 		RefreshCodeCache();
 	}
 }
 
-void CdlManager::LoadCdlFile(MemoryType memType, char* cdlFile)
-{
+void CdlManager::LoadCdlFile(MemoryType memType, char* cdlFile) {
 	DebugBreakHelper helper(_debugger);
 	CodeDataLogger* cdl = GetCodeDataLogger(memType);
-	if(cdl) {
+	if (cdl) {
 		cdl->LoadCdlFile(cdlFile, false);
 		RefreshCodeCache();
 	}
 }
 
-void CdlManager::SaveCdlFile(MemoryType memType, char* cdlFile)
-{
+void CdlManager::SaveCdlFile(MemoryType memType, char* cdlFile) {
 	DebugBreakHelper helper(_debugger);
 	CodeDataLogger* cdl = GetCodeDataLogger(memType);
-	if(cdl) {
+	if (cdl) {
 		cdl->SaveCdlFile(cdlFile);
 	}
 }
 
-void CdlManager::RegisterCdl(MemoryType memType, CodeDataLogger* cdl)
-{
+void CdlManager::RegisterCdl(MemoryType memType, CodeDataLogger* cdl) {
 	_codeDataLoggers[(int)memType] = cdl;
 }
 
-void CdlManager::RefreshCodeCache(bool resetPrgCache)
-{
-	if(resetPrgCache) {
+void CdlManager::RefreshCodeCache(bool resetPrgCache) {
+	if (resetPrgCache) {
 		_disassembler->ResetPrgCache();
 	}
 
-	for(CodeDataLogger* cdl : _codeDataLoggers) {
-		if(cdl) {
+	for (CodeDataLogger* cdl : _codeDataLoggers) {
+		if (cdl) {
 			cdl->RebuildPrgCache(_disassembler);
 		}
 	}
 }
 
-CdlManager::CdlManager(Debugger* debugger, Disassembler* disassembler)
-{
+CdlManager::CdlManager(Debugger* debugger, Disassembler* disassembler) {
 	_debugger = debugger;
 	_disassembler = disassembler;
 }
 
-void CdlManager::GetCdlData(uint32_t offset, uint32_t length, MemoryType memoryType, uint8_t* cdlData)
-{
+void CdlManager::GetCdlData(uint32_t offset, uint32_t length, MemoryType memoryType, uint8_t* cdlData) {
 	CodeDataLogger* cdl = GetCodeDataLogger(memoryType);
-	if(cdl) {
+	if (cdl) {
 		cdl->GetCdlData(offset, length, cdlData);
 	} else {
 		AddressInfo relAddress;
 		relAddress.Type = memoryType;
-		for(uint32_t i = 0; i < length; i++) {
+		for (uint32_t i = 0; i < length; i++) {
 			relAddress.Address = offset + i;
 			AddressInfo info = _debugger->GetAbsoluteAddress(relAddress);
-			if(info.Address >= 0) {
+			if (info.Address >= 0) {
 				cdl = GetCodeDataLogger(info.Type);
 				cdlData[i] = cdl ? cdl->GetFlags(info.Address) : 0;
 			} else {
@@ -110,15 +99,14 @@ void CdlManager::GetCdlData(uint32_t offset, uint32_t length, MemoryType memoryT
 	}
 }
 
-int16_t CdlManager::GetCdlFlags(MemoryType memType, uint32_t addr)
-{
+int16_t CdlManager::GetCdlFlags(MemoryType memType, uint32_t addr) {
 	CodeDataLogger* cdl = GetCodeDataLogger(memType);
-	if(cdl) {
+	if (cdl) {
 		return cdl->GetFlags(addr);
 	} else {
-		if(DebugUtilities::IsRelativeMemory(memType)) {
-			AddressInfo info = _debugger->GetAbsoluteAddress({ (int32_t)addr, memType });
-			if(info.Address >= 0) {
+		if (DebugUtilities::IsRelativeMemory(memType)) {
+			AddressInfo info = _debugger->GetAbsoluteAddress({(int32_t)addr, memType});
+			if (info.Address >= 0) {
 				cdl = GetCodeDataLogger(info.Type);
 				return cdl ? cdl->GetFlags(info.Address) : -1;
 			}
@@ -127,7 +115,6 @@ int16_t CdlManager::GetCdlFlags(MemoryType memType, uint32_t addr)
 	return -1;
 }
 
-CodeDataLogger* CdlManager::GetCodeDataLogger(MemoryType memType)
-{
+CodeDataLogger* CdlManager::GetCodeDataLogger(MemoryType memType) {
 	return _codeDataLoggers[(int)memType];
 }

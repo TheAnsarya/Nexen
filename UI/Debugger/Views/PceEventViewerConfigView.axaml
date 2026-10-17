@@ -3,16 +3,16 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:dc="using:Mesen.Debugger.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	mc:Ignorable="d"
   Design.Width="200"
   Design.Height="600"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="cfg:PceEventViewerConfig"
-	x:Class="Mesen.Debugger.Views.PceEventViewerConfigView"
+	x:Class="Nexen.Debugger.Views.PceEventViewerConfigView"
 >
 	<Design.DataContext>
 		<cfg:PceEventViewerConfig />

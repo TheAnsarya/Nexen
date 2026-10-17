@@ -1,37 +1,32 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "GBA/GbaTypes.h"
 
-class GbaWaitStates
-{
+class GbaWaitStates {
 private:
-	uint8_t* _waitStatesLut = nullptr;
+	std::unique_ptr<uint8_t[]> _waitStatesLut;
 
 public:
-	GbaWaitStates()
-	{
-		_waitStatesLut = new uint8_t[0x400];
+	GbaWaitStates() {
+		_waitStatesLut = std::make_unique<uint8_t[]>(0x400);
 	}
 
-	~GbaWaitStates()
-	{
-		delete[] _waitStatesLut;
-	}
+	~GbaWaitStates() = default;
 
-	void GenerateWaitStateLut(GbaMemoryManagerState& state)
-	{
-		for(GbaAccessModeVal mode = 0; mode < 4; mode++) {
-			for(int i = 0; i <= 0xFF; i++) {
+	void GenerateWaitStateLut(GbaMemoryManagerState& state) {
+		for (GbaAccessModeVal mode = 0; mode < 4; mode++) {
+			for (int i = 0; i <= 0xFF; i++) {
 				uint8_t waitStates = 1;
-				switch(i) {
+				switch (i) {
 					case 0x02:
-						//External work ram
+						// External work ram
 						waitStates = (mode & GbaAccessMode::Word) ? 6 : 3;
 						break;
 
 					case 0x05:
 					case 0x06:
-						//VRAM/Palette
+						// VRAM/Palette
 						waitStates = (mode & GbaAccessMode::Word) ? 2 : 1;
 						break;
 
@@ -52,7 +47,7 @@ public:
 
 					case 0x0E:
 					case 0x0F:
-						//SRAM
+						// SRAM
 						waitStates = state.SramWaitStates;
 						break;
 				}
@@ -62,13 +57,11 @@ public:
 		}
 	}
 
-	__forceinline uint8_t GetPrefetchWaitStates(GbaAccessModeVal mode, uint32_t addr)
-	{
+	__forceinline uint8_t GetPrefetchWaitStates(GbaAccessModeVal mode, uint32_t addr) {
 		return _waitStatesLut[((addr >> 22) & 0x3FC) | (mode & (GbaAccessMode::Word | GbaAccessMode::Sequential))];
 	}
 
-	__forceinline uint8_t GetWaitStates(GbaAccessModeVal mode, uint32_t addr)
-	{
+	__forceinline uint8_t GetWaitStates(GbaAccessModeVal mode, uint32_t addr) {
 		return _waitStatesLut[((addr >> 22) & 0x3FC) | (mode & (GbaAccessMode::Word | ((addr & 0x1FFFF) ? GbaAccessMode::Sequential : 0)))];
 	}
 };

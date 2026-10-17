@@ -7,8 +7,7 @@
 class Emulator;
 class PceConsole;
 
-class PceArcadeCard final : public IPceMapper
-{
+class PceArcadeCard final : public IPceMapper {
 private:
 	static constexpr int ArcadeRamMemSize = 0x200000;
 
@@ -35,6 +34,6 @@ public:
 
 	uint8_t Read(uint8_t bank, uint16_t addr, uint8_t value) override;
 	void Write(uint8_t bank, uint16_t addr, uint8_t value) override;
-	
+
 	void Serialize(Serializer& s) override;
 };

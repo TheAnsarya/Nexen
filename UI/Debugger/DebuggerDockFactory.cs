@@ -1,20 +1,20 @@
-﻿using Dock.Avalonia.Controls;
-using Dock.Model.Core;
-using Mesen.Debugger.ViewModels;
-using Mesen.Debugger.ViewModels.DebuggerDock;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Dock.Avalonia.Controls;
 using Dock.Model.Controls;
-using Mesen.Debugger.StatusViews;
+using Dock.Model.Core;
 using Dock.Model.Mvvm;
 using Dock.Model.Mvvm.Controls;
 using Dock.Model.Mvvm.Core;
+using Nexen.Debugger.StatusViews;
+using Nexen.Debugger.ViewModels;
+using Nexen.Debugger.ViewModels.DebuggerDock;
 
-namespace Mesen.Debugger
-{
-	public class DebuggerDockFactory : Factory
-	{
+namespace Nexen.Debugger;
+
+public sealed class DebuggerDockFactory : Factory {
 		public ToolContainerViewModel<DisassemblyViewModel> DisassemblyTool { get; private set; }
 		public ToolContainerViewModel<SourceViewViewModel> SourceViewTool { get; private set; }
 		public ToolContainerViewModel<BaseConsoleStatusViewModel> StatusTool { get; private set; }
@@ -28,8 +28,7 @@ namespace Mesen.Debugger
 
 		private DockEntryDefinition? _savedRootDef;
 
-		public DebuggerDockFactory(DockEntryDefinition? savedRootDef)
-		{
+		public DebuggerDockFactory(DockEntryDefinition? savedRootDef) {
 			DisassemblyTool = new("Disassembly");
 			DisassemblyTool.CanClose = false;
 			SourceViewTool = new("Source View");
@@ -47,12 +46,11 @@ namespace Mesen.Debugger
 			_savedRootDef = savedRootDef;
 		}
 
-		public override IRootDock CreateLayout()
-		{
-			if(_savedRootDef != null) {
+		public override IRootDock CreateLayout() {
+			if (_savedRootDef is not null) {
 				//Restore previous layout
 				try {
-					if(FromDockDefinition(_savedRootDef) is IRootDock savedRootLayout) {
+					if (FromDockDefinition(_savedRootDef) is IRootDock savedRootLayout) {
 						return savedRootLayout;
 					}
 				} catch {
@@ -63,8 +61,7 @@ namespace Mesen.Debugger
 			return GetDefaultLayout();
 		}
 
-		public IRootDock GetDefaultLayout()
-		{
+		public IRootDock GetDefaultLayout() {
 			var mainLayout = new ProportionalDock {
 				Orientation = Orientation.Vertical,
 				VisibleDockables = CreateList<IDockable>(
@@ -77,7 +74,7 @@ namespace Mesen.Debugger
 								Proportion = 0.60,
 								VisibleDockables = CreateList<IDockable>(DisassemblyTool, SourceViewTool)
 							},
-							new MesenProportionalDockSplitter(),
+							new NexenProportionalDockSplitter(),
 							new ProportionalDock {
 								Proportion = 0.40,
 								Orientation = Orientation.Vertical,
@@ -86,7 +83,7 @@ namespace Mesen.Debugger
 										Proportion = 0.5,
 										VisibleDockables = CreateList<IDockable>(StatusTool)
 									},
-									new MesenProportionalDockSplitter(),
+									new NexenProportionalDockSplitter(),
 									new ToolDock {
 										Proportion = 0.5,
 										VisibleDockables = CreateList<IDockable>(LabelListTool, FunctionListTool, FindResultListTool, ControllerListTool)
@@ -95,7 +92,7 @@ namespace Mesen.Debugger
 							}
 						)
 					},
-					new MesenProportionalDockSplitter(),
+					new NexenProportionalDockSplitter(),
 					new ProportionalDock {
 						Proportion = 0.25,
 						Orientation = Orientation.Horizontal,
@@ -104,12 +101,12 @@ namespace Mesen.Debugger
 								Proportion = 0.33,
 								VisibleDockables = CreateList<IDockable>(WatchListTool)
 							},
-							new MesenProportionalDockSplitter(),
+							new NexenProportionalDockSplitter(),
 							new ToolDock {
 								Proportion = 0.33,
 								VisibleDockables = CreateList<IDockable>(BreakpointListTool)
 							},
-							new MesenProportionalDockSplitter(),
+							new NexenProportionalDockSplitter(),
 							new ToolDock {
 								Proportion = 0.33,
 								VisibleDockables = CreateList<IDockable>(CallStackTool)
@@ -126,13 +123,11 @@ namespace Mesen.Debugger
 			return root;
 		}
 
-		public override IProportionalDockSplitter CreateProportionalDockSplitter()
-		{
-			return new MesenProportionalDockSplitter();
+		public override IProportionalDockSplitter CreateProportionalDockSplitter() {
+			return new NexenProportionalDockSplitter();
 		}
 
-		public override void InitLayout(IDockable layout)
-		{
+		public override void InitLayout(IDockable layout) {
 			this.ContextLocator = new Dictionary<string, Func<object?>> {
 			};
 
@@ -145,25 +140,25 @@ namespace Mesen.Debugger
 			base.InitLayout(layout);
 		}
 
-		public DockEntryDefinition ToDockDefinition(IDockable dockable)
-		{
+		public DockEntryDefinition ToDockDefinition(IDockable dockable) {
 			DockEntryDefinition entry = new();
-			if(dockable is MesenProportionalDockSplitter) {
+			if (dockable is NexenProportionalDockSplitter) {
 				entry.Type = DockEntryType.Splitter;
-			} else if(dockable is IDock dock) {
-				if(dock is IRootDock) {
+			} else if (dockable is IDock dock) {
+				if (dock is IRootDock) {
 					entry.Type = DockEntryType.Root;
-				} else if(dock is IProportionalDock propDock) {
+				} else if (dock is IProportionalDock propDock) {
 					entry.Type = DockEntryType.ProportionalDock;
 					entry.Orientation = propDock.Orientation;
 				} else {
 					entry.Type = DockEntryType.ToolDock;
 				}
+
 				entry.Name = dock.Title;
 				entry.Proportion = double.IsNaN(dock.Proportion) ? 0 : dock.Proportion;
 				entry.Children = new();
-				if(dock.VisibleDockables != null) {
-					if(dock is IProportionalDock propDock && dock.VisibleDockables.Count == 1) {
+				if (dock.VisibleDockables is not null) {
+					if (dock is IProportionalDock propDock && dock.VisibleDockables.Count == 1) {
 						//Remove empty proportional docks (these seem to get created when moving things around)
 						DockEntryDefinition innerEntry = ToDockDefinition(dock.VisibleDockables[0]);
 
@@ -172,17 +167,18 @@ namespace Mesen.Debugger
 						return innerEntry;
 					}
 
-					if(dock.ActiveDockable != null) {
+					if (dock.ActiveDockable is not null) {
 						int index = dock.VisibleDockables.IndexOf(dock.ActiveDockable);
-						if(index >= 0) {
+						if (index >= 0) {
 							entry.SelectedIndex = index;
 						}
 					}
-					foreach(IDockable child in dock.VisibleDockables) {
+
+					foreach (IDockable child in dock.VisibleDockables) {
 						entry.Children.Add(ToDockDefinition(child));
 					}
 				}
-			} else if(dockable is ITool tool) {
+			} else if (dockable is ITool tool) {
 				entry.Type = DockEntryType.Tool;
 				entry.Name = tool.Title;
 				entry.ToolTypeName = tool.GetType().GetGenericArguments()[0].Name;
@@ -191,23 +187,22 @@ namespace Mesen.Debugger
 			return entry;
 		}
 
-		public IDockable? FromDockDefinition(DockEntryDefinition def)
-		{
+		public IDockable? FromDockDefinition(DockEntryDefinition def) {
 			IDockable? dockable = null;
-			switch(def.Type) {
+			switch (def.Type) {
 				case DockEntryType.Splitter: return CreateProportionalDockSplitter();
 				case DockEntryType.Root: dockable = CreateRootDock(); break;
 				case DockEntryType.ToolDock: dockable = CreateToolDock(); break;
-				
+
 				case DockEntryType.ProportionalDock: {
-					IProportionalDock propDock = CreateProportionalDock();
-					propDock.Orientation = def.Orientation;
-					dockable = propDock;
-					break;
-				}
+						IProportionalDock propDock = CreateProportionalDock();
+						propDock.Orientation = def.Orientation;
+						dockable = propDock;
+						break;
+					}
 
 				case DockEntryType.Tool:
-					switch(def.ToolTypeName) {
+					switch (def.ToolTypeName) {
 						case nameof(DisassemblyViewModel): return DisassemblyTool;
 						case nameof(SourceViewViewModel): return SourceViewTool;
 						case nameof(BaseConsoleStatusViewModel): return StatusTool;
@@ -219,22 +214,24 @@ namespace Mesen.Debugger
 						case nameof(FindResultListViewModel): return FindResultListTool;
 						case nameof(ControllerListViewModel): return ControllerListTool;
 					}
+
 					break;
 			}
 
 			IDock? dock = dockable as IDock;
-			if(dock != null && def.Proportion != 0) {
+			if (dock is not null && def.Proportion != 0) {
 				dock.Proportion = def.Proportion;
 			}
 
-			if(dock != null && def.Children != null) {
+			if (dock is not null && def.Children is not null) {
 				dock.VisibleDockables = CreateList<IDockable>();
-				foreach(DockEntryDefinition childDef in def.Children) {
+				foreach (DockEntryDefinition childDef in def.Children) {
 					IDockable? child = FromDockDefinition(childDef);
-					if(child != null) {
+					if (child is not null) {
 						dock.VisibleDockables.Add(child);
 					}
 				}
+
 				dock.ActiveDockable = def.SelectedIndex < dock.VisibleDockables.Count ? dock.VisibleDockables[def.SelectedIndex] : dock.VisibleDockables[0];
 				dock.DefaultDockable = dock.VisibleDockables[0];
 			}
@@ -243,8 +240,7 @@ namespace Mesen.Debugger
 		}
 	}
 
-	public enum DockEntryType
-	{
+	public enum DockEntryType {
 		Root,
 		ProportionalDock,
 		ToolDock,
@@ -252,8 +248,7 @@ namespace Mesen.Debugger
 		Tool
 	}
 
-	public class DockEntryDefinition
-	{
+	public sealed class DockEntryDefinition {
 		public DockEntryType Type { get; set; }
 		public double Proportion { get; set; } = 0;
 		public Orientation Orientation { get; set; } = Orientation.Horizontal;
@@ -262,9 +257,3 @@ namespace Mesen.Debugger
 		public int SelectedIndex { get; set; } = 0;
 		public List<DockEntryDefinition>? Children { get; set; }
 	}
-}
-
-public class MesenProportionalDockSplitter : DockBase, IProportionalDockSplitter
-{
-	//The regular ProportionalDockSplitter in Dock.Model.Mvvm.Controls inherits from DockableBase, which causes an exception when styles are applied
-}

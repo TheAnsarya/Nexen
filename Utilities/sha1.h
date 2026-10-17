@@ -23,20 +23,19 @@
 #include <iostream>
 #include <string>
 
-class SHA1
-{
+class SHA1 {
 public:
-    SHA1();
-    void update(const std::string &s);
-    void update(std::istream &is);
-    std::string final();
-    static std::string GetHash(const std::string &filename);
-	 static std::string GetHash(std::istream &stream);
-	 static std::string GetHash(vector<uint8_t> &data);
-	 static std::string GetHash(uint8_t* data, size_t size);
+	SHA1();
+	void update(const std::string& s);
+	void update(std::istream& is);
+	std::string final();
+	static std::string GetHash(const std::string& filename);
+	static std::string GetHash(std::istream& stream);
+	static std::string GetHash(vector<uint8_t>& data);
+	static std::string GetHash(uint8_t* data, size_t size);
 
 private:
-    uint32_t digest[5];
-    std::string buffer;
-    uint64_t transforms;
+	uint32_t digest[5];
+	std::string buffer;
+	uint64_t transforms;
 };

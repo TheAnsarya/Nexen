@@ -12,19 +12,17 @@ using namespace DirectX;
 class Emulator;
 
 namespace DirectX {
-	class SpriteBatch;
-}
+class SpriteBatch;
+} // namespace DirectX
 
-struct HudRenderInfo
-{
+struct HudRenderInfo {
 	ID3D11Texture2D* Texture = nullptr;
 	ID3D11ShaderResourceView* Shader = nullptr;
 	uint32_t Width = 0;
 	uint32_t Height = 0;
 };
 
-class Renderer final : public IRenderingDevice
-{
+class Renderer final : public IRenderingDevice {
 private:
 	Emulator* _emu;
 
@@ -36,7 +34,7 @@ private:
 	ID3D11RenderTargetView* _pRenderTargetView = nullptr;
 
 	atomic<bool> _needFlip = false;
-	uint8_t* _textureBuffer[2] = { nullptr, nullptr };
+	uint8_t* _textureBuffer[2] = {nullptr, nullptr};
 	ID3D11Texture2D* _pTexture = nullptr;
 	ID3D11ShaderResourceView* _pTextureSrv = nullptr;
 
@@ -83,12 +81,12 @@ private:
 
 	bool CreateHudTexture(HudRenderInfo& hud, uint32_t newWidth, uint32_t newHeight);
 	void DrawHud(HudRenderInfo& hud, RenderSurfaceInfo& hudSurface);
-		
+
 	HRESULT CreateRenderTargetView();
 	void ReleaseRenderTargetView();
 	HRESULT CreateEmuTextureBuffers();
 	void ResetTextureBuffers();
-	
+
 	DXGI_FORMAT GetTextureFormat();
 
 public:

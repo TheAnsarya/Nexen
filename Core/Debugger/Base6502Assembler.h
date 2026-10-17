@@ -6,12 +6,10 @@
 
 class LabelManager;
 
-template<class T>
-class Base6502Assembler : public IAssembler
-{
+template <class T>
+class Base6502Assembler : public IAssembler {
 protected:
-	enum class OperandType
-	{
+	enum class OperandType {
 		None,
 		A,
 		X,
@@ -20,8 +18,7 @@ protected:
 		Custom
 	};
 
-	enum class OperandValueType
-	{
+	enum class OperandValueType {
 		None,
 		Decimal,
 		Hex,
@@ -29,8 +26,7 @@ protected:
 		Label
 	};
 
-	struct AssemblerOperand
-	{
+	struct AssemblerOperand {
 		OperandType Type = OperandType::None;
 		OperandValueType ValueType = OperandValueType::None;
 		int64_t Value = 0;
@@ -42,14 +38,12 @@ protected:
 		bool HasOpeningBracket = false;
 		bool HasClosingBracket = false;
 
-		bool HasParenOrBracket()
-		{
+		bool HasParenOrBracket() {
 			return HasOpeningBracket || HasClosingParenthesis || HasOpeningBracket || HasClosingBracket;
 		}
 	};
 
-	struct AssemblerLineData
-	{
+	struct AssemblerLineData {
 		string OpCode;
 		T AddrMode = {};
 		AssemblerOperand Operands[3] = {};
@@ -63,21 +57,20 @@ private:
 
 	LabelManager* _labelManager;
 	void ProcessLine(string code, uint32_t& instructionAddress, vector<int16_t>& output, unordered_map<string, uint32_t>& labels, bool firstPass, unordered_map<string, uint32_t>& currentPassLabels);
-	AssemblerSpecialCodes ParseOperand(AssemblerLineData& lineData, string operand, bool firstPass, unordered_map<string, uint32_t>& labels);
+	AssemblerSpecialCodes ParseOperand(AssemblerLineData& lineData, const string& operand, bool firstPass, unordered_map<string, uint32_t>& labels);
 	void AssembleInstruction(AssemblerLineData& lineData, uint32_t& instructionAddress, vector<int16_t>& output, bool firstPass);
 
 protected:
-	bool IsOpModeAvailable(string& opCode, T mode);
-	int16_t GetOpByteCode(string& opCode, T addrMode);
+	bool IsOpModeAvailable(const string& opCode, T mode);
+	int16_t GetOpByteCode(const string& opCode, T addrMode);
 
 	virtual string GetOpName(uint8_t opcode) = 0;
 	virtual T GetOpMode(uint8_t opcode) = 0;
 	virtual bool IsOfficialOp(uint8_t opcode) = 0;
 	virtual AssemblerSpecialCodes ResolveOpMode(AssemblerLineData& op, uint32_t instructionAddress, bool firstPass) = 0;
 
-	void AdjustOperandSize(AssemblerLineData& op, AssemblerOperand& operand, T orgMode, T extMode)
-	{
-		if(!IsOpModeAvailable(op.OpCode, orgMode)) {
+	void AdjustOperandSize(AssemblerLineData& op, AssemblerOperand& operand, T orgMode, T extMode) {
+		if (!IsOpModeAvailable(op.OpCode, orgMode)) {
 			op.AddrMode = extMode;
 			operand.ByteCount = 2;
 		} else {
@@ -86,26 +79,23 @@ protected:
 	}
 
 public:
-	Base6502Assembler(LabelManager* labelManager, CpuType cpuType)
-	{
+	Base6502Assembler(LabelManager* labelManager, CpuType cpuType) {
 		_labelManager = labelManager;
 		_cpuType = cpuType;
 	}
 
-	virtual ~Base6502Assembler()
-	{
+	virtual ~Base6502Assembler() {
 	}
 
-	uint32_t AssembleCode(string code, uint32_t startAddress, int16_t* assembledCode)
-	{
-		for(int i = 0; i < 256; i++) {
+	uint32_t AssembleCode(const string& code, uint32_t startAddress, int16_t* assembledCode) {
+		for (int i = 0; i < 256; i++) {
 			string opName = StringUtilities::ToUpper(GetOpName(i));
-			if(_availableModesByOpName.find(opName) == _availableModesByOpName.end()) {
+			if (_availableModesByOpName.find(opName) == _availableModesByOpName.end()) {
 				_availableModesByOpName[opName] = unordered_map<T, uint8_t>();
 			}
 
 			T addrMode = GetOpMode(i);
-			if(IsOfficialOp(i) || _availableModesByOpName[opName].find(addrMode) == _availableModesByOpName[opName].end()) {
+			if (IsOfficialOp(i) || _availableModesByOpName[opName].find(addrMode) == _availableModesByOpName[opName].end()) {
 				_availableModesByOpName[opName][addrMode] = i;
 			}
 		}
@@ -120,13 +110,13 @@ public:
 
 		vector<string> codeLines = StringUtilities::Split(code, '\n');
 
-		//Make 2 passes - first one to find all labels, second to assemble
+		// Make 2 passes - first one to find all labels, second to assemble
 		_needSecondPass = false;
-		for(string& line : codeLines) {
+		for (string& line : codeLines) {
 			ProcessLine(line, startAddress, output, temporaryLabels, true, currentPassLabels);
 		}
 
-		if(_needSecondPass) {
+		if (_needSecondPass) {
 			vector<int16_t> prevOut;
 			int pass = 1;
 			do {
@@ -134,11 +124,11 @@ public:
 				currentPassLabels.clear();
 				output.clear();
 				startAddress = originalStartAddr;
-				for(string& line : codeLines) {
+				for (string& line : codeLines) {
 					ProcessLine(line, startAddress, output, temporaryLabels, false, currentPassLabels);
 				}
 				pass++;
-			} while(prevOut != output && pass <= 5);
+			} while (prevOut != output && pass <= 5);
 		}
 
 		memcpy(assembledCode, output.data(), std::min<int>(100000, (int)output.size()) * sizeof(uint16_t));

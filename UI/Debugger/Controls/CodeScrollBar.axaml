@@ -3,12 +3,12 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:dc="using:Mesen.Debugger.Controls"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:dc="using:Nexen.Debugger.Controls"
 	mc:Ignorable="d"
 	d:DesignHeight="400"
 	x:Name="root"
-	x:Class="Mesen.Debugger.Controls.CodeScrollBar"
+	x:Class="Nexen.Debugger.Controls.CodeScrollBar"
 >
 	<UserControl.Styles>
 		<Style Selector="Canvas.hidden, TextBlock.hidden">
@@ -19,7 +19,7 @@
 		</Style>
 		
 		<Style Selector="Panel TextBlock">
-			<Setter Property="FontFamily" Value="{DynamicResource MesenMonospaceFont}" />
+			<Setter Property="FontFamily" Value="{DynamicResource NexenMonospaceFont}" />
 			<Setter Property="FontSize" Value="11" />
 			<Setter Property="HorizontalAlignment" Value="Center" />
 			<Setter Property="VerticalAlignment" Value="Top" />
@@ -112,7 +112,7 @@
 					</Canvas.Transitions>
 					<Canvas.Styles>
 						<Style Selector="TextBlock">
-							<Setter Property="FontFamily" Value="{DynamicResource MesenMonospaceFont}" />
+							<Setter Property="FontFamily" Value="{DynamicResource NexenMonospaceFont}" />
 							<Setter Property="FontSize" Value="11" />
 							<Setter Property="VerticalAlignment" Value="Center" />
 							<Setter Property="Foreground" Value="#808080" />

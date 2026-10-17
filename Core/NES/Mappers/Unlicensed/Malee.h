@@ -2,14 +2,12 @@
 #include "pch.h"
 #include "NES/BaseMapper.h"
 
-class Malee : public BaseMapper
-{
+class Malee : public BaseMapper {
 protected:
 	uint16_t GetPrgPageSize() override { return 0x800; }
 	uint16_t GetChrPageSize() override { return 0x2000; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		SelectPrgPage4x(0, 0);
 		SelectPrgPage4x(1, 4);
 		SelectPrgPage4x(2, 8);

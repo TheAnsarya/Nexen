@@ -2,15 +2,15 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:w="using:Mesen.Windows"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Debugger.Controls"
-	xmlns:v="using:Mesen.Views"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:w="using:Nexen.Windows"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Debugger.Controls"
+	xmlns:v="using:Nexen.Views"
+	xmlns:l="using:Nexen.Localization"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="400"
-	x:Class="Mesen.Windows.CheatDatabaseWindow"
+	x:Class="Nexen.Windows.CheatDatabaseWindow"
 	Width="400" Height="400"
 	Icon="/Assets/CheatCode.png"
 	x:DataType="vm:CheatDatabaseViewModel"
@@ -32,7 +32,7 @@
 			<Button MinWidth="70" HorizontalContentAlignment="Center" IsCancel="True" Click="Cancel_OnClick" Content="{l:Translate btnCancel}" />
 		</StackPanel >
 		
-		<Border BorderThickness="1" BorderBrush="{StaticResource MesenGrayBorderColor}" Margin="2">
+		<Border BorderThickness="1" BorderBrush="{StaticResource NexenGrayBorderColor}" Margin="2">
 			<ListBox
 				Name="ListBox"
 				ItemsSource="{Binding FilteredEntries}"

@@ -5,8 +5,7 @@
 
 class Emulator;
 
-class PceTurboTap : public ControllerHub<5>
-{
+class PceTurboTap : public ControllerHub<5> {
 private:
 	static constexpr uint8_t MaxPort = 5;
 	uint8_t _selectedPort = 0;

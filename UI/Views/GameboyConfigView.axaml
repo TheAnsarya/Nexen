@@ -1,19 +1,19 @@
-<UserControl
+﻿<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:v="using:Mesen.Views"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:v="using:Nexen.Views"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="250"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:GameboyConfigViewModel"
-	x:Class="Mesen.Views.GameboyConfigView"
+	x:Class="Nexen.Views.GameboyConfigView"
 >
 	<Design.DataContext>
 		<vm:GameboyConfigViewModel />
@@ -26,8 +26,8 @@
 			<Setter Property="BlockSize" Value="20" />
 		</Style>
 	</UserControl.Styles>
-	
-	<TabControl TabStripPlacement="Top" SelectedIndex="{Binding SelectedTab}">
+
+	<TabControl TabStripPlacement="Top" SelectedIndex="{ReflectionBinding SelectedTab}">
 		<TabItem Header="{l:Translate tpgGeneral}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
@@ -45,7 +45,7 @@
 					<c:GroupBox Header="{l:Translate grpVolume}" HorizontalAlignment="Left">
 						<StackPanel Orientation="Horizontal" Height="150">
 							<StackPanel.Styles>
-								<Style Selector="c|MesenSlider">
+								<Style Selector="c|NexenSlider">
 									<Setter Property="Minimum" Value="0" />
 									<Setter Property="Maximum" Value="100" />
 									<Setter Property="Orientation" Value="Vertical" />
@@ -53,10 +53,10 @@
 								</Style>
 							</StackPanel.Styles>
 
-							<c:MesenSlider Text="{l:Translate lblSquare1}" Value="{Binding Config.Square1Vol}" />
-							<c:MesenSlider Text="{l:Translate lblSquare2}" Value="{Binding Config.Square2Vol}" />
-							<c:MesenSlider Text="{l:Translate lblWave}" Value="{Binding Config.WaveVol}" />
-							<c:MesenSlider Text="{l:Translate lblNoise}" Value="{Binding Config.NoiseVol}" />
+							<c:NexenSlider Text="{l:Translate lblSquare1}" Value="{Binding Config.Square1Vol}" />
+							<c:NexenSlider Text="{l:Translate lblSquare2}" Value="{Binding Config.Square2Vol}" />
+							<c:NexenSlider Text="{l:Translate lblWave}" Value="{Binding Config.WaveVol}" />
+							<c:NexenSlider Text="{l:Translate lblNoise}" Value="{Binding Config.NoiseVol}" />
 						</StackPanel>
 					</c:GroupBox>
 				</StackPanel>

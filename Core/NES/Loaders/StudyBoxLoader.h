@@ -5,8 +5,7 @@
 struct StudyBoxData;
 struct RomData;
 
-class StudyBoxLoader : public BaseLoader
-{
+class StudyBoxLoader : public BaseLoader {
 private:
 	uint32_t ReadInt(uint8_t*& data);
 	string ReadFourCC(uint8_t*& data);
@@ -17,5 +16,5 @@ private:
 public:
 	using BaseLoader::BaseLoader;
 
-	void LoadRom(RomData& romData, vector<uint8_t>& romFile, string filepath);
+	void LoadRom(RomData& romData, vector<uint8_t>& romFile, const string& filepath);
 };

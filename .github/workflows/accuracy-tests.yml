@@ -1,0 +1,300 @@
+﻿name: Accuracy Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      system:
+        description: 'Filter by system (empty = all)'
+        required: false
+        type: string
+      tag:
+        description: 'Filter by tag (empty = all)'
+        required: false
+        type: string
+  schedule:
+    # Nightly at 3 AM UTC
+    - cron: '0 3 * * *'
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+# Smoke tests run on manual dispatch; full suite on nightly/manual dispatch
+jobs:
+  smoke-tests:
+    name: Smoke Tests (NES blargg)
+    runs-on: windows-2025-vs2026
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+          dotnet-version: 10.x
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+          vs-prerelease: true
+
+      - name: Setup and install vcpkg
+        working-directory: ${{ github.workspace }}
+        run: |
+          $vcpkgRoot = "${{ github.workspace }}/vcpkg"
+          git clone https://github.com/microsoft/vcpkg.git $vcpkgRoot
+          Push-Location $vcpkgRoot
+          git checkout c3867e714dd3a51c272826eea77267876517ed99
+          .\bootstrap-vcpkg.bat
+          Pop-Location
+          $installDir = "$vcpkgRoot/installed"
+          $env:VCPKG_ROOT = $vcpkgRoot
+          "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "VCPKG_INSTALLED_DIR=$installDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          vcpkg install --triplet x64-windows --x-manifest-root=${{ github.workspace }} --x-install-root=$installDir --clean-after-build
+
+      - name: Restore .NET packages
+        run: dotnet restore -r win-x64
+
+      - name: Build C++ core (InteropDLL)
+        run: |
+          $tripletRoot = "$env:VCPKG_INSTALLED_DIR\\x64-windows"
+          $env:INCLUDE = "$tripletRoot\\include;$env:INCLUDE"
+          $env:LIB = "$tripletRoot\\lib;$tripletRoot\\lib\\manual-link;$env:LIB"
+          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /p:VcpkgInstalledDir=$env:VCPKG_INSTALLED_DIR /m /nologo /v:m -t:InteropDLL
+
+      - name: Copy native libs from NuGet cache
+        shell: pwsh
+        run: |
+          $outDir = "bin\win-x64\Release"
+          New-Item -ItemType Directory -Path $outDir -Force | Out-Null
+          $nugetCache = Join-Path $env:USERPROFILE ".nuget\packages"
+          $libs = @(
+            @{ Name = "libSkiaSharp.dll";     Pattern = "skiasharp.nativeassets.win32\*\runtimes\win-x64\native\libSkiaSharp.dll" },
+            @{ Name = "libHarfBuzzSharp.dll"; Pattern = "harfbuzzsharp.nativeassets.win32\*\runtimes\win-x64\native\libHarfBuzzSharp.dll" }
+          )
+          foreach ($lib in $libs) {
+            $found = Get-ChildItem -Path (Join-Path $nugetCache $lib.Pattern) -ErrorAction SilentlyContinue | Select-Object -Last 1
+            if ($found) {
+              Copy-Item $found.FullName -Destination $outDir -Force
+              Write-Host "OK: $($lib.Name) copied from $($found.FullName)"
+            } else {
+              Write-Host "::warning::$($lib.Name) not found in NuGet cache"
+            }
+          }
+
+      - name: Package Dependencies.zip
+        run: ./scripts/package-dependencies.ps1 -Configuration Release
+        shell: pwsh
+
+      - name: Build UI
+        run: |
+          $tripletRoot = "$env:VCPKG_INSTALLED_DIR\\x64-windows"
+          $env:INCLUDE = "$tripletRoot\\include;$env:INCLUDE"
+          $env:LIB = "$tripletRoot\\lib;$tripletRoot\\lib\\manual-link;$env:LIB"
+          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /p:VcpkgInstalledDir=$env:VCPKG_INSTALLED_DIR /m /nologo /v:m -t:UI
+
+      - name: Download NES test ROMs
+        run: |
+          $romRoot = "${{ github.workspace }}\test-roms"
+          & "${{ github.workspace }}\~scripts\download-nes-test-roms.ps1" -RomRoot $romRoot
+          "ROM_ROOT=$romRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Run NES smoke tests
+        run: |
+          & "${{ github.workspace }}\~scripts\run-accuracy-tests.ps1" `
+            -System nes `
+            -Tag critical `
+            -NexenPath "${{ github.workspace }}\bin\win-x64\Release\Nexen.exe" `
+            -RomRoot $env:ROM_ROOT `
+            -ResultsPath "${{ github.workspace }}\smoke-results.json"
+
+      - name: Upload smoke results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-results
+          path: smoke-results.json
+          retention-days: 7
+
+      - name: Smoke test summary
+        if: always()
+        run: |
+          $resultsFile = "${{ github.workspace }}\smoke-results.json"
+          if (Test-Path $resultsFile) {
+            $results = Get-Content $resultsFile -Raw | ConvertFrom-Json
+            $s = $results.summary
+            @"
+          ## Smoke Test Results (NES)
+
+          | Metric | Count |
+          |--------|-------|
+          | Passed | $($s.passed) |
+          | Failed | $($s.failed) |
+          | Timeout | $($s.timeout) |
+          | Skipped | $($s.skipped) |
+          | **Total** | **$($s.total)** |
+          | Duration | $($s.durationSeconds)s |
+          "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          } else {
+            "No results file found." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          }
+
+  accuracy-tests:
+    name: Accuracy Test Suite
+    runs-on: windows-2025-vs2026
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+          dotnet-version: 10.x
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v3
+        with:
+          msbuild-architecture: x64
+          vs-prerelease: true
+
+      - name: Setup and install vcpkg
+        working-directory: ${{ github.workspace }}
+        run: |
+          $vcpkgRoot = "${{ github.workspace }}/vcpkg"
+          git clone https://github.com/microsoft/vcpkg.git $vcpkgRoot
+          Push-Location $vcpkgRoot
+          git checkout c3867e714dd3a51c272826eea77267876517ed99
+          .\bootstrap-vcpkg.bat
+          Pop-Location
+          $installDir = "$vcpkgRoot/installed"
+          $env:VCPKG_ROOT = $vcpkgRoot
+          "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "VCPKG_INSTALLED_DIR=$installDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          vcpkg install --triplet x64-windows --x-manifest-root=${{ github.workspace }} --x-install-root=$installDir --clean-after-build
+
+      - name: Restore .NET packages
+        run: dotnet restore -r win-x64
+
+      - name: Build C++ core (InteropDLL)
+        run: |
+          $tripletRoot = "$env:VCPKG_INSTALLED_DIR\\x64-windows"
+          $env:INCLUDE = "$tripletRoot\\include;$env:INCLUDE"
+          $env:LIB = "$tripletRoot\\lib;$tripletRoot\\lib\\manual-link;$env:LIB"
+          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /p:VcpkgInstalledDir=$env:VCPKG_INSTALLED_DIR /m /nologo /v:m -t:InteropDLL
+
+      - name: Copy native libs from NuGet cache
+        shell: pwsh
+        run: |
+          $outDir = "bin\win-x64\Release"
+          New-Item -ItemType Directory -Path $outDir -Force | Out-Null
+          $nugetCache = Join-Path $env:USERPROFILE ".nuget\packages"
+          $libs = @(
+            @{ Name = "libSkiaSharp.dll";     Pattern = "skiasharp.nativeassets.win32\*\runtimes\win-x64\native\libSkiaSharp.dll" },
+            @{ Name = "libHarfBuzzSharp.dll"; Pattern = "harfbuzzsharp.nativeassets.win32\*\runtimes\win-x64\native\libHarfBuzzSharp.dll" }
+          )
+          foreach ($lib in $libs) {
+            $found = Get-ChildItem -Path (Join-Path $nugetCache $lib.Pattern) -ErrorAction SilentlyContinue | Select-Object -Last 1
+            if ($found) {
+              Copy-Item $found.FullName -Destination $outDir -Force
+              Write-Host "OK: $($lib.Name) copied from $($found.FullName)"
+            } else {
+              Write-Host "::warning::$($lib.Name) not found in NuGet cache"
+            }
+          }
+
+      - name: Package Dependencies.zip
+        run: ./scripts/package-dependencies.ps1 -Configuration Release
+        shell: pwsh
+
+      - name: Build UI
+        run: |
+          $tripletRoot = "$env:VCPKG_INSTALLED_DIR\\x64-windows"
+          $env:INCLUDE = "$tripletRoot\\include;$env:INCLUDE"
+          $env:LIB = "$tripletRoot\\lib;$tripletRoot\\lib\\manual-link;$env:LIB"
+          msbuild Nexen.sln /p:Configuration=Release /p:Platform=x64 /p:PlatformToolset=v145 /p:VcpkgEnableManifest=true /p:VcpkgManifestInstall=true /p:VcpkgRoot=${{ github.workspace }}\vcpkg /p:VcpkgInstalledDir=$env:VCPKG_INSTALLED_DIR /m /nologo /v:m -t:UI
+
+      - name: Download test ROMs
+        run: |
+          $romRoot = "${{ github.workspace }}\test-roms"
+          $scripts = "${{ github.workspace }}\~scripts"
+
+          # Download ROMs for all systems using the dedicated scripts
+          $systems = @("nes", "snes", "gb", "gba", "genesis", "sms", "pce", "ws")
+          foreach ($sys in $systems) {
+            $script = "$scripts\download-$sys-test-roms.ps1"
+            if (Test-Path $script) {
+              Write-Host "--- Downloading $sys test ROMs ---"
+              & $script -RomRoot $romRoot
+            } else {
+              Write-Host "No download script for $sys, skipping"
+            }
+          }
+
+          "ROM_ROOT=$romRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Run accuracy tests
+        run: |
+          $params = @{
+            All = $true
+            NexenPath = "${{ github.workspace }}\bin\win-x64\Release\Nexen.exe"
+            RomRoot = $env:ROM_ROOT
+            ResultsPath = "${{ github.workspace }}\accuracy-results.json"
+          }
+
+          $system = "${{ inputs.system }}"
+          $tag = "${{ inputs.tag }}"
+          if ($system) {
+            $params.Remove('All')
+            $params['System'] = $system
+          }
+          if ($tag) {
+            $params.Remove('All')
+            $params['Tag'] = $tag
+          }
+
+          & "${{ github.workspace }}\~scripts\run-accuracy-tests.ps1" @params
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: accuracy-results
+          path: accuracy-results.json
+          retention-days: 30
+
+      - name: Summary
+        if: always()
+        run: |
+          $resultsFile = "${{ github.workspace }}\accuracy-results.json"
+          if (Test-Path $resultsFile) {
+            $results = Get-Content $resultsFile -Raw | ConvertFrom-Json
+            $s = $results.summary
+            $summaryText = @"
+          ## Accuracy Test Results
+
+          | Metric | Count |
+          |--------|-------|
+          | Passed | $($s.passed) |
+          | Failed | $($s.failed) |
+          | Timeout | $($s.timeout) |
+          | Skipped | $($s.skipped) |
+          | **Total** | **$($s.total)** |
+          | Duration | $($s.durationSeconds)s |
+          "@
+            $summaryText | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          } else {
+            "No results file found." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
+          }

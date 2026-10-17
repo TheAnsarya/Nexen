@@ -30,8 +30,7 @@
 
 #include "ymfm_ssg.h"
 
-namespace ymfm
-{
+namespace ymfm {
 
 //*********************************************************
 // SSG REGISTERS
@@ -41,22 +40,17 @@ namespace ymfm
 //  reset - reset the register state
 //-------------------------------------------------
 
-void ssg_registers::reset()
-{
+void ssg_registers::reset() {
 	std::fill_n(&m_regdata[0], REGISTERS, 0);
 }
-
 
 //-------------------------------------------------
 //  save_restore - save or restore the data
 //-------------------------------------------------
 
-void ssg_registers::save_restore(ymfm_saved_state &state)
-{
+void ssg_registers::save_restore(ymfm_saved_state& state) {
 	state.save_restore(m_regdata);
 }
-
-
 
 //*********************************************************
 // SSG ENGINE
@@ -66,25 +60,21 @@ void ssg_registers::save_restore(ymfm_saved_state &state)
 //  ssg_engine - constructor
 //-------------------------------------------------
 
-ssg_engine::ssg_engine(ymfm_interface &intf) :
-	m_intf(intf),
-	m_tone_count{ 0,0,0 },
-	m_tone_state{ 0,0,0 },
-	m_envelope_count(0),
-	m_envelope_state(0),
-	m_noise_count(0),
-	m_noise_state(1),
-	m_override(nullptr)
-{
+ssg_engine::ssg_engine(ymfm_interface& intf) : m_intf(intf),
+                                               m_tone_count{0, 0, 0},
+                                               m_tone_state{0, 0, 0},
+                                               m_envelope_count(0),
+                                               m_envelope_state(0),
+                                               m_noise_count(0),
+                                               m_noise_state(1),
+                                               m_override(nullptr) {
 }
-
 
 //-------------------------------------------------
 //  reset - reset the engine state
 //-------------------------------------------------
 
-void ssg_engine::reset()
-{
+void ssg_engine::reset() {
 	// defer to the override if present
 	if (m_override != nullptr)
 		return m_override->ssg_reset();
@@ -93,8 +83,7 @@ void ssg_engine::reset()
 	m_regs.reset();
 
 	// reset engine state
-	for (int chan = 0; chan < 3; chan++)
-	{
+	for (int chan = 0; chan < 3; chan++) {
 		m_tone_count[chan] = 0;
 		m_tone_state[chan] = 0;
 	}
@@ -104,13 +93,11 @@ void ssg_engine::reset()
 	m_noise_state = 1;
 }
 
-
 //-------------------------------------------------
 //  save_restore - save or restore the data
 //-------------------------------------------------
 
-void ssg_engine::save_restore(ymfm_saved_state &state)
-{
+void ssg_engine::save_restore(ymfm_saved_state& state) {
 	// save register state
 	m_regs.save_restore(state);
 
@@ -123,21 +110,17 @@ void ssg_engine::save_restore(ymfm_saved_state &state)
 	state.save_restore(m_noise_state);
 }
 
-
 //-------------------------------------------------
 //  clock - master clocking function
 //-------------------------------------------------
 
-void ssg_engine::clock()
-{
+void ssg_engine::clock() {
 	// clock tones; tone period units are clock/16 but since we run at clock/8
 	// that works out for us to toggle the state (50% duty cycle) at twice the
 	// programmed period
-	for (int chan = 0; chan < 3; chan++)
-	{
+	for (int chan = 0; chan < 3; chan++) {
 		m_tone_count[chan]++;
-		if (m_tone_count[chan] >= m_regs.ch_tone_period(chan))
-		{
+		if (m_tone_count[chan] >= m_regs.ch_tone_period(chan)) {
 			m_tone_state[chan] ^= 1;
 			m_tone_count[chan] = 0;
 		}
@@ -148,8 +131,7 @@ void ssg_engine::clock()
 	// should produce an indentical result to a period of 1, so add a special
 	// check against that case
 	m_noise_count++;
-	if ((m_noise_count >> 1) >= m_regs.noise_period() && m_noise_count != 1)
-	{
+	if ((m_noise_count >> 1) >= m_regs.noise_period() && m_noise_count != 1) {
 		m_noise_state ^= (bitfield(m_noise_state, 0) ^ bitfield(m_noise_state, 3)) << 17;
 		m_noise_state >>= 1;
 		m_noise_count = 0;
@@ -158,39 +140,32 @@ void ssg_engine::clock()
 	// clock envelope; envelope period units are clock/8 (manual says clock/256
 	// but that's for all 32 steps)
 	m_envelope_count++;
-	if (m_envelope_count >= m_regs.envelope_period())
-	{
+	if (m_envelope_count >= m_regs.envelope_period()) {
 		m_envelope_state++;
 		m_envelope_count = 0;
 	}
 }
 
-
 //-------------------------------------------------
 //  output - output the current state
 //-------------------------------------------------
 
-void ssg_engine::output(output_data &output)
-{
+void ssg_engine::output(output_data& output) {
 	// volume to amplitude table, taken from MAME's implementation but biased
 	// so that 0 == 0
 	static int16_t const s_amplitudes[32] =
-	{
-		     0,   32,   78,  141,  178,  222,  262,  306,
-		   369,  441,  509,  585,  701,  836,  965, 1112,
-		  1334, 1595, 1853, 2146, 2576, 3081, 3576, 4135,
-		  5000, 6006, 7023, 8155, 9963,11976,14132,16382
-	};
+	    {
+	        0, 32, 78, 141, 178, 222, 262, 306,
+	        369, 441, 509, 585, 701, 836, 965, 1112,
+	        1334, 1595, 1853, 2146, 2576, 3081, 3576, 4135,
+	        5000, 6006, 7023, 8155, 9963, 11976, 14132, 16382};
 
 	// compute the envelope volume
 	uint32_t envelope_volume;
-	if ((m_regs.envelope_hold() | (m_regs.envelope_continue() ^ 1)) && m_envelope_state >= 32)
-	{
+	if ((m_regs.envelope_hold() | (m_regs.envelope_continue() ^ 1)) && m_envelope_state >= 32) {
 		m_envelope_state = 32;
 		envelope_volume = ((m_regs.envelope_attack() ^ m_regs.envelope_alternate()) & m_regs.envelope_continue()) ? 31 : 0;
-	}
-	else
-	{
+	} else {
 		uint32_t attack = m_regs.envelope_attack();
 		if (m_regs.envelope_alternate())
 			attack ^= bitfield(m_envelope_state, 5);
@@ -198,8 +173,7 @@ void ssg_engine::output(output_data &output)
 	}
 
 	// iterate over channels
-	for (int chan = 0; chan < 3; chan++)
-	{
+	for (int chan = 0; chan < 3; chan++) {
 		// noise depends on the noise state, which is the LSB of m_noise_state
 		uint32_t noise_on = m_regs.ch_noise_enable_n(chan) | m_noise_state;
 
@@ -217,8 +191,7 @@ void ssg_engine::output(output_data &output)
 
 		// otherwise, scale the tone amplitude up to match envelope values
 		// according to the datasheet, amplitude 15 maps to envelope 31
-		else
-		{
+		else {
 			volume = m_regs.ch_amplitude(chan) * 2;
 			if (volume != 0)
 				volume |= 1;
@@ -229,13 +202,11 @@ void ssg_engine::output(output_data &output)
 	}
 }
 
-
 //-------------------------------------------------
 //  read - handle reads from the SSG registers
 //-------------------------------------------------
 
-uint8_t ssg_engine::read(uint32_t regnum)
-{
+uint8_t ssg_engine::read(uint32_t regnum) {
 	// defer to the override if present
 	if (m_override != nullptr)
 		return m_override->ssg_read(regnum);
@@ -250,13 +221,11 @@ uint8_t ssg_engine::read(uint32_t regnum)
 	return m_regs.read(regnum);
 }
 
-
 //-------------------------------------------------
 //  write - handle writes to the SSG registers
 //-------------------------------------------------
 
-void ssg_engine::write(uint32_t regnum, uint8_t data)
-{
+void ssg_engine::write(uint32_t regnum, uint8_t data) {
 	// defer to the override if present
 	if (m_override != nullptr)
 		return m_override->ssg_write(regnum, data);
@@ -276,4 +245,4 @@ void ssg_engine::write(uint32_t regnum, uint8_t data)
 		m_intf.ymfm_external_write(ACCESS_IO, 1, data);
 }
 
-}
+} // namespace ymfm

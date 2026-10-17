@@ -6,53 +6,53 @@
 #include "Shared/EmuSettings.h"
 #include "Utilities/Serializer.h"
 
-void GbaCpu::Init(Emulator* emu, GbaMemoryManager* memoryManager, GbaRomPrefetch* prefetch)
-{
+// Initialize GBA CPU (ARM7TDMI) state and memory references
+void GbaCpu::Init(Emulator* emu, GbaMemoryManager* memoryManager, GbaRomPrefetch* prefetch) {
 	_emu = emu;
 	_memoryManager = memoryManager;
-	_prefetch = prefetch;
-	
-	_state = {};
-	_state.Pipeline.ReloadRequested = true;
+	_prefetch = prefetch;  // ROM prefetch buffer for sequential access optimization
 
-	if(_emu->GetSettings()->GetGbaConfig().SkipBootScreen) {
-		_state.R[13] = 0x3007F00;
-		_state.R[14] = 0x8000000;
-		_state.R[15] = 0x8000000;
-		_state.UserRegs[4] = 0x300FCA0;
-		_state.UserRegs[5] = 0x3007F00;
-		_state.UserRegs[6] = 0x00000C0;
-		_state.IrqRegs[0] = 0x3007FA0;
-		_state.SupervisorRegs[0] = 0x3007FE0;
-		_state.CPSR.Mode = GbaCpuMode::System;
+	_state = {};
+	_state.Pipeline.ReloadRequested = true;  // Start with pipeline reload to fetch first instruction
+
+	// Handle skip boot screen - set up CPU state as if BIOS had run
+	if (_emu->GetSettings()->GetGbaConfig().SkipBootScreen) {
+		// Stack pointers for different modes (set by BIOS)
+		_state.R[13] = 0x3007F00;          // System mode SP
+		_state.R[14] = 0x8000000;          // LR = ROM start
+		_state.R[15] = 0x8000000;          // PC = ROM start (game entry point)
+		_state.UserRegs[4] = 0x300FCA0;    // R12 shadow
+		_state.UserRegs[5] = 0x3007F00;    // R13 shadow
+		_state.UserRegs[6] = 0x00000C0;    // R14 shadow
+		_state.IrqRegs[0] = 0x3007FA0;     // IRQ mode SP
+		_state.SupervisorRegs[0] = 0x3007FE0; // Supervisor mode SP
+		_state.CPSR.Mode = GbaCpuMode::System; // Start in System mode
 	} else {
+		// Cold boot state - start in Supervisor mode with interrupts disabled
 		_state.CPSR.Mode = GbaCpuMode::Supervisor;
-		_state.CPSR.IrqDisable = true;
-		_state.CPSR.FiqDisable = true;
+		_state.CPSR.IrqDisable = true;  // IRQs disabled
+		_state.CPSR.FiqDisable = true;  // FIQs disabled
 	}
 }
 
-GbaCpu::~GbaCpu()
-{
+GbaCpu::~GbaCpu() {
 }
 
-void GbaCpu::StaticInit()
-{
+void GbaCpu::StaticInit() {
 	InitArmOpTable();
 	InitThumbOpTable();
 }
 
-void GbaCpu::SwitchMode(GbaCpuMode mode)
-{
-	//High bit of mode is always set according to psr test
+void GbaCpu::SwitchMode(GbaCpuMode mode) {
+	// High bit of mode is always set according to psr test
 	mode = (GbaCpuMode)((int)mode | 0x10);
 
-	if(_state.CPSR.Mode == mode) {
+	if (_state.CPSR.Mode == mode) {
 		return;
 	}
 
 	GbaCpuMode orgMode = _state.CPSR.Mode;
-	switch(orgMode) {
+	switch (orgMode) {
 		default:
 		case GbaCpuMode::System:
 		case GbaCpuMode::User:
@@ -62,7 +62,7 @@ void GbaCpu::SwitchMode(GbaCpuMode mode)
 		case GbaCpuMode::Fiq:
 			memcpy(_state.FiqRegs, &_state.R[8], 7 * sizeof(uint32_t));
 			break;
-		
+
 		case GbaCpuMode::Irq:
 			memcpy(_state.UserRegs, &_state.R[8], 5 * sizeof(uint32_t));
 			memcpy(_state.IrqRegs, &_state.R[13], 2 * sizeof(uint32_t));
@@ -86,21 +86,28 @@ void GbaCpu::SwitchMode(GbaCpuMode mode)
 
 	_state.CPSR.Mode = mode;
 
-	if(mode != GbaCpuMode::Fiq) {
+	if (mode != GbaCpuMode::Fiq) {
 		memcpy(&_state.R[8], _state.UserRegs, 7 * sizeof(uint32_t));
-		switch(mode) {
-			case GbaCpuMode::Irq: memcpy(&_state.R[13], _state.IrqRegs, 2 * sizeof(uint32_t)); break;
-			case GbaCpuMode::Supervisor: memcpy(&_state.R[13], _state.SupervisorRegs, 2 * sizeof(uint32_t)); break;
-			case GbaCpuMode::Abort: memcpy(&_state.R[13], _state.AbortRegs, 2 * sizeof(uint32_t)); break;
-			case GbaCpuMode::Undefined: memcpy(&_state.R[13], _state.UndefinedRegs, 2 * sizeof(uint32_t)); break;
+		switch (mode) {
+			case GbaCpuMode::Irq:
+				memcpy(&_state.R[13], _state.IrqRegs, 2 * sizeof(uint32_t));
+				break;
+			case GbaCpuMode::Supervisor:
+				memcpy(&_state.R[13], _state.SupervisorRegs, 2 * sizeof(uint32_t));
+				break;
+			case GbaCpuMode::Abort:
+				memcpy(&_state.R[13], _state.AbortRegs, 2 * sizeof(uint32_t));
+				break;
+			case GbaCpuMode::Undefined:
+				memcpy(&_state.R[13], _state.UndefinedRegs, 2 * sizeof(uint32_t));
+				break;
 		}
 	} else {
 		memcpy(&_state.R[8], _state.FiqRegs, 7 * sizeof(uint32_t));
 	}
 }
 
-void GbaCpu::ReloadPipeline()
-{
+void GbaCpu::ReloadPipeline() {
 	GbaCpuPipeline& pipe = _state.Pipeline;
 	pipe.Mode = GbaAccessMode::Prefetch | GbaAccessMode::NoRotate | (_state.CPSR.Thumb ? GbaAccessMode::HalfWord : GbaAccessMode::Word);
 
@@ -116,12 +123,11 @@ void GbaCpu::ReloadPipeline()
 	pipe.Fetch.OpCode = ReadCode(pipe.Mode, pipe.Fetch.Address);
 }
 
-void GbaCpu::CheckForIrqs()
-{
+void GbaCpu::CheckForIrqs() {
 	uint32_t originalPc = _state.Pipeline.Execute.Address;
 	bool thumb = _state.CPSR.Thumb;
 	ProcessException(GbaCpuMode::Irq, GbaCpuVector::Irq);
-	if(thumb) {
+	if (thumb) {
 		_state.R[14] += 2;
 	}
 	ReloadPipeline();
@@ -129,8 +135,7 @@ void GbaCpu::CheckForIrqs()
 	_emu->ProcessInterrupt<CpuType::Gba>(originalPc, _state.Pipeline.Execute.Address, false);
 }
 
-void GbaCpu::ProcessException(GbaCpuMode mode, GbaCpuVector vector)
-{
+void GbaCpu::ProcessException(GbaCpuMode mode, GbaCpuVector vector) {
 #ifndef DUMMYCPU
 	GbaCpuFlags cpsr = _state.CPSR;
 	SwitchMode(mode);
@@ -143,17 +148,16 @@ void GbaCpu::ProcessException(GbaCpuMode mode, GbaCpuVector vector)
 #endif
 }
 
-uint32_t GbaCpu::ReadCode(GbaAccessModeVal mode, uint32_t addr)
-{
+uint32_t GbaCpu::ReadCode(GbaAccessModeVal mode, uint32_t addr) {
 #ifndef DUMMYCPU
-	if(_ldmGlitch) {
+	if (_ldmGlitch) [[unlikely]] {
 		_ldmGlitch--;
 	}
 
 	uint32_t value = _memoryManager->Read(mode, addr);
 	_hasPendingIrq = _memoryManager->HasPendingIrq();
-	
-	//Next access should be sequential
+
+	// Next access should be sequential
 	_state.Pipeline.Mode |= GbaAccessMode::Sequential;
 
 	return value;
@@ -164,11 +168,10 @@ uint32_t GbaCpu::ReadCode(GbaAccessModeVal mode, uint32_t addr)
 #endif
 }
 
-uint32_t GbaCpu::Read(GbaAccessModeVal mode, uint32_t addr)
-{
+uint32_t GbaCpu::Read(GbaAccessModeVal mode, uint32_t addr) {
 #ifndef DUMMYCPU
 	_state.Pipeline.Mode &= ~GbaAccessMode::Sequential;
-	if(_ldmGlitch) {
+	if (_ldmGlitch) [[unlikely]] {
 		_ldmGlitch--;
 	}
 	uint32_t value = _memoryManager->Read(mode, addr);
@@ -181,11 +184,10 @@ uint32_t GbaCpu::Read(GbaAccessModeVal mode, uint32_t addr)
 #endif
 }
 
-void GbaCpu::Write(GbaAccessModeVal mode, uint32_t addr, uint32_t value)
-{
+void GbaCpu::Write(GbaAccessModeVal mode, uint32_t addr, uint32_t value) {
 #ifndef DUMMYCPU
 	_state.Pipeline.Mode &= ~GbaAccessMode::Sequential;
-	if(_ldmGlitch) {
+	if (_ldmGlitch) [[unlikely]] {
 		_ldmGlitch--;
 	}
 	_memoryManager->Write(mode, addr, value);
@@ -195,11 +197,10 @@ void GbaCpu::Write(GbaAccessModeVal mode, uint32_t addr, uint32_t value)
 #endif
 }
 
-void GbaCpu::Idle()
-{
+void GbaCpu::Idle() {
 #ifndef DUMMYCPU
 	_state.Pipeline.Mode &= ~GbaAccessMode::Sequential;
-	if(_ldmGlitch) {
+	if (_ldmGlitch) [[unlikely]] {
 		_ldmGlitch--;
 	}
 	_memoryManager->ProcessIdleCycle();
@@ -207,34 +208,46 @@ void GbaCpu::Idle()
 #endif
 }
 
-void GbaCpu::Idle(uint8_t cycleCount)
-{
-	switch(cycleCount) {
-		case 4: Idle(); [[fallthrough]];
-		case 3: Idle(); [[fallthrough]];
-		case 2: Idle(); [[fallthrough]];
-		case 1: Idle(); break;
+void GbaCpu::Idle(uint8_t cycleCount) {
+	switch (cycleCount) {
+		case 4:
+			Idle();
+			[[fallthrough]];
+		case 3:
+			Idle();
+			[[fallthrough]];
+		case 2:
+			Idle();
+			[[fallthrough]];
+		case 1:
+			Idle();
+			break;
 	}
 }
 
-GbaCpuFlags& GbaCpu::GetSpsr()
-{
-	switch(_state.CPSR.Mode) {
+GbaCpuFlags& GbaCpu::GetSpsr() {
+	switch (_state.CPSR.Mode) {
 		default:
-		case GbaCpuMode::User: return _state.CPSR;
-		case GbaCpuMode::Fiq: return _state.FiqSpsr;
-		case GbaCpuMode::Irq: return _state.IrqSpsr;
-		case GbaCpuMode::Supervisor: return _state.SupervisorSpsr;
-		case GbaCpuMode::Abort: return _state.AbortSpsr;
-		case GbaCpuMode::Undefined: return _state.UndefinedSpsr;
-		case GbaCpuMode::System: return _state.CPSR;
+		case GbaCpuMode::User:
+			return _state.CPSR;
+		case GbaCpuMode::Fiq:
+			return _state.FiqSpsr;
+		case GbaCpuMode::Irq:
+			return _state.IrqSpsr;
+		case GbaCpuMode::Supervisor:
+			return _state.SupervisorSpsr;
+		case GbaCpuMode::Abort:
+			return _state.AbortSpsr;
+		case GbaCpuMode::Undefined:
+			return _state.UndefinedSpsr;
+		case GbaCpuMode::System:
+			return _state.CPSR;
 	}
 }
 
-uint32_t GbaCpu::Add(uint32_t op1, uint32_t op2, bool carry, bool updateFlags)
-{
+uint32_t GbaCpu::Add(uint32_t op1, uint32_t op2, bool carry, bool updateFlags) {
 	uint32_t result = op1 + op2 + (uint32_t)carry;
-	if(updateFlags) {
+	if (updateFlags) {
 		uint32_t overflow = ~(op1 ^ op2) & (op1 ^ result) & (1 << 31);
 		_state.CPSR.Negative = result & (1 << 31);
 		_state.CPSR.Zero = (uint32_t)result == 0;
@@ -244,18 +257,16 @@ uint32_t GbaCpu::Add(uint32_t op1, uint32_t op2, bool carry, bool updateFlags)
 	return (uint32_t)result;
 }
 
-uint32_t GbaCpu::Sub(uint32_t op1, uint32_t op2, bool carry, bool updateFlags)
-{
+uint32_t GbaCpu::Sub(uint32_t op1, uint32_t op2, bool carry, bool updateFlags) {
 	return Add(op1, ~op2, carry, updateFlags);
 }
 
-uint32_t GbaCpu::LogicalOp(uint32_t result, bool carry, bool updateFlags)
-{
+uint32_t GbaCpu::LogicalOp(uint32_t result, bool carry, bool updateFlags) {
 	//"If the S bit is set(and Rd is not R15, see below) the V flag in the CPSR will be unaffected, the C
-	//flag will be set to the carry out from the barrel shifter (or preserved when the shift
-	//operation is LSL #0), the Z flag will be set if and only if the result is all zeros, and the N
-	//flag will be set to the logical value of bit 31 of the result."
-	if(updateFlags) {
+	// flag will be set to the carry out from the barrel shifter (or preserved when the shift
+	// operation is LSL #0), the Z flag will be set if and only if the result is all zeros, and the N
+	// flag will be set to the logical value of bit 31 of the result."
+	if (updateFlags) {
 		_state.CPSR.Carry = carry;
 		_state.CPSR.Zero = result == 0;
 		_state.CPSR.Negative = result & (1 << 31);
@@ -263,49 +274,43 @@ uint32_t GbaCpu::LogicalOp(uint32_t result, bool carry, bool updateFlags)
 	return result;
 }
 
-uint32_t GbaCpu::RotateRight(uint32_t value, uint32_t shift)
-{
+uint32_t GbaCpu::RotateRight(uint32_t value, uint32_t shift) {
 	return (value >> shift) | (value << (32 - shift));
 }
 
-uint32_t GbaCpu::RotateRight(uint32_t value, uint32_t shift, bool& carry)
-{
+uint32_t GbaCpu::RotateRight(uint32_t value, uint32_t shift, bool& carry) {
 	carry = (value >> (shift - 1)) & 1;
 	return (value >> shift) | (value << (32 - shift));
 }
 
-uint32_t GbaCpu::ShiftLsl(uint32_t value, uint8_t shift, bool& carry)
-{
-	if(shift) {
+uint32_t GbaCpu::ShiftLsl(uint32_t value, uint8_t shift, bool& carry) {
+	if (shift) {
 		carry = shift < 33 ? (value & (1 << (32 - shift))) : 0;
 		value = shift < 32 ? (value << shift) : 0;
 	}
 	return value;
 }
 
-uint32_t GbaCpu::ShiftLsr(uint32_t value, uint8_t shift, bool& carry)
-{
-	if(shift) {
+uint32_t GbaCpu::ShiftLsr(uint32_t value, uint8_t shift, bool& carry) {
+	if (shift) {
 		carry = shift < 33 ? (value & (1 << (shift - 1))) : 0;
 		value = shift < 32 ? (value >> shift) : 0;
 	}
 	return value;
 }
 
-uint32_t GbaCpu::ShiftAsr(uint32_t value, uint8_t shift, bool& carry)
-{
-	if(shift) {
+uint32_t GbaCpu::ShiftAsr(uint32_t value, uint8_t shift, bool& carry) {
+	if (shift) {
 		carry = shift < 33 ? (value & (1 << (shift - 1))) : (value & (1 << 31));
 		value = shift < 32 ? ((int32_t)value >> shift) : ((int32_t)value >> 31);
 	}
 	return value;
 }
 
-uint32_t GbaCpu::ShiftRor(uint32_t value, uint8_t shift, bool& carry)
-{
-	if(shift) {
+uint32_t GbaCpu::ShiftRor(uint32_t value, uint8_t shift, bool& carry) {
+	if (shift) {
 		shift &= 0x1F;
-		if(shift) {
+		if (shift) {
 			value = (value << (32 - shift)) | (value >> shift);
 		}
 		carry = value & (1 << 31);
@@ -313,18 +318,16 @@ uint32_t GbaCpu::ShiftRor(uint32_t value, uint8_t shift, bool& carry)
 	return value;
 }
 
-uint32_t GbaCpu::ShiftRrx(uint32_t value, bool& carry)
-{
+uint32_t GbaCpu::ShiftRrx(uint32_t value, bool& carry) {
 	bool orgCarry = carry;
 	carry = value & 0x01;
 	return (value >> 1) | (orgCarry << 31);
 }
 
-void GbaCpu::PowerOn()
-{
+void GbaCpu::PowerOn() {
 	//"After nRESET has been taken HIGH, the ARM core does two further internal cycles
-	//before the first instruction is fetched from the reset vector"
-	//Fixes the "timer_reset" test
+	// before the first instruction is fetched from the reset vector"
+	// Fixes the "timer_reset" test
 	_memoryManager->ProcessIdleCycle();
 	_memoryManager->ProcessIdleCycle();
 
@@ -332,9 +335,8 @@ void GbaCpu::PowerOn()
 	ProcessPipeline();
 }
 
-void GbaCpu::SetProgramCounter(uint32_t addr, bool thumb)
-{
-	//Used by debugger - set new PC and reload pipeline (using debugger reads)
+void GbaCpu::SetProgramCounter(uint32_t addr, bool thumb) {
+	// Used by debugger - set new PC and reload pipeline (using debugger reads)
 	_state.R[15] = addr;
 	_state.CPSR.Thumb = thumb;
 
@@ -349,14 +351,12 @@ void GbaCpu::SetProgramCounter(uint32_t addr, bool thumb)
 	pipe.Fetch.OpCode = _memoryManager->DebugCpuRead(pipe.Mode, pipe.Fetch.Address);
 }
 
-GbaCpuState& GbaCpu::GetState()
-{
+GbaCpuState& GbaCpu::GetState() {
 	_state.CycleCount = _memoryManager->GetMasterClock();
 	return _state;
 }
 
-void GbaCpu::Serialize(Serializer& s)
-{
+void GbaCpu::Serialize(Serializer& s) {
 	SV(_state.Pipeline.Fetch.Address);
 	SV(_state.Pipeline.Fetch.OpCode);
 	SV(_state.Pipeline.Decode.Address);

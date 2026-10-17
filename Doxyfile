@@ -1,0 +1,737 @@
+﻿# Doxyfile 1.12.0
+# Nexen Multi-System Emulator Documentation Configuration
+
+#---------------------------------------------------------------------------
+# Project Related Configuration Options
+#---------------------------------------------------------------------------
+
+# Project name and description
+PROJECT_NAME           = "Nexen"
+PROJECT_NUMBER         = "2.0"
+PROJECT_BRIEF          = "Multi-System Emulator (NES, SNES, GB, GBA, SMS, PCE, WS)"
+PROJECT_LOGO           =
+
+# Output directory for generated documentation
+OUTPUT_DIRECTORY       = docs/api
+
+# Create subdirectories for each output type
+CREATE_SUBDIRS         = YES
+CREATE_SUBDIRS_LEVEL   = 8
+
+# Allow Unicode names (for cross-platform compatibility)
+ALLOW_UNICODE_NAMES    = YES
+
+# Output language
+OUTPUT_LANGUAGE        = English
+
+# Enable brief member descriptions
+BRIEF_MEMBER_DESC      = YES
+
+# Repeat brief description in detailed description
+REPEAT_BRIEF           = YES
+
+# Abbreviations for brief descriptions
+ABBREVIATE_BRIEF       = "The $name class" \
+                         "The $name widget" \
+                         "The $name file" \
+                         is \
+                         provides \
+                         specifies \
+                         contains \
+                         represents \
+                         a \
+                         an \
+                         the
+
+# Always generate detailed section (even if empty)
+ALWAYS_DETAILED_SEC    = NO
+
+# Show inline inherited members
+INLINE_INHERITED_MEMB  = NO
+
+# Full path names (disabled for cleaner output)
+FULL_PATH_NAMES        = YES
+
+# Strip path prefix for cleaner display
+STRIP_FROM_PATH        =
+
+# Strip include path prefix
+STRIP_FROM_INC_PATH    =
+
+# Short names for generated files
+SHORT_NAMES            = NO
+
+# Javadoc-style autobrief (first sentence is brief description)
+JAVADOC_AUTOBRIEF      = YES
+
+# Javadoc banner style (disabled)
+JAVADOC_BANNER         = NO
+
+# Qt-style autobrief
+QT_AUTOBRIEF           = NO
+
+# Multi-line C++ special comment blocks
+MULTILINE_CPP_IS_BRIEF = NO
+
+# Python docstrings (not applicable)
+PYTHON_DOCSTRING       = YES
+
+# Inherit documentation from base classes
+INHERIT_DOCS           = YES
+
+# Mark all members in a group as inline
+SEPARATE_MEMBER_PAGES  = NO
+
+# Tab size for code display
+TAB_SIZE               = 4
+
+# Aliases for common documentation patterns
+ALIASES                = "cpu=\par CPU Type:\n" \
+                         "platform=\par Platform:\n" \
+                         "threadsafe=\par Thread Safety:\n" \
+                         "performance=\par Performance Notes:\n" \
+                         "constexpr_note=\par constexpr:\nThis function is evaluated at compile time when possible." \
+                         "nodiscard_note=\par [[nodiscard]]:\nThe return value should not be ignored."
+
+# Markdown support
+MARKDOWN_SUPPORT       = YES
+TOC_INCLUDE_HEADINGS   = 5
+MARKDOWN_ID_STYLE      = GITHUB
+AUTOLINK_SUPPORT       = YES
+
+# Builtin STL support
+BUILTIN_STL_SUPPORT    = YES
+
+# C++ member grouping
+CPP_CLI_SUPPORT        = NO
+
+# SIP support (disabled)
+SIP_SUPPORT            = NO
+
+# IDL property support
+IDL_PROPERTY_SUPPORT   = YES
+
+# Resolve all members
+DISTRIBUTE_GROUP_DOC   = NO
+
+# Sub-grouping enabled
+GROUP_NESTED_COMPOUNDS = NO
+SUBGROUPING            = YES
+
+# Inline grouped classes
+INLINE_GROUPED_CLASSES = NO
+
+# Inline simple structs
+INLINE_SIMPLE_STRUCTS  = NO
+
+# Typedef hiding
+TYPEDEF_HIDES_STRUCT   = NO
+
+# Symbol lookup cache size
+LOOKUP_CACHE_SIZE      = 0
+
+# Number of threads for parsing
+NUM_PROC_THREADS       = 0
+
+# Timestamp in footer
+TIMESTAMP              = NO
+
+#---------------------------------------------------------------------------
+# Build Related Configuration Options
+#---------------------------------------------------------------------------
+
+# Extract everything
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_PRIV_VIRTUAL   = YES
+EXTRACT_PACKAGE        = YES
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_LOCAL_METHODS  = YES
+EXTRACT_ANON_NSPACES   = YES
+
+# Resolve unnamed parameters
+RESOLVE_UNNAMED_PARAMS = YES
+
+# Hide undocumented members
+HIDE_UNDOC_MEMBERS     = NO
+HIDE_UNDOC_CLASSES     = NO
+HIDE_FRIEND_COMPOUNDS  = NO
+
+# Hide in body docs
+HIDE_IN_BODY_DOCS      = NO
+
+# Internal documentation
+INTERNAL_DOCS          = YES
+
+# Case sensitivity for file names
+CASE_SENSE_NAMES       = NO
+
+# Hide scope names
+HIDE_SCOPE_NAMES       = NO
+
+# Hide compound references
+HIDE_COMPOUND_REFERENCE = NO
+
+# Show header files
+SHOW_HEADERFILE        = YES
+
+# Show include files
+SHOW_INCLUDE_FILES     = YES
+
+# Show grouped members in their class
+SHOW_GROUPED_MEMB_INC  = NO
+
+# Force local includes
+FORCE_LOCAL_INCLUDES   = NO
+
+# Inline info
+INLINE_INFO            = YES
+
+# Sort members
+SORT_MEMBER_DOCS       = YES
+SORT_BRIEF_DOCS        = NO
+SORT_MEMBERS_CTORS_1ST = YES
+SORT_GROUP_NAMES       = NO
+SORT_BY_SCOPE_NAME     = NO
+
+# Strict proto matching
+STRICT_PROTO_MATCHING  = NO
+
+# Generate todolist, test list, bug list, etc.
+GENERATE_TODOLIST      = YES
+GENERATE_TESTLIST      = YES
+GENERATE_BUGLIST       = YES
+GENERATE_DEPRECATEDLIST = YES
+
+# Enabled sections (for conditional documentation)
+ENABLED_SECTIONS       =
+
+# Max initializer lines
+MAX_INITIALIZER_LINES  = 30
+
+# Show used files
+SHOW_USED_FILES        = YES
+
+# Show files
+SHOW_FILES             = YES
+
+# Show namespaces
+SHOW_NAMESPACES        = YES
+
+# File version filter
+FILE_VERSION_FILTER    =
+
+# Layout file (use default)
+LAYOUT_FILE            =
+
+# Cite BibTeX file
+CITE_BIB_FILES         =
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to Warning and Progress Messages
+#---------------------------------------------------------------------------
+
+# Quiet mode (disabled for development)
+QUIET                  = NO
+
+# Warnings enabled
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_IF_DOC_ERROR      = YES
+WARN_IF_INCOMPLETE_DOC = YES
+WARN_NO_PARAMDOC       = NO
+WARN_IF_UNDOC_ENUM_VAL = NO
+WARN_AS_ERROR          = NO
+
+# Warning format
+WARN_FORMAT            = "$file:$line: $text"
+
+# Warning log file
+WARN_LOGFILE           = docs/doxygen-warnings.log
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to the Input Files
+#---------------------------------------------------------------------------
+
+# Input directories
+INPUT                  = Core \
+                         Utilities \
+                         README.md \
+                         COMPILING.md \
+                         FORMATTING.md
+
+# Input encoding
+INPUT_ENCODING         = UTF-8
+
+# Input filter
+INPUT_FILTER           =
+
+# File patterns
+FILE_PATTERNS          = *.h \
+                         *.cpp \
+                         *.md
+
+# Recursive input
+RECURSIVE              = YES
+
+# Exclude patterns (third-party libraries)
+EXCLUDE                = Core/Lua \
+                         Utilities/miniz.h \
+                         Utilities/miniz.c \
+                         Utilities/stb_vorbis.c \
+                         Utilities/emu2413.c \
+                         Utilities/emu2413.h \
+                         Utilities/blip_buf.h \
+                         Utilities/blip_buf.c \
+                         Utilities/ymfm \
+                         Utilities/NTSC \
+                         Utilities/xBRZ
+
+# Exclude symlinks
+EXCLUDE_SYMLINKS       = NO
+
+# Exclude patterns
+EXCLUDE_PATTERNS       = *_ntsc* \
+                         */obj/* \
+                         */bin/*
+
+# Exclude symbols
+EXCLUDE_SYMBOLS        =
+
+# Example path
+EXAMPLE_PATH           =
+
+# Example patterns
+EXAMPLE_PATTERNS       = *
+
+# Example recursive
+EXAMPLE_RECURSIVE      = NO
+
+# Image path
+IMAGE_PATH             =
+
+# Input filter
+INPUT_FILTER           =
+
+# Filter patterns
+FILTER_PATTERNS        =
+
+# Filter source files
+FILTER_SOURCE_FILES    = NO
+
+# Filter source patterns
+FILTER_SOURCE_PATTERNS =
+
+# Use MDFILE as mainpage
+USE_MDFILE_AS_MAINPAGE = README.md
+
+# Fortran (disabled)
+FORTRAN_COMMENT_AFTER  = 72
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to Source Browsing
+#---------------------------------------------------------------------------
+
+# Source browser
+SOURCE_BROWSER         = YES
+
+# Inline sources
+INLINE_SOURCES         = NO
+
+# Strip code comments
+STRIP_CODE_COMMENTS    = YES
+
+# Referenced by relation
+REFERENCED_BY_RELATION = YES
+
+# References relation
+REFERENCES_RELATION    = YES
+
+# References link source
+REFERENCES_LINK_SOURCE = YES
+
+# Source tooltips
+SOURCE_TOOLTIPS        = YES
+
+# Use htags
+USE_HTAGS              = NO
+
+# Verbatim headers
+VERBATIM_HEADERS       = YES
+
+# Clang assisted parsing (optional, improves accuracy)
+CLANG_ASSISTED_PARSING = NO
+CLANG_ADD_INC_PATHS    = YES
+CLANG_OPTIONS          =
+CLANG_DATABASE_PATH    =
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to the Alphabetical Class Index
+#---------------------------------------------------------------------------
+
+# Alphabetical index
+ALPHABETICAL_INDEX     = YES
+
+# Ignore prefix
+IGNORE_PREFIX          =
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to the HTML Output
+#---------------------------------------------------------------------------
+
+# Generate HTML
+GENERATE_HTML          = YES
+
+# HTML output directory
+HTML_OUTPUT            = html
+
+# HTML file extension
+HTML_FILE_EXTENSION    = .html
+
+# HTML header (use default)
+HTML_HEADER            =
+
+# HTML footer (use default)
+HTML_FOOTER            =
+
+# HTML stylesheet (use default)
+HTML_STYLESHEET        =
+
+# Extra HTML stylesheets
+HTML_EXTRA_STYLESHEET  =
+
+# Extra HTML files
+HTML_EXTRA_FILES       =
+
+# HTML colorstyle
+HTML_COLORSTYLE        = AUTO_LIGHT
+
+# HTML colorstyle hue (220 = blue)
+HTML_COLORSTYLE_HUE    = 220
+
+# HTML colorstyle saturation
+HTML_COLORSTYLE_SAT    = 100
+
+# HTML colorstyle gamma
+HTML_COLORSTYLE_GAMMA  = 80
+
+# HTML dynamic menus
+HTML_DYNAMIC_MENUS     = YES
+
+# HTML dynamic sections
+HTML_DYNAMIC_SECTIONS  = YES
+
+# HTML code folding
+HTML_CODE_FOLDING      = YES
+
+# HTML index entry
+HTML_INDEX_NUM_ENTRIES = 100
+
+# Timestamp in HTML footer
+HTML_TIMESTAMP         = NO
+
+# Generate tree view
+GENERATE_TREEVIEW      = YES
+
+# Full sidebar
+FULL_SIDEBAR           = NO
+
+# Tree view width
+TREEVIEW_WIDTH         = 250
+
+# External groups
+EXT_LINKS_IN_WINDOW    = NO
+
+# Obfuscate emails
+OBFUSCATE_EMAILS       = YES
+
+# HTML formula format
+HTML_FORMULA_FORMAT    = png
+
+# Formula font size
+FORMULA_FONTSIZE       = 10
+
+# Formula transparent
+FORMULA_MACROFILE      =
+
+# Use MathJax
+USE_MATHJAX            = NO
+
+# MathJax format
+MATHJAX_FORMAT         = HTML-CSS
+
+# MathJax relpath
+MATHJAX_RELPATH        =
+
+# MathJax extensions
+MATHJAX_EXTENSIONS     =
+
+# MathJax codefile
+MATHJAX_CODEFILE       =
+
+# Searchengine
+SEARCHENGINE           = YES
+
+# Server based search
+SERVER_BASED_SEARCH    = NO
+
+# External search
+EXTERNAL_SEARCH        = NO
+
+# Search engine URL
+SEARCHENGINE_URL       =
+
+# Search data file
+SEARCHDATA_FILE        = searchdata.xml
+
+# External search ID
+EXTERNAL_SEARCH_ID     =
+
+# Extra search mappings
+EXTRA_SEARCH_MAPPINGS  =
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to the LaTeX Output
+#---------------------------------------------------------------------------
+
+# Generate LaTeX (disabled)
+GENERATE_LATEX         = NO
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to the RTF Output
+#---------------------------------------------------------------------------
+
+# Generate RTF (disabled)
+GENERATE_RTF           = NO
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to the Man Page Output
+#---------------------------------------------------------------------------
+
+# Generate man pages (disabled)
+GENERATE_MAN           = NO
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to the XML Output
+#---------------------------------------------------------------------------
+
+# Generate XML (useful for external tools)
+GENERATE_XML           = YES
+
+# XML output directory
+XML_OUTPUT             = xml
+
+# XML program listing
+XML_PROGRAMLISTING     = YES
+
+# XML namespace members in file scope
+XML_NS_MEMB_FILE_SCOPE = NO
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to the DOCBOOK Output
+#---------------------------------------------------------------------------
+
+# Generate DocBook (disabled)
+GENERATE_DOCBOOK       = NO
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to the AutoGen Definitions Output
+#---------------------------------------------------------------------------
+
+# Generate AutoGen (disabled)
+GENERATE_AUTOGEN_DEF   = NO
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to Sqlite3 Output
+#---------------------------------------------------------------------------
+
+# Generate Sqlite3 (disabled)
+GENERATE_SQLITE3       = NO
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to the Perl Module Output
+#---------------------------------------------------------------------------
+
+# Generate Perlmod (disabled)
+GENERATE_PERLMOD       = NO
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to the Preprocessor
+#---------------------------------------------------------------------------
+
+# Enable preprocessing
+ENABLE_PREPROCESSING   = YES
+
+# Macro expansion
+MACRO_EXPANSION        = YES
+
+# Expand only predefined macros
+EXPAND_ONLY_PREDEF     = NO
+
+# Search includes
+SEARCH_INCLUDES        = YES
+
+# Include path
+INCLUDE_PATH           = Core \
+                         Utilities
+
+# Include file patterns
+INCLUDE_FILE_PATTERNS  =
+
+# Predefined macros
+PREDEFINED             = __forceinline=inline \
+                         __declspec(x)= \
+                         DLLEXPORT= \
+                         _WIN32 \
+                         _MSC_VER=1940 \
+                         __cplusplus=202302L
+
+# Expand as defined
+EXPAND_AS_DEFINED      =
+
+# Skip function macros
+SKIP_FUNCTION_MACROS   = YES
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to External References
+#---------------------------------------------------------------------------
+
+# Tag files
+TAGFILES               =
+
+# Generate tagfile
+GENERATE_TAGFILE       = docs/api/Nexen.tag
+
+# All externals
+ALLEXTERNALS           = NO
+
+# External groups
+EXTERNAL_GROUPS        = YES
+
+# External pages
+EXTERNAL_PAGES         = YES
+
+#---------------------------------------------------------------------------
+# Configuration Options Related to Diagram Generation (dot/Graphviz)
+#---------------------------------------------------------------------------
+
+# Hide undocumented relations
+HIDE_UNDOC_RELATIONS   = YES
+
+# Have dot
+HAVE_DOT               = NO
+
+# Dot number of threads
+DOT_NUM_THREADS        = 0
+
+# Dot common attributes
+DOT_COMMON_ATTR        = "fontname=Helvetica,fontsize=10"
+
+# Dot edge attributes
+DOT_EDGE_ATTR          = "labelfontname=Helvetica,labelfontsize=10"
+
+# Dot node attributes
+DOT_NODE_ATTR          = "shape=box,height=0.2,width=0.4"
+
+# Dot font name
+DOT_FONTNAME           = Helvetica
+
+# Dot font size
+DOT_FONTSIZE           = 10
+
+# Dot font path
+DOT_FONTPATH           =
+
+# Class diagrams
+CLASS_DIAGRAMS         = YES
+
+# Class graph
+CLASS_GRAPH            = YES
+
+# Collaboration graph
+COLLABORATION_GRAPH    = YES
+
+# Group graphs
+GROUP_GRAPHS           = YES
+
+# UML look
+UML_LOOK               = NO
+
+# UML limit num fields
+UML_LIMIT_NUM_FIELDS   = 10
+
+# Dot UML details
+DOT_UML_DETAILS        = NO
+
+# Template relations
+TEMPLATE_RELATIONS     = NO
+
+# Include graph
+INCLUDE_GRAPH          = YES
+
+# Included by graph
+INCLUDED_BY_GRAPH      = YES
+
+# Call graph
+CALL_GRAPH             = NO
+
+# Caller graph
+CALLER_GRAPH           = NO
+
+# Graphical hierarchy
+GRAPHICAL_HIERARCHY    = YES
+
+# Directory graph
+DIRECTORY_GRAPH        = YES
+
+# Dir graph max depth
+DIR_GRAPH_MAX_DEPTH    = 1
+
+# Dot image format
+DOT_IMAGE_FORMAT       = png
+
+# Interactive SVG
+INTERACTIVE_SVG        = NO
+
+# Dot path
+DOT_PATH               =
+
+# Dot file dirs
+DOTFILE_DIRS           =
+
+# MSC file dirs
+MSCFILE_DIRS           =
+
+# Dia file dirs
+DIAFILE_DIRS           =
+
+# PlantUML jar path
+PLANTUML_JAR_PATH      =
+
+# PlantUML config file
+PLANTUML_CFG_FILE      =
+
+# PlantUML include path
+PLANTUML_INCLUDE_PATH  =
+
+# Dot graph max nodes
+DOT_GRAPH_MAX_NODES    = 50
+
+# Max dot graph depth
+MAX_DOT_GRAPH_DEPTH    = 0
+
+# Dot multi targets
+DOT_MULTI_TARGETS      = NO
+
+# Generate legend
+GENERATE_LEGEND        = YES
+
+# Dot cleanup
+DOT_CLEANUP            = YES
+
+# MSC gen tool
+MSCGEN_TOOL            =
+
+# Dia path
+DIA_PATH               =

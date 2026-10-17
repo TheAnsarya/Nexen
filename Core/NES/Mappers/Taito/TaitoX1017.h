@@ -2,21 +2,19 @@
 #include "pch.h"
 #include "NES/BaseMapper.h"
 
-class TaitoX1017 : public BaseMapper
-{
+class TaitoX1017 : public BaseMapper {
 private:
 	uint8_t _chrMode = 0;
 	uint8_t _chrRegs[6] = {};
 	uint8_t _ramPermission[3] = {};
 
-	void UpdateRamAccess()
-	{
+	void UpdateRamAccess() {
 		SetCpuMemoryMapping(0x6000, 0x63FF, 0, PrgMemoryType::SaveRam, _ramPermission[0] == 0xCA ? MemoryAccessType::ReadWrite : MemoryAccessType::NoAccess);
 		SetCpuMemoryMapping(0x6400, 0x67FF, 1, PrgMemoryType::SaveRam, _ramPermission[0] == 0xCA ? MemoryAccessType::ReadWrite : MemoryAccessType::NoAccess);
-		
+
 		SetCpuMemoryMapping(0x6800, 0x6BFF, 2, PrgMemoryType::SaveRam, _ramPermission[1] == 0x69 ? MemoryAccessType::ReadWrite : MemoryAccessType::NoAccess);
 		SetCpuMemoryMapping(0x6C00, 0x6FFF, 3, PrgMemoryType::SaveRam, _ramPermission[1] == 0x69 ? MemoryAccessType::ReadWrite : MemoryAccessType::NoAccess);
-		
+
 		SetCpuMemoryMapping(0x7000, 0x73FF, 4, PrgMemoryType::SaveRam, _ramPermission[2] == 0x84 ? MemoryAccessType::ReadWrite : MemoryAccessType::NoAccess);
 	}
 
@@ -29,8 +27,7 @@ protected:
 	uint32_t GetSaveRamSize() override { return 0x1400; }
 	uint32_t GetSaveRamPageSize() override { return 0x400; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		_chrMode = 0;
 		memset(_ramPermission, 0, sizeof(_ramPermission));
 		memset(_chrRegs, 0, sizeof(_chrRegs));
@@ -40,10 +37,9 @@ protected:
 		UpdateRamAccess();
 	}
 
-	void UpdateChrBanking()
-	{
-		if(_chrMode == 0) {
-			//Regs 0 & 1 ignore the LSB
+	void UpdateChrBanking() {
+		if (_chrMode == 0) {
+			// Regs 0 & 1 ignore the LSB
 			SelectChrPage2x(0, _chrRegs[0] & 0xFE);
 			SelectChrPage2x(1, _chrRegs[1] & 0xFE);
 
@@ -57,15 +53,14 @@ protected:
 			SelectChrPage(2, _chrRegs[4]);
 			SelectChrPage(3, _chrRegs[5]);
 
-			//Regs 0 & 1 ignore the LSB
+			// Regs 0 & 1 ignore the LSB
 			SelectChrPage2x(2, _chrRegs[0] & 0xFE);
 			SelectChrPage2x(3, _chrRegs[1] & 0xFE);
 		}
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
-		switch(addr) {
+	void WriteRegister(uint16_t addr, uint8_t value) override {
+		switch (addr) {
 			case 0x7EF0:
 			case 0x7EF1:
 			case 0x7EF2:
@@ -76,13 +71,13 @@ protected:
 				UpdateChrBanking();
 				break;
 
-			case 0x7EF6: 
+			case 0x7EF6:
 				SetMirroringType((value & 0x01) == 0x01 ? MirroringType::Vertical : MirroringType::Horizontal);
 				_chrMode = (value & 0x02) >> 1;
 				UpdateChrBanking();
 				break;
 
-			case 0x7EF7: 
+			case 0x7EF7:
 			case 0x7EF8:
 			case 0x7EF9:
 				_ramPermission[(addr & 0xF) - 7] = value;
@@ -92,31 +87,28 @@ protected:
 			case 0x7EFA:
 			case 0x7EFB:
 			case 0x7EFC:
-				if(_romInfo.MapperID == 82) {
+				if (_romInfo.MapperID == 82) {
 					SelectPrgPage(addr - 0x7EFA, value >> 2);
 				} else {
-					uint8_t page = (
-						((value & 0x20) >> 5) |
-						((value & 0x10) >> 3) |
-						((value & 0x08) >> 1) |
-						((value & 0x04) << 1) |
-						((value & 0x02) << 3) |
-						((value & 0x01) << 5)
-					);
+					uint8_t page = (((value & 0x20) >> 5) |
+					                ((value & 0x10) >> 3) |
+					                ((value & 0x08) >> 1) |
+					                ((value & 0x04) << 1) |
+					                ((value & 0x02) << 3) |
+					                ((value & 0x01) << 5));
 					SelectPrgPage(addr - 0x7EFA, page);
 				}
 				break;
 		}
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		BaseMapper::Serialize(s);
 		SVArray(_ramPermission, 3);
 		SVArray(_chrRegs, 6);
 		SV(_chrMode);
 
-		if(!s.IsSaving()) {
+		if (!s.IsSaving()) {
 			UpdateRamAccess();
 		}
 	}

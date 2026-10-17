@@ -9,75 +9,77 @@
 #include "NES/APU/BaseExpansionAudio.h"
 #include "Utilities/Serializer.h"
 
-void FdsAudio::Serialize(Serializer& s)
-{
+void FdsAudio::Serialize(Serializer& s) {
 	BaseExpansionAudio::Serialize(s);
 
 	SVArray(_waveTable, 64);
 	SV(_volume);
 	SV(_mod);
-	SV(_waveWriteEnabled); SV(_disableEnvelopes); SV(_haltWaveform); SV(_masterVolume); SV(_waveOverflowCounter); SV(_wavePitch); SV(_wavePosition); SV(_lastOutput);
+	SV(_waveWriteEnabled);
+	SV(_disableEnvelopes);
+	SV(_haltWaveform);
+	SV(_masterVolume);
+	SV(_waveOverflowCounter);
+	SV(_wavePitch);
+	SV(_wavePosition);
+	SV(_lastOutput);
 }
 
-void FdsAudio::ClockAudio()
-{
+void FdsAudio::ClockAudio() {
 	int frequency = _volume.GetFrequency();
-	if(!_haltWaveform && !_disableEnvelopes) {
+	if (!_haltWaveform && !_disableEnvelopes) {
 		_volume.TickEnvelope();
-		if(_mod.TickEnvelope()) {
+		if (_mod.TickEnvelope()) {
 			_mod.UpdateOutput(frequency);
 		}
 	}
 
-	if(_mod.TickModulator()) {
-		//Modulator was ticked, update wave pitch
+	if (_mod.TickModulator()) {
+		// Modulator was ticked, update wave pitch
 		_mod.UpdateOutput(frequency);
 	}
 
 	UpdateOutput();
 
-	if(!_haltWaveform && frequency + _mod.GetOutput() > 0) {
+	if (!_haltWaveform && frequency + _mod.GetOutput() > 0) {
 		_waveOverflowCounter += frequency + _mod.GetOutput();
-		if(_waveOverflowCounter < frequency + _mod.GetOutput()) {
+		if (_waveOverflowCounter < frequency + _mod.GetOutput()) {
 			_wavePosition = (_wavePosition + 1) & 0x3F;
 		}
 	}
 }
 
-void FdsAudio::UpdateOutput()
-{
-	if(_waveWriteEnabled) {
+void FdsAudio::UpdateOutput() {
+	if (_waveWriteEnabled) {
 		return;
 	}
 
 	uint32_t level = std::min((int)_volume.GetGain(), 32) * WaveVolumeTable[_masterVolume];
 	uint8_t outputLevel = (_waveTable[_wavePosition] * level) / 1152;
 
-	if(_lastOutput != outputLevel) {
+	if (_lastOutput != outputLevel) {
 		_console->GetApu()->AddExpansionAudioDelta(AudioChannel::FDS, outputLevel - _lastOutput);
 		_lastOutput = outputLevel;
 	}
 }
 
-FdsAudio::FdsAudio(NesConsole* console) : BaseExpansionAudio(console)
-{
+FdsAudio::FdsAudio(NesConsole* console) : BaseExpansionAudio(console) {
 }
 
-uint8_t FdsAudio::ReadRegister(uint16_t addr)
-{
+uint8_t FdsAudio::ReadRegister(uint16_t addr) {
 	uint8_t value = _console->GetMemoryManager()->GetOpenBus();
-	if(addr <= 0x407F) {
+	if (addr <= 0x407F) {
 		value &= 0xC0;
-		if(_waveWriteEnabled) {
+		if (_waveWriteEnabled) {
 			value |= _waveTable[addr & 0x3F];
 		} else {
 			//"When writing is disabled ($4089.7), reading anywhere in 4040-407F returns the value at the current wave position"
 			value |= _waveTable[_wavePosition];
 		}
-	} else if(addr == 0x4090) {
+	} else if (addr == 0x4090) {
 		value &= 0xC0;
 		value |= _volume.GetGain();
-	} else if(addr == 0x4092) {
+	} else if (addr == 0x4092) {
 		value &= 0xC0;
 		value |= _mod.GetGain();
 	}
@@ -85,35 +87,34 @@ uint8_t FdsAudio::ReadRegister(uint16_t addr)
 	return value;
 }
 
-void FdsAudio::WriteRegister(uint16_t addr, uint8_t value)
-{
-	if(addr <= 0x407F) {
-		if(_waveWriteEnabled) {
+void FdsAudio::WriteRegister(uint16_t addr, uint8_t value) {
+	if (addr <= 0x407F) {
+		if (_waveWriteEnabled) {
 			_waveTable[addr & 0x3F] = value & 0x3F;
 		}
 	} else {
-		switch(addr) {
+		switch (addr) {
 			case 0x4080:
 			case 0x4082:
 				_volume.WriteReg(addr, value);
 
-				//Update mod output (in case frequency was changed)
+				// Update mod output (in case frequency was changed)
 				_mod.UpdateOutput(_volume.GetFrequency());
 				break;
 
 			case 0x4083:
 				_disableEnvelopes = (value & 0x40) != 0;
 				_haltWaveform = (value & 0x80) != 0;
-				if(_haltWaveform) {
+				if (_haltWaveform) {
 					_wavePosition = 0;
 				}
-				if(_disableEnvelopes) {
+				if (_disableEnvelopes) {
 					_volume.ResetTimer();
 					_mod.ResetTimer();
 				}
 				_volume.WriteReg(addr, value);
 
-				//Update mod output (in case frequency was changed)
+				// Update mod output (in case frequency was changed)
 				_mod.UpdateOutput(_volume.GetFrequency());
 				break;
 
@@ -125,8 +126,8 @@ void FdsAudio::WriteRegister(uint16_t addr, uint8_t value)
 			case 0x4084:
 			case 0x4085:
 				_mod.WriteReg(addr, value);
-				
-				//Update mod output (in case gain/counter were changed)
+
+				// Update mod output (in case gain/counter were changed)
 				_mod.UpdateOutput(_volume.GetFrequency());
 				break;
 
@@ -147,41 +148,39 @@ void FdsAudio::WriteRegister(uint16_t addr, uint8_t value)
 	}
 }
 
-void FdsAudio::GetMapperStateEntries(vector<MapperStateEntry>& entries)
-{
-	entries.push_back(MapperStateEntry("", "Audio"));
-	entries.push_back(MapperStateEntry("$4080-$4083", "Volume"));
-	entries.push_back(MapperStateEntry("$4080.0-5", "Envelope Speed", _volume.GetSpeed(), MapperStateValueType::Number8));
-	entries.push_back(MapperStateEntry("$4080.6", "Envelope Direction", _volume.GetVolumeIncreaseFlag() ? "Increase" : "Decrease", _volume.GetVolumeIncreaseFlag()));
-	entries.push_back(MapperStateEntry("$4080.7", "Envelope Disabled", _volume.IsEnvelopeDisabled(), MapperStateValueType::Bool));
-	entries.push_back(MapperStateEntry("$4082/3.0-11", "Frequency", _volume.GetFrequency(), MapperStateValueType::Number16));
-	entries.push_back(MapperStateEntry("$4083.6", "Volume/Mod Envelopes Disabled", _disableEnvelopes, MapperStateValueType::Bool));
-	entries.push_back(MapperStateEntry("$4083.7", "Halt Waveform", _haltWaveform, MapperStateValueType::Bool));
-	entries.push_back(MapperStateEntry("", "Waveform position", _wavePosition, MapperStateValueType::Number8));
+void FdsAudio::GetMapperStateEntries(vector<MapperStateEntry>& entries) {
+	entries.emplace_back("", "Audio");
+	entries.emplace_back("$4080-$4083", "Volume");
+	entries.emplace_back("$4080.0-5", "Envelope Speed", _volume.GetSpeed(), MapperStateValueType::Number8);
+	entries.emplace_back("$4080.6", "Envelope Direction", _volume.GetVolumeIncreaseFlag() ? "Increase" : "Decrease", _volume.GetVolumeIncreaseFlag());
+	entries.emplace_back("$4080.7", "Envelope Disabled", _volume.IsEnvelopeDisabled(), MapperStateValueType::Bool);
+	entries.emplace_back("$4082/3.0-11", "Frequency", _volume.GetFrequency(), MapperStateValueType::Number16);
+	entries.emplace_back("$4083.6", "Volume/Mod Envelopes Disabled", _disableEnvelopes, MapperStateValueType::Bool);
+	entries.emplace_back("$4083.7", "Halt Waveform", _haltWaveform, MapperStateValueType::Bool);
+	entries.emplace_back("", "Waveform position", _wavePosition, MapperStateValueType::Number8);
 
-	entries.push_back(MapperStateEntry("", "Gain", _volume.GetGain(), MapperStateValueType::Number8));
+	entries.emplace_back("", "Gain", _volume.GetGain(), MapperStateValueType::Number8);
 
-	entries.push_back(MapperStateEntry("$4084-$4088", "Modulation"));
-	entries.push_back(MapperStateEntry("$4084.0-5", "Envelope Speed", _mod.GetSpeed(), MapperStateValueType::Number8));
-	entries.push_back(MapperStateEntry("$4084.6", "Envelope Direction", _mod.GetVolumeIncreaseFlag() ? "Increase" : "Decrease", _mod.GetVolumeIncreaseFlag()));
-	entries.push_back(MapperStateEntry("$4084.7", "Envelope Disabled", _mod.IsEnvelopeDisabled(), MapperStateValueType::Bool));
-	
+	entries.emplace_back("$4084-$4088", "Modulation");
+	entries.emplace_back("$4084.0-5", "Envelope Speed", _mod.GetSpeed(), MapperStateValueType::Number8);
+	entries.emplace_back("$4084.6", "Envelope Direction", _mod.GetVolumeIncreaseFlag() ? "Increase" : "Decrease", _mod.GetVolumeIncreaseFlag());
+	entries.emplace_back("$4084.7", "Envelope Disabled", _mod.IsEnvelopeDisabled(), MapperStateValueType::Bool);
+
 	int8_t modCounter = _mod.GetCounter();
-	entries.push_back(MapperStateEntry("$4085.0-6", "Counter", std::to_string(modCounter), modCounter < 0 ? (modCounter + 128) : modCounter));
+	entries.emplace_back("$4085.0-6", "Counter", std::to_string(modCounter), modCounter < 0 ? (modCounter + 128) : modCounter);
 
-	entries.push_back(MapperStateEntry("$4086/7.0-11", "Frequency", _mod.GetFrequency(), MapperStateValueType::Number16));
-	
-	//todo emulation logic + this based on new info
-	//entries.push_back(MapperStateEntry("$4087.6", "???", false, MapperStateValueType::Bool));
+	entries.emplace_back("$4086/7.0-11", "Frequency", _mod.GetFrequency(), MapperStateValueType::Number16);
 
-	entries.push_back(MapperStateEntry("$4087.7", "Disabled", _mod.IsModulationDisabled(), MapperStateValueType::Bool));
-	entries.push_back(MapperStateEntry("", "Gain", _mod.GetGain(), MapperStateValueType::Number8));
-	entries.push_back(MapperStateEntry("", "Mod Output", std::to_string(_mod.GetOutput())));
+	// todo emulation logic + this based on new info
+	// entries.emplace_back("$4087.6", "???", false, MapperStateValueType::Bool);
 
-	entries.push_back(MapperStateEntry("$4089-$408A", "Misc. Audio"));
-	entries.push_back(MapperStateEntry("$4089.0-2", "Master Volume", _masterVolume, MapperStateValueType::Number8));
-	entries.push_back(MapperStateEntry("$4089.7", "Wave Write Enabled", _waveWriteEnabled, MapperStateValueType::Bool));
-	
-	entries.push_back(MapperStateEntry("$408A", "Envelope Speed Multiplier", _volume.GetMasterSpeed(), MapperStateValueType::Number8));
+	entries.emplace_back("$4087.7", "Disabled", _mod.IsModulationDisabled(), MapperStateValueType::Bool);
+	entries.emplace_back("", "Gain", _mod.GetGain(), MapperStateValueType::Number8);
+	entries.emplace_back("", "Mod Output", std::to_string(_mod.GetOutput()));
 
+	entries.emplace_back("$4089-$408A", "Misc. Audio");
+	entries.emplace_back("$4089.0-2", "Master Volume", _masterVolume, MapperStateValueType::Number8);
+	entries.emplace_back("$4089.7", "Wave Write Enabled", _waveWriteEnabled, MapperStateValueType::Bool);
+
+	entries.emplace_back("$408A", "Envelope Speed Multiplier", _volume.GetMasterSpeed(), MapperStateValueType::Number8);
 }

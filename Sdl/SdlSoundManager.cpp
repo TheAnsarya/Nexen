@@ -71,7 +71,7 @@ bool SdlSoundManager::InitializeAudio(uint32_t sampleRate, bool isStereo)
 
 	_audioDeviceID = SDL_OpenAudioDevice(_deviceName.empty() ? nullptr : _deviceName.c_str(), isCapture, &audioSpec, &obtainedSpec, 0);
 	if(_audioDeviceID == 0 && !_deviceName.empty()) {
-		MessageManager::Log("[Audio] Failed opening audio device '" + _deviceName + "', will retry with default device.");  
+		MessageManager::Log("[Audio] Failed opening audio device '" + _deviceName + "', will retry with default device.");
 		_audioDeviceID = SDL_OpenAudioDevice(nullptr, isCapture, &audioSpec, &obtainedSpec, 0);
 	}
 
@@ -109,7 +109,7 @@ vector<string> SdlSoundManager::GetAvailableDeviceInfo()
 	return deviceList;
 }
 
-void SdlSoundManager::SetAudioDevice(string deviceName)
+void SdlSoundManager::SetAudioDevice(const string& deviceName)
 {
 	if(deviceName.compare(_deviceName) != 0) {
 		_deviceName = deviceName;

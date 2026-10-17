@@ -1,9 +1,3 @@
-﻿using Avalonia.Controls;
-using Avalonia.Layout;
-using Avalonia.Media;
-using Mesen.Debugger.Controls;
-using Mesen.Interop;
-using Mesen.Localization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,15 +5,19 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Nexen.Debugger.Controls;
+using Nexen.Interop;
+using Nexen.Localization;
 
-namespace Mesen.Debugger.Utilities;
+namespace Nexen.Debugger.Utilities;
 
-public static class OpCodeHelper
-{
+public static class OpCodeHelper {
 	private static Dictionary<CpuType, CpuDocumentationData> _data = new();
 
-	static OpCodeHelper()
-	{
+	static OpCodeHelper() {
 		InitNesDocumentation();
 		InitSnesDocumentation();
 		InitPceDocumentation();
@@ -27,27 +25,27 @@ public static class OpCodeHelper
 		InitSmsDocumentation();
 		InitGbaDocumentation();
 		InitWsDocumentation();
+		InitLynxDocumentation();
 	}
 
-	public static DynamicTooltip? GetTooltip(CodeSegmentInfo seg)
-	{
-		if(!_data.TryGetValue(seg.Data.CpuType, out CpuDocumentationData? doc)) {
+	public static DynamicTooltip? GetTooltip(CodeSegmentInfo seg) {
+		if (!_data.TryGetValue(seg.Data.CpuType, out CpuDocumentationData? doc)) {
 			return null;
 		}
-		
+
 		OpCodeDesc? desc = null;
 		string opname = seg.Text.ToLower();
-		if(doc.OpDescGetter != null) {
+		if (doc.OpDescGetter is not null) {
 			desc = doc.OpDescGetter(doc.OpDesc, opname, seg);
 		} else {
 			doc.OpDesc.TryGetValue(opname, out desc);
 		}
 
-		if(desc == null) {
+		if (desc is null) {
 			return null;
 		}
 
-		if(seg.Data.ByteCode.Length <= 0) {
+		if (seg.Data.ByteCode.Length <= 0) {
 			return null;
 		}
 
@@ -55,70 +53,70 @@ public static class OpCodeHelper
 
 		StackPanel panel = new StackPanel() { MaxWidth = 250, HorizontalAlignment = HorizontalAlignment.Left };
 		panel.Children.Add(new TextBlock() { Text = desc.Name, FontSize = 14, Margin = new(0, 2), TextWrapping = TextWrapping.Wrap, FontWeight = FontWeight.Bold });
-		panel.Children.Add(new TextBlock() { Text = desc.Description, Margin = new(0, 3, 0, 5),  TextWrapping = TextWrapping.Wrap });
+		panel.Children.Add(new TextBlock() { Text = desc.Description, Margin = new(0, 3, 0, 5), TextWrapping = TextWrapping.Wrap });
 
 		TooltipEntries items = new();
 		items.AddCustomEntry("OP", panel);
-		if(!string.IsNullOrEmpty(seg.Data.ByteCodeStr)) {
+		if (!string.IsNullOrEmpty(seg.Data.ByteCodeStr)) {
 			items.AddEntry("Byte Code", seg.Data.ByteCodeStr);
 		}
-		if(doc.OpMode != null) {
+
+		if (doc.OpMode is not null) {
 			items.AddEntry("Mode", doc.OpMode[opcode]);
 		}
-		if(doc.OpCycleCount != null) {
+
+		if (doc.OpCycleCount is not null) {
 			items.AddEntry("Cycle Count", doc.OpCycleCount[opcode]);
 		}
-		if(desc.Flags != null) {
+
+		if (desc.Flags is not null) {
 			items.AddEntry("Affected Flags", string.Join(", ", desc.Flags));
 		}
 
 		return new DynamicTooltip() { Items = items };
 	}
 
-	private static void InitDocumentation(CpuType cpuType, DocFileFormat? doc, Dictionary<string, OpCodeDesc>? baseDesc = null)
-	{
-		if(doc == null) {
+	private static void InitDocumentation(CpuType cpuType, DocFileFormat? doc, Dictionary<string, OpCodeDesc>? baseDesc = null) {
+		if (doc is null) {
 			return;
 		}
 
 		Dictionary<string, OpCodeDesc> desc = baseDesc ?? new();
-		foreach(OpCodeDesc op in doc.Instructions) {
+		foreach (OpCodeDesc op in doc.Instructions) {
 			desc[op.Op] = op;
 		}
 
 		Dictionary<int, string> mode = new();
 		Dictionary<int, string> cycleCount = new();
-		for(int i = 0; i < 256; i++) {
-			if(doc.AddressingModes != null) {
+		for (int i = 0; i < 256; i++) {
+			if (doc.AddressingModes is not null) {
 				mode[i] = ResourceHelper.GetEnumText(doc.AddressingModes[i]);
 			}
 
-			if(doc.MinCycles != null) {
+			if (doc.MinCycles is not null) {
 				string cycles = doc.MinCycles[i].ToString();
-				if(doc.MinCycles[i] < doc.MaxCycles?[i]) {
+				if (doc.MinCycles[i] < doc.MaxCycles?[i]) {
 					cycles += "-" + doc.MaxCycles[i];
 				}
+
 				cycleCount[i] = cycles;
 			}
 		}
 
-		_data[cpuType] = new CpuDocumentationData(desc, doc.AddressingModes != null ? mode : null, doc.MinCycles != null ? cycleCount : null);
+		_data[cpuType] = new CpuDocumentationData(desc, doc.AddressingModes is not null ? mode : null, doc.MinCycles is not null ? cycleCount : null);
 	}
 
-	private static void InitNesDocumentation()
-	{
+	private static void InitNesDocumentation() {
 		InitDocumentation(CpuType.Nes, ReadDocumentationFile("NesDocumentation.json"));
 	}
 
-	private static void InitSnesDocumentation()
-	{
+	private static void InitSnesDocumentation() {
 		Dictionary<string, OpCodeDesc> baseDesc = new(_data[CpuType.Nes].OpDesc);
 		InitDocumentation(CpuType.Snes, ReadDocumentationFile("SnesDocumentation.json"), baseDesc);
 		InitDocumentation(CpuType.Spc, ReadDocumentationFile("SpcDocumentation.json"));
 	}
 
-	private static void InitPceDocumentation()
-	{
+	private static void InitPceDocumentation() {
 		Dictionary<string, OpCodeDesc> baseDesc = new(_data[CpuType.Nes].OpDesc);
 		InitDocumentation(CpuType.Pce, ReadDocumentationFile("PceDocumentation.json"), baseDesc);
 		_data[CpuType.Pce].OpDescGetter = (dict, opName, _) => {
@@ -130,25 +128,27 @@ public static class OpCodeHelper
 		};
 	}
 
-	private static void InitGbDocumentation()
-	{
+	private static void InitGbDocumentation() {
 		InitDocumentation(CpuType.Gameboy, ReadDocumentationFile("GbDocumentation.json"));
 	}
 
-	private static void InitSmsDocumentation()
-	{
+	private static void InitSmsDocumentation() {
 		//TODOSMS add missing descriptions, etc.
 		InitDocumentation(CpuType.Sms, ReadDocumentationFile("SmsDocumentation.json"));
 	}
 
-	private static void InitWsDocumentation()
-	{
+	private static void InitWsDocumentation() {
 		//TODOWS add missing descriptions, etc.
 		InitDocumentation(CpuType.Ws, ReadDocumentationFile("WsDocumentation.json"));
 	}
 
-	private static void InitGbaDocumentation()
-	{
+	private static void InitLynxDocumentation() {
+		// Lynx uses 65SC02 - share NES (6502) base docs like PCE does
+		Dictionary<string, OpCodeDesc> baseDesc = new(_data[CpuType.Nes].OpDesc);
+		InitDocumentation(CpuType.Lynx, ReadDocumentationFile("PceDocumentation.json"), baseDesc);
+	}
+
+	private static void InitGbaDocumentation() {
 		//TODOGBA add missing descriptions, etc.
 		InitDocumentation(CpuType.Gba, ReadDocumentationFile("GbaDocumentation.json"));
 
@@ -166,111 +166,118 @@ public static class OpCodeHelper
 
 			Func<bool> tryParseOp = () => {
 				dict.TryGetValue(opName, out desc);
-				if(desc != null) {
+				if (desc is not null) {
 					desc = desc.Clone();
 
-					if(byteSize) {
+					if (byteSize) {
 						desc.Name += " (byte)";
 					}
 
-					if(halfWordSize) {
+					if (halfWordSize) {
 						desc.Name += " (half-word)";
 					}
 
-					if(signed) {
+					if (signed) {
 						desc.Name += " (signed)";
 					}
 
-					if(incAfter) {
+					if (incAfter) {
 						desc.Name += " (post-increment)";
 					}
-					if(incBefore) {
-						desc.Name += " (pre-increment)";
-					}
-					if(decAfter) {
-						desc.Name += " (post-decrement)";
-					}
-					if(decBefore) {
+
+					if (incBefore) {
 						desc.Name += " (pre-increment)";
 					}
 
-					if(condHint != "") {
-						if(!string.IsNullOrEmpty(desc.Description)) {
+					if (decAfter) {
+						desc.Name += " (post-decrement)";
+					}
+
+					if (decBefore) {
+						desc.Name += " (pre-increment)";
+					}
+
+					if (condHint != "") {
+						if (!string.IsNullOrEmpty(desc.Description)) {
 							desc.Description += Environment.NewLine;
 						}
+
 						desc.Description += " -When: " + condHint;
 					}
 
-					if(updateFlags) {
-						if(!string.IsNullOrEmpty(desc.Description)) {
+					if (updateFlags) {
+						if (!string.IsNullOrEmpty(desc.Description)) {
 							desc.Description += Environment.NewLine;
 						}
+
 						desc.Description += " -Update flags";
 					}
+
 					return true;
 				}
+
 				return false;
 			};
 
-			if(tryParseOp()) {
+			if (tryParseOp()) {
 				return desc;
 			}
 
-			if(checkSetFlags && opName.EndsWith("s")) {
+			if (checkSetFlags && opName.EndsWith("s")) {
 				updateFlags = true;
 				opName = opName.Substring(0, opName.Length - 1);
 			}
 
-			if(tryParseOp()) {
+			if (tryParseOp()) {
 				return desc;
 			}
 
-			if(opName.EndsWith("ib")) {
+			if (opName.EndsWith("ib")) {
 				incBefore = true;
 				opName = opName.Substring(0, opName.Length - 2);
 			}
 
-			if(opName.EndsWith("ia")) {
+			if (opName.EndsWith("ia")) {
 				incAfter = true;
 				opName = opName.Substring(0, opName.Length - 2);
 			}
 
-			if(opName.EndsWith("db")) {
+			if (opName.EndsWith("db")) {
 				decBefore = true;
 				opName = opName.Substring(0, opName.Length - 2);
 			}
 
-			if(opName.EndsWith("da")) {
+			if (opName.EndsWith("da")) {
 				decAfter = true;
 				opName = opName.Substring(0, opName.Length - 2);
 			}
 
-			if(tryParseOp()) {
+			if (tryParseOp()) {
 				return desc;
 			}
 
-			if(opName.EndsWith("b")) {
+			if (opName.EndsWith("b")) {
 				byteSize = true;
 				opName = opName.Substring(0, opName.Length - 1);
 			}
 
-			if(opName.EndsWith("h")) {
+			if (opName.EndsWith("h")) {
 				halfWordSize = true;
 				opName = opName.Substring(0, opName.Length - 1);
 			}
 
-			if(tryParseOp()) {
+			if (tryParseOp()) {
 				return desc;
 			}
 
-			if(opName != "mrs" && opName.EndsWith("s")) {
+			if (opName != "mrs" && opName.EndsWith("s")) {
 				signed = true;
 				opName = opName.Substring(0, opName.Length - 1);
 			}
 
 			string[] conditions = { "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc", "hi", "ls", "ge", "lt", "gt", "le", "al" };
 			string? condition = conditions.FirstOrDefault(opName.EndsWith);
-			if(condition != null) {
+			if (condition is not null) {
 				condHint = condition switch {
 					"eq" => "Equal (Zero Set)",
 					"ne" => "Not Equal (Zero Clear)",
@@ -293,7 +300,7 @@ public static class OpCodeHelper
 				opName = opName.Substring(0, opName.Length - 2);
 			}
 
-			if(tryParseOp()) {
+			if (tryParseOp()) {
 				return desc;
 			}
 
@@ -302,9 +309,8 @@ public static class OpCodeHelper
 
 		_data[CpuType.Gba].OpDescGetter = (dict, opName, codeSegment) => {
 			OpCodeDesc? desc = parseOp(dict, opName, codeSegment, true);
-			if(desc == null) {
-				desc = parseOp(dict, opName, codeSegment, false);
-			}
+			desc ??= parseOp(dict, opName, codeSegment, false);
+
 			return desc;
 		};
 
@@ -312,21 +318,18 @@ public static class OpCodeHelper
 		_data[CpuType.St018] = _data[CpuType.Gba];
 	}
 
-	private static DocFileFormat? ReadDocumentationFile(string filename)
-	{
-		using StreamReader reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("Mesen.Debugger.Documentation." + filename)!);
-		return (DocFileFormat?)JsonSerializer.Deserialize(reader.ReadToEnd(), typeof(DocFileFormat), MesenCamelCaseSerializerContext.Default);
+	private static DocFileFormat? ReadDocumentationFile(string filename) {
+		using StreamReader reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("Nexen.Debugger.Documentation." + filename)!);
+		return (DocFileFormat?)JsonSerializer.Deserialize(reader.ReadToEnd(), typeof(DocFileFormat), NexenCamelCaseSerializerContext.Default);
 	}
 
-	private class CpuDocumentationData
-	{
+	private class CpuDocumentationData {
 		public Dictionary<string, OpCodeDesc> OpDesc { get; }
 		public Dictionary<int, string>? OpMode { get; }
 		public Dictionary<int, string>? OpCycleCount { get; }
 		public Func<Dictionary<string, OpCodeDesc>, string, CodeSegmentInfo, OpCodeDesc?>? OpDescGetter { get; set; }
 
-		public CpuDocumentationData(Dictionary<string, OpCodeDesc> opDesc, Dictionary<int, string>? opMode, Dictionary<int, string>? opCycleCount)
-		{
+		public CpuDocumentationData(Dictionary<string, OpCodeDesc> opDesc, Dictionary<int, string>? opMode, Dictionary<int, string>? opCycleCount) {
 			OpDesc = opDesc;
 			OpMode = opMode;
 			OpCycleCount = opCycleCount;
@@ -334,8 +337,7 @@ public static class OpCodeHelper
 	}
 }
 
-public enum AddrMode
-{
+public enum AddrMode {
 	//6502
 	None, Acc, Imp, Imm, Rel,
 	Zero, Abs, ZeroX, ZeroY,
@@ -360,8 +362,7 @@ public enum AddrMode
 	ZInd, ZeroRel,
 }
 
-public enum CpuFlag
-{
+public enum CpuFlag {
 	Carry,
 	Decimal,
 	Interrupt,
@@ -379,23 +380,20 @@ public enum CpuFlag
 	F5
 }
 
-public class DocFileFormat
-{
-	public OpCodeDesc[] Instructions { get; set; } = Array.Empty<OpCodeDesc>();
+public sealed class DocFileFormat {
+	public OpCodeDesc[] Instructions { get; set; } = [];
 	public AddrMode[]? AddressingModes { get; set; } = null;
 	public int[]? MinCycles { get; set; }
 	public int[]? MaxCycles { get; set; }
 }
 
-public class OpCodeDesc
-{
+public sealed class OpCodeDesc {
 	public string Op { get; set; } = "";
 	public string Name { get; set; } = "";
 	public string Description { get; set; } = "";
 	public CpuFlag[]? Flags { get; set; }
 
-	public OpCodeDesc Clone()
-	{
+	public OpCodeDesc Clone() {
 		return (OpCodeDesc)this.MemberwiseClone();
 	}
 }

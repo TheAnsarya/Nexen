@@ -6,8 +6,7 @@
 #include "NES/NesConsole.h"
 #include "Utilities/Serializer.h"
 
-class RainbowAudio : public BaseExpansionAudio
-{
+class RainbowAudio : public BaseExpansionAudio {
 private:
 	Vrc6Pulse _pulse1;
 	Vrc6Pulse _pulse2;
@@ -19,8 +18,7 @@ private:
 	uint8_t _lastOutput = 0;
 
 protected:
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		SV(_pulse1);
 		SV(_pulse2);
 		SV(_saw);
@@ -31,49 +29,50 @@ protected:
 		SV(_lastOutput);
 	}
 
-	void ClockAudio() override
-	{
+	void ClockAudio() override {
 		_pulse1.Clock();
 		_pulse2.Clock();
 		_saw.Clock();
 
 		uint8_t outputLevel = _pulse1.GetVolume() + _pulse2.GetVolume() + _saw.GetVolume();
-		if(_outputExpPin6 || _outputExpPin9) {
+		if (_outputExpPin6 || _outputExpPin9) {
 			_console->GetApu()->AddExpansionAudioDelta(AudioChannel::VRC6, ((int16_t)outputLevel - (int16_t)_lastOutput) * 15 * _volume / 15);
 		}
 		_lastOutput = outputLevel;
 	}
 
 public:
-	RainbowAudio(NesConsole* console) : BaseExpansionAudio(console)
-	{
+	RainbowAudio(NesConsole* console) : BaseExpansionAudio(console) {
 		Reset();
 	}
 
-	void Reset()
-	{
+	void Reset() {
 		_lastOutput = 0;
 	}
 
-	uint8_t GetLastOutput()
-	{
+	uint8_t GetLastOutput() {
 		return _lastOutput;
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value)
-	{
+	void WriteRegister(uint16_t addr, uint8_t value) {
 		addr &= 0x0F;
 
-		switch(addr) {
-			case 0x00: case 0x01: case 0x02:
+		switch (addr) {
+			case 0x00:
+			case 0x01:
+			case 0x02:
 				_pulse1.WriteReg(addr, value);
 				break;
 
-			case 0x03: case 0x04: case 0x05:
+			case 0x03:
+			case 0x04:
+			case 0x05:
 				_pulse2.WriteReg(addr - 0x03, value);
 				break;
 
-			case 0x06: case 0x07: case 0x08:
+			case 0x06:
+			case 0x07:
+			case 0x08:
 				_saw.WriteReg(addr - 0x06, value);
 				break;
 

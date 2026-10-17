@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 #include "pch.h"
 
 #include "Shared/SettingTypes.h"
@@ -29,8 +29,29 @@ enum class ConsoleRegion;
 enum class GameInputType;
 enum class GameSystem;
 
-class NesConsole final : public IConsole
-{
+/// <summary>
+/// NES (Nintendo Entertainment System) console emulator.
+/// Implements the complete NES hardware: CPU, PPU, APU, and memory system.
+/// </summary>
+/// <remarks>
+/// Supports multiple NES variants:
+/// - **Famicom/NES**: Standard console with cartridge-based games
+/// - **Famicom Disk System**: Disk-based add-on for Famicom
+/// - **VS System**: Arcade hardware with dual-screen support
+/// - **NSF Player**: Nintendo Sound Format music playback
+///
+/// **Hardware Components:**
+/// - **CPU**: Ricoh 2A03 (NTSC) / 2A07 (PAL) - 6502 variant @ 1.79/1.66 MHz
+/// - **PPU**: Picture Processing Unit - 256×240 @ 60/50 Hz
+/// - **APU**: Audio Processing Unit - 5 channels (2 pulse, triangle, noise, DMC)
+/// - **Mappers**: Over 300 cartridge mapper implementations
+///
+/// **Extended Features:**
+/// - HD packs for enhanced graphics and audio
+/// - Overclocking for reduced slowdown
+/// - Sprite limit removal
+/// </remarks>
+class NesConsole final : public IConsole {
 private:
 	Emulator* _emu = nullptr;
 
@@ -52,10 +73,10 @@ private:
 	ConsoleRegion _region = ConsoleRegion::Auto;
 
 	bool _nextFrameOverclockDisabled = false;
-	
+
 	void UpdateRegion(bool forceUpdate = false);
 	void LoadHdPack(VirtualFile& romFile);
-	
+
 	void InitializeInputDevices(GameInputType inputType, GameSystem system);
 
 	void StartRecordingHdPack(HdPackBuilderOptions options);
@@ -65,8 +86,8 @@ public:
 	NesConsole(Emulator* emulator);
 	~NesConsole();
 
-	static vector<string> GetSupportedExtensions() { return { ".nes", ".fds", ".unif", ".unf", ".nsf", ".nsfe", ".studybox", ".qd" }; }
-	static vector<string> GetSupportedSignatures() { return { "NES\x1a", "FDS\x1a", "\x1*NINTENDO-HVC*", "NESM\x1a", "NSFE", "UNIF", "STBX" }; }
+	static vector<string> GetSupportedExtensions() { return {".nes", ".fds", ".unif", ".unf", ".nsf", ".nsfe", ".studybox", ".qd"}; }
+	static vector<string> GetSupportedSignatures() { return {"NES\x1a", "FDS\x1a", "\x1*NINTENDO-HVC*", "NESM\x1a", "NSFE", "UNIF", "STBX"}; }
 
 	NesCpu* GetCpu() { return _cpu.get(); }
 	BaseNesPpu* GetPpu() { return _ppu.get(); }
@@ -101,6 +122,7 @@ public:
 	vector<CpuType> GetCpuTypes() override;
 
 	AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) override;
+	AddressInfo GetPcAbsoluteAddress() override;
 	AddressInfo GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) override;
 	void GetConsoleState(BaseState& state, ConsoleType consoleType) override;
 
@@ -108,7 +130,7 @@ public:
 	uint32_t GetMasterClockRate() override;
 
 	void SaveBattery() override;
-	
+
 	ShortcutState IsShortcutAllowed(EmulatorShortcut shortcut, uint32_t shortcutParam) override;
 
 	BaseVideoFilter* GetVideoFilter(bool getDefaultFilter) override;

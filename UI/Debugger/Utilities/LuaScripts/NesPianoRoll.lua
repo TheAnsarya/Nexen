@@ -1,7 +1,7 @@
 ﻿-----------------------
 -- Name: Piano Roll (NES)
 -- Author: zeta0134
--- Based on: https://github.com/zeta0134/mesen-piano-roll
+-- Based on: https://github.com/zeta0134/Nexen-piano-roll
 -----------------------
 
 local consoleType = emu.getState()["consoleType"]
@@ -195,20 +195,20 @@ function tiny_k(x, y, color)
 end
 
 function tiny_l(x, y, color)
-  emu.drawLine(x, y, x, y+4, color)  
+  emu.drawLine(x, y, x, y+4, color)
   emu.drawLine(x+1, y+4, x+2, y+4, color)
 end
 
 function tiny_m(x, y, color)
-  emu.drawLine(x, y, x, y+4, color)  
-  emu.drawLine(x+1, y+1, x+1, y+2, color)  
-  emu.drawLine(x+2, y, x+2, y+4, color)  
+  emu.drawLine(x, y, x, y+4, color)
+  emu.drawLine(x+1, y+1, x+1, y+2, color)
+  emu.drawLine(x+2, y, x+2, y+4, color)
 end
 
 function tiny_n(x, y, color)
-  emu.drawLine(x, y, x, y+4, color)  
-  emu.drawPixel(x+1, y, color)  
-  emu.drawLine(x+2, y+1, x+2, y+4, color)  
+  emu.drawLine(x, y, x, y+4, color)
+  emu.drawPixel(x+1, y, color)
+  emu.drawLine(x+2, y+1, x+2, y+4, color)
 end
 
 function tiny_o(x, y, color)
@@ -219,7 +219,7 @@ function tiny_o(x, y, color)
 end
 
 function tiny_p(x, y, color)
-  emu.drawLine(x, y, x, y+4, color)  
+  emu.drawLine(x, y, x, y+4, color)
   emu.drawPixel(x+1, y, color)
   emu.drawPixel(x+2, y+1, color)
   emu.drawPixel(x+1, y+2, color)
@@ -234,55 +234,55 @@ function tiny_q(x, y, color)
 end
 
 function tiny_r(x, y, color)
-  emu.drawLine(x, y, x, y+4, color)  
+  emu.drawLine(x, y, x, y+4, color)
   emu.drawPixel(x+1, y, color)
   emu.drawPixel(x+2, y+1, color)
   emu.drawPixel(x+1, y+2, color)
-  emu.drawLine(x+2, y+3, x+2, y+4, color)  
+  emu.drawLine(x+2, y+3, x+2, y+4, color)
 end
 
 function tiny_s(x, y, color)
-  emu.drawLine(x+1, y, x+2, y, color)  
+  emu.drawLine(x+1, y, x+2, y, color)
   emu.drawPixel(x, y+1, color)
   emu.drawPixel(x+1, y+2, color)
   emu.drawPixel(x+2, y+3, color)
-  emu.drawLine(x, y+4, x+1, y+4, color)  
+  emu.drawLine(x, y+4, x+1, y+4, color)
 end
 
 function tiny_t(x, y, color)
-  emu.drawLine(x, y, x+2, y, color)  
-  emu.drawLine(x+1, y+1, x+1, y+4, color)  
+  emu.drawLine(x, y, x+2, y, color)
+  emu.drawLine(x+1, y+1, x+1, y+4, color)
 end
 
 function tiny_u(x, y, color)
-  emu.drawLine(x, y, x, y+4, color)  
-  emu.drawLine(x+2, y, x+2, y+4, color)  
+  emu.drawLine(x, y, x, y+4, color)
+  emu.drawLine(x+2, y, x+2, y+4, color)
   emu.drawPixel(x+1, y+4, color)
 end
 
 function tiny_v(x, y, color)
-  emu.drawLine(x, y, x, y+3, color)  
-  emu.drawLine(x+2, y, x+2, y+3, color)  
+  emu.drawLine(x, y, x, y+3, color)
+  emu.drawLine(x+2, y, x+2, y+3, color)
   emu.drawPixel(x+1, y+4, color)
 end
 
 function tiny_w(x, y, color)
-  emu.drawLine(x, y, x, y+4, color)  
-  emu.drawLine(x+1, y+2, x+1, y+3, color)  
-  emu.drawLine(x+2, y, x+2, y+4, color)  
+  emu.drawLine(x, y, x, y+4, color)
+  emu.drawLine(x+1, y+2, x+1, y+3, color)
+  emu.drawLine(x+2, y, x+2, y+4, color)
 end
 
 function tiny_x(x, y, color)
-  emu.drawLine(x, y, x, y+1, color)  
-  emu.drawLine(x+2, y, x+2, y+1, color)  
+  emu.drawLine(x, y, x, y+1, color)
+  emu.drawLine(x+2, y, x+2, y+1, color)
   emu.drawPixel(x+1, y+2, color)
-  emu.drawLine(x, y+3, x, y+4, color)  
-  emu.drawLine(x+2, y+3, x+2, y+4, color)  
+  emu.drawLine(x, y+3, x, y+4, color)
+  emu.drawLine(x+2, y+3, x+2, y+4, color)
 end
 
 function tiny_y(x, y, color)
-  emu.drawLine(x, y, x, y+2, color)  
-  emu.drawLine(x+2, y, x+2, y+2, color)  
+  emu.drawLine(x, y, x, y+2, color)
+  emu.drawLine(x+2, y, x+2, y+2, color)
   emu.drawLine(x+1, y+2, x+1, y+4, color)
 end
 
@@ -492,14 +492,14 @@ function update_piano_roll(channel, state_table)
   else
     -- triangle channels
     channel_state.volume = 6
-    channel_state.enabled = 
+    channel_state.enabled =
       channel.lengthCounter.counter > 0 and
       shadow_triangle.lc_value > 0 and
       channel.period > 2 and
       channel.enabled
     channel_state.duty = 0
   end
-  
+
   table.insert(state_table, channel_state)
   if #state_table > PIANO_ROLL_WIDTH then
     table.remove(state_table, 1)
@@ -507,7 +507,7 @@ function update_piano_roll(channel, state_table)
 end
 
 local noise_period_table = {}
-noise_period_table[4]    =  0 
+noise_period_table[4]    =  0
 noise_period_table[8]    =  1
 noise_period_table[16]   =  2
 noise_period_table[32]   =  3
@@ -541,7 +541,7 @@ function update_noise_roll(channel, state_table)
   end
   if channel.envelope.constantVolume then
     channel_state.volume = channel.envelope.volume
-  else 
+  else
     channel_state.volume = channel.envelope.counter
   end
   channel_state.enabled = channel_state.volume ~= 0 and channel.lengthCounter.counter > 0
@@ -579,7 +579,7 @@ function update_dmc_roll(channel, state_table)
   channel_state.playing = dmc_playing
   channel_state.delta = delta
   channel_state.address = channel.sampleAddr
-  
+
   if dmc_period_table[channel.period + 1] then
     channel_state.rate = dmc_period_table[channel.period + 1]
   end
@@ -590,7 +590,7 @@ function update_dmc_roll(channel, state_table)
   old_dmc_level = channel.outputVolume
 end
 
-function draw_piano_roll(emu, state_table, duty_colors)  
+function draw_piano_roll(emu, state_table, duty_colors)
   for x = 1, #state_table do
     if state_table[x].enabled and state_table[x].y then
       local volume = state_table[x].volume
@@ -609,7 +609,7 @@ function draw_piano_roll(emu, state_table, duty_colors)
   end
 end
 
-function draw_noise_roll(emu, state_table, duty_colors)  
+function draw_noise_roll(emu, state_table, duty_colors)
   for x = 1, #state_table do
     if state_table[x].enabled and state_table[x].y then
       local volume = state_table[x].volume
@@ -652,7 +652,7 @@ function draw_piano_strings()
     white_string, --D
     black_string, --Db
   }
-  
+
   for i = 0, PIANO_ROLL_KEYS do
     local string_color = string_colors[i%12 + 1]
     local y = i*PIANO_ROLL_KEY_HEIGHT
@@ -677,7 +677,7 @@ local black_key = 0x000000
 local black_key_border = 0x181818
 local upper_key_pixels = {
   white_key, -- C
-  white_key_border, 
+  white_key_border,
   white_key, -- B
   black_key, black_key, black_key, -- Bb
   white_key, -- A
@@ -691,20 +691,20 @@ local upper_key_pixels = {
   white_key, -- D
   black_key, black_key, black_key, -- Db
 }
-  
+
 local lower_key_pixels = {
   white_key, -- C (bottom half)
   white_key_border,
   white_key, white_key, -- B
-  white_key_border, 
+  white_key_border,
   white_key, white_key, white_key, -- A
-  white_key_border, 
+  white_key_border,
   white_key, white_key, white_key, -- G
   white_key_border,
   white_key, white_key, -- F
   white_key_border,
   white_key, white_key, -- E
-  white_key_border, 
+  white_key_border,
   white_key, white_key, white_key, -- D
   white_key_border,
   white_key, -- C (top half)
@@ -718,12 +718,12 @@ function draw_piano_keys()
     emu.drawLine(240, y, 248, y, upper_key_color)
     emu.drawLine(248, y, 256, y, lower_key_color)
   end
-  
+
   -- now clean up the border between the key and the piano roll
   emu.drawLine(240, 0, 240, PIANO_ROLL_HEIGHT, black_key_border)
 end
 
-function draw_right_white_key(y, color)  
+function draw_right_white_key(y, color)
   emu.drawLine(248, y + 1, 256, y + 1, color)
   emu.drawLine(240, y, 256, y, color)
 end
@@ -771,7 +771,7 @@ function draw_key_spot(note, duty_colors)
   -- piano keys relative to standard tuning. The brightness of each pad is
   -- relative to the tuning offset, so the brighter key is (usually) the
   -- real note
-  
+
   local note_key = (note.y - 2) / PIANO_ROLL_KEY_HEIGHT
   local base_key = math.floor(note_key)
   local base_percent = 1.0 - (note_key % 1)
@@ -785,7 +785,7 @@ function draw_key_spot(note, duty_colors)
 
   local base_y = base_key * PIANO_ROLL_KEY_HEIGHT
   local base_key_color = apply_transparency(base_color, base_percent)
-  
+
   local adjacent_y = adjacent_key * PIANO_ROLL_KEY_HEIGHT
   local adjacent_key_color = apply_transparency(base_color, adjacent_percent)
 
@@ -820,7 +820,7 @@ function draw_noise_pads(active_note, duty_colors)
   }
 
   for i = 0, 15 do
-    local x = 240 + ((i % 4) * 4) 
+    local x = 240 + ((i % 4) * 4)
     local y = i * 2 + NOISE_ROLL_OFFSET - 3
     local color = pad_colors[(0xF - i) + 1]
     local hex_value = 0xF - i;
@@ -1062,7 +1062,7 @@ function draw_volume_envelope_indicator(x, y, icon_color, box_color, shadow_colo
     emu.drawRectangle(x+12, y+1, 5, 5, selected_dark_color, true)
     emu.drawRectangle(x+12, y+1, 2, 5, selected_light_color, true)
     emu.drawRectangle(x+14, y+2, 2, 3, selected_light_color, true)
-    emu.drawPixel(x+16, y+3, selected_light_color) 
+    emu.drawPixel(x+16, y+3, selected_light_color)
 
     local loop = (volume_byte & 0x30) ~= 0
     if loop then
@@ -1130,7 +1130,7 @@ function draw_triangle_indicator(x, y, icon_color, box_color, shadow_color, ligh
     emu.drawRectangle(x+23, y+2, 2, 3, selected_light_color)
     emu.drawLine(x+25, y+3, x+26, y+3, selected_light_color)
   else
-    emu.drawRectangle(x+12, y+1, 23, 5, dark_color, true) 
+    emu.drawRectangle(x+12, y+1, 23, 5, dark_color, true)
     emu.drawRectangle(x+21, y+1, 2, 5, light_color)
     emu.drawRectangle(x+23, y+2, 2, 3, light_color)
     emu.drawLine(x+25, y+3, x+26, y+3, light_color)
@@ -1295,28 +1295,28 @@ function draw_apu_registers()
   tiny_string(1, 1, "Pulse 1", 0xFFFFFF)
   draw_raw_registers(1, 7, BOX_OUTLINE_COLOR, SHADOW_COLOR, UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR,
     {shadow_apu[0x4000],shadow_apu[0x4001],shadow_apu[0x4002],shadow_apu[0x4003]})
-  draw_duty_indicator(1, 16, 
+  draw_duty_indicator(1, 16,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
     square1_selected_light, square1_selected_dark, -- icon color when highlighted
     (shadow_apu[0x4000] & 0xC0) >> 6, square1_roll[#square1_roll].enabled)
 
-  draw_sweep_indicator(1, 25, 
+  draw_sweep_indicator(1, 25,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
     square1_selected_light, square1_selected_dark, -- icon color when highlighted
     shadow_apu[0x4001])
 
-  draw_volume_envelope_indicator(1, 34, 
+  draw_volume_envelope_indicator(1, 34,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
     square1_selected_light, square1_selected_dark, -- icon color when highlighted
     shadow_apu[0x4000])
 
-  draw_volume_bar(1, 43, 
+  draw_volume_bar(1, 43,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
@@ -1331,28 +1331,28 @@ function draw_apu_registers()
   tiny_string(1, 60, "Pulse 2", 0xFFFFFF)
   draw_raw_registers(1, 66, BOX_OUTLINE_COLOR, SHADOW_COLOR, UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR,
     {shadow_apu[0x4004],shadow_apu[0x4005],shadow_apu[0x4006],shadow_apu[0x4007]})
-  draw_duty_indicator(1, 75, 
+  draw_duty_indicator(1, 75,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
     square2_selected_light, square2_selected_dark, -- icon color when highlighted
     (shadow_apu[0x4004] & 0xC0) >> 6, square2_roll[#square2_roll].enabled)
 
-  draw_sweep_indicator(1, 84, 
+  draw_sweep_indicator(1, 84,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
     square2_selected_light, square2_selected_dark, -- icon color when highlighted
     shadow_apu[0x4005])
 
-  draw_volume_envelope_indicator(1, 93, 
+  draw_volume_envelope_indicator(1, 93,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
     square2_selected_light, square2_selected_dark, -- icon color when highlighted
     shadow_apu[0x4004])
 
-  draw_volume_bar(1, 102, 
+  draw_volume_bar(1, 102,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
@@ -1368,7 +1368,7 @@ function draw_apu_registers()
   draw_raw_registers(1, 126, BOX_OUTLINE_COLOR, SHADOW_COLOR, UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR,
     {shadow_apu[0x4008],nil,shadow_apu[0x400A],shadow_apu[0x400B]})
 
-  draw_triangle_indicator(1, 135, 
+  draw_triangle_indicator(1, 135,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
@@ -1383,7 +1383,7 @@ function draw_apu_registers()
 
   draw_raw_registers(1, 202, BOX_OUTLINE_COLOR, SHADOW_COLOR, UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR,
     {shadow_apu[0x400C],nil,shadow_apu[0x400E],shadow_apu[0x400F]})
-  draw_noise_mode(1, 211, 
+  draw_noise_mode(1, 211,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
@@ -1391,14 +1391,14 @@ function draw_apu_registers()
     shadow_apu[0x400E], noise_roll[#noise_roll].enabled)
 
 
-  draw_volume_envelope_indicator(1, 220, 
+  draw_volume_envelope_indicator(1, 220,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
     noise_selected_light, noise_selected_dark, -- icon color when highlighted
     shadow_apu[0x400C])
 
-  draw_volume_bar(1, 229, 
+  draw_volume_bar(1, 229,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
@@ -1414,14 +1414,14 @@ function draw_apu_registers()
   draw_raw_registers(1, 166, BOX_OUTLINE_COLOR, SHADOW_COLOR, UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR,
     {shadow_apu[0x4010],shadow_apu[0x4011],shadow_apu[0x4012],shadow_apu[0x4013]})
 
-  draw_dpcm_sample_indicator(1, 175, 
+  draw_dpcm_sample_indicator(1, 175,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
     dpcm_selected_light, dpcm_selected_dark, -- icon color when highlighted
     shadow_apu[0x4010], shadow_apu[0x4012], dmc_roll[#dmc_roll].playing)
 
-  draw_dpcm_length_indicator(1, 184, 
+  draw_dpcm_length_indicator(1, 184,
     ICON_COLOR, --line color
     BOX_OUTLINE_COLOR, SHADOW_COLOR, -- box outline and shadow
     UNSELECTED_LIGHT_COLOR, UNSELECTED_DARK_COLOR, -- icon color when darkened
@@ -1429,11 +1429,11 @@ function draw_apu_registers()
     shadow_apu[0x4010], shadow_apu[0x4013], dmc_roll[#dmc_roll].playing)
 end
 
-function mesen_draw()
+function Nexen_draw()
   local state = emu.getState()
   local clockRate = state["clockRate"]
-  --             x   y   str            fore: argb  back: argb 
-  --emu.drawString(10, 10, "Hello Mesen",   0x80ff0000, 0x80FFFFFF)
+  --             x   y   str            fore: argb  back: argb
+  --emu.drawString(10, 10, "Hello Nexen",   0x80ff0000, 0x80FFFFFF)
   --emu.drawString(10, 20, "P1: "..apu.square1.period,   0xff0000, 0xFFFFFF)
 
   local apu = {
@@ -1458,7 +1458,7 @@ function mesen_draw()
      noise = {
        period = state["apu.noise.timer.period"],
        mode = state["apu.noise.modeFlag"],
-       envelope = { 
+       envelope = {
          constantVolume = state["apu.noise.envelope.constantVolume"],
          volume = state["apu.noise.envelope.volume"],
          counter = state["apu.noise.envelope.counter"]
@@ -1484,9 +1484,9 @@ function mesen_draw()
   draw_piano_keys()
   draw_noise_strings()
   draw_noise_pads(noise_roll[#noise_roll], NOISE_COLORS)
-  
-  draw_piano_roll(emu, square1_roll, SQUARE1_COLORS) 
-  draw_piano_roll(emu, square2_roll, SQUARE2_COLORS) 
+
+  draw_piano_roll(emu, square1_roll, SQUARE1_COLORS)
+  draw_piano_roll(emu, square2_roll, SQUARE2_COLORS)
   draw_piano_roll(emu, triangle_roll, TRIANGLE_COLORS)
   draw_noise_roll(emu, noise_roll, NOISE_COLORS)
   draw_dmc_roll(emu, dmc_roll)
@@ -1500,4 +1500,4 @@ function mesen_draw()
   handle_input()
 end
 
-emu.addEventCallback(mesen_draw, emu.eventType.endFrame);
+emu.addEventCallback(Nexen_draw, emu.eventType.endFrame);

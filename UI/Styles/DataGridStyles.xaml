@@ -1,0 +1,63 @@
+<Styles
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:c="using:Nexen.Controls"
+>
+	<Styles.Resources>
+		<!-- DataGrid selection colors -->
+		<Color x:Key="DataGridRowSelectedUnfocusedBackgroundColor">#0078D7</Color>
+		<Color x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundColor">#0078D7</Color>
+		<Color x:Key="DataGridRowSelectedBackgroundColor">#0078D7</Color>
+
+		<x:Double x:Key="DataGridRowSelectedUnfocusedBackgroundOpacity">1.0</x:Double>
+		<x:Double x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundOpacity">1.0</x:Double>
+		<x:Double x:Key="DataGridRowSelectedBackgroundOpacity">1.0</x:Double>
+		<x:Double x:Key="DataGridRowSelectedHoveredBackgroundOpacity">1.0</x:Double>
+
+		<Thickness x:Key="DataGridTextColumnCellTextBlockMargin">4,2,4,0</Thickness>
+	</Styles.Resources>
+
+	<!-- DataGrid compact styling -->
+	<Style Selector="DataGridColumnHeader">
+		<Setter Property="MinHeight" Value="16" />
+		<Setter Property="Padding" Value="3 0 0 0" />
+	</Style>
+	<Style Selector="DataGridRow">
+		<Setter Property="FocusAdorner">
+			<FocusAdornerTemplate>
+			</FocusAdornerTemplate>
+		</Setter>
+	</Style>
+	<Style Selector="DataGridRow TextBlock">
+		<Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
+	</Style>
+	<Style Selector="DataGridRow:selected TextBlock">
+		<Setter Property="Foreground" Value="{DynamicResource DataGridRowSelectedForegroundBrush}" />
+	</Style>
+	<Style Selector="DataGridCell">
+		<Setter Property="MinHeight" Value="16" />
+	</Style>
+	<Style Selector="DataGridCell CheckBox">
+		<Setter Property="MinHeight" Value="16" />
+		<Setter Property="MinWidth" Value="16" />
+		<Setter Property="Padding" Value="2 0 0 0" />
+	</Style>
+	<Style Selector="DataGridCell CheckBox /template/ Grid">
+		<Setter Property="Height" Value="16" />
+		<Setter Property="MaxHeight" Value="16" />
+	</Style>
+	<Style Selector="DataGridCell CheckBox /template/ Grid > Grid">
+		<Setter Property="Height" Value="16" />
+		<Setter Property="MaxHeight" Value="16" />
+	</Style>
+	<Style Selector="DataGridRow:selected CheckBox Border">
+		<Setter Property="BorderBrush" Value="{DynamicResource DataGridRowSelectedForegroundBrush}" />
+	</Style>
+	<Style Selector="DataGridRow:selected CheckBox Path">
+		<Setter Property="Stroke" Value="{DynamicResource DataGridRowSelectedForegroundBrush}" />
+		<Setter Property="Fill" Value="{DynamicResource DataGridRowSelectedForegroundBrush}" />
+	</Style>
+	<Style Selector="DataGridColumnHeader Path">
+		<Setter Property="Margin" Value="0 0 -10 0" />
+	</Style>
+</Styles>

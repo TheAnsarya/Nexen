@@ -1,0 +1,9 @@
+{
+  "Title": "California Games",
+  "RomFile": "California Games (1991).lnx",
+  "RomPath": "C:\\~reference-roms\\extracted\\GoodLynx-v2.01\\Selected1105\\California Games (1991)\\California Games (1991).lnx",
+  "ExitCode": -1,
+  "BootResult": "Fail",
+  "TimestampUtc": "2026-04-03T15:24:54.3013051Z",
+  "Notes": "Headless testrunner + Lua boot smoke"
+}

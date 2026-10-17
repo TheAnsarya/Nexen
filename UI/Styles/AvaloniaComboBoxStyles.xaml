@@ -1,7 +1,6 @@
 <Styles
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:sys="clr-namespace:System;assembly=netstandard"
 >
 	<Design.PreviewWith>
 		<StackPanel Width="200" Height="200">
@@ -10,7 +9,7 @@
 			</ComboBox>
 		</StackPanel>
 	</Design.PreviewWith>
-	
+
 	<Style Selector="ComboBox">
 		<Setter Property="Template">
 			<ControlTemplate>
@@ -104,8 +103,8 @@
 								<ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
 												  VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
 									<ItemsPresenter Name="PART_ItemsPresenter"
-                                  Margin="{DynamicResource ComboBoxDropdownContentMargin}"
-                                  ItemsPanel="{TemplateBinding ItemsPanel}" />
+								  Margin="{DynamicResource ComboBoxDropdownContentMargin}"
+								  ItemsPanel="{TemplateBinding ItemsPanel}" />
 								</ScrollViewer>
 							</Border>
 						</Popup>

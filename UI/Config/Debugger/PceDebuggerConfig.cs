@@ -1,18 +1,15 @@
-﻿using Avalonia;
-using Avalonia.Media;
-using Mesen.Debugger;
-using Mesen.Interop;
-using ReactiveUI.Fody.Helpers;
-using System.Reactive.Linq;
 using System.Reactive;
-using Mesen.ViewModels;
+using System.Reactive.Linq;
+using Avalonia;
+using Avalonia.Media;
+using Nexen.Debugger;
+using Nexen.Interop;
+using Nexen.ViewModels;
+using ReactiveUI.SourceGenerators;
 
-namespace Mesen.Config
-{
-	public class PceDebuggerConfig : ViewModelBase
-	{
-		[Reactive] public bool BreakOnBrk { get; set; } = false;
-		[Reactive] public bool BreakOnUnofficialOpCode { get; set; } = false;
-		[Reactive] public bool BreakOnInvalidVramAddress { get; set; } = false;		
-	}
+namespace Nexen.Config; 
+public sealed partial class PceDebuggerConfig : ViewModelBase {
+	[Reactive] public partial bool BreakOnBrk { get; set; } = false;
+	[Reactive] public partial bool BreakOnUnofficialOpCode { get; set; } = false;
+	[Reactive] public partial bool BreakOnInvalidVramAddress { get; set; } = false;
 }

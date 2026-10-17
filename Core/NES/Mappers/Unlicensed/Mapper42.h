@@ -4,8 +4,7 @@
 #include "NES/NesCpu.h"
 #include "NES/NesConsole.h"
 
-class Mapper42 : public BaseMapper
-{
+class Mapper42 : public BaseMapper {
 private:
 	uint16_t _irqCounter = 0;
 	bool _irqEnabled = false;
@@ -16,8 +15,7 @@ protected:
 	uint16_t GetChrPageSize() override { return 0x2000; }
 	bool EnableCpuClockHook() override { return true; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		_irqCounter = 0;
 		_irqEnabled = false;
 		_prgReg = 0;
@@ -31,33 +29,30 @@ protected:
 		UpdateState();
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		BaseMapper::Serialize(s);
 		SV(_irqCounter);
 		SV(_irqEnabled);
 		SV(_prgReg);
 
-		if(!s.IsSaving()) {
+		if (!s.IsSaving()) {
 			UpdateState();
 		}
 	}
 
-	void UpdateState()
-	{
+	void UpdateState() {
 		SetCpuMemoryMapping(0x6000, 0x7FFF, _prgReg & 0x0F, PrgMemoryType::PrgRom);
 	}
 
-	void ProcessCpuClock() override
-	{
+	void ProcessCpuClock() override {
 		BaseProcessCpuClock();
 
-		if(_irqEnabled) {
+		if (_irqEnabled) {
 			_irqCounter++;
-			if(_irqCounter >= 0x8000) {
+			if (_irqCounter >= 0x8000) {
 				_irqCounter -= 0x8000;
 			}
-			if(_irqCounter >= 0x6000) {
+			if (_irqCounter >= 0x6000) {
 				_console->GetCpu()->SetIrqSource(IRQSource::External);
 			} else {
 				_console->GetCpu()->ClearIrqSource(IRQSource::External);
@@ -65,11 +60,10 @@ protected:
 		}
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
-		switch(addr & 0xE003) {
+	void WriteRegister(uint16_t addr, uint8_t value) override {
+		switch (addr & 0xE003) {
 			case 0x8000:
-				if(_chrRomSize > 0) {
+				if (_chrRomSize > 0) {
 					SelectChrPage(0, value & 0x0F);
 				}
 				break;
@@ -86,7 +80,7 @@ protected:
 			case 0xE002:
 				_irqEnabled = (value == 0x02);
 
-				if(!_irqEnabled) {
+				if (!_irqEnabled) {
 					_console->GetCpu()->ClearIrqSource(IRQSource::External);
 					_irqCounter = 0;
 				}

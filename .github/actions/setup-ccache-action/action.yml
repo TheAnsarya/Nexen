@@ -1,6 +1,8 @@
 name: 'Setup CCache'
+description: 'Setup CCache compiler cache for Linux/macOS builds'
 inputs:
-  ccache-path:  # id of input
+  ccache-path:
+    description: 'Path to ccache binaries'
     required: true
     default: '/usr/lib/ccache'
 runs:
@@ -16,7 +18,7 @@ runs:
           CCACHE_BASEDIR=$PWD
           EOF
       - name: Cache compilation
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ matrix.compiler }}-${{ matrix.platform.os }}

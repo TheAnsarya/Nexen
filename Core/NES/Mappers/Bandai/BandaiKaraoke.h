@@ -6,8 +6,7 @@
 #include "NES/NesControlManager.h"
 #include "NES/Input/BandaiMicrophone.h"
 
-class BandaiKaraoke : public BaseMapper
-{
+class BandaiKaraoke : public BaseMapper {
 private:
 	shared_ptr<BandaiMicrophone> _microphone;
 
@@ -17,8 +16,7 @@ protected:
 	bool AllowRegisterRead() override { return true; }
 	bool HasBusConflicts() override { return true; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		AddRegisterRange(0x6000, 0x7FFF, MemoryOperation::Read);
 		RemoveRegisterRange(0x8000, 0xFFFF, MemoryOperation::Read);
 
@@ -26,26 +24,24 @@ protected:
 		SelectPrgPage(1, 0x07);
 		SelectChrPage(0, 0);
 
-		_microphone.reset(new BandaiMicrophone(_emu, _emu->GetSettings()->GetNesConfig().Port1.Keys));
+		_microphone = std::make_unique<BandaiMicrophone>(_emu, _emu->GetSettings()->GetNesConfig().Port1.Keys);
 		_console->GetControlManager()->AddSystemControlDevice(_microphone);
 	}
 
-	uint8_t ReadRegister(uint16_t addr) override
-	{
+	uint8_t ReadRegister(uint16_t addr) override {
 		return _microphone->ReadRam(addr) | _console->GetMemoryManager()->GetOpenBus(0xF8);
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
-		if(value & 0x10) {
-			//Select internal rom
+	void WriteRegister(uint16_t addr, uint8_t value) override {
+		if (value & 0x10) {
+			// Select internal rom
 			SelectPrgPage(0, value & 0x07);
 		} else {
-			//Select expansion rom
-			if(_prgSize >= 0x40000) {
+			// Select expansion rom
+			if (_prgSize >= 0x40000) {
 				SelectPrgPage(0, (value & 0x07) | 0x08);
 			} else {
-				//Open bus for roms that don't contain the expansion rom
+				// Open bus for roms that don't contain the expansion rom
 				RemoveCpuMemoryMapping(0x8000, 0xBFFF);
 			}
 		}

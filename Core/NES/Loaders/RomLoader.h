@@ -4,8 +4,7 @@
 class VirtualFile;
 struct RomData;
 
-class RomLoader
-{
+class RomLoader {
 public:
-	static bool LoadFile(VirtualFile &romFile, RomData& romData, bool databaseEnabled);
+	static bool LoadFile(VirtualFile& romFile, RomData& romData, bool databaseEnabled);
 };

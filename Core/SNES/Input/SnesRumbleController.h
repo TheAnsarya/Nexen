@@ -7,8 +7,7 @@
 class Emulator;
 class SnesConsole;
 
-class SnesRumbleController : public SnesController
-{
+class SnesRumbleController : public SnesController {
 private:
 	SnesConsole* _console = nullptr;
 	uint16_t _rumbleData = 0;

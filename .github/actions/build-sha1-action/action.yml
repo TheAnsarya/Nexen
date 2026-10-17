@@ -1,10 +1,8 @@
 name: 'Write commit SHA1 to file'
+description: 'Write the current commit SHA1 to a build file for version identification'
 runs:
   using: "composite"
   steps:
       - name: Write commit SHA1 to file
-        uses: "DamianReeves/write-file-action@master"
-        with:
-          path: "UI/Dependencies/Internal/BuildSha.txt"
-          write-mode: overwrite
-          contents: ${{ github.sha }}
+        shell: bash
+        run: printf '%s' "${{ github.sha }}" > UI/Dependencies/Internal/BuildSha.txt

@@ -6,7 +6,7 @@
 	mc:Ignorable="d"
 	d:DesignWidth="800"
 	d:DesignHeight="450"
-	x:Class="Mesen.Windows.MessageBox"
+	x:Class="Nexen.Windows.MessageBox"
 	SizeToContent="WidthAndHeight"
 	CanResize="False"
 	Focusable="True"
@@ -33,7 +33,7 @@
 			</StackPanel>
 		</Panel>
 
-		<Panel Height="40" Background="{StaticResource MesenGrayBackgroundColor}" HorizontalAlignment="Stretch">
+		<Panel Height="40" Background="{StaticResource NexenGrayBackgroundColor}" HorizontalAlignment="Stretch">
 			<StackPanel VerticalAlignment="Center" HorizontalAlignment="Right" Orientation="Horizontal" Name="pnlButtons">
 				<StackPanel.Styles>
 					<Style Selector="Button">

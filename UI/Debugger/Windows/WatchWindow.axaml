@@ -2,20 +2,20 @@
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
 	xmlns:sys="using:System"
-	xmlns:v="using:Mesen.Views"
-	xmlns:dbg="using:Mesen.Debugger"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:i="using:Mesen.Interop"
+	xmlns:v="using:Nexen.Views"
+	xmlns:dbg="using:Nexen.Debugger"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:i="using:Nexen.Interop"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:dv="using:Mesen.Debugger.Views"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:dv="using:Nexen.Debugger.Views"
 	mc:Ignorable="d"
-	x:Class="Mesen.Debugger.Windows.WatchWindow"
+	x:Class="Nexen.Debugger.Windows.WatchWindow"
 	Icon="/Assets/Find.png"
 	Width="400" Height="400"
 	x:DataType="vm:WatchWindowViewModel"
@@ -30,7 +30,7 @@
 			<Setter Property="IsVisible" Value="False" />
 		</Style>
 	</Window.Styles>
-	
+
 	<Panel>
 		<TabControl ItemsSource="{Binding WatchTabs}" SelectedItem="{Binding SelectedTab}" Padding="1">
 			<TabControl.ItemTemplate>
@@ -41,14 +41,14 @@
 
 			<TabControl.ContentTemplate>
 				<DataTemplate DataType="dvm:WatchTab">
-					<Border BorderBrush="{StaticResource MesenGrayBorderColor}" BorderThickness="1 0 1 1">
+					<Border BorderBrush="{StaticResource NexenGrayBorderColor}" BorderThickness="1 0 1 1">
 						<dv:WatchListView DataContext="{Binding WatchList}" />
 					</Border>
 				</DataTemplate>
 			</TabControl.ContentTemplate>
 		</TabControl>
 		<Image
-			Source="/Assets/Help.png"
+			Source="{SvgImage /Assets/Help.svg}"
 			Stretch="None"
 			Margin="4 4"
 			VerticalAlignment="Top"

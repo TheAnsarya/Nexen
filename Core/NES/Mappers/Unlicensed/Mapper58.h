@@ -2,23 +2,20 @@
 #include "pch.h"
 #include "NES/BaseMapper.h"
 
-class Mapper58 : public BaseMapper
-{
+class Mapper58 : public BaseMapper {
 protected:
 	uint16_t GetPrgPageSize() override { return 0x4000; }
 	uint16_t GetChrPageSize() override { return 0x2000; }
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		SelectPrgPage(0, 0);
 		SelectPrgPage(1, 1);
 		SelectChrPage(0, 0);
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
+	void WriteRegister(uint16_t addr, uint8_t value) override {
 		uint8_t prgBank = addr & 0x07;
-		if(addr & 0x40) {
+		if (addr & 0x40) {
 			SelectPrgPage(0, prgBank);
 			SelectPrgPage(1, prgBank);
 		} else {

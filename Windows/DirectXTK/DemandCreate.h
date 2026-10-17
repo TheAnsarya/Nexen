@@ -12,47 +12,41 @@
 
 #include "PlatformHelpers.h"
 
+namespace DirectX {
+// Helper for lazily creating a D3D resource.
+template <typename T, typename TCreateFunc>
+inline T* DemandCreate(Microsoft::WRL::ComPtr<T>& comPtr, std::mutex& mutex, TCreateFunc createFunc) {
+	T* result = comPtr.Get();
 
-namespace DirectX
-{
-    // Helper for lazily creating a D3D resource.
-    template<typename T, typename TCreateFunc>
-    inline T* DemandCreate(Microsoft::WRL::ComPtr<T>& comPtr, std::mutex& mutex, TCreateFunc createFunc)
-    {
-        T* result = comPtr.Get();
-
-        // Double-checked lock pattern.
+	// Double-checked lock pattern.
 #ifdef _MSC_VER
-        MemoryBarrier();
+	MemoryBarrier();
 #elif defined(__GNUC__)
-        __sync_synchronize();
+	__sync_synchronize();
 #else
 #error Unknown memory barrier syntax
 #endif
 
-        if (!result)
-        {
-            std::lock_guard<std::mutex> lock(mutex);
+	if (!result) {
+		std::lock_guard<std::mutex> lock(mutex);
 
-            result = comPtr.Get();
+		result = comPtr.Get();
 
-            if (!result)
-            {
-                // Create the new object.
-                ThrowIfFailed(
-                    createFunc(&result)
-                );
+		if (!result) {
+			// Create the new object.
+			ThrowIfFailed(
+			    createFunc(&result));
 
 #ifdef _MSC_VER
-                MemoryBarrier();
+			MemoryBarrier();
 #elif defined(__GNUC__)
-                __sync_synchronize();
+			__sync_synchronize();
 #endif
 
-                comPtr.Attach(result);
-            }
-        }
+			comPtr.Attach(result);
+		}
+	}
 
-        return result;
-    }
+	return result;
 }
+} // namespace DirectX

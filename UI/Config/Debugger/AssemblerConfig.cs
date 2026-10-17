@@ -1,9 +1,6 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Media;
 
-namespace Mesen.Config
-{
-	public class AssemblerConfig : BaseWindowConfig<AssemblerConfig>
-	{
-	}
+namespace Nexen.Config; 
+public sealed class AssemblerConfig : BaseWindowConfig<AssemblerConfig> {
 }

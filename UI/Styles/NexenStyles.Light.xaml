@@ -1,0 +1,195 @@
+﻿<Styles
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:c="using:Nexen.Controls"
+>
+
+	<Design.PreviewWith>
+		<Window Width="440" Height="620" Padding="5">
+			<StackPanel>
+				<Menu VerticalAlignment="Top">
+					<MenuItem Header="File">
+						<MenuItem Header="Open">
+							<MenuItem.Icon>
+								<Image Source="/Assets/Folder.png" />
+							</MenuItem.Icon>
+							<MenuItem Header="Abcd" />
+							<Separator />
+							<MenuItem Header="Abcd" />
+						</MenuItem>
+						<Separator />
+						<MenuItem Header="Video Size" />
+						<MenuItem Header="-"/>
+						<MenuItem Header="Abcd" />
+					</MenuItem>
+					<MenuItem Header="Test">
+						<MenuItem Header="Abcd" />
+					</MenuItem>
+				</Menu>
+				<CheckBox Content="Test" ToolTip.Tip="Test tooltip" />
+				<CheckBox Content="Test" IsChecked="True" />
+				<TabControl>
+					<TabItem Header="Test" />
+				</TabControl>
+				<NumericUpDown Value="1" />
+				<NumericUpDown Value="100" IsEnabled="False" />
+				<ComboBox SelectedIndex="0">
+					<ComboBoxItem>0Test</ComboBoxItem>
+					<ComboBoxItem>0Test</ComboBoxItem>
+					<ComboBoxItem>0Test</ComboBoxItem>
+					<ComboBoxItem>0Test</ComboBoxItem>
+					<ComboBoxItem>0Test</ComboBoxItem>
+				</ComboBox>
+				<ComboBox SelectedIndex="0" IsEnabled="False">
+					<ComboBoxItem>0Test</ComboBoxItem>
+				</ComboBox>
+				<TextBox Text="00bc" />
+				<TextBox Text="test&#13;test&#13;test&#13;test&#13;test" AcceptsReturn="True" />
+				<Button Content="Testgpq" />
+				<Button Content="Disabled" IsEnabled="False" />
+				<RepeatButton Content="Repeat" />
+				<RepeatButton Content="Disabled" IsEnabled="False" />
+				<RadioButton Content="Test"/>
+				<RadioButton Content="Test" IsChecked="True"/>
+				<DatePicker />
+				<TimePicker />
+				<Slider />
+				<Slider Orientation="Vertical" Height="50" />
+				<TextBox IsEnabled="False" Text="Test disabled" />
+				<CheckBox IsEnabled="False" Content="Test" />
+				<CheckBox IsChecked="True" IsEnabled="False" Content="Test" />
+			</StackPanel>
+		</Window>
+	</Design.PreviewWith>
+
+	<Styles.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.ThemeDictionaries>
+				<ResourceDictionary x:Key="Light">
+					<Color x:Key="ThemeBackgroundColor">#FFFFFFFF</Color>
+					<Color x:Key="ThemeForegroundColor">#FF000000</Color>
+					<SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource ThemeForegroundColor}"></SolidColorBrush>
+					<SolidColorBrush x:Key="ThemeBackgroundBrush" Color="{DynamicResource ThemeBackgroundColor}"></SolidColorBrush>
+
+					<Color x:Key="NexenBlackBorderColor">#FF000000</Color>
+
+					<Color x:Key="ErrorColor">#FFFF0000</Color>
+					<SolidColorBrush x:Key="ErrorBrush" Color="{DynamicResource ErrorColor}"></SolidColorBrush>
+					<SolidColorBrush x:Key="ThemeControlHighlightLowBrush" Color="Gray" />
+
+					<SolidColorBrush x:Key="NexenNotRecommendedInactiveBrush">DarkGray</SolidColorBrush>
+
+					<Color x:Key="NexenDockTabStripBackgroundColor">#ffffffff</Color>
+					<Color x:Key="NexenDockTabPointerOverColor">#40808080</Color>
+					<Color x:Key="NexenDockTabActiveBackgroundColor">#ffffffff</Color>
+					<Color x:Key="NexenDockTabActiveBorderColor">#ff808080</Color>
+					<SolidColorBrush x:Key="NexenDockTabStripBackgroundBrush" Color="{DynamicResource NexenDockTabStripBackgroundColor}" />
+					<SolidColorBrush x:Key="NexenDockTabPointerOverBrush" Color="{DynamicResource NexenDockTabPointerOverColor}" />
+					<SolidColorBrush x:Key="NexenDockTabActiveBackgroundBrush" Color="{DynamicResource NexenDockTabActiveBackgroundColor}" />
+					<SolidColorBrush x:Key="NexenDockTabActiveBorderBrush" Color="{DynamicResource NexenDockTabActiveBorderColor}" />
+
+					<SolidColorBrush x:Key="TextBoxSelectionBrush" Color="#70C0FF" />
+
+					<!-- Custom colors -->
+					<Color x:Key="NexenGridBackground">#FFF</Color>
+					<Color x:Key="NexenMenuBackground">#f3e5d7</Color>
+					<Color x:Key="NexenMenuBackgroundHighlight">#efb57b</Color>
+					<Color x:Key="NexenMenuBorderHighlight">#9f5c22</Color>
+					<Color x:Key="NexenMenuSeparatorBackground">#c9a788</Color>
+					<Color x:Key="SettingsTabStripBackgroundColor">#f5e8dc</Color>
+					<Color x:Key="SettingsTabStripBorderColor">#80808080</Color>
+					<Color x:Key="MenuFlyoutSubItemChevron">#000000</Color>
+					<SolidColorBrush x:Key="SettingsTabStripBackgroundBrush" Color="{DynamicResource SettingsTabStripBackgroundColor}" />
+					<SolidColorBrush x:Key="SettingsTabStripBorderBrush" Color="{DynamicResource SettingsTabStripBorderColor}" />
+
+					<Color x:Key="NexenMenuMarginStartColor">#fbf2ea</Color>
+					<Color x:Key="NexenMenuMarginEndColor">#ecd9c7</Color>
+
+					<!-- DataGrid colors -->
+					<Color x:Key="DataGridColumnHeaderBackgroundColor">#FFEDEDED</Color>
+					<Color x:Key="SystemBaseMediumColor">#FF000000</Color>
+					<SolidColorBrush x:Key="DataGridColumnHeaderBackgroundBrush" Color="#FFEDEDED" />
+					<SolidColorBrush x:Key="DataGridColumnHeaderForegroundBrush" Color="#FF000000" />
+					<SolidColorBrush x:Key="DataGridRowSelectedForegroundBrush" Color="White" />
+
+					<!-- Fluent color overrides -->
+					<Color x:Key="MenuFlyoutPresenterBackground">#fff6ee</Color>
+					<Color x:Key="MenuFlyoutPresenterBorderBrush">#a87343</Color>
+
+					<Color x:Key="ComboBoxDropDownBackground">#FFFFFF</Color>
+					<Color x:Key="ComboBoxDropDownBorderBrush">#909090</Color>
+					<Color x:Key="ListBoxItemBackgroundPointerOver">#f4ddc7</Color>
+					<Color x:Key="ListBoxItemBackgroundSelected">#b56f33</Color>
+					<Color x:Key="ListBoxItemForegroundSelected">#ffffff</Color>
+					<Color x:Key="TreeViewItemBackgroundPointerOver">#f2dcc8</Color>
+					<Color x:Key="TreeViewItemBackgroundSelected">#b56f33</Color>
+					<Color x:Key="TreeViewItemForegroundSelected">#ffffff</Color>
+					<Color x:Key="NavigationViewItemBackgroundPointerOver">#f4ddc7</Color>
+					<Color x:Key="NavigationViewItemBackgroundSelected">#b56f33</Color>
+					<Color x:Key="NavigationViewItemForegroundSelected">#ffffff</Color>
+					<Color x:Key="ListViewItemBackgroundPointerOver">#f4ddc7</Color>
+					<Color x:Key="ListViewItemBackgroundSelected">#b56f33</Color>
+					<Color x:Key="ListViewItemForegroundSelected">#ffffff</Color>
+
+					<!-- Disabled colors -->
+					<Color x:Key="TextControlBackgroundDisabled">#E0E0E0</Color>
+					<Color x:Key="CheckBoxForegroundCheckedDisabled">#555</Color>
+					<Color x:Key="CheckBoxCheckBackgroundFillCheckedDisabled">#E5E5E5</Color>
+					<Color x:Key="CheckBoxCheckGlyphForegroundCheckedDisabled">#000</Color>
+					<Color x:Key="CheckBoxForegroundUncheckedDisabled">#555</Color>
+					<Color x:Key="CheckBoxCheckBackgroundFillUncheckedDisabled">#E5E5E5</Color>
+					<Color x:Key="CheckBoxCheckGlyphForegroundUncheckedDisabled">#000</Color>
+
+					<Color x:Key="ButtonBackground">#E1E1E1</Color>
+					<Color x:Key="ButtonBackgroundDisabled">#BBB</Color>
+					<Color x:Key="RepeatButtonBackgroundDisabled">#BBB</Color>
+					<Color x:Key="ButtonBorderBrush">#ADADAD</Color>
+					<Color x:Key="ButtonBackgroundPointerOver">#f8d9b8</Color>
+					<Color x:Key="ButtonBorderBrushPointerOver">#9f5c22</Color>
+					<Color x:Key="ButtonBackgroundPressed">#e9c098</Color>
+					<Color x:Key="ButtonBorderBrushPressed">#7b4517</Color>
+
+					<Color x:Key="ComboBoxBackground">#E1E1E1</Color>
+					<Color x:Key="ComboBoxBorderBrush">#ADADAD</Color>
+					<Color x:Key="ComboBoxBackgroundPointerOver">#f8d9b8</Color>
+					<Color x:Key="ComboBoxBorderBrushPointerOver">#9f5c22</Color>
+
+					<Color x:Key="RepeatButtonBackground">#E1E1E1</Color>
+					<Color x:Key="RepeatButtonBorderBrush">#ADADAD</Color>
+					<Color x:Key="RepeatButtonBackgroundPointerOver">#f8d9b8</Color>
+					<Color x:Key="RepeatButtonBorderBrushPointerOver">#9f5c22</Color>
+					<Color x:Key="RepeatButtonBackgroundPressed">#e9c098</Color>
+					<Color x:Key="RepeatButtonBorderBrushPressed">#7b4517</Color>
+
+					<Color x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver">#9f5c22</Color>
+					<Color x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver">#9f5c22</Color>
+					<Color x:Key="CheckBoxBorderBrushCheckedPointerOver">#9f5c22</Color>
+
+					<Color x:Key="CheckBoxCheckBackgroundFillChecked">Transparent</Color>
+					<Color x:Key="CheckBoxCheckGlyphForegroundChecked">Black</Color>
+
+					<Color x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver">Transparent</Color>
+					<Color x:Key="CheckBoxCheckGlyphForegroundCheckedPointerOver">Black</Color>
+					<Color x:Key="CheckBoxBackgroundCheckedPressed">Transparent</Color>
+
+					<Color x:Key="CheckBoxCheckBackgroundFillCheckedPressed">#e9c098</Color>
+					<Color x:Key="CheckBoxCheckBackgroundFillUncheckedPressed">#e9c098</Color>
+					<Color x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed">#7b4517</Color>
+					<Color x:Key="CheckBoxCheckBackgroundStrokeUncheckedPressed">#7b4517</Color>
+					<Color x:Key="CheckBoxBorderBrushCheckedPressed">#7b4517</Color>
+					<Color x:Key="CheckBoxCheckGlyphForegroundCheckedPressed">Black</Color>
+
+					<Color x:Key="RadioButtonOuterEllipseStrokePointerOver">#9f5c22</Color>
+					<Color x:Key="RadioButtonOuterEllipseFillPressed">#e9c098</Color>
+					<Color x:Key="RadioButtonOuterEllipseStrokePressed">#7b4517</Color>
+
+					<Color x:Key="SliderTrackFillPointerOver">#9f5c22</Color>
+					<Color x:Key="SliderTrackFillPressed">#7b4517</Color>
+
+					<!-- light yellow tooltips -->
+					<Color x:Key="ToolTipBackground">#ffffed</Color>
+				</ResourceDictionary>
+			</ResourceDictionary.ThemeDictionaries>
+		</ResourceDictionary>
+	</Styles.Resources>
+</Styles>

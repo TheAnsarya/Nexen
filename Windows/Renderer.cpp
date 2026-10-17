@@ -11,26 +11,23 @@
 
 using namespace DirectX;
 
-Renderer::Renderer(Emulator* emu, HWND hWnd)
-{
+Renderer::Renderer(Emulator* emu, HWND hWnd) {
 	_emu = emu;
 	_hWnd = hWnd;
 
 	SetScreenSize(256, 224);
 }
 
-Renderer::~Renderer()
-{
+Renderer::~Renderer() {
 	VideoRenderer* videoRenderer = _emu->GetVideoRenderer();
-	if(videoRenderer) {
+	if (videoRenderer) {
 		videoRenderer->UnregisterRenderingDevice(this);
 	}
 	CleanupDevice();
 }
 
-void Renderer::SetExclusiveFullscreenMode(bool fullscreen, void* windowHandle)
-{
-	if(fullscreen != _fullscreen || _hWnd != (HWND)windowHandle) {
+void Renderer::SetExclusiveFullscreenMode(bool fullscreen, void* windowHandle) {
+	if (fullscreen != _fullscreen || _hWnd != (HWND)windowHandle) {
 		int counter = _resetCounter;
 
 		_hWnd = (HWND)windowHandle;
@@ -39,60 +36,57 @@ void Renderer::SetExclusiveFullscreenMode(bool fullscreen, void* windowHandle)
 
 		_newFullscreen = fullscreen;
 
-		while(_resetCounter <= counter) {
+		while (_resetCounter <= counter) {
 			std::this_thread::sleep_for(std::chrono::duration<int, std::milli>(10));
 		}
 	}
 }
 
-DXGI_FORMAT Renderer::GetTextureFormat()
-{
+DXGI_FORMAT Renderer::GetTextureFormat() {
 	return _useSrgbTextureFormat ? DXGI_FORMAT_B8G8R8A8_UNORM_SRGB : DXGI_FORMAT_B8G8R8A8_UNORM;
 }
 
-void Renderer::SetScreenSize(uint32_t width, uint32_t height)
-{
+void Renderer::SetScreenSize(uint32_t width, uint32_t height) {
 	VideoConfig cfg = _emu->GetSettings()->GetVideoConfig();
 	FrameInfo rendererSize = _emu->GetVideoRenderer()->GetRendererSize();
 	uint32_t refreshRate = _emu->GetFps() < 55 ? cfg.ExclusiveFullscreenRefreshRatePal : cfg.ExclusiveFullscreenRefreshRateNtsc;
 
 	auto needUpdate = [=] {
 		return (
-			_emuFrameHeight != height ||
-			_emuFrameWidth != width ||
-			_screenHeight != rendererSize.Height ||
-			_screenWidth != rendererSize.Width ||
-			_newFullscreen != _fullscreen ||
-			_useSrgbTextureFormat != cfg.UseSrgbTextureFormat ||
-			(_fullscreen && _fullscreenRefreshRate != refreshRate) ||
-			(_fullscreen && (_realScreenHeight != _monitorHeight || _realScreenWidth != _monitorWidth))
-		);
+		    _emuFrameHeight != height ||
+		    _emuFrameWidth != width ||
+		    _screenHeight != rendererSize.Height ||
+		    _screenWidth != rendererSize.Width ||
+		    _newFullscreen != _fullscreen ||
+		    _useSrgbTextureFormat != cfg.UseSrgbTextureFormat ||
+		    (_fullscreen && _fullscreenRefreshRate != refreshRate) ||
+		    (_fullscreen && (_realScreenHeight != _monitorHeight || _realScreenWidth != _monitorWidth)));
 	};
 
-	if(needUpdate()) {
+	if (needUpdate()) {
 		auto frameLock = _frameLock.AcquireSafe();
 		auto textureLock = _textureLock.AcquireSafe();
-		if(needUpdate()) {
+		if (needUpdate()) {
 			_emuFrameHeight = height;
 			_emuFrameWidth = width;
 
 			bool needReset = _fullscreen != _newFullscreen;
 			bool fullscreenResizeMode = _fullscreen && _newFullscreen;
 
-			if(_pSwapChain && _fullscreen && !_newFullscreen) {
+			if (_pSwapChain && _fullscreen && !_newFullscreen) {
 				HRESULT hr = _pSwapChain->SetFullscreenState(FALSE, NULL);
-				if(FAILED(hr)) {
+				if (FAILED(hr)) {
 					MessageManager::Log("SetFullscreenState(FALSE) failed - Error:" + std::to_string(hr));
 				}
 			}
-			
-			if(_useSrgbTextureFormat != cfg.UseSrgbTextureFormat) {
+
+			if (_useSrgbTextureFormat != cfg.UseSrgbTextureFormat) {
 				_useSrgbTextureFormat = cfg.UseSrgbTextureFormat;
 				needReset = true;
 			}
 
 			_fullscreen = _newFullscreen;
-			if(_fullscreenRefreshRate != refreshRate) {
+			if (_fullscreenRefreshRate != refreshRate) {
 				_fullscreenRefreshRate = refreshRate;
 				needReset = true;
 			}
@@ -100,23 +94,23 @@ void Renderer::SetScreenSize(uint32_t width, uint32_t height)
 			_screenHeight = rendererSize.Height;
 			_screenWidth = rendererSize.Width;
 
-			if(_fullscreen) {
-				if(_realScreenHeight != _monitorHeight) {
+			if (_fullscreen) {
+				if (_realScreenHeight != _monitorHeight) {
 					_realScreenHeight = _monitorHeight;
 					needReset = true;
 				}
 
-				if(_realScreenWidth != _monitorWidth) {
+				if (_realScreenWidth != _monitorWidth) {
 					_realScreenWidth = _monitorWidth;
 					needReset = true;
 				}
 
-				//Ensure the screen width/height is smaller or equal to the fullscreen resolution, no matter the requested scale
-				if(_monitorHeight < _screenHeight || _monitorWidth < _screenWidth) {
+				// Ensure the screen width/height is smaller or equal to the fullscreen resolution, no matter the requested scale
+				if (_monitorHeight < _screenHeight || _monitorWidth < _screenWidth) {
 					double scale = (double)width / (double)height;
 					_screenHeight = _monitorHeight;
 					_screenWidth = (uint32_t)(scale * _screenHeight);
-					if(_monitorWidth < _screenWidth) {
+					if (_monitorWidth < _screenWidth) {
 						_screenWidth = _monitorWidth;
 						_screenHeight = (uint32_t)(_screenWidth / scale);
 					}
@@ -129,12 +123,12 @@ void Renderer::SetScreenSize(uint32_t width, uint32_t height)
 			_leftMargin = (_realScreenWidth - _screenWidth) / 2;
 			_topMargin = (_realScreenHeight - _screenHeight) / 2;
 
-			_screenBufferSize = _realScreenHeight*_realScreenWidth;
+			_screenBufferSize = _realScreenHeight * _realScreenWidth;
 
-			if(!_pSwapChain || needReset) {
+			if (!_pSwapChain || needReset) {
 				Reset();
 			} else {
-				if(fullscreenResizeMode) {
+				if (fullscreenResizeMode) {
 					ResetTextureBuffers();
 					CreateEmuTextureBuffers();
 				} else {
@@ -149,11 +143,10 @@ void Renderer::SetScreenSize(uint32_t width, uint32_t height)
 	}
 }
 
-void Renderer::Reset()
-{
+void Renderer::Reset() {
 	auto lock = _frameLock.AcquireSafe();
 	CleanupDevice();
-	if(FAILED(InitDevice())) {
+	if (FAILED(InitDevice())) {
 		CleanupDevice();
 	} else {
 		_emu->GetVideoRenderer()->RegisterRenderingDevice(this);
@@ -162,48 +155,46 @@ void Renderer::Reset()
 	_resetCounter++;
 }
 
-void Renderer::CleanupDevice()
-{
+void Renderer::CleanupDevice() {
 	ResetTextureBuffers();
 	ReleaseRenderTargetView();
-	if(_pSwapChain) {
+	if (_pSwapChain) {
 		_pSwapChain->SetFullscreenState(false, nullptr);
 		_pSwapChain->Release();
 		_pSwapChain = nullptr;
 	}
-	if(_pDeviceContext) {
+	if (_pDeviceContext) {
 		_pDeviceContext->Release();
 		_pDeviceContext = nullptr;
 	}
-	if(_pd3dDevice) {
+	if (_pd3dDevice) {
 		_pd3dDevice->Release();
 		_pd3dDevice = nullptr;
 	}
-	if(_emuHud.Texture) {
+	if (_emuHud.Texture) {
 		_emuHud.Texture->Release();
 		_emuHud.Texture = nullptr;
 	}
-	if(_emuHud.Shader) {
+	if (_emuHud.Shader) {
 		_emuHud.Shader->Release();
 		_emuHud.Shader = nullptr;
 	}
-	if(_scriptHud.Texture) {
+	if (_scriptHud.Texture) {
 		_scriptHud.Texture->Release();
 		_scriptHud.Texture = nullptr;
 	}
-	if(_scriptHud.Shader) {
+	if (_scriptHud.Shader) {
 		_scriptHud.Shader->Release();
 		_scriptHud.Shader = nullptr;
 	}
 }
 
-void Renderer::ResetTextureBuffers()
-{
-	if(_pTexture) {
+void Renderer::ResetTextureBuffers() {
+	if (_pTexture) {
 		_pTexture->Release();
 		_pTexture = nullptr;
 	}
-	if(_pTextureSrv) {
+	if (_pTextureSrv) {
 		_pTextureSrv->Release();
 		_pTextureSrv = nullptr;
 	}
@@ -214,27 +205,25 @@ void Renderer::ResetTextureBuffers()
 	_textureBuffer[1] = nullptr;
 }
 
-void Renderer::ReleaseRenderTargetView()
-{
-	if(_pRenderTargetView) {
+void Renderer::ReleaseRenderTargetView() {
+	if (_pRenderTargetView) {
 		_pRenderTargetView->Release();
 		_pRenderTargetView = nullptr;
 	}
 }
 
-HRESULT Renderer::CreateRenderTargetView()
-{
+HRESULT Renderer::CreateRenderTargetView() {
 	// Create a render target view
 	ID3D11Texture2D* pBackBuffer = nullptr;
 	HRESULT hr = _pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
-	if(FAILED(hr)) {
+	if (FAILED(hr)) {
 		MessageManager::Log("SwapChain::GetBuffer() failed - Error:" + std::to_string(hr));
 		return hr;
 	}
 
 	hr = _pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &_pRenderTargetView);
 	pBackBuffer->Release();
-	if(FAILED(hr)) {
+	if (FAILED(hr)) {
 		MessageManager::Log("D3DDevice::CreateRenderTargetView() failed - Error:" + std::to_string(hr));
 		return hr;
 	}
@@ -244,8 +233,7 @@ HRESULT Renderer::CreateRenderTargetView()
 	return S_OK;
 }
 
-HRESULT Renderer::CreateEmuTextureBuffers()
-{
+HRESULT Renderer::CreateEmuTextureBuffers() {
 	// Setup the viewport
 	D3D11_VIEWPORT vp;
 	vp.Width = (FLOAT)_realScreenWidth;
@@ -256,17 +244,17 @@ HRESULT Renderer::CreateEmuTextureBuffers()
 	vp.TopLeftY = 0;
 	_pDeviceContext->RSSetViewports(1, &vp);
 
-	_textureBuffer[0] = new uint8_t[_emuFrameWidth*_emuFrameHeight * 4];
-	_textureBuffer[1] = new uint8_t[_emuFrameWidth*_emuFrameHeight * 4];
-	memset(_textureBuffer[0], 0, _emuFrameWidth*_emuFrameHeight * 4);
-	memset(_textureBuffer[1], 0, _emuFrameWidth*_emuFrameHeight * 4);
+	_textureBuffer[0] = new uint8_t[_emuFrameWidth * _emuFrameHeight * 4];
+	_textureBuffer[1] = new uint8_t[_emuFrameWidth * _emuFrameHeight * 4];
+	memset(_textureBuffer[0], 0, _emuFrameWidth * _emuFrameHeight * 4);
+	memset(_textureBuffer[1], 0, _emuFrameWidth * _emuFrameHeight * 4);
 
 	_pTexture = CreateTexture(_emuFrameWidth, _emuFrameHeight);
-	if(!_pTexture) {
+	if (!_pTexture) {
 		return S_FALSE;
 	}
 	_pTextureSrv = GetShaderResourceView(_pTexture);
-	if(!_pTextureSrv) {
+	if (!_pTextureSrv) {
 		return S_FALSE;
 	}
 
@@ -279,8 +267,7 @@ HRESULT Renderer::CreateEmuTextureBuffers()
 //--------------------------------------------------------------------------------------
 // Create Direct3D device and swap chain
 //--------------------------------------------------------------------------------------
-HRESULT Renderer::InitDevice()
-{
+HRESULT Renderer::InitDevice() {
 	HRESULT hr = S_OK;
 
 	UINT createDeviceFlags = 0;
@@ -289,20 +276,20 @@ HRESULT Renderer::InitDevice()
 #endif
 
 	D3D_DRIVER_TYPE driverTypes[] =
-	{
-		D3D_DRIVER_TYPE_HARDWARE,
-		D3D_DRIVER_TYPE_WARP,
-		D3D_DRIVER_TYPE_REFERENCE,
-	};
+	    {
+	        D3D_DRIVER_TYPE_HARDWARE,
+	        D3D_DRIVER_TYPE_WARP,
+	        D3D_DRIVER_TYPE_REFERENCE,
+	    };
 	UINT numDriverTypes = ARRAYSIZE(driverTypes);
 
 	D3D_FEATURE_LEVEL featureLevels[] =
-	{
-		D3D_FEATURE_LEVEL_11_1,
-		D3D_FEATURE_LEVEL_11_0,
-		D3D_FEATURE_LEVEL_10_1,
-		D3D_FEATURE_LEVEL_10_0,
-	};
+	    {
+	        D3D_FEATURE_LEVEL_11_1,
+	        D3D_FEATURE_LEVEL_11_0,
+	        D3D_FEATURE_LEVEL_10_1,
+	        D3D_FEATURE_LEVEL_10_0,
+	    };
 	UINT numFeatureLevels = ARRAYSIZE(featureLevels);
 
 	DXGI_SWAP_CHAIN_DESC sd;
@@ -322,43 +309,43 @@ HRESULT Renderer::InitDevice()
 
 	D3D_DRIVER_TYPE driverType = D3D_DRIVER_TYPE_NULL;
 	D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_1;
-	for(UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++) {
+	for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++) {
 		driverType = driverTypes[driverTypeIndex];
 		featureLevel = D3D_FEATURE_LEVEL_11_1;
 		hr = D3D11CreateDeviceAndSwapChain(nullptr, driverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels, D3D11_SDK_VERSION, &sd, &_pSwapChain, &_pd3dDevice, &featureLevel, &_pDeviceContext);
 
 		/*if(FAILED(hr)) {
-			MessageManager::Log("D3D11CreateDeviceAndSwapChain() failed - Error:" + std::to_string(hr));
+		    MessageManager::Log("D3D11CreateDeviceAndSwapChain() failed - Error:" + std::to_string(hr));
 		}*/
 
-		if(hr == E_INVALIDARG) {
+		if (hr == E_INVALIDARG) {
 			// DirectX 11.0 platforms will not recognize D3D_FEATURE_LEVEL_11_1 so we need to retry without it
 			featureLevel = D3D_FEATURE_LEVEL_11_0;
 			hr = D3D11CreateDeviceAndSwapChain(nullptr, driverType, nullptr, createDeviceFlags, &featureLevels[1], numFeatureLevels - 1, D3D11_SDK_VERSION, &sd, &_pSwapChain, &_pd3dDevice, &featureLevel, &_pDeviceContext);
 		}
 
-		if(SUCCEEDED(hr)) {
+		if (SUCCEEDED(hr)) {
 			break;
 		}
 	}
-		
-	if(FAILED(hr)) {
+
+	if (FAILED(hr)) {
 		MessageManager::Log("D3D11CreateDeviceAndSwapChain() failed - Error:" + std::to_string(hr));
 		return hr;
 	}
 
-	if(_fullscreen) {
+	if (_fullscreen) {
 		hr = _pSwapChain->SetFullscreenState(TRUE, NULL);
-		if(FAILED(hr)) {
+		if (FAILED(hr)) {
 			MessageManager::Log("SetFullscreenState(true) failed - Error:" + std::to_string(hr));
 			MessageManager::Log("Switching back to windowed mode");
 			hr = _pSwapChain->SetFullscreenState(FALSE, NULL);
-			if(FAILED(hr)) {
+			if (FAILED(hr)) {
 				MessageManager::Log("SetFullscreenState(false) failed - Error:" + std::to_string(hr));
 				return hr;
 			}
 		} else {
-			//Get actual monitor resolution (which might differ from the one that was requested)
+			// Get actual monitor resolution (which might differ from the one that was requested)
 			HMONITOR monitor = MonitorFromWindow(_hWnd, MONITOR_DEFAULTTOPRIMARY);
 			MONITORINFO info = {};
 			info.cbSize = sizeof(MONITORINFO);
@@ -367,35 +354,32 @@ HRESULT Renderer::InitDevice()
 			uint32_t monitorWidth = info.rcMonitor.right - info.rcMonitor.left;
 			uint32_t monitorHeight = info.rcMonitor.bottom - info.rcMonitor.top;
 
-			if(_monitorHeight != monitorHeight || _monitorWidth != monitorWidth) {
+			if (_monitorHeight != monitorHeight || _monitorWidth != monitorWidth) {
 				MessageManager::Log(
-					"Requested resolution (" + std::to_string(_monitorWidth) + "x" + std::to_string(_monitorHeight) 
-					+ ") is not available. Resetting to nearest match instead: " +
-					std::to_string(monitorWidth) + "x" + std::to_string(monitorHeight)
-				);
+				    "Requested resolution (" + std::to_string(_monitorWidth) + "x" + std::to_string(_monitorHeight) + ") is not available. Resetting to nearest match instead: " +
+				    std::to_string(monitorWidth) + "x" + std::to_string(monitorHeight));
 				_monitorWidth = monitorWidth;
 				_monitorHeight = monitorHeight;
 
-				//Make UI wait until this 2nd reset is over
+				// Make UI wait until this 2nd reset is over
 				_resetCounter--;
 			}
 		}
 	}
 
 	hr = CreateRenderTargetView();
-	if(FAILED(hr)) {
+	if (FAILED(hr)) {
 		return hr;
 	}
 	hr = CreateEmuTextureBuffers();
-	if(FAILED(hr)) {
+	if (FAILED(hr)) {
 		return hr;
 	}
 
 	return S_OK;
 }
 
-ID3D11Texture2D* Renderer::CreateTexture(uint32_t width, uint32_t height)
-{
+ID3D11Texture2D* Renderer::CreateTexture(uint32_t width, uint32_t height) {
 	ID3D11Texture2D* texture;
 
 	D3D11_TEXTURE2D_DESC desc;
@@ -414,18 +398,17 @@ ID3D11Texture2D* Renderer::CreateTexture(uint32_t width, uint32_t height)
 	desc.MiscFlags = 0;
 
 	HRESULT hr = _pd3dDevice->CreateTexture2D(&desc, nullptr, &texture);
-	if(FAILED(hr)) {
+	if (FAILED(hr)) {
 		MessageManager::Log("D3DDevice::CreateTexture() failed - Error:" + std::to_string(hr));
 		return nullptr;
 	}
 	return texture;
 }
 
-ID3D11ShaderResourceView* Renderer::GetShaderResourceView(ID3D11Texture2D* texture)
-{
-	ID3D11ShaderResourceView *shaderResourceView = nullptr;
+ID3D11ShaderResourceView* Renderer::GetShaderResourceView(ID3D11Texture2D* texture) {
+	ID3D11ShaderResourceView* shaderResourceView = nullptr;
 	HRESULT hr = _pd3dDevice->CreateShaderResourceView(texture, nullptr, &shaderResourceView);
-	if(FAILED(hr)) {
+	if (FAILED(hr)) {
 		MessageManager::Log("D3DDevice::CreateShaderResourceView() failed - Error:" + std::to_string(hr));
 		return nullptr;
 	}
@@ -433,11 +416,10 @@ ID3D11ShaderResourceView* Renderer::GetShaderResourceView(ID3D11Texture2D* textu
 	return shaderResourceView;
 }
 
-void Renderer::ClearFrame()
-{
-	//Clear current output and display black frame
+void Renderer::ClearFrame() {
+	// Clear current output and display black frame
 	auto lock = _textureLock.AcquireSafe();
-	if(_textureBuffer[0]) {
+	if (_textureBuffer[0]) {
 		//_textureBuffer[0] may be null if directx failed to initialize properly
 		memset(_textureBuffer[0], 0, _emuFrameWidth * _emuFrameHeight * sizeof(uint32_t));
 		_needFlip = true;
@@ -445,47 +427,45 @@ void Renderer::ClearFrame()
 	}
 }
 
-void Renderer::UpdateFrame(RenderedFrame& frame)
-{
+void Renderer::UpdateFrame(RenderedFrame& frame) {
 	SetScreenSize(frame.Width, frame.Height);
 
 	auto lock = _textureLock.AcquireSafe();
-	if(_textureBuffer[0]) {
+	if (_textureBuffer[0]) {
 		//_textureBuffer[0] may be null if directx failed to initialize properly
-		memcpy(_textureBuffer[0], frame.FrameBuffer, frame.Width*frame.Height*sizeof(uint32_t));
+		memcpy(_textureBuffer[0], frame.FrameBuffer, frame.Width * frame.Height * sizeof(uint32_t));
 		_needFlip = true;
 		_frameChanged = true;
 	}
 }
 
-void Renderer::DrawScreen()
-{
-	//Swap buffers - emulator always writes to _textureBuffer[0], screen always draws _textureBuffer[1]
-	if(_needFlip) {
+void Renderer::DrawScreen() {
+	// Swap buffers - emulator always writes to _textureBuffer[0], screen always draws _textureBuffer[1]
+	if (_needFlip) {
 		auto lock = _textureLock.AcquireSafe();
 		uint8_t* textureBuffer = _textureBuffer[0];
 		_textureBuffer[0] = _textureBuffer[1];
 		_textureBuffer[1] = textureBuffer;
 		_needFlip = false;
 
-		if(_frameChanged) {
+		if (_frameChanged) {
 			_frameChanged = false;
 		}
 	}
 
-	//Copy buffer to texture
+	// Copy buffer to texture
 	uint32_t bpp = 4;
 	uint32_t rowPitch = _emuFrameWidth * bpp;
 	D3D11_MAPPED_SUBRESOURCE dd;
 	HRESULT hr = _pDeviceContext->Map(_pTexture, 0, D3D11_MAP_WRITE_DISCARD, 0, &dd);
-	if(FAILED(hr)) {
+	if (FAILED(hr)) {
 		MessageManager::Log("DeviceContext::Map() failed - Error:" + std::to_string(hr));
 		return;
 	}
 	uint8_t* surfacePointer = (uint8_t*)dd.pData;
 	uint8_t* videoBuffer = _textureBuffer[1];
-	if(rowPitch != dd.RowPitch) {
-		for(uint32_t i = 0, iMax = _emuFrameHeight; i < iMax; i++) {
+	if (rowPitch != dd.RowPitch) {
+		for (uint32_t i = 0, iMax = _emuFrameHeight; i < iMax; i++) {
 			memcpy(surfacePointer, videoBuffer, rowPitch);
 			videoBuffer += rowPitch;
 			surfacePointer += dd.RowPitch;
@@ -498,19 +478,18 @@ void Renderer::DrawScreen()
 	RECT destRect;
 	destRect.left = _leftMargin;
 	destRect.top = _topMargin;
-	destRect.right = _screenWidth+_leftMargin;
-	destRect.bottom = _screenHeight+_topMargin;
+	destRect.right = _screenWidth + _leftMargin;
+	destRect.bottom = _screenHeight + _topMargin;
 
 	_spriteBatch->Draw(_pTextureSrv, destRect);
 }
 
-bool Renderer::CreateHudTexture(HudRenderInfo& hud, uint32_t newWidth, uint32_t newHeight)
-{
-	if(hud.Texture) {
+bool Renderer::CreateHudTexture(HudRenderInfo& hud, uint32_t newWidth, uint32_t newHeight) {
+	if (hud.Texture) {
 		hud.Texture->Release();
 		hud.Texture = nullptr;
 	}
-	if(hud.Shader) {
+	if (hud.Shader) {
 		hud.Shader->Release();
 		hud.Shader = nullptr;
 	}
@@ -519,48 +498,47 @@ bool Renderer::CreateHudTexture(HudRenderInfo& hud, uint32_t newWidth, uint32_t 
 	hud.Height = newHeight;
 
 	hud.Texture = CreateTexture(hud.Width, hud.Height);
-	if(!hud.Texture) {
+	if (!hud.Texture) {
 		return false;
 	}
 	hud.Shader = GetShaderResourceView(hud.Texture);
-	if(!hud.Shader) {
+	if (!hud.Shader) {
 		return false;
 	}
 
 	return true;
 }
 
-void Renderer::DrawHud(HudRenderInfo& hud, RenderSurfaceInfo& hudSurface)
-{
-	uint32_t* hudBuffer = hudSurface.Buffer;
+void Renderer::DrawHud(HudRenderInfo& hud, RenderSurfaceInfo& hudSurface) {
+	uint32_t* hudBuffer = hudSurface.Buffer.get();
 	uint32_t newWidth = hudSurface.Width;
 	uint32_t newHeight = hudSurface.Height;
 
-	if(newWidth == 0 && newHeight == 0) {
+	if (newWidth == 0 && newHeight == 0) {
 		return;
 	}
 
 	bool needRedraw = hudSurface.IsDirty;
-	if(hud.Width != newWidth || hud.Height != newHeight || !hud.Texture || !hud.Shader) {
+	if (hud.Width != newWidth || hud.Height != newHeight || !hud.Texture || !hud.Shader) {
 		needRedraw = true;
-		if(!CreateHudTexture(hud, newWidth, newHeight)) {
+		if (!CreateHudTexture(hud, newWidth, newHeight)) {
 			return;
 		}
 	}
 
-	if(needRedraw) {
-		//Copy buffer to texture
+	if (needRedraw) {
+		// Copy buffer to texture
 		uint32_t rowPitch = hud.Width * sizeof(uint32_t);
 		D3D11_MAPPED_SUBRESOURCE dd;
 		HRESULT hr = _pDeviceContext->Map(hud.Texture, 0, D3D11_MAP_WRITE_DISCARD, 0, &dd);
-		if(FAILED(hr)) {
+		if (FAILED(hr)) {
 			MessageManager::Log("DeviceContext::Map() failed - Error:" + std::to_string(hr));
 			return;
 		}
 		uint8_t* surfacePointer = (uint8_t*)dd.pData;
 		uint8_t* videoBuffer = (uint8_t*)hudBuffer;
-		if(rowPitch != dd.RowPitch) {
-			for(uint32_t i = 0, iMax = hud.Height; i < iMax; i++) {
+		if (rowPitch != dd.RowPitch) {
+			for (uint32_t i = 0, iMax = hud.Height; i < iMax; i++) {
 				memcpy(surfacePointer, videoBuffer, rowPitch);
 				videoBuffer += rowPitch;
 				surfacePointer += dd.RowPitch;
@@ -570,7 +548,7 @@ void Renderer::DrawHud(HudRenderInfo& hud, RenderSurfaceInfo& hudSurface)
 		}
 		_pDeviceContext->Unmap(hud.Texture, 0);
 	}
-	
+
 	RECT destRect;
 	destRect.left = _leftMargin;
 	destRect.top = _topMargin;
@@ -580,33 +558,32 @@ void Renderer::DrawHud(HudRenderInfo& hud, RenderSurfaceInfo& hudSurface)
 	_spriteBatch->Draw(hud.Shader, destRect);
 }
 
-void Renderer::Render(RenderSurfaceInfo& emuHud, RenderSurfaceInfo& scriptHud)
-{
+void Renderer::Render(RenderSurfaceInfo& emuHud, RenderSurfaceInfo& scriptHud) {
 	auto lock = _frameLock.AcquireSafe();
-	if(_newFullscreen != _fullscreen) {
+	if (_newFullscreen != _fullscreen) {
 		SetScreenSize(_emuFrameWidth, _emuFrameHeight);
 	}
 
-	if(_pDeviceContext == nullptr) {
-		//DirectX failed to initialize, try to init
+	if (_pDeviceContext == nullptr) {
+		// DirectX failed to initialize, try to init
 		Reset();
-		if(_pDeviceContext == nullptr) {
-			//Can't init, prevent crash
+		if (_pDeviceContext == nullptr) {
+			// Can't init, prevent crash
 			return;
 		}
 	}
 
 	VideoConfig cfg = _emu->GetSettings()->GetVideoConfig();
 
-	// Clear the back buffer 
+	// Clear the back buffer
 	_pDeviceContext->ClearRenderTargetView(_pRenderTargetView, Colors::Black);
 
-	//Draw screen
+	// Draw screen
 	_spriteBatch->Begin(SpriteSortMode_Immediate, cfg.UseBilinearInterpolation);
 	DrawScreen();
 	_spriteBatch->End();
 
-	//Draw HUD
+	// Draw HUD
 	_spriteBatch->Begin(SpriteSortMode_Immediate, false);
 	DrawHud(_scriptHud, scriptHud);
 	DrawHud(_emuHud, emuHud);
@@ -614,9 +591,9 @@ void Renderer::Render(RenderSurfaceInfo& emuHud, RenderSurfaceInfo& scriptHud)
 
 	// Present the information rendered to the back buffer to the front buffer (the screen)
 	HRESULT hr = _pSwapChain->Present(cfg.VerticalSync ? 1 : 0, 0);
-	if(FAILED(hr)) {
+	if (FAILED(hr)) {
 		MessageManager::Log("SwapChain::Present() failed - Error:" + std::to_string(hr));
-		if(hr == DXGI_ERROR_DEVICE_REMOVED) {
+		if (hr == DXGI_ERROR_DEVICE_REMOVED) {
 			MessageManager::Log("D3DDevice: GetDeviceRemovedReason: " + std::to_string(_pd3dDevice->GetDeviceRemovedReason()));
 		}
 		MessageManager::Log("Trying to reset DX...");

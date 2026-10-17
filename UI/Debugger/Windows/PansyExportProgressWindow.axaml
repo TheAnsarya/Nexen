@@ -1,0 +1,66 @@
+﻿<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	d:DesignWidth="450"
+	d:DesignHeight="300"
+	x:Class="Nexen.Debugger.Windows.PansyExportProgressWindow"
+	Width="450"
+	Height="300"
+	CanResize="False"
+	Title="{l:Translate wndPansyExportProgress}"
+	WindowStartupLocation="CenterOwner"
+>
+	<DockPanel Margin="15">
+		<!-- Header -->
+		<StackPanel DockPanel.Dock="Top" Margin="0 0 0 15">
+			<TextBlock Name="txtTitle" FontSize="16" FontWeight="SemiBold" Text="{l:Translate lblExportingPansy}" />
+			<TextBlock Name="txtRomName" FontSize="12" Foreground="Gray" Margin="0 5 0 0" />
+		</StackPanel>
+
+		<!-- Buttons at bottom -->
+		<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 15 0 0">
+			<Button Name="btnCancel" Content="{l:Translate btnCancel}" Width="96" MinHeight="40" Click="Cancel_OnClick" />
+			<Button Name="btnClose" Content="{l:Translate btnClose}" Width="96" MinHeight="40" Margin="10 0 0 0" IsVisible="False" Click="Close_OnClick" />
+		</StackPanel>
+
+		<!-- Progress content -->
+		<StackPanel VerticalAlignment="Center">
+			<!-- Overall progress -->
+			<TextBlock Name="txtStatus" Text="{l:Translate lblInitializing}" Margin="0 0 0 5" />
+			<ProgressBar Name="progressMain" Height="24" Minimum="0" Maximum="100" Value="0" />
+			<TextBlock Name="txtProgressPercent" Text="0%" HorizontalAlignment="Right" FontSize="13" Margin="0 2 0 0" />
+
+			<!-- Current operation -->
+			<TextBlock Name="txtCurrentOp" Text="" FontSize="13" Foreground="Gray" Margin="0 10 0 5" />
+			<ProgressBar Name="progressDetail" Height="12" Minimum="0" Maximum="100" Value="0" IsIndeterminate="True" />
+
+			<!-- Statistics panel (shown on completion) -->
+			<Border Name="pnlStats" IsVisible="False" Margin="0 15 0 0" Padding="10" Background="#20888888" CornerRadius="5">
+				<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+					<TextBlock Grid.Row="0" Grid.Column="0" Text="{l:Translate lblSymbolsExported}" Margin="0 0 15 3" />
+					<TextBlock Grid.Row="0" Grid.Column="1" Name="txtSymbolCount" FontWeight="SemiBold" />
+
+					<TextBlock Grid.Row="1" Grid.Column="0" Text="{l:Translate lblCommentsExported}" Margin="0 0 15 3" />
+					<TextBlock Grid.Row="1" Grid.Column="1" Name="txtCommentCount" FontWeight="SemiBold" />
+
+					<TextBlock Grid.Row="2" Grid.Column="0" Text="{l:Translate lblCodeBytesMarked}" Margin="0 0 15 3" />
+					<TextBlock Grid.Row="2" Grid.Column="1" Name="txtCodeBytes" FontWeight="SemiBold" />
+
+					<TextBlock Grid.Row="3" Grid.Column="0" Text="{l:Translate lblDataBytesMarked}" Margin="0 0 15 3" />
+					<TextBlock Grid.Row="3" Grid.Column="1" Name="txtDataBytes" FontWeight="SemiBold" />
+
+					<TextBlock Grid.Row="4" Grid.Column="0" Text="{l:Translate lblFileSize}" Margin="0 0 15 3" />
+					<TextBlock Grid.Row="4" Grid.Column="1" Name="txtFileSize" FontWeight="SemiBold" />
+
+					<TextBlock Grid.Row="5" Grid.Column="0" Text="{l:Translate lblExportTime}" Margin="0 0 15 0" />
+					<TextBlock Grid.Row="5" Grid.Column="1" Name="txtExportTime" FontWeight="SemiBold" />
+				</Grid>
+			</Border>
+		</StackPanel>
+	</DockPanel>
+</Window>

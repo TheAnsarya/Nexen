@@ -1,0 +1,69 @@
+{
+	"$schema": "./test-manifest.schema.json",
+	"version": 1,
+	"tests": [
+		{
+			"name": "snes-blargg-cpu-instrs",
+			"system": "snes",
+			"rom": "snes/blargg/cpu_instrs/cpu_instrs.sfc",
+			"strategy": "lua-script",
+			"script": "snes/blargg-test.lua",
+			"maxFrames": 36000,
+			"tags": ["cpu", "critical", "blargg"]
+		},
+		{
+			"name": "snes-blargg-spc-timer",
+			"system": "snes",
+			"rom": "snes/blargg/spc/spc_timer.sfc",
+			"strategy": "lua-script",
+			"script": "snes/blargg-test.lua",
+			"maxFrames": 18000,
+			"tags": ["spc", "blargg"]
+		},
+		{
+			"name": "snes-blargg-ppu-vram-access",
+			"system": "snes",
+			"rom": "snes/blargg/ppu/vram_access.sfc",
+			"strategy": "lua-script",
+			"script": "snes/blargg-test.lua",
+			"maxFrames": 18000,
+			"tags": ["ppu", "blargg"]
+		},
+		{
+			"name": "snes-blargg-smp-mem-test",
+			"system": "snes",
+			"rom": "snes/blargg/spc/smp_mem_test.sfc",
+			"strategy": "lua-script",
+			"script": "snes/blargg-test.lua",
+			"maxFrames": 18000,
+			"tags": ["spc", "blargg"]
+		},
+		{
+			"name": "snes-blargg-ppu-palette",
+			"system": "snes",
+			"rom": "snes/blargg/ppu/palette.sfc",
+			"strategy": "lua-script",
+			"script": "snes/blargg-test.lua",
+			"maxFrames": 18000,
+			"tags": ["ppu", "blargg"]
+		},
+		{
+			"name": "snes-blargg-spc-ipl-rom",
+			"system": "snes",
+			"rom": "snes/blargg/spc/ipl_rom.sfc",
+			"strategy": "lua-script",
+			"script": "snes/blargg-test.lua",
+			"maxFrames": 18000,
+			"tags": ["spc", "blargg"]
+		},
+		{
+			"name": "snes-blargg-dma-timing",
+			"system": "snes",
+			"rom": "snes/blargg/dma/dma_timing.sfc",
+			"strategy": "lua-script",
+			"script": "snes/blargg-test.lua",
+			"maxFrames": 18000,
+			"tags": ["dma", "blargg"]
+		}
+	]
+}

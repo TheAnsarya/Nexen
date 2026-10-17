@@ -1,34 +1,34 @@
-<UserControl
+﻿<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:v="using:Mesen.Views"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:v="using:Nexen.Views"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="550"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:SnesConfigViewModel"
-	x:Class="Mesen.Views.SnesConfigView"
+	x:Class="Nexen.Views.SnesConfigView"
 >
 	<Design.DataContext>
 		<vm:SnesConfigViewModel />
 	</Design.DataContext>
-	
+
 	<UserControl.Styles>
 		<Style Selector="TextBlock.red">
 			<Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
 		</Style>
 		<Style Selector="TextBlock.gray">
-			<Setter Property="Foreground" Value="{DynamicResource MesenNotRecommendedInactiveBrush}" />
+			<Setter Property="Foreground" Value="{DynamicResource NexenNotRecommendedInactiveBrush}" />
 		</Style>
 	</UserControl.Styles>
-	
-	<TabControl TabStripPlacement="Top" SelectedIndex="{Binding SelectedTab}">
+
+	<TabControl TabStripPlacement="Top" SelectedIndex="{ReflectionBinding SelectedTab}">
 		<TabItem Header="{l:Translate tpgGeneral}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
@@ -44,14 +44,14 @@
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
-		
+
 		<TabItem Header="{l:Translate tpgAudio}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
 					<c:GroupBox Header="{l:Translate grpVolume}" HorizontalAlignment="Left" Margin="0 0 0 5">
 						<StackPanel Orientation="Horizontal" Height="150">
 							<StackPanel.Styles>
-								<Style Selector="c|MesenSlider">
+								<Style Selector="c|NexenSlider">
 									<Setter Property="Minimum" Value="0" />
 									<Setter Property="Maximum" Value="100" />
 									<Setter Property="Orientation" Value="Vertical" />
@@ -59,14 +59,14 @@
 								</Style>
 							</StackPanel.Styles>
 
-							<c:MesenSlider Text="{l:Translate lblChannel1}" Value="{Binding Config.Channel1Vol}" />
-							<c:MesenSlider Text="{l:Translate lblChannel2}" Value="{Binding Config.Channel2Vol}" />
-							<c:MesenSlider Text="{l:Translate lblChannel3}" Value="{Binding Config.Channel3Vol}" />
-							<c:MesenSlider Text="{l:Translate lblChannel4}" Value="{Binding Config.Channel4Vol}" />
-							<c:MesenSlider Text="{l:Translate lblChannel5}" Value="{Binding Config.Channel5Vol}" />
-							<c:MesenSlider Text="{l:Translate lblChannel6}" Value="{Binding Config.Channel6Vol}" />
-							<c:MesenSlider Text="{l:Translate lblChannel7}" Value="{Binding Config.Channel7Vol}" />
-							<c:MesenSlider Text="{l:Translate lblChannel8}" Value="{Binding Config.Channel8Vol}" />
+							<c:NexenSlider Text="{l:Translate lblChannel1}" Value="{Binding Config.Channel1Vol}" />
+							<c:NexenSlider Text="{l:Translate lblChannel2}" Value="{Binding Config.Channel2Vol}" />
+							<c:NexenSlider Text="{l:Translate lblChannel3}" Value="{Binding Config.Channel3Vol}" />
+							<c:NexenSlider Text="{l:Translate lblChannel4}" Value="{Binding Config.Channel4Vol}" />
+							<c:NexenSlider Text="{l:Translate lblChannel5}" Value="{Binding Config.Channel5Vol}" />
+							<c:NexenSlider Text="{l:Translate lblChannel6}" Value="{Binding Config.Channel6Vol}" />
+							<c:NexenSlider Text="{l:Translate lblChannel7}" Value="{Binding Config.Channel7Vol}" />
+							<c:NexenSlider Text="{l:Translate lblChannel8}" Value="{Binding Config.Channel8Vol}" />
 						</StackPanel>
 					</c:GroupBox>
 					<StackPanel Orientation="Horizontal">
@@ -79,7 +79,7 @@
 				</StackPanel>
 			</ScrollViewer>
 		</TabItem>
-		
+
 		<TabItem Header="{l:Translate tpgEmulation}">
 			<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" Padding="0 0 2 0">
 				<StackPanel>
@@ -89,7 +89,7 @@
 
 						<TextBlock Grid.Row="1" Text="{l:Translate lblSpcClockSpeedAdjustment}" />
 						<StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
-							<c:MesenNumericUpDown
+							<c:NexenNumericUpDown
 								Minimum="-999"
 								Maximum="999"
 								Value="{Binding Config.SpcClockSpeedAdjustment}"
@@ -104,7 +104,7 @@
 							/>
 						</StackPanel>
 					</Grid>
-					
+
 					<c:CheckBoxWarning IsChecked="{Binding Config.EnableRandomPowerOnState}" Text="{l:Translate chkRandomPowerOnState}" />
 					<c:CheckBoxWarning IsChecked="{Binding Config.EnableStrictBoardMappings}" Text="{l:Translate chkStrictBoardMappings}" />
 				</StackPanel>
@@ -120,7 +120,7 @@
 				<StackPanel>
 					<Border BorderThickness="1" BorderBrush="Gray" Padding="3" Width="370" HorizontalAlignment="Left">
 						<Panel>
-							<Image Source="/Assets/Help.png" Margin="0" Width="16" Height="16" HorizontalAlignment="Left" />
+							<Image Source="{SvgImage /Assets/Help.svg}" Margin="0" Width="16" Height="16" HorizontalAlignment="Left" />
 							<TextBlock Text="{l:Translate lblOverclockHint}" TextWrapping="Wrap" Margin="25 0 0 0" />
 						</Panel>
 					</Border>
@@ -128,16 +128,16 @@
 					<c:OptionSection Header="{l:Translate grpPpuTiming}">
 						<Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto" Margin="10 0">
 							<TextBlock Grid.Column="0" Grid.Row="0" Text="{l:Translate lblExtraScanlinesBeforeNmi}" />
-							<c:MesenNumericUpDown Grid.Column="1" Grid.Row="0" Value="{Binding Config.PpuExtraScanlinesBeforeNmi}" Minimum="0" Maximum="1000" />
+							<c:NexenNumericUpDown Grid.Column="1" Grid.Row="0" Value="{Binding Config.PpuExtraScanlinesBeforeNmi}" Minimum="0" Maximum="1000" />
 							<TextBlock Grid.Column="0" Grid.Row="1" Text="{l:Translate lblExtraScanlinesAfterNmi}" />
-							<c:MesenNumericUpDown Grid.Column="1" Grid.Row="1" Value="{Binding Config.PpuExtraScanlinesAfterNmi}" Minimum="0" Maximum="1000" />
+							<c:NexenNumericUpDown Grid.Column="1" Grid.Row="1" Value="{Binding Config.PpuExtraScanlinesAfterNmi}" Minimum="0" Maximum="1000" />
 						</Grid>
 					</c:OptionSection>
 
 					<c:OptionSection Header="{l:Translate lblChipSpecificOc}">
 						<Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto" Margin="10 0">
 							<TextBlock Grid.Column="0" Grid.Row="0" Text="{l:Translate lblSuperFxClockSpeed}" />
-							<c:MesenNumericUpDown
+							<c:NexenNumericUpDown
 								Grid.Column="1"
 								Grid.Row="0"
 								Value="{Binding Config.GsuClockSpeed}"

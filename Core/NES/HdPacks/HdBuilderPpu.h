@@ -7,8 +7,7 @@
 #include "Shared/RewindManager.h"
 #include "Utilities/Serializer.h"
 
-class HdBuilderPpu final : public NesPpu<HdBuilderPpu>
-{
+class HdBuilderPpu final : public NesPpu<HdBuilderPpu> {
 private:
 	HdPackBuilder* _hdPackBuilder = nullptr;
 	bool _needChrHash = false;
@@ -26,8 +25,7 @@ public:
 	__forceinline bool UseAdaptiveSpriteLimit() { return _console->GetNesConfig().AdaptiveSpriteLimit; }
 	void* OnBeforeSendFrame() { return nullptr; }
 
-	__forceinline void StoreSpriteInformation(bool verticalMirror, uint16_t tileAddr, uint8_t lineOffset)
-	{
+	__forceinline void StoreSpriteInformation(bool verticalMirror, uint16_t tileAddr, uint8_t lineOffset) {
 		NesSpriteInfoEx& info = _exSpriteInfo[_spriteIndex];
 		info.TileAddr = tileAddr;
 		info.AbsoluteTileAddr = _mapper->GetPpuAbsoluteAddress(info.TileAddr).Address;
@@ -35,8 +33,7 @@ public:
 		info.OffsetY = lineOffset;
 	}
 
-	__forceinline void StoreTileInformation()
-	{
+	__forceinline void StoreTileInformation() {
 		_previousTileEx = _currentTileEx;
 		_currentTileEx = _nextTileEx;
 
@@ -48,14 +45,12 @@ public:
 		_nextTileEx.AbsoluteTileAddr = _mapper->GetPpuAbsoluteAddress(tileAddr).Address;
 	}
 
-	__forceinline void ProcessScanline()
-	{
+	__forceinline void ProcessScanline() {
 		ProcessScanlineImpl();
 	}
 
-	void DrawPixel()
-	{
-		if(IsRenderingEnabled() || ((_videoRamAddr & 0x3F00) != 0x3F00)) {
+	void DrawPixel() {
+		if (IsRenderingEnabled() || ((_videoRamAddr & 0x3F00) != 0x3F00)) {
 			BaseMapper* mapper = _console->GetMapper();
 			bool isChrRam = !mapper->HasChrRom();
 
@@ -63,16 +58,16 @@ public:
 			uint32_t color = GetPixelColor();
 			_currentOutputBuffer[(_scanline << 8) + _cycle - 1] = _paletteRam[color & 0x03 ? color : 0];
 			uint32_t backgroundColor = 0;
-			if(_mask.BackgroundEnabled && _cycle > _minimumDrawBgCycle) {
+			if (_mask.BackgroundEnabled && _cycle > _minimumDrawBgCycle) {
 				backgroundColor = (((_lowBitShift << _xScroll) & 0x8000) >> 15) | (((_highBitShift << _xScroll) & 0x8000) >> 14);
 			}
 
-			if(_needChrHash ) {
+			if (_needChrHash) {
 				uint16_t addr = 0;
 				_bankHashes.clear();
-				while(addr < 0x2000) {
+				while (addr < 0x2000) {
 					uint32_t hash = 0;
-					for(uint16_t i = 0; i < _chrRamBankSize; i++) {
+					for (uint16_t i = 0; i < _chrRamBankSize; i++) {
 						hash += mapper->DebugReadVram(i + addr);
 						hash = (hash << 1) | (hash >> 31);
 					}
@@ -83,20 +78,20 @@ public:
 			}
 
 			bool hasBgSprite = false;
-			if(_lastSprite && _mask.SpritesEnabled) {
+			if (_lastSprite && _mask.SpritesEnabled) {
 				uint8_t spriteIndex = (uint8_t)(_lastSprite - _spriteTiles);
 				NesSpriteInfoEx& spriteInfoEx = _exSpriteInfo[spriteIndex];
 
-				if(backgroundColor == 0) {
-					for(uint8_t i = 0; i < _spriteCount; i++) {
-						if(_spriteTiles[i].BackgroundPriority) {
+				if (backgroundColor == 0) {
+					for (uint8_t i = 0; i < _spriteCount; i++) {
+						if (_spriteTiles[i].BackgroundPriority) {
 							hasBgSprite = true;
 							break;
 						}
 					}
 				}
 
-				if(spriteInfoEx.AbsoluteTileAddr >= 0) {
+				if (spriteInfoEx.AbsoluteTileAddr >= 0) {
 					HdPpuTileInfo sprite = {};
 					sprite.TileIndex = (isChrRam ? (spriteInfoEx.TileAddr & _chrRamIndexMask) : spriteInfoEx.AbsoluteTileAddr) / 16;
 					sprite.PaletteColors = ReadPaletteRam(_lastSprite->PaletteOffset + 3) | (ReadPaletteRam(_lastSprite->PaletteOffset + 2) << 8) | (ReadPaletteRam(_lastSprite->PaletteOffset + 1) << 16) | 0xFF000000;
@@ -107,12 +102,12 @@ public:
 				}
 			}
 
-			if(_mask.BackgroundEnabled) {
+			if (_mask.BackgroundEnabled) {
 				bool usePrev = (_xScroll + ((_cycle - 1) & 0x07) < 8);
 				uint8_t tilePalette = usePrev ? _previousTilePalette : _currentTilePalette;
 				NesTileInfoEx& lastTileEx = usePrev ? _previousTileEx : _currentTileEx;
-				//TileInfo* lastTile = &((_xScroll + ((_cycle - 1) & 0x07) < 8) ? _previousTile : _currentTile);
-				if(lastTileEx.AbsoluteTileAddr >= 0) {
+				// TileInfo* lastTile = &((_xScroll + ((_cycle - 1) & 0x07) < 8) ? _previousTile : _currentTile);
+				if (lastTileEx.AbsoluteTileAddr >= 0) {
 					HdPpuTileInfo tile = {};
 					tile.TileIndex = (isChrRam ? (lastTileEx.TileAddr & _chrRamIndexMask) : lastTileEx.AbsoluteTileAddr) / 16;
 					tile.PaletteColors = ReadPaletteRam(tilePalette + 3) | (ReadPaletteRam(tilePalette + 2) << 8) | (ReadPaletteRam(tilePalette + 1) << 16) | (ReadPaletteRam(0) << 24);
@@ -128,27 +123,24 @@ public:
 		}
 	}
 
-	void WriteRAM(uint16_t addr, uint8_t value)
-	{
-		if(GetRegisterID(addr) == PpuRegisters::VideoMemoryData) {
-			if(_videoRamAddr < 0x2000) {
+	void WriteRAM(uint16_t addr, uint8_t value) {
+		if (GetRegisterID(addr) == PpuRegisters::VideoMemoryData) {
+			if (_videoRamAddr < 0x2000) {
 				_needChrHash = true;
 			}
 		}
 		NesPpu::WriteRam(addr, value);
 	}
 
-	void Serialize(Serializer& s)
-	{
+	void Serialize(Serializer& s) {
 		NesPpu::Serialize(s);
-		if(!s.IsSaving()) {
+		if (!s.IsSaving()) {
 			_needChrHash = true;
 		}
 	}
 
 public:
-	HdBuilderPpu(NesConsole* console, HdPackBuilder* hdPackBuilder, uint32_t chrRamBankSize) : NesPpu(console)
-	{
+	HdBuilderPpu(NesConsole* console, HdPackBuilder* hdPackBuilder, uint32_t chrRamBankSize) : NesPpu(console) {
 		_hdPackBuilder = hdPackBuilder;
 		_chrRamBankSize = chrRamBankSize;
 		_chrRamIndexMask = chrRamBankSize - 1;

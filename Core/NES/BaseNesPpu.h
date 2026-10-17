@@ -1,5 +1,7 @@
-#pragma once 
+#pragma once
 #include "pch.h"
+#include <memory>
+#include <array>
 #include "NES/INesMemoryHandler.h"
 #include "Utilities/ISerializable.h"
 #include "NES/NesTypes.h"
@@ -12,15 +14,15 @@ class SnesControlManager;
 class NesConsole;
 class EmuSettings;
 
-class BaseNesPpu : public INesMemoryHandler, public ISerializable
-{
+class BaseNesPpu : public INesMemoryHandler, public ISerializable {
 protected:
 	uint64_t _masterClock = 0;
+	uint64_t _masterClockFrameStart = 0;
 	uint32_t _cycle = 0;
 	int16_t _scanline = 0;
 	bool _emulatorBgEnabled = false;
 	bool _emulatorSpritesEnabled = false;
-	//16
+	// 16
 	uint16_t _videoRamAddr = 0;
 	uint16_t _tmpVideoRamAddr = 0;
 	uint16_t _highBitShift = 0;
@@ -33,7 +35,7 @@ protected:
 	bool _needStateUpdate = false;
 	bool _renderingEnabled = false;
 	bool _prevRenderingEnabled = false;
-	//32
+	// 32
 	bool _sprite0Visible = false;
 	uint8_t _spriteCount = 0;
 	uint8_t _secondaryOamAddr = 0;
@@ -47,16 +49,16 @@ protected:
 	uint16_t _minimumDrawBgCycle = 0;
 	uint16_t _minimumDrawSpriteCycle = 0;
 	uint16_t _minimumDrawSpriteStandardCycle = 0;
-	//48
+	// 48
 	BaseMapper* _mapper = nullptr;
 	uint16_t* _currentOutputBuffer = nullptr;
 	////////////////////////
-	//64 : end of cache line
+	// 64 : end of cache line
 	////////////////////////
 	uint8_t _paletteRam[0x20] = {};
 	uint8_t _secondarySpriteRam[0x20] = {};
 	////////////////////////
-	//128 : end of cache line
+	// 128 : end of cache line
 	////////////////////////
 	TileInfo _tile = {};
 	uint16_t _ppuBusAddress = 0;
@@ -66,33 +68,34 @@ protected:
 	uint16_t _intensifyColorBits = 0;
 	uint8_t _paletteRamMask = 0;
 	uint8_t _updateVramAddrDelay = 0;
-	//144
+	// 144
 	uint32_t _spriteIndex = 0;
 	int32_t _lastUpdatedPixel = 0;
 	uint32_t _frameCount = 0;
 	uint16_t _updateVramAddr = 0;
 	bool _preventVblFlag = false;
-	bool _writeToggle = false; //not used in rendering
-	//160
-	NesSpriteInfo* _lastSprite = nullptr; //used by HD ppu
+	bool _writeToggle = false; // not used in rendering
+	// 160
+	NesSpriteInfo* _lastSprite = nullptr; // used by HD ppu
 	NesConsole* _console = nullptr;
-	//176
+	// 176
 	PpuControlFlags _control = {}; // 8 bytes
-	PpuMaskFlags _mask = {}; // 8 bytes
-  ////////////////////////
-	//192 : end of cache line
+	PpuMaskFlags _mask = {};       // 8 bytes
+	                               ////////////////////////
+	// 192 : end of cache line
 	////////////////////////
 	uint8_t _spriteRam[0x100] = {};
 	////////////////////////
-	//448 : end of cache line
+	// 448 : end of cache line
 	////////////////////////
 	bool _hasSprite[257] = {};
-	//705
+	// 705
 	NesSpriteInfo _spriteTiles[64] = {};
 
 	Emulator* _emu = nullptr;
 	EmuSettings* _settings = nullptr;
-	uint16_t* _outputBuffers[2] = {};
+	std::array<std::unique_ptr<uint16_t[]>, 2> _outputBuffers;
+	std::unique_ptr<uint16_t[]> _vsDualMergedBuffer;
 
 	ConsoleRegion _region = {};
 	uint16_t _standardVblankEnd = 0;
@@ -106,15 +109,15 @@ protected:
 	uint8_t _memoryReadBuffer = 0;
 	PPUStatusFlags _statusFlags = {};
 
-	uint8_t _firstVisibleSpriteAddr = 0; //For extra sprites
-	uint8_t _lastVisibleSpriteAddr = 0; //For extra sprites
+	uint8_t _firstVisibleSpriteAddr = 0; // For extra sprites
+	uint8_t _lastVisibleSpriteAddr = 0;  // For extra sprites
 
 	uint32_t _ignoreVramRead = 0;
 	int32_t _openBusDecayStamp[8] = {};
 
 	uint64_t _oamDecayCycles[0x40] = {};
 	bool _corruptOamRow[32] = {};
-	
+
 	bool IsRenderingEnabled();
 	void UpdateGrayscaleAndIntensifyBits();
 	void UpdateColorBitMasks();

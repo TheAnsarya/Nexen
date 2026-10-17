@@ -15,8 +15,7 @@ class EmuSettings;
 
 enum class MemoryOperationType;
 
-class NecDspDebugger final : public IDebugger
-{
+class NecDspDebugger final : public IDebugger {
 	Debugger* _debugger;
 	Disassembler* _disassembler;
 	NecDsp* _dsp;
@@ -34,13 +33,14 @@ class NecDspDebugger final : public IDebugger
 
 public:
 	NecDspDebugger(Debugger* debugger);
+	~NecDspDebugger();
 
 	void Reset() override;
 
 	void ProcessInstruction();
 	void ProcessRead(uint32_t addr, uint8_t value, MemoryOperationType type);
 	void ProcessWrite(uint32_t addr, uint8_t value, MemoryOperationType type);
-	
+
 	void Run() override;
 	void Step(int32_t stepCount, StepType type) override;
 

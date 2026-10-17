@@ -7,8 +7,7 @@
 class Emulator;
 class Fds;
 
-class FdsInputButtons : public BaseControlDevice, public INotificationListener
-{
+class FdsInputButtons : public BaseControlDevice, public INotificationListener {
 private:
 	const uint8_t ReinsertDiskFrameDelay = 120;
 
@@ -30,12 +29,13 @@ protected:
 	void InsertNextDisk();
 
 public:
-	enum FdsButtons { EjectDiskButton = 0, InsertDisk1 };
+	enum FdsButtons { EjectDiskButton = 0,
+		              InsertDisk1 };
 
 	FdsInputButtons(Fds* fds, Emulator* emu);
 
 	void OnAfterSetState() override;
-	
+
 	void InsertDisk(uint8_t diskNumber);
 
 	uint8_t ReadRam(uint16_t addr) override;

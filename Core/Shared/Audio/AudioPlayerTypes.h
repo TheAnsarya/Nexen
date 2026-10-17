@@ -1,8 +1,7 @@
 #pragma once
 #include "pch.h"
 
-struct AudioTrackInfo
-{
+struct AudioTrackInfo {
 	string GameTitle;
 	string SongTitle;
 	string Artist;
@@ -16,15 +15,13 @@ struct AudioTrackInfo
 	uint32_t TrackCount;
 };
 
-enum class AudioPlayerAction
-{
+enum class AudioPlayerAction {
 	NextTrack,
 	PrevTrack,
 	SelectTrack,
 };
 
-struct AudioPlayerActionParams
-{
+struct AudioPlayerActionParams {
 	AudioPlayerAction Action;
 	uint32_t TrackNumber;
 };

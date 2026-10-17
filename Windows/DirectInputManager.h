@@ -6,8 +6,7 @@
 
 class Emulator;
 
-struct DirectInputData
-{
+struct DirectInputData {
 	LPDIRECTINPUTDEVICE8 joystick;
 	DIJOYSTATE2 state;
 	DIJOYSTATE2 defaultState;
@@ -15,8 +14,7 @@ struct DirectInputData
 	DIDEVICEINSTANCE instanceInfo;
 };
 
-class DirectInputManager
-{
+class DirectInputManager {
 private:
 	static HWND _hWnd;
 	Emulator* _emu;

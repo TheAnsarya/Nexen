@@ -1,22 +1,23 @@
-<Window
+﻿<Window
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-	xmlns:m="clr-namespace:Mesen"
-	xmlns:vm="using:Mesen.ViewModels"
+	xmlns:m="clr-namespace:Nexen"
+	xmlns:vm="using:Nexen.ViewModels"
 	xmlns:sys="using:System"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:dc="using:Mesen.Debugger.Controls"
-	xmlns:du="using:Mesen.Debugger.Utilities"
-	xmlns:u="using:Mesen.Utilities"
-	xmlns:v="using:Mesen.Debugger.Views"
-	xmlns:i="using:Mesen.Interop"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:dc="using:Nexen.Debugger.Controls"
+	xmlns:du="using:Nexen.Debugger.Utilities"
+	xmlns:u="using:Nexen.Utilities"
+	xmlns:v="using:Nexen.Debugger.Views"
+	xmlns:i="using:Nexen.Interop"
+	xmlns:l="using:Nexen.Localization"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:dvm="using:Mesen.Debugger.ViewModels"
+	xmlns:dvm="using:Nexen.Debugger.ViewModels"
+	xmlns:ext="using:Nexen.Controls.DataGridExtensions"
 	mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="600"
-	x:Class="Mesen.Debugger.Windows.EventViewerWindow"
+	x:Class="Nexen.Debugger.Windows.EventViewerWindow"
 	x:DataType="dvm:EventViewerViewModel"
 	Width="600" Height="600"
 	Icon="/Assets/EventViewer.png"
@@ -30,7 +31,7 @@
 		<du:GridLengthConverter x:Key="GridLengthConverter" />
 		<u:ArgbColorToBrushConverter x:Key="ArgbColorToBrushConverter"/>
 	</Window.Resources>
-	
+
 	<Window.DataTemplates>
 		<DataTemplate DataType="{x:Type cfg:SnesEventViewerConfig}">
 			<v:SnesEventViewerConfigView />
@@ -50,18 +51,27 @@
 		<DataTemplate DataType="{x:Type cfg:SmsEventViewerConfig}">
 			<v:SmsEventViewerConfigView />
 		</DataTemplate>
+		<DataTemplate DataType="{x:Type cfg:GenesisEventViewerConfig}">
+			<v:GenesisEventViewerConfigView />
+		</DataTemplate>
 		<DataTemplate DataType="{x:Type cfg:WsEventViewerConfig}">
 			<v:WsEventViewerConfigView />
-		</DataTemplate>	
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type cfg:Atari2600EventViewerConfig}">
+			<v:Atari2600EventViewerConfigView />
+		</DataTemplate>
+		<DataTemplate DataType="{x:Type cfg:LynxEventViewerConfig}">
+			<v:LynxEventViewerConfigView />
+		</DataTemplate>
 	</Window.DataTemplates>
-	
+
 	<DockPanel>
 		<Panel DockPanel.Dock="Top">
-			<c:MesenMenu DockPanel.Dock="Top" Name="ActionMenu">
+			<c:NexenMenu DockPanel.Dock="Top" Name="ActionMenu">
 				<MenuItem Header="{l:Translate mnuFile}" ItemsSource="{Binding FileMenuItems}" />
 				<MenuItem Header="{l:Translate mnuDebug}" ItemsSource="{Binding DebugMenuItems}" />
 				<MenuItem Header="{l:Translate mnuView}" ItemsSource="{Binding ViewMenuItems}" />
-			</c:MesenMenu>
+			</c:NexenMenu>
 			<c:IconButton
 				HorizontalAlignment="Right"
 				DockPanel.Dock="Right"
@@ -87,7 +97,7 @@
 				</StackPanel>
 			</ScrollViewer>
 		</Panel>
-		
+
 		<Grid ColumnDefinitions="*">
 			<Grid.RowDefinitions>
 				<RowDefinition MinHeight="200" Height="*" />
@@ -114,49 +124,52 @@
 				HorizontalAlignment="Stretch"
 				IsVisible="{Binding Config.ShowListView}"
 			/>
-			
+
 			<Border BorderBrush="Gray" BorderThickness="1" Grid.Row="2">
-				<DataBox
-					Name="lstEvents"
-					Items="{Binding ListView.DebugEvents}"
-					Selection="{Binding ListView.Selection}"
-					SortMode="Multiple"
-					SortCommand="{Binding ListView.SortCommand}"
-					SortState="{Binding ListView.SortState}"
+				<DataGrid
+					x:Name="lstEvents"
+					ItemsSource="{Binding ListView.DebugEvents}"
+					SelectedItem="{Binding ListView.Selection.SelectedItem}"
+					IsReadOnly="True"
+					CanUserReorderColumns="False"
+					HeadersVisibility="Column"
 					GridLinesVisibility="All"
-					ColumnWidths="{Binding ListView.ColumnWidths}"
+					ext:DataGridSortBehavior.SortMode="Multiple"
+					ext:DataGridSortBehavior.SortCommand="{Binding ListView.SortCommand}"
+					ext:DataGridSortBehavior.SortState="{Binding ListView.SortState}"
+					ext:DataGridColumnWidthBehavior.ColumnWidths="{Binding ListView.ColumnWidths}"
 				>
-					<DataBox.Styles>
+					<DataGrid.Styles>
 						<Style Selector="TextBlock">
 							<Setter Property="Margin" Value="3 0 0 0" />
 						</Style>
-					</DataBox.Styles>
+					</DataGrid.Styles>
 
-					<DataBox.Columns>
-						<DataBoxTemplateColumn
+					<DataGrid.Columns>
+						<DataGridTemplateColumn
 							Header=""
-							ColumnName="Color"
-							InitialWidth="16"
+							SortMemberPath="Color"
+							Width="16"
 						>
 							<DataTemplate>
 								<Border
-									BorderBrush="{DynamicResource MesenBlackBorderColor}"
+									BorderBrush="{DynamicResource NexenBlackBorderColor}"
 									BorderThickness="1"
 									Background="{Binding Color, Converter={StaticResource ArgbColorToBrushConverter}, DataType={x:Type dvm:DebugEventViewModel}}"
 									Width="12"
 									Height="12"
 								/>
 							</DataTemplate>
-						</DataBoxTemplateColumn>
-						<DataBoxTextColumn Header="{l:Translate colScanline}" ColumnName="Scanline" InitialWidth="88" Binding="{Binding Scanline, DataType={x:Type dvm:DebugEventViewModel}}" />
-						<DataBoxTextColumn Header="{l:Translate colCycle}" ColumnName="Cycle" InitialWidth="77" Binding="{Binding Cycle, DataType={x:Type dvm:DebugEventViewModel}}" />
-						<DataBoxTextColumn Header="{l:Translate colPc}" ColumnName="ProgramCounter" InitialWidth="62" Binding="{Binding ProgramCounter, DataType={x:Type dvm:DebugEventViewModel}}" />
-						<DataBoxTextColumn Header="{l:Translate colType}" ColumnName="Type" InitialWidth="77" Binding="{Binding Type, DataType={x:Type dvm:DebugEventViewModel}}" />
-						<DataBoxTextColumn Header="{l:Translate colAddress}" ColumnName="Address" InitialWidth="68" Binding="{Binding Address, DataType={x:Type dvm:DebugEventViewModel}}" />
-						<DataBoxTextColumn Header="{l:Translate colValue}" ColumnName="Value" InitialWidth="50" Binding="{Binding Value, DataType={x:Type dvm:DebugEventViewModel}}" />
-						<DataBoxTextColumn Header="{l:Translate colDetails}" CanUserSort="False" InitialWidth="416" Binding="{Binding Details, DataType={x:Type dvm:DebugEventViewModel}}" />
-					</DataBox.Columns>
-				</DataBox>
+						</DataGridTemplateColumn>
+						<DataGridTextColumn Header="{l:Translate colScanline}" SortMemberPath="Scanline" Width="88" Binding="{Binding Scanline, DataType={x:Type dvm:DebugEventViewModel}}" IsReadOnly="True" />
+						<DataGridTextColumn Header="{l:Translate colCycle}" SortMemberPath="Cycle" Width="77" Binding="{Binding Cycle, DataType={x:Type dvm:DebugEventViewModel}}" IsReadOnly="True" />
+						<DataGridTextColumn Header="{l:Translate colPc}" SortMemberPath="ProgramCounter" Width="62" Binding="{Binding ProgramCounter, DataType={x:Type dvm:DebugEventViewModel}}" IsReadOnly="True" />
+						<DataGridTextColumn Header="{l:Translate colType}" SortMemberPath="Type" Width="77" Binding="{Binding Type, DataType={x:Type dvm:DebugEventViewModel}}" IsReadOnly="True" />
+						<DataGridTextColumn Header="{l:Translate colAddress}" SortMemberPath="Address" Width="68" Binding="{Binding Address, DataType={x:Type dvm:DebugEventViewModel}}" IsReadOnly="True" />
+						<DataGridTextColumn Header="{l:Translate colValue}" SortMemberPath="Value" Width="50" Binding="{Binding Value, DataType={x:Type dvm:DebugEventViewModel}}" IsReadOnly="True" />
+						<DataGridTextColumn Header="{l:Translate colDetails}" CanUserSort="False" Width="416" Binding="{Binding Details, DataType={x:Type dvm:DebugEventViewModel}}" IsReadOnly="True" />
+					</DataGrid.Columns>
+				</DataGrid>
 			</Border>
 		</Grid>
 	</DockPanel>

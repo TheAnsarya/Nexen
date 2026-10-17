@@ -3,16 +3,16 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:v="using:Mesen.Views"
-	xmlns:cfg="using:Mesen.Config"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:v="using:Nexen.Views"
+	xmlns:cfg="using:Nexen.Config"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:NesInputConfigViewModel"
-	x:Class="Mesen.Views.NesInputConfigView"
+	x:Class="Nexen.Views.NesInputConfigView"
 >
 	<Design.DataContext>
 		<vm:NesInputConfigViewModel />
@@ -163,7 +163,7 @@
 
 				<Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
 					<TextBlock Grid.Row="0" Text="{l:Translate lblLightDetectionRadius}" VerticalAlignment="Top" Margin="0 15 5 0" />
-					<c:MesenSlider
+					<c:NexenSlider
 						Margin="12 0 10 0"
 						HorizontalAlignment="Left"
 						Grid.Row="0"

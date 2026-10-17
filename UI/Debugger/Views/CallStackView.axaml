@@ -3,52 +3,61 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:vm="using:Mesen.Debugger.ViewModels"
-	xmlns:c="using:Mesen.Debugger.Controls"
-	xmlns:du="using:Mesen.Debugger.Utilities"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:vm="using:Nexen.Debugger.ViewModels"
+	xmlns:c="using:Nexen.Debugger.Controls"
+	xmlns:du="using:Nexen.Debugger.Utilities"
+	xmlns:ext="using:Nexen.Controls.DataGridExtensions"
 	mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="110"
 	VerticalAlignment="Stretch"
 	HorizontalAlignment="Stretch"
 	x:DataType="vm:CallStackViewModel"
-	x:Class="Mesen.Debugger.Views.CallStackView"
+	x:Class="Nexen.Debugger.Views.CallStackView"
 >
 	<Design.DataContext>
 		<vm:CallStackViewModel />
 	</Design.DataContext>
 
 	<UserControl.Styles>
-		<Style Selector="DataBoxCell">
+		<Style Selector="DataGridCell">
 			<Setter Property="Foreground" Value="{Binding Path=RowBrush, DataType={x:Type vm:StackInfo}}"/>
 			<Setter Property="FontStyle" Value="{Binding Path=RowStyle, DataType={x:Type vm:StackInfo}}"/>
 		</Style>
 	</UserControl.Styles>
 
-	<Border BorderThickness="0 1 0 0" BorderBrush="{StaticResource MesenGrayBorderColor}">
-		<DataBox
-			Items="{Binding CallStackContent}"
-			Selection="{Binding Selection}"
+	<Border BorderThickness="0 1 0 0" BorderBrush="{StaticResource NexenGrayBorderColor}">
+		<DataGrid
+			ItemsSource="{Binding CallStackContent}"
+			SelectedItem="{Binding Selection.SelectedItem}"
 			GridLinesVisibility="All"
-			CellDoubleClick="OnCellDoubleClick"
-			ColumnWidths="{Binding ColumnWidths}"
+			IsReadOnly="True"
+			CanUserSortColumns="False"
+			CanUserReorderColumns="False"
+			HeadersVisibility="Column"
+			SelectionMode="Single"
+			ext:DataGridCellClickBehavior.IsEnabled="True"
+			ext:DataGridColumnWidthBehavior.ColumnWidths="{Binding ColumnWidths}"
 		>
-			<DataBox.Columns>
-				<DataBoxTextColumn
+			<DataGrid.Columns>
+				<DataGridTextColumn
 					Header="{l:Translate colFunction}"
-					Binding="{Binding EntryPoint, DataType={x:Type vm:StackInfo}}"
-					InitialWidth="100"
+					Binding="{Binding EntryPoint}"
+					Width="100"
+					IsReadOnly="True"
 				/>
-				<DataBoxTextColumn
+				<DataGridTextColumn
 					Header="{l:Translate colPcAddress}"
-					Binding="{Binding PcAddress, DataType={x:Type vm:StackInfo}}"
-					InitialWidth="90"
+					Binding="{Binding PcAddress}"
+					Width="90"
+					IsReadOnly="True"
 				/>
-				<DataBoxTextColumn
+				<DataGridTextColumn
 					Header="{l:Translate colRomAddress}"
-					Binding="{Binding AbsAddress, DataType={x:Type vm:StackInfo}}"
-					InitialWidth="90"
+					Binding="{Binding AbsAddress}"
+					Width="90"
+					IsReadOnly="True"
 				/>
-			</DataBox.Columns>
-		</DataBox>
+			</DataGrid.Columns>
+		</DataGrid>
 	</Border>
 </UserControl>

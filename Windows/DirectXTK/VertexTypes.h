@@ -19,39 +19,34 @@
 
 #include <DirectXMath.h>
 
+namespace DirectX {
+// Vertex struct holding position, color, and texture mapping information.
+struct VertexPositionColorTexture {
+	VertexPositionColorTexture() = default;
 
-namespace DirectX
-{
-    // Vertex struct holding position, color, and texture mapping information.
-    struct VertexPositionColorTexture
-    {
-        VertexPositionColorTexture() = default;
+	VertexPositionColorTexture(const VertexPositionColorTexture&) = default;
+	VertexPositionColorTexture& operator=(const VertexPositionColorTexture&) = default;
 
-        VertexPositionColorTexture(const VertexPositionColorTexture&) = default;
-        VertexPositionColorTexture& operator=(const VertexPositionColorTexture&) = default;
+	VertexPositionColorTexture(VertexPositionColorTexture&&) = default;
+	VertexPositionColorTexture& operator=(VertexPositionColorTexture&&) = default;
 
-        VertexPositionColorTexture(VertexPositionColorTexture&&) = default;
-        VertexPositionColorTexture& operator=(VertexPositionColorTexture&&) = default;
+	VertexPositionColorTexture(XMFLOAT3 const& iposition, XMFLOAT4 const& icolor, XMFLOAT2 const& itextureCoordinate) noexcept
+	    : position(iposition),
+	      color(icolor),
+	      textureCoordinate(itextureCoordinate) {}
 
-        VertexPositionColorTexture(XMFLOAT3 const& iposition, XMFLOAT4 const& icolor, XMFLOAT2 const& itextureCoordinate) noexcept
-            : position(iposition),
-            color(icolor),
-            textureCoordinate(itextureCoordinate)
-        { }
+	VertexPositionColorTexture(FXMVECTOR iposition, FXMVECTOR icolor, FXMVECTOR itextureCoordinate) noexcept {
+		XMStoreFloat3(&this->position, iposition);
+		XMStoreFloat4(&this->color, icolor);
+		XMStoreFloat2(&this->textureCoordinate, itextureCoordinate);
+	}
 
-        VertexPositionColorTexture(FXMVECTOR iposition, FXMVECTOR icolor, FXMVECTOR itextureCoordinate) noexcept
-        {
-            XMStoreFloat3(&this->position, iposition);
-            XMStoreFloat4(&this->color, icolor);
-            XMStoreFloat2(&this->textureCoordinate, itextureCoordinate);
-        }
+	XMFLOAT3 position;
+	XMFLOAT4 color;
+	XMFLOAT2 textureCoordinate;
 
-        XMFLOAT3 position;
-        XMFLOAT4 color;
-        XMFLOAT2 textureCoordinate;
+	static constexpr unsigned int InputElementCount = 3;
+	static const D3D11_INPUT_ELEMENT_DESC InputElements[InputElementCount];
+};
 
-        static constexpr unsigned int InputElementCount = 3;
-        static const D3D11_INPUT_ELEMENT_DESC InputElements[InputElementCount];
-    };
-
-}
+} // namespace DirectX

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <algorithm>
 #include <iterator>
+#include <ranges>
 #include "VirtualFile.h"
 #include "Utilities/sha1.h"
 #include "Utilities/ArchiveReader.h"
@@ -12,61 +13,54 @@
 #include "Utilities/CRC32.h"
 
 const std::initializer_list<string> VirtualFile::RomExtensions = {
-	".nes", ".fds", ".qd", ".unif", ".unf", ".nsf", ".nsfe", ".studybox",
-	".sfc", ".swc", ".fig", ".smc", ".bs", ".st", ".spc",
-	".gb", ".gbc", ".gbx", ".gbs",
-	".pce", ".sgx", ".cue", ".hes",
-	".sms", ".gg", ".sg", ".col",
-	".gba",
-	".ws", ".wsc"
-};
+    ".nes", ".fds", ".qd", ".unif", ".unf", ".nsf", ".nsfe", ".studybox",
+    ".sfc", ".swc", ".fig", ".smc", ".bs", ".st", ".spc",
+    ".gb", ".gbc", ".gbx", ".gbs",
+    ".pce", ".sgx", ".cue", ".hes",
+    ".sms", ".gg", ".sg", ".col",
+    ".gba",
+    ".ws", ".wsc"};
 
-VirtualFile::VirtualFile()
-{
+VirtualFile::VirtualFile() {
 }
 
-VirtualFile::VirtualFile(const string& archivePath, const string innerFile)
-{
+VirtualFile::VirtualFile(const string& archivePath, const string innerFile) {
 	_path = archivePath;
 	_innerFile = innerFile;
 }
 
-VirtualFile::VirtualFile(const string& file)
-{
+VirtualFile::VirtualFile(const string& file) {
 	vector<string> tokens = StringUtilities::Split(file, '\x1');
 	_path = tokens[0];
-	if(tokens.size() > 1) {
+	if (tokens.size() > 1) {
 		_innerFile = tokens[1];
-		if(tokens.size() > 2) {
+		if (tokens.size() > 2) {
 			try {
 				_innerFileIndex = std::stoi(tokens[2]);
-			} catch(std::exception&) {}
+			} catch (std::exception&) {}
 		}
 	}
 }
 
-VirtualFile::VirtualFile(const void* buffer, size_t bufferSize, string fileName)
-{
+VirtualFile::VirtualFile(const void* buffer, size_t bufferSize, string fileName) {
 	_path = fileName;
 
 	_data.resize(bufferSize);
 	memcpy(_data.data(), buffer, bufferSize);
 }
 
-VirtualFile::VirtualFile(std::istream& input, string filePath)
-{
+VirtualFile::VirtualFile(std::istream& input, string filePath) {
 	_path = filePath;
 	FromStream(input, _data);
 }
 
-VirtualFile::operator std::string() const
-{
-	if(_innerFile.empty()) {
+VirtualFile::operator std::string() const {
+	if (_innerFile.empty()) {
 		return _path;
-	} else if(_path.empty()) {
+	} else if (_path.empty()) {
 		throw std::runtime_error("Cannot convert to string");
 	} else {
-		if(_innerFileIndex >= 0) {
+		if (_innerFileIndex >= 0) {
 			return _path + "\x1" + _innerFile + "\x1" + std::to_string(_innerFileIndex);
 		} else {
 			return _path + "\x1" + _innerFile;
@@ -74,8 +68,7 @@ VirtualFile::operator std::string() const
 	}
 }
 
-void VirtualFile::FromStream(std::istream& input, vector<uint8_t>& output)
-{
+void VirtualFile::FromStream(std::istream& input, vector<uint8_t>& output) {
 	input.seekg(0, std::ios::end);
 	uint32_t fileSize = (uint32_t)input.tellg();
 	input.seekg(0, std::ios::beg);
@@ -84,15 +77,14 @@ void VirtualFile::FromStream(std::istream& input, vector<uint8_t>& output)
 	input.read((char*)output.data(), fileSize);
 }
 
-void VirtualFile::LoadFile()
-{
-	if(_data.size() == 0) {
-		if(!_innerFile.empty()) {
+void VirtualFile::LoadFile() {
+	if (_data.size() == 0) {
+		if (!_innerFile.empty()) {
 			unique_ptr<ArchiveReader> reader = ArchiveReader::GetReader(_path);
-			if(reader) {
-				if(_innerFileIndex >= 0) {
+			if (reader) {
+				if (_innerFileIndex >= 0) {
 					vector<string> filelist = reader->GetFileList(VirtualFile::RomExtensions);
-					if((int32_t)filelist.size() > _innerFileIndex) {
+					if ((int32_t)filelist.size() > _innerFileIndex) {
 						reader->ExtractFile(filelist[_innerFileIndex], _data);
 					}
 				} else {
@@ -101,90 +93,81 @@ void VirtualFile::LoadFile()
 			}
 		} else {
 			ifstream input(_path, std::ios::in | std::ios::binary);
-			if(input.good()) {
+			if (input.good()) {
 				FromStream(input, _data);
 			}
 		}
 	}
 }
 
-bool VirtualFile::IsValid()
-{
-	if(_data.size() > 0) {
+bool VirtualFile::IsValid() {
+	if (_data.size() > 0) {
 		return true;
 	}
 
-	if(!_innerFile.empty()) {
+	if (!_innerFile.empty()) {
 		unique_ptr<ArchiveReader> reader = ArchiveReader::GetReader(_path);
-		if(reader) {
+		if (reader) {
 			vector<string> filelist = reader->GetFileList();
-			if(_innerFileIndex >= 0) {
-				if((int32_t)filelist.size() > _innerFileIndex) {
+			if (_innerFileIndex >= 0) {
+				if ((int32_t)filelist.size() > _innerFileIndex) {
 					return true;
 				}
 			} else {
-				return std::find(filelist.begin(), filelist.end(), _innerFile) != filelist.end();
+				return std::ranges::find(filelist, _innerFile) != filelist.end();
 			}
 		}
 	} else {
 		ifstream input(_path, std::ios::in | std::ios::binary);
-		if(input) {
+		if (input) {
 			return true;
 		}
 	}
 	return false;
 }
 
-bool VirtualFile::IsArchive()
-{
+bool VirtualFile::IsArchive() {
 	return !_innerFile.empty();
 }
 
-string VirtualFile::GetFilePath()
-{
+string VirtualFile::GetFilePath() {
 	return _path;
 }
 
-string VirtualFile::GetFolderPath()
-{
+string VirtualFile::GetFolderPath() {
 	return FolderUtilities::GetFolderName(_path);
 }
 
-string VirtualFile::GetFileName()
-{
+string VirtualFile::GetFileName() {
 	return _innerFile.empty() ? FolderUtilities::GetFilename(_path, true) : _innerFile;
 }
 
-string VirtualFile::GetFileExtension()
-{
+string VirtualFile::GetFileExtension() {
 	return FolderUtilities::GetExtension(GetFileName());
 }
 
-string VirtualFile::GetSha1Hash()
-{
+string VirtualFile::GetSha1Hash() {
 	LoadFile();
 	return SHA1::GetHash(_data);
 }
 
-uint32_t VirtualFile::GetCrc32()
-{
+uint32_t VirtualFile::GetCrc32() {
 	LoadFile();
 	return CRC32::GetCRC(_data);
 }
 
-size_t VirtualFile::GetSize()
-{
-	if(_data.size() > 0) {
+size_t VirtualFile::GetSize() {
+	if (_data.size() > 0) {
 		return _data.size();
 	} else {
-		if(_fileSize >= 0) {
+		if (_fileSize >= 0) {
 			return _fileSize;
-		} else if(IsArchive()) {
+		} else if (IsArchive()) {
 			LoadFile();
 			return _data.size();
 		} else {
 			ifstream input(_path, std::ios::in | std::ios::binary);
-			if(input) {
+			if (input) {
 				input.seekg(0, std::ios::end);
 				_fileSize = (int64_t)input.tellg();
 				return _fileSize;
@@ -194,22 +177,21 @@ size_t VirtualFile::GetSize()
 	}
 }
 
-bool VirtualFile::CheckFileSignature(vector<string> signatures, bool loadArchives)
-{
+bool VirtualFile::CheckFileSignature(const vector<string>& signatures, bool loadArchives) {
 	vector<uint8_t> partialData;
 
-	if(_data.empty()) {
-		if(loadArchives) {
+	if (_data.empty()) {
+		if (loadArchives) {
 			LoadFile();
 		} else {
-			if(!_innerFile.empty()) {
-				//Don't check/load archives
+			if (!_innerFile.empty()) {
+				// Don't check/load archives
 				return false;
 			}
 
 			ifstream input(_path, std::ios::in | std::ios::binary);
-			if(input.good()) {
-				//Only load the first 512 bytes of the file
+			if (input.good()) {
+				// Only load the first 512 bytes of the file
 				partialData.resize(512, 0);
 				input.read((char*)partialData.data(), 512);
 			}
@@ -217,9 +199,9 @@ bool VirtualFile::CheckFileSignature(vector<string> signatures, bool loadArchive
 	}
 
 	vector<uint8_t>& data = _data.empty() ? partialData : _data;
-	for(const string& signature : signatures) {
-		if(data.size() >= signature.size()) {
-			if(memcmp(data.data(), signature.c_str(), signature.size()) == 0) {
+	for (const string& signature : signatures) {
+		if (data.size() >= signature.size()) {
+			if (memcmp(data.data(), signature.c_str(), signature.size()) == 0) {
 				return true;
 			}
 		}
@@ -227,24 +209,21 @@ bool VirtualFile::CheckFileSignature(vector<string> signatures, bool loadArchive
 	return false;
 }
 
-void VirtualFile::InitChunks()
-{
-	if(!_useChunks) {
+void VirtualFile::InitChunks() {
+	if (!_useChunks) {
 		_useChunks = true;
 		_chunks.resize(GetSize() / VirtualFile::ChunkSize + 1);
 	}
 }
 
-vector<uint8_t>& VirtualFile::GetData()
-{
+vector<uint8_t>& VirtualFile::GetData() {
 	LoadFile();
 	return _data;
 }
 
-bool VirtualFile::ReadFile(vector<uint8_t>& out)
-{
+bool VirtualFile::ReadFile(vector<uint8_t>& out) {
 	LoadFile();
-	if(_data.size() > 0) {
+	if (_data.size() > 0) {
 		out.resize(_data.size(), 0);
 		std::copy(_data.begin(), _data.end(), out.begin());
 		return true;
@@ -252,37 +231,34 @@ bool VirtualFile::ReadFile(vector<uint8_t>& out)
 	return false;
 }
 
-bool VirtualFile::ReadFile(std::stringstream& out)
-{
+bool VirtualFile::ReadFile(std::stringstream& out) {
 	LoadFile();
-	if(_data.size() > 0) {
+	if (_data.size() > 0) {
 		out.write((char*)_data.data(), _data.size());
 		return true;
 	}
 	return false;
 }
 
-bool VirtualFile::ReadFile(uint8_t* out, uint32_t expectedSize)
-{
+bool VirtualFile::ReadFile(uint8_t* out, uint32_t expectedSize) {
 	LoadFile();
-	if(_data.size() == expectedSize) {
+	if (_data.size() == expectedSize) {
 		memcpy(out, _data.data(), _data.size());
 		return true;
 	}
 	return false;
 }
 
-uint8_t VirtualFile::ReadByte(uint32_t offset)
-{
+uint8_t VirtualFile::ReadByte(uint32_t offset) {
 	InitChunks();
-	if(offset < 0 || offset > GetSize()) {
-		//Out of bounds
+	if (offset < 0 || offset > GetSize()) {
+		// Out of bounds
 		return 0;
 	}
 
 	uint32_t chunkId = offset / VirtualFile::ChunkSize;
 	uint32_t chunkStart = chunkId * VirtualFile::ChunkSize;
-	if(_chunks[chunkId].size() == 0) {
+	if (_chunks[chunkId].size() == 0) {
 		ifstream input(_path, std::ios::in | std::ios::binary);
 		input.seekg(chunkStart, std::ios::beg);
 
@@ -292,26 +268,25 @@ uint8_t VirtualFile::ReadByte(uint32_t offset)
 	return _chunks[chunkId][offset - chunkStart];
 }
 
-bool VirtualFile::ApplyPatch(VirtualFile& patch)
-{
-	//Apply patch file
+bool VirtualFile::ApplyPatch(VirtualFile& patch) {
+	// Apply patch file
 	bool result = false;
-	if(IsValid() && patch.IsValid()) {
+	if (IsValid() && patch.IsValid()) {
 		patch.LoadFile();
 		LoadFile();
-		if(patch._data.size() >= 5) {
+		if (patch._data.size() >= 5) {
 			vector<uint8_t> patchedData;
 			std::stringstream ss;
-			patch.ReadFile(ss);
+			(void)patch.ReadFile(ss);
 
-			if(memcmp(patch._data.data(), "PATCH", 5) == 0) {
+			if (memcmp(patch._data.data(), "PATCH", 5) == 0) {
 				result = IpsPatcher::PatchBuffer(ss, _data, patchedData);
-			} else if(memcmp(patch._data.data(), "UPS1", 4) == 0) {
+			} else if (memcmp(patch._data.data(), "UPS1", 4) == 0) {
 				result = UpsPatcher::PatchBuffer(ss, _data, patchedData);
-			} else if(memcmp(patch._data.data(), "BPS1", 4) == 0) {
+			} else if (memcmp(patch._data.data(), "BPS1", 4) == 0) {
 				result = BpsPatcher::PatchBuffer(ss, _data, patchedData);
 			}
-			if(result) {
+			if (result) {
 				_data = patchedData;
 			}
 		}

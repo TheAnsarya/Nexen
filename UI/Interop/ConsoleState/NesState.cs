@@ -1,18 +1,16 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Mesen.Interop;
+namespace Nexen.Interop;
 
-public struct NesPpuStatusFlags
-{
+public struct NesPpuStatusFlags {
 	[MarshalAs(UnmanagedType.I1)] public bool SpriteOverflow;
 	[MarshalAs(UnmanagedType.I1)] public bool Sprite0Hit;
 	[MarshalAs(UnmanagedType.I1)] public bool VerticalBlank;
 }
 
-public struct NesPpuMaskFlags
-{
+public struct NesPpuMaskFlags {
 	[MarshalAs(UnmanagedType.I1)] public bool Grayscale;
 	[MarshalAs(UnmanagedType.I1)] public bool BackgroundMask;
 	[MarshalAs(UnmanagedType.I1)] public bool SpriteMask;
@@ -23,8 +21,7 @@ public struct NesPpuMaskFlags
 	[MarshalAs(UnmanagedType.I1)] public bool IntensifyBlue;
 }
 
-public struct NesPpuControlFlags
-{
+public struct NesPpuControlFlags {
 	public UInt16 BackgroundPatternAddr;
 	public UInt16 SpritePatternAddr;
 	[MarshalAs(UnmanagedType.I1)] public bool VerticalWrite;
@@ -33,8 +30,7 @@ public struct NesPpuControlFlags
 	[MarshalAs(UnmanagedType.I1)] public bool NmiOnVerticalBlank;
 }
 
-public struct NesPpuState : BaseState
-{
+public struct NesPpuState : BaseState {
 	public NesPpuStatusFlags StatusFlags;
 	public NesPpuMaskFlags Mask;
 	public NesPpuControlFlags Control;
@@ -55,8 +51,7 @@ public struct NesPpuState : BaseState
 };
 
 [Flags]
-public enum NesCpuFlags
-{
+public enum NesCpuFlags {
 	Carry = 0x01,
 	Zero = 0x02,
 	IrqDisable = 0x04,
@@ -66,16 +61,14 @@ public enum NesCpuFlags
 }
 
 [Flags]
-public enum NesIrqSources
-{
+public enum NesIrqSources {
 	External = 1,
 	FrameCounter = 2,
 	DMC = 4,
 	FdsDisk = 8,
 }
 
-public struct NesCpuState : BaseState
-{
+public struct NesCpuState : BaseState {
 	public UInt64 CycleCount;
 	public UInt16 PC;
 	public byte SP;
@@ -87,8 +80,7 @@ public struct NesCpuState : BaseState
 	[MarshalAs(UnmanagedType.I1)] public bool NMIFlag;
 };
 
-public struct NesState : BaseState
-{
+public struct NesState : BaseState {
 	public NesCpuState Cpu;
 	public NesPpuState Ppu;
 	public NesCartridgeState Cartridge;
@@ -96,16 +88,14 @@ public struct NesState : BaseState
 	public UInt32 ClockRate;
 }
 
-public enum NesPrgMemoryType
-{
+public enum NesPrgMemoryType {
 	PrgRom,
 	SaveRam,
 	WorkRam,
 	MapperRam,
 }
 
-public enum NesChrMemoryType
-{
+public enum NesChrMemoryType {
 	Default,
 	ChrRom,
 	ChrRam,
@@ -113,8 +103,7 @@ public enum NesChrMemoryType
 	MapperRam,
 }
 
-public enum NesMemoryAccessType
-{
+public enum NesMemoryAccessType {
 	Unspecified = -1,
 	NoAccess = 0x00,
 	Read = 0x01,
@@ -122,8 +111,7 @@ public enum NesMemoryAccessType
 	ReadWrite = 0x03
 }
 
-public enum MapperStateValueType
-{
+public enum MapperStateValueType {
 	None,
 	String,
 	Bool,
@@ -132,8 +120,7 @@ public enum MapperStateValueType
 	Number32
 }
 
-public struct MapperStateEntry
-{
+public struct MapperStateEntry {
 	public Int64 RawValue;
 	public MapperStateValueType Type;
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 40)] public byte[] Address;
@@ -143,9 +130,8 @@ public struct MapperStateEntry
 	public string GetAddress() { return ConvertString(Address); }
 	public string GetName() { return ConvertString(Name); }
 
-	public object? GetValue()
-	{
-		switch(Type) {
+	public object? GetValue() {
+		switch (Type) {
 			case MapperStateValueType.None: return null;
 
 			case MapperStateValueType.String: return ConvertString(Value);
@@ -155,30 +141,30 @@ public struct MapperStateEntry
 			case MapperStateValueType.Number16:
 			case MapperStateValueType.Number32:
 				Int64 value = 0;
-				for(int i = 0; i < 8; i++) {
+				for (int i = 0; i < 8; i++) {
 					value |= (Int64)Value[i] << (i * 8);
 				}
+
 				return value;
 		}
 
 		throw new Exception("Invalid value type");
 	}
 
-	private string ConvertString(byte[] stringArray)
-	{
+	private string ConvertString(byte[] stringArray) {
 		int length = 0;
-		for(int i = 0; i < 40; i++) {
-			if(stringArray[i] == 0) {
+		for (int i = 0; i < 40; i++) {
+			if (stringArray[i] == 0) {
 				length = i;
 				break;
 			}
 		}
+
 		return Encoding.UTF8.GetString(stringArray, 0, length);
 	}
 }
 
-public struct NesCartridgeState
-{
+public struct NesCartridgeState {
 	public UInt32 PrgRomSize;
 	public UInt32 ChrRomSize;
 	public UInt32 ChrRamSize;
@@ -216,8 +202,7 @@ public struct NesCartridgeState
 	public MapperStateEntry[] CustomEntries;
 }
 
-public enum NesMirroringType
-{
+public enum NesMirroringType {
 	Horizontal,
 	Vertical,
 	ScreenAOnly,
@@ -225,16 +210,14 @@ public enum NesMirroringType
 	FourScreens
 }
 
-public struct NesApuLengthCounterState
-{
+public struct NesApuLengthCounterState {
 	[MarshalAs(UnmanagedType.I1)]
 	public bool Halt;
 	public byte Counter;
 	public byte ReloadValue;
 }
 
-public struct NesApuEnvelopeState
-{
+public struct NesApuEnvelopeState {
 	[MarshalAs(UnmanagedType.I1)]
 	public bool StartFlag;
 	[MarshalAs(UnmanagedType.I1)]
@@ -246,8 +229,7 @@ public struct NesApuEnvelopeState
 	public byte Volume;
 }
 
-public struct NesApuSquareState
-{
+public struct NesApuSquareState {
 	public byte Duty;
 	public byte DutyPosition;
 	public UInt16 Period;
@@ -269,8 +251,7 @@ public struct NesApuSquareState
 	public NesApuEnvelopeState Envelope;
 }
 
-public struct NesApuTriangleState
-{
+public struct NesApuTriangleState {
 	public UInt16 Period;
 	public UInt16 Timer;
 	public byte SequencePosition;
@@ -286,8 +267,7 @@ public struct NesApuTriangleState
 	public NesApuLengthCounterState LengthCounter;
 }
 
-public struct NesApuNoiseState
-{
+public struct NesApuNoiseState {
 	public UInt16 Period;
 	public UInt16 Timer;
 	public UInt16 ShiftRegister;
@@ -303,8 +283,7 @@ public struct NesApuNoiseState
 	public NesApuEnvelopeState Envelope;
 }
 
-public struct NesApuDmcState
-{
+public struct NesApuDmcState {
 	public double SampleRate;
 	public UInt16 SampleAddr;
 	public UInt16 NextSampleAddr;
@@ -321,8 +300,7 @@ public struct NesApuDmcState
 	public byte OutputVolume;
 }
 
-public struct NesApuFrameCounterState
-{
+public struct NesApuFrameCounterState {
 	[MarshalAs(UnmanagedType.I1)]
 	public bool FiveStepMode;
 	public byte SequencePosition;
@@ -330,8 +308,7 @@ public struct NesApuFrameCounterState
 	public bool IrqEnabled;
 }
 
-public struct NesApuState
-{
+public struct NesApuState {
 	public NesApuSquareState Square1;
 	public NesApuSquareState Square2;
 	public NesApuTriangleState Triangle;
@@ -340,16 +317,14 @@ public struct NesApuState
 	public NesApuFrameCounterState FrameCounter;
 }
 
-public struct NtExtConfig
-{
+public struct NtExtConfig {
 	public UInt16 SourceOffset;
 	[MarshalAs(UnmanagedType.I1)] public bool AttrExtMode;
 	[MarshalAs(UnmanagedType.I1)] public bool BgExtMode;
 	[MarshalAs(UnmanagedType.I1)] public bool FillMode;
 };
 
-public struct ExtModeConfig
-{
+public struct ExtModeConfig {
 	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
 	public NtExtConfig[] Nametables;
 
@@ -364,7 +339,6 @@ public struct ExtModeConfig
 	public byte[] ExtRam;
 };
 
-public struct NesPpuToolsState : BaseState
-{
+public struct NesPpuToolsState : BaseState {
 	public ExtModeConfig ExtConfig;
 }

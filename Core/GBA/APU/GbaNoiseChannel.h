@@ -5,8 +5,7 @@
 
 class GbaApu;
 
-class GbaNoiseChannel final : public ISerializable
-{
+class GbaNoiseChannel final : public ISerializable {
 private:
 	GbaNoiseState _state = {};
 	GbaApu* _apu = nullptr;

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include "Debugger/DebugTypes.h"
 #include "Debugger/IDebugger.h"
@@ -26,8 +26,7 @@ class NesMemoryManager;
 
 enum class MemoryOperationType;
 
-class NesDebugger final : public IDebugger
-{
+class NesDebugger final : public IDebugger {
 	Debugger* _debugger;
 	Emulator* _emu;
 	Disassembler* _disassembler;
@@ -93,7 +92,7 @@ public:
 	BreakpointManager* GetBreakpointManager() override;
 	ITraceLogger* GetTraceLogger() override;
 	PpuTools* GetPpuTools() override;
-	bool SaveRomToDisk(string filename, bool saveAsIps, CdlStripOption stripOption);
+	bool SaveRomToDisk(const string& filename, bool saveAsIps, CdlStripOption stripOption) override;
 	void GetRomHeader(uint8_t* headerData, uint32_t& size) override;
 	CallstackManager* GetCallstackManager() override;
 	IAssembler* GetAssembler() override;
@@ -104,10 +103,8 @@ public:
 	void SetPpuState(BaseState& state) override;
 };
 
-namespace NesCdlFlags
-{
-	enum NesCdlFlags : uint8_t
-	{
-		PcmData = 0x80
-	};
-}
+namespace NesCdlFlags {
+enum NesCdlFlags : uint8_t {
+	PcmData = 0x80
+};
+} // namespace NesCdlFlags

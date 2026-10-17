@@ -1,30 +1,34 @@
-<UserControl
+﻿<UserControl
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:vm="using:Mesen.ViewModels"
-	xmlns:c="using:Mesen.Controls"
-	xmlns:cfg="using:Mesen.Config"
-	xmlns:l="using:Mesen.Localization"
+	xmlns:vm="using:Nexen.ViewModels"
+	xmlns:c="using:Nexen.Controls"
+	xmlns:cfg="using:Nexen.Config"
+	xmlns:l="using:Nexen.Localization"
 	mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="650"
 	VerticalAlignment="Top"
 	x:DataType="vm:MainMenuViewModel"
-	x:Class="Mesen.Views.MainMenuView"
+	x:Class="Nexen.Views.MainMenuView"
 >
 	<Design.DataContext>
 		<vm:MainMenuViewModel />
 	</Design.DataContext>
 
-	<DockPanel Background="{DynamicResource MesenMenuBackground}">
-		<c:MesenMenu Name="ActionMenu" DockPanel.Dock="Left">
+	<DockPanel Background="{DynamicResource NexenMenuBackground}">
+		<c:NexenMenu Name="LanguageMenu" DockPanel.Dock="Right">
+			<MenuItem Name="mnuLanguageRoot" ToolTip.Tip="{l:Translate mnuLanguageSelector}" />
+		</c:NexenMenu>
+
+		<c:NexenMenu Name="ActionMenu" DockPanel.Dock="Left">
 			<MenuItem Header="{l:Translate mnuFile}" ItemsSource="{Binding FileMenuItems}" />
 			<MenuItem Header="{l:Translate mnuGame}" ItemsSource="{Binding GameMenuItems}" />
 			<MenuItem Header="{l:Translate mnuOptions}" ItemsSource="{Binding OptionsMenuItems}" />
 			<MenuItem Header="{l:Translate mnuTools}" ItemsSource="{Binding ToolsMenuItems}" SubmenuOpened="mnuTools_Opened" />
 			<MenuItem Header="{l:Translate mnuDebug}" ItemsSource="{Binding DebugMenuItems}" />
 			<MenuItem Header="{l:Translate mnuHelp}" ItemsSource="{Binding HelpMenuItems}" />
-		</c:MesenMenu>
+		</c:NexenMenu>
 		<Panel Name="MenuPanel" />
 	</DockPanel>
 </UserControl>

@@ -16,8 +16,41 @@ class WsDmaController;
 class WsEeprom;
 enum class WsModel : uint8_t;
 
-class WsConsole final : public IConsole
-{
+/// <summary>
+/// WonderSwan / WonderSwan Color console emulator.
+/// Implements Bandai's handheld console with portrait/landscape display rotation.
+/// </summary>
+/// <remarks>
+/// **System Variants:**
+/// - **WonderSwan**: Original monochrome (8 shades)
+/// - **WonderSwan Color**: 241 colors on screen from 4096 palette
+/// - **SwanCrystal**: Improved WonderSwan Color with TFT display
+///
+/// **Hardware Specifications:**
+/// - **CPU**: NEC V30MZ (80186 compatible) @ 3.072 MHz
+/// - **Display**: 224×144 pixels (rotatable)
+/// - **Memory**: 16KB internal RAM (64KB on Color)
+/// - **Storage**: EEPROM for saves (internal + cartridge)
+///
+/// **Video Features:**
+/// - 4 background layers with scrolling
+/// - 128 sprites
+/// - Wavetable-based sound with 4 channels
+/// - Portrait/landscape screen rotation
+///
+/// **Audio:**
+/// - 4 wavetable channels (32 samples each)
+/// - Channel 2: Optional PCM voice mode
+/// - Channel 3: Optional frequency sweep
+/// - Channel 4: Optional noise mode
+/// - HyperVoice: DMA-driven 8-bit PCM (Color only)
+///
+/// **Unique Features:**
+/// - Orientation sensor for automatic screen rotation
+/// - Low power consumption design
+/// - Cartridge EEPROM for saves
+/// </remarks>
+class WsConsole final : public IConsole {
 private:
 	Emulator* _emu = nullptr;
 	unique_ptr<WsCpu> _cpu;
@@ -52,24 +85,24 @@ private:
 
 	WsModel _model = {};
 	bool _verticalMode = false;
-	
+
 	void InitPostBootRomState();
 
 public:
 	WsConsole(Emulator* emu);
 	~WsConsole();
 
-	static vector<string> GetSupportedExtensions() { return { ".ws", ".wsc" }; }
-	static vector<string> GetSupportedSignatures() { return { }; }
+	[[nodiscard]] static vector<string> GetSupportedExtensions() { return {".ws", ".wsc"}; }
+	[[nodiscard]] static vector<string> GetSupportedSignatures() { return {}; }
 
 	LoadRomResult LoadRom(VirtualFile& romFile) override;
 	void RunFrame() override;
 
 	void GetScreenRotationOverride(uint32_t& rotation) override;
-	bool IsColorMode();
-	bool IsPowerOff();
-	bool IsVerticalMode();
-	WsModel GetModel();
+	[[nodiscard]] bool IsColorMode();
+	[[nodiscard]] bool IsPowerOff();
+	[[nodiscard]] bool IsVerticalMode();
+	[[nodiscard]] WsModel GetModel();
 
 	void ProcessEndOfFrame();
 
@@ -77,29 +110,30 @@ public:
 	void LoadBattery();
 	void SaveBattery() override;
 
-	BaseControlManager* GetControlManager() override;
-	ConsoleRegion GetRegion() override;
-	ConsoleType GetConsoleType() override;
-	vector<CpuType> GetCpuTypes() override;
-	uint64_t GetMasterClock() override;
-	uint32_t GetMasterClockRate() override;
-	double GetFps() override;
-	BaseVideoFilter* GetVideoFilter(bool getDefaultFilter) override;
-	PpuFrameInfo GetPpuFrame() override;
-	RomFormat GetRomFormat() override;
-	AudioTrackInfo GetAudioTrackInfo() override;
+	[[nodiscard]] BaseControlManager* GetControlManager() override;
+	[[nodiscard]] ConsoleRegion GetRegion() override;
+	[[nodiscard]] ConsoleType GetConsoleType() override;
+	[[nodiscard]] vector<CpuType> GetCpuTypes() override;
+	[[nodiscard]] uint64_t GetMasterClock() override;
+	[[nodiscard]] uint32_t GetMasterClockRate() override;
+	[[nodiscard]] double GetFps() override;
+	[[nodiscard]] BaseVideoFilter* GetVideoFilter(bool getDefaultFilter) override;
+	[[nodiscard]] PpuFrameInfo GetPpuFrame() override;
+	[[nodiscard]] RomFormat GetRomFormat() override;
+	[[nodiscard]] AudioTrackInfo GetAudioTrackInfo() override;
 	void ProcessAudioPlayerAction(AudioPlayerActionParams p) override;
-	AddressInfo GetAbsoluteAddress(uint32_t relAddr);
-	AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) override;
-	AddressInfo GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) override;
-	
-	WsState GetState();
+	[[nodiscard]] AddressInfo GetAbsoluteAddress(uint32_t relAddr);
+	[[nodiscard]] AddressInfo GetAbsoluteAddress(AddressInfo& relAddress) override;
+	[[nodiscard]] AddressInfo GetPcAbsoluteAddress() override;
+	[[nodiscard]] AddressInfo GetRelativeAddress(AddressInfo& absAddress, CpuType cpuType) override;
+
+	[[nodiscard]] WsState GetState();
 	void GetConsoleState(BaseState& state, ConsoleType consoleType) override;
 
-	WsCpu* GetCpu() { return _cpu.get(); }
-	WsPpu* GetPpu() { return _ppu.get(); }
-	WsApu* GetApu() { return _apu.get(); }
-	WsMemoryManager* GetMemoryManager() { return _memoryManager.get(); }
+	[[nodiscard]] WsCpu* GetCpu() { return _cpu.get(); }
+	[[nodiscard]] WsPpu* GetPpu() { return _ppu.get(); }
+	[[nodiscard]] WsApu* GetApu() { return _apu.get(); }
+	[[nodiscard]] WsMemoryManager* GetMemoryManager() { return _memoryManager.get(); }
 
 	void Serialize(Serializer& s) override;
 };

@@ -2,8 +2,7 @@
 #include "pch.h"
 #include "NES/BaseMapper.h"
 
-class IremG101 : public BaseMapper
-{
+class IremG101 : public BaseMapper {
 protected:
 	uint16_t GetPrgPageSize() override { return 0x2000; }
 	uint16_t GetChrPageSize() override { return 0x0400; }
@@ -11,23 +10,21 @@ protected:
 	uint8_t _prgRegs[2] = {};
 	uint8_t _prgMode = 0;
 
-	void InitMapper() override
-	{
+	void InitMapper() override {
 		_prgRegs[0] = _prgRegs[1] = 0;
 		_prgMode = 0;
 
 		SelectPrgPage(2, -2);
 		SelectPrgPage(3, -1);
 
-		if(_romInfo.SubMapperID == 1) {
-			//032: 1 Major League
-			//CIRAM A10 is tied high (fixed one-screen mirroring) and PRG banking style is fixed as 8+8+16F 
+		if (_romInfo.SubMapperID == 1) {
+			// 032: 1 Major League
+			// CIRAM A10 is tied high (fixed one-screen mirroring) and PRG banking style is fixed as 8+8+16F
 			SetMirroringType(MirroringType::ScreenAOnly);
 		}
 	}
 
-	void Serialize(Serializer& s) override
-	{
+	void Serialize(Serializer& s) override {
 		BaseMapper::Serialize(s);
 
 		SV(_prgMode);
@@ -35,9 +32,8 @@ protected:
 		SV(_prgRegs[1]);
 	}
 
-	void UpdatePrgMode()
-	{
-		if(_prgMode == 0) {
+	void UpdatePrgMode() {
+		if (_prgMode == 0) {
 			SelectPrgPage(0, _prgRegs[0]);
 			SelectPrgPage(1, _prgRegs[1]);
 			SelectPrgPage(2, -2);
@@ -50,16 +46,15 @@ protected:
 		}
 	}
 
-	void WriteRegister(uint16_t addr, uint8_t value) override
-	{
-		switch(addr & 0xF000) {
+	void WriteRegister(uint16_t addr, uint8_t value) override {
+		switch (addr & 0xF000) {
 			case 0x8000:
 				_prgRegs[0] = value & 0x1F;
 				SelectPrgPage(_prgMode == 0 ? 0 : 2, _prgRegs[0]);
 				break;
 			case 0x9000:
 				_prgMode = (value & 0x02) >> 1;
-				if(_romInfo.SubMapperID == 1) {
+				if (_romInfo.SubMapperID == 1) {
 					_prgMode = 0;
 				}
 				UpdatePrgMode();

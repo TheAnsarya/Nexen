@@ -8,8 +8,7 @@
 class Emulator;
 class NesConsole;
 
-class Epsm : public IAudioProvider, public INesMemoryHandler, public ISerializable
-{
+class Epsm : public IAudioProvider, public INesMemoryHandler, public ISerializable {
 private:
 	Emulator* _emu = nullptr;
 	NesConsole* _console = nullptr;

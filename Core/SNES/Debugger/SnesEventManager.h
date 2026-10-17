@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <memory>
 #include "Debugger/DebugTypes.h"
 #include "Debugger/BaseEventManager.h"
 #include "Utilities/SimpleLock.h"
@@ -13,8 +14,7 @@ class Debugger;
 class SnesDmaController;
 class SnesMemoryManager;
 
-struct SnesEventViewerConfig : public BaseEventViewerConfig
-{
+struct SnesEventViewerConfig : public BaseEventViewerConfig {
 	EventViewerCategoryCfg Irq;
 	EventViewerCategoryCfg Nmi;
 	EventViewerCategoryCfg MarkedBreakpoints;
@@ -40,23 +40,22 @@ struct SnesEventViewerConfig : public BaseEventViewerConfig
 	uint8_t ShowDmaChannels[8];
 };
 
-class SnesEventManager final : public BaseEventManager
-{
+class SnesEventManager final : public BaseEventManager {
 private:
 	static constexpr int ScanlineWidth = 1364 / 2;
 
 	SnesEventViewerConfig _config;
 
-	SnesCpu * _cpu;
-	SnesPpu *_ppu;
+	SnesCpu* _cpu;
+	SnesPpu* _ppu;
 	SnesMemoryManager* _memoryManager;
-	SnesDmaController *_dmaController;
-	Debugger *_debugger;
+	SnesDmaController* _dmaController;
+	Debugger* _debugger;
 
 	bool _overscanMode = false;
 	bool _useHighResOutput = false;
 	uint32_t _scanlineCount = 262;
-	uint16_t *_ppuBuffer = nullptr;
+	std::unique_ptr<uint16_t[]> _ppuBuffer;
 
 protected:
 	void ConvertScanlineCycleToRowColumn(int32_t& x, int32_t& y) override;
@@ -64,12 +63,12 @@ protected:
 	bool ShowPreviousFrameEvents() override;
 
 public:
-	SnesEventManager(Debugger *debugger, SnesCpu *cpu, SnesPpu *ppu, SnesMemoryManager *memoryManager, SnesDmaController *dmaController);
+	SnesEventManager(Debugger* debugger, SnesCpu* cpu, SnesPpu* ppu, SnesMemoryManager* memoryManager, SnesDmaController* dmaController);
 	~SnesEventManager();
 
-	void AddEvent(DebugEventType type, MemoryOperationInfo &operation, int32_t breakpointId = -1) override;
+	void AddEvent(DebugEventType type, MemoryOperationInfo& operation, int32_t breakpointId = -1) override;
 	void AddEvent(DebugEventType type) override;
-	
+
 	EventViewerCategoryCfg GetEventConfig(DebugEventInfo& evt) override;
 
 	uint32_t TakeEventSnapshot(bool forAutoRefresh) override;

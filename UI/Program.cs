@@ -1,125 +1,408 @@
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.ReactiveUI;
 using Avalonia.Media;
-using Mesen.Config;
-using Mesen.Utilities;
-using System;
-using System.Linq;
-using System.IO;
-using System.IO.Compression;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using Mesen.Interop;
+using ReactiveUI.Builder;
+using Nexen.Config;
+using Nexen.Interop;
+using Nexen.Utilities;
 
-namespace Mesen
-{
-	class Program
-	{
-		// Initialization code. Don't use any Avalonia, third-party APIs or any
-		// SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-		// yet and stuff might break.
+namespace Nexen;
+class Program {
+	// Initialization code. Don't use any Avalonia, third-party APIs or any
+	// SynchronizationContext-reliant code before AppMain is called: things aren't initialized
+	// yet and stuff might break.
+	private static bool _loggedNexenCoreLoadPath;
+	private static bool _linuxDbusImeFallbackApplied;
 
-		public static string OriginalFolder { get; private set; }
-		public static string[] CommandLineArgs { get; private set; } = Array.Empty<string>();
+	public static string OriginalFolder { get; private set; }
+	public static string[] CommandLineArgs { get; private set; } = [];
 
-		public static string ExePath => Process.GetCurrentProcess().MainModule?.FileName ?? Path.Join(Path.GetDirectoryName(AppContext.BaseDirectory), "Mesen.exe");
-
-		static Program()
-		{
-			try {
-				Program.OriginalFolder = Environment.CurrentDirectory;
-			} catch {
-				Program.OriginalFolder = Path.GetDirectoryName(ExePath) ?? "";
-			}
+	private static bool ShouldEnableX11Ime(bool forceDisableIme) {
+		if (forceDisableIme) {
+			return false;
 		}
 
-		[STAThread]
-		public static int Main(string[] args)
-		{
-			if(!System.Diagnostics.Debugger.IsAttached) {
+		string? envValue = Environment.GetEnvironmentVariable("NEXEN_X11_ENABLE_IME");
+		if (string.IsNullOrWhiteSpace(envValue)) {
+			return true;
+		}
+
+		envValue = envValue.Trim();
+		return envValue == "1"
+			|| envValue.Equals("true", StringComparison.OrdinalIgnoreCase)
+			|| envValue.Equals("yes", StringComparison.OrdinalIgnoreCase)
+			|| envValue.Equals("on", StringComparison.OrdinalIgnoreCase);
+	}
+
+	private static bool IsLinuxDbusImeTypeLoad(TypeLoadException ex) {
+		string message = ex.ToString();
+		return message.Contains("Tmds.DBus.Protocol.Connection", StringComparison.Ordinal)
+			|| message.Contains("Avalonia.FreeDesktop.DBusIme", StringComparison.Ordinal);
+	}
+
+	private static void StartDesktopLifetimeWithLinuxFallback(string[] args) {
+		try {
+			BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
+		} catch (TypeLoadException ex) when (OperatingSystem.IsLinux() && !_linuxDbusImeFallbackApplied && IsLinuxDbusImeTypeLoad(ex)) {
+			_linuxDbusImeFallbackApplied = true;
+			Log.Warn("Detected Linux DBus IME type-load mismatch. Retrying Avalonia startup with X11 IME disabled.");
+			BuildAvaloniaApp(forceDisableIme: true).StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
+		}
+	}
+
+	public static string ExePath {
+		get {
+			// On Linux, Process.MainModule triggers procfs parsing which requires ICU/globalization
+			// to be initialized. Use Environment.ProcessPath first (available since .NET 6) as it
+			// reads /proc/self/exe directly without globalization dependencies.
+			if (Environment.ProcessPath is { Length: > 0 } processPath) {
+				return processPath;
+			}
+
+			try {
+				if (Process.GetCurrentProcess().MainModule?.FileName is { Length: > 0 } mainModule) {
+					return mainModule;
+				}
+			} catch (Exception ex) {
+				// MainModule can throw on Linux if globalization is misconfigured
+				Debug.WriteLine($"Program.ExePath: MainModule access failed: {ex.Message}");
+			}
+
+			return Path.Join(Path.GetDirectoryName(AppContext.BaseDirectory), RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Nexen.exe" : "Nexen");
+		}
+	}
+
+	static Program() {
+		try {
+			Program.OriginalFolder = Environment.CurrentDirectory;
+		} catch (Exception ex) {
+			Debug.WriteLine($"Program static ctor: CurrentDirectory access failed: {ex.Message}");
+			Program.OriginalFolder = Path.GetDirectoryName(ExePath) ?? "";
+		}
+	}
+
+	[STAThread]
+	public static int Main(string[] args) {
+		// Initialize console-only logging first (no HomeFolder access, no files created)
+		Log.Initialize();
+		Log.Info($"Nexen starting with args: {string.Join(" ", args)}");
+
+		// Set up global exception handlers
+		AppDomain.CurrentDomain.UnhandledException += (sender, e) => {
+			// On Linux, Tmds.DBus.Protocol's background handler can race against the
+			// already-disposed Avalonia dispatcher during exit, throwing TaskCanceledException.
+			// This is benign — log it as a warning and exit cleanly instead of aborting.
+			if (e.ExceptionObject is TaskCanceledException tce &&
+				tce.StackTrace?.Contains("Tmds.DBus") == true) {
+				Log.Warn("Suppressing TaskCanceledException during shutdown (Avalonia/DBus cleanup race)");
+				Log.CloseAndFlush();
+				Environment.Exit(0);
+				return;
+			}
+
+			Log.Fatal(e.ExceptionObject as Exception ?? new Exception($"Non-Exception thrown: {e.ExceptionObject}"), "Unhandled exception in AppDomain");
+			Log.CloseAndFlush();
+		};
+
+		TaskScheduler.UnobservedTaskException += (sender, e) => {
+			Log.Error(e.Exception, "Unobserved task exception");
+			e.SetObserved(); // Prevent crash
+		};
+
+		try {
+			if (!System.Diagnostics.Debugger.IsAttached) {
 				NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), DllImportResolver);
 				NativeLibrary.SetDllImportResolver(typeof(SkiaSharp.SKGraphics).Assembly, DllImportResolver);
 				NativeLibrary.SetDllImportResolver(typeof(HarfBuzzSharp.Blob).Assembly, DllImportResolver);
 			}
 
-			if(args.Length >= 4 && args[0] == "--update") {
+			if (args.Length >= 4 && args[0] == "--update") {
 				UpdateHelper.AttemptUpdate(args[1], args[2], args[3], args.Contains("admin"));
 				return 0;
 			}
 
-			Environment.CurrentDirectory = ConfigManager.HomeFolder;
-
-			if(!File.Exists(ConfigManager.GetConfigFile())) {
-				//Could not find configuration file, show wizard
+			// Headless runners (test / MCP) must bypass the first-run setup wizard.
+			// They need HomeFolder + extracted native deps but render no GUI, so the
+			// "no settings.json yet" wizard path below must not swallow them.
+			if (CommandLineHelper.IsTestRunner(args) || CommandLineHelper.IsMcpRunner(args)) {
+				Log.InitializeFileLogging();
+				Log.Info($"Home folder: {ConfigManager.HomeFolder}");
+				Log.Info($".NET: {RuntimeInformation.FrameworkDescription}");
+				Task.Run(() => ConfigManager.LoadConfig());
+				Log.Info("Extracting native dependencies...");
 				DependencyHelper.ExtractNativeDependencies(ConfigManager.HomeFolder);
-				App.ShowConfigWindow = true;
-				BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
-				if(File.Exists(ConfigManager.GetConfigFile())) {
-					//Configuration done, restart process
-					Process.Start(Program.ExePath);
+				SyncNativeDependenciesFromAppBase();
+				if (CommandLineHelper.IsTestRunner(args)) {
+					Log.Info("Running in test mode");
+					return TestRunner.Run(args);
 				}
+				Log.Info("Running in MCP mode");
+				return Nexen.Utilities.Mcp.McpRunner.Run(args);
+			}
+
+			// Check for first-run WITHOUT triggering HomeFolder creation.
+			// HomeFolder auto-detection creates ~/.config/Nexen/ and we don't want that
+			// before the setup wizard lets the user choose their preferred location.
+			string portableConfig = Path.Combine(ConfigManager.DefaultPortableFolder, "settings.json");
+			string documentsConfig = Path.Combine(ConfigManager.DefaultDocumentsFolder, "settings.json");
+			bool isFirstRun = !File.Exists(portableConfig) && !File.Exists(documentsConfig);
+
+			if (isFirstRun) {
+				Log.Info("No config file found, showing setup wizard");
+				// First-run: DO NOT access ConfigManager.HomeFolder or extract dependencies.
+				// Native libs are available from the app's own directory (AppContext.BaseDirectory)
+				// via the DllImportResolver, so the wizard UI can render without extracting deps.
+				App.ShowConfigWindow = true;
+				StartDesktopLifetimeWithLinuxFallback(args);
+
+				// Check if the wizard created a config file by checking both locations
+				// directly — do NOT call GetConfigFile() which accesses HomeFolder and
+				// would create ~/.config/Nexen/ if the wizard was cancelled.
+				if (File.Exists(portableConfig) || File.Exists(documentsConfig)) {
+					//Configuration done, restart process
+					Log.Info("Configuration complete, restarting");
+					try {
+						Process.Start(new ProcessStartInfo(Program.ExePath) { UseShellExecute = true });
+					} catch (Exception ex) {
+						Log.Error(ex, "Failed to restart Nexen after setup wizard");
+					}
+				}
+
 				return 0;
 			}
 
+			// Not first-run: HomeFolder is determined from existing settings.json
+			Log.InitializeFileLogging();
+			Log.Info($"Home folder: {ConfigManager.HomeFolder}");
+			Log.Info($"OS: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})");
+			Log.Info($".NET: {RuntimeInformation.FrameworkDescription}");
+			Log.Info($"App base: {AppContext.BaseDirectory}");
 			//Start loading config file in a separate thread
 			Task.Run(() => ConfigManager.LoadConfig());
 
+			Log.Info("Extracting native dependencies...");
 			//Extract core dll & other native dependencies
 			DependencyHelper.ExtractNativeDependencies(ConfigManager.HomeFolder);
+			SyncNativeDependenciesFromAppBase();
 
-			if(CommandLineHelper.IsTestRunner(args)) {
-				return TestRunner.Run(args);
-			}
+			// Test/MCP runners are handled above (before the first-run wizard).
 
 			using SingleInstance instance = SingleInstance.Instance;
 			instance.Init(args);
-			if(instance.FirstInstance) {
+			if (instance.FirstInstance) {
+				Log.Info("Starting main application...");
 				Program.CommandLineArgs = (string[])args.Clone();
-				BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
+				StartDesktopLifetimeWithLinuxFallback(args);
+			} else {
+				Log.Info("Another instance is already running, showing dialog");
+				App.ShowAlreadyRunningDialog = true;
+				StartDesktopLifetimeWithLinuxFallback(args);
+
+				if (App.AlreadyRunningCloseAndRestart) {
+					Log.Info("User chose to close and restart Nexen");
+					KillExistingInstances();
+					try {
+						Process.Start(new ProcessStartInfo(Program.ExePath) { UseShellExecute = true });
+					} catch (Exception ex) {
+						Log.Error(ex, "Failed to restart Nexen after closing existing instance");
+					}
+				} else {
+					Log.Info("User chose to leave existing instance running");
+				}
+			}
+
+			Log.Info("Nexen shutting down normally");
+
+			// On Linux, Tmds.DBus.Protocol's background handler can race against
+			// the already-disposed Avalonia dispatcher, causing TaskCanceledException.
+			// Exit cleanly here before that cleanup runs.
+			if (OperatingSystem.IsLinux()) {
+				Log.CloseAndFlush();
+				Environment.Exit(0);
 			}
 
 			return 0;
+		} catch (TypeInitializationException ex) {
+			// TypeInitializationException wraps the real cause — the inner exception has
+			// the actual stack trace and error.  Log both so users can report useful info.
+			Log.Fatal(ex.InnerException ?? ex, $"Fatal TypeInitializationException in Main (type: {ex.TypeName})");
+			Log.Fatal(ex, "Full TypeInitializationException details");
+			throw;
+		} catch (Exception ex) {
+			Log.Fatal(ex, "Fatal exception in Main");
+			throw;
+		} finally {
+			Log.CloseAndFlush();
 		}
+	}
 
-		private static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
-		{
-			if(libraryName.Contains("Mesen") || libraryName.Contains("SkiaSharp") || libraryName.Contains("HarfBuzz")) {
-				if(libraryName.EndsWith(".dll")) {
-					libraryName = libraryName.Substring(0, libraryName.Length - 4);
-				}
+	private static void KillExistingInstances() {
+		string currentProcessName = Process.GetCurrentProcess().ProcessName;
+		int currentPid = Environment.ProcessId;
 
-				if(OperatingSystem.IsLinux()) {
-					if(!libraryName.EndsWith(".so")) {
-						libraryName = libraryName + ".so";
-					}
-				} else if(OperatingSystem.IsWindows()) {
-					if(!libraryName.EndsWith(".dll")) {
-						libraryName = libraryName + ".dll";
-					}
-				} else if(OperatingSystem.IsMacOS()) {
-					if(!libraryName.EndsWith(".dylib")) {
-						libraryName = libraryName + ".dylib";
-					}
+		foreach (Process process in Process.GetProcessesByName(currentProcessName)) {
+			if (process.Id != currentPid) {
+				try {
+					Log.Info($"Killing existing Nexen process (PID {process.Id})");
+					process.Kill();
+					process.WaitForExit(5000);
+				} catch (Exception ex) {
+					Log.Error(ex, $"Failed to kill Nexen process (PID {process.Id})");
+				} finally {
+					process.Dispose();
 				}
-				return NativeLibrary.Load(Path.Combine(ConfigManager.HomeFolder, libraryName));
+			} else {
+				process.Dispose();
 			}
-			return IntPtr.Zero;
+		}
+	}
+
+	private static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath) {
+		if (libraryName.Contains("Nexen") || libraryName.Contains("SkiaSharp") || libraryName.Contains("HarfBuzz")) {
+			string originalName = libraryName;
+			if (libraryName.EndsWith(".dll")) {
+				libraryName = libraryName.Substring(0, libraryName.Length - 4);
+			}
+
+			if (OperatingSystem.IsLinux()) {
+				if (!libraryName.EndsWith(".so")) {
+					libraryName += ".so";
+				}
+			} else if (OperatingSystem.IsWindows()) {
+				if (!libraryName.EndsWith(".dll")) {
+					libraryName += ".dll";
+				}
+			} else if (OperatingSystem.IsMacOS()) {
+				if (!libraryName.EndsWith(".dylib")) {
+					libraryName += ".dylib";
+				}
+			}
+
+			// Prefer local build directory (dev workflow) over HomeFolder
+			string localPath = Path.Combine(AppContext.BaseDirectory, libraryName);
+			if (File.Exists(localPath)) {
+				LogNativeLibraryLoad(libraryName, localPath);
+				return NativeLibrary.Load(localPath);
+			}
+
+			// Only fall back to HomeFolder if it's already been initialized
+			// (avoids creating ~/.config/Nexen during the setup wizard).
+			if (!App.ShowConfigWindow) {
+				try {
+					string homePath = Path.Combine(ConfigManager.HomeFolder, libraryName);
+					if (File.Exists(homePath)) {
+						LogNativeLibraryLoad(libraryName, homePath);
+						return NativeLibrary.Load(homePath);
+					}
+				} catch (Exception ex) {
+					// HomeFolder may not be usable yet during first-run
+					Debug.WriteLine($"Program.DllImportResolver: HomeFolder access failed for '{libraryName}': {ex.Message}");
+				}
+			}
+
+			// Library not found — log diagnostic info so users can report the issue
+			string homeInfo = App.ShowConfigWindow ? "HomeFolder=<skipped during setup>" : $"HomeFolder='{ConfigManager.HomeFolder}'";
+			Log.Error($"[DllImportResolver] Native library not found: '{originalName}' (resolved to '{libraryName}'). " +
+				$"Searched: AppBase='{AppContext.BaseDirectory}' (exists={File.Exists(localPath)}), {homeInfo}");
 		}
 
-		// Avalonia configuration, don't remove; also used by visual designer.
-		public static AppBuilder BuildAvaloniaApp()
-			 => AppBuilder.Configure<App>()
-					.UseReactiveUI()
-					.UsePlatformDetect()
-					.With(new Win32PlatformOptions { })
-					.With(new X11PlatformOptions {
-						EnableInputFocusProxy = Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") == "gamescope",
-					 })
-					.With(new AvaloniaNativePlatformOptions { RenderingMode = new AvaloniaNativeRenderingMode[] { AvaloniaNativeRenderingMode.OpenGl, AvaloniaNativeRenderingMode.Software } })
-					.LogToTrace();
+		return IntPtr.Zero;
+	}
+
+	private static void SyncNativeDependenciesFromAppBase() {
+		// Skip when HomeFolder IS the app base directory (portable mode) — copying a file
+		// onto itself is a no-op at best, and on Linux can corrupt mmap'd .so files.
+		string appBase = Path.GetFullPath(AppContext.BaseDirectory).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		string home = Path.GetFullPath(ConfigManager.HomeFolder).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		if (string.Equals(appBase, home, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)) {
+			return;
+		}
+
+		string[] nativeFiles = OperatingSystem.IsWindows()
+			? ["NexenCore.dll", "libSkiaSharp.dll", "libHarfBuzzSharp.dll"]
+			: OperatingSystem.IsLinux()
+				? ["NexenCore.so", "libSkiaSharp.so", "libHarfBuzzSharp.so"]
+				: ["NexenCore.dylib", "libSkiaSharp.dylib", "libHarfBuzzSharp.dylib"];
+
+		Directory.CreateDirectory(ConfigManager.HomeFolder);
+
+		foreach (string fileName in nativeFiles) {
+			string sourcePath = Path.Combine(AppContext.BaseDirectory, fileName);
+			if (!File.Exists(sourcePath)) {
+				continue;
+			}
+
+			string destinationPath = Path.Combine(ConfigManager.HomeFolder, fileName);
+			bool shouldCopy = !File.Exists(destinationPath);
+
+			if (!shouldCopy) {
+				FileInfo sourceInfo = new(sourcePath);
+				FileInfo destinationInfo = new(destinationPath);
+				shouldCopy = sourceInfo.Length != destinationInfo.Length || sourceInfo.LastWriteTimeUtc > destinationInfo.LastWriteTimeUtc;
+			}
+
+			if (!shouldCopy) {
+				continue;
+			}
+
+			try {
+				File.Copy(sourcePath, destinationPath, true);
+				Log.Info($"Synchronized native dependency: {fileName} ({new FileInfo(sourcePath).Length} bytes)");
+			} catch (Exception ex) {
+				Log.Error(ex, $"Failed to synchronize native dependency: {fileName}");
+			}
+		}
+	}
+
+	private static void LogNativeLibraryLoad(string libraryName, string path) {
+		if (_loggedNexenCoreLoadPath || !libraryName.Equals("NexenCore.dll", StringComparison.OrdinalIgnoreCase)) {
+			return;
+		}
+
+		_loggedNexenCoreLoadPath = true;
+
+		if (File.Exists(path)) {
+			FileInfo info = new(path);
+			Log.Info($"Loading NexenCore from '{path}' ({info.Length} bytes, mtime {info.LastWriteTimeUtc:O})");
+		} else {
+			Log.Warn($"Attempting to load NexenCore from missing path '{path}'");
+		}
+	}
+
+	// Avalonia configuration, don't remove; also used by visual designer.
+	public static AppBuilder BuildAvaloniaApp(bool forceDisableIme = false) {
+		// Ensure SVG support assembly is preserved by the trimmer/AOT
+		GC.KeepAlive(typeof(Svg.Skia.SKSvg).Assembly);
+		GC.KeepAlive(typeof(Avalonia.Svg.Skia.SvgImageExtension).Assembly);
+		GC.KeepAlive(typeof(Avalonia.Svg.Skia.Svg).Assembly);
+
+		bool enableX11Ime = ShouldEnableX11Ime(forceDisableIme);
+		if (OperatingSystem.IsLinux()) {
+			Log.Info($"X11 IME enabled: {enableX11Ime}");
+		}
+
+		return AppBuilder.Configure<App>()
+				.AfterSetup(_ => {
+					RxAppBuilder.CreateReactiveUIBuilder()
+						.WithMainThreadScheduler(AvaloniaDispatcherScheduler.Instance)
+						.BuildApp();
+				})
+				.UsePlatformDetect()
+				.With(new Win32PlatformOptions { })
+				.With(new X11PlatformOptions {
+					EnableIme = enableX11Ime,
+					EnableInputFocusProxy = Environment.GetEnvironmentVariable("XDG_CURRENT_DESKTOP") == "gamescope",
+				})
+				.With(new AvaloniaNativePlatformOptions { RenderingMode = new AvaloniaNativeRenderingMode[] { AvaloniaNativeRenderingMode.OpenGl, AvaloniaNativeRenderingMode.Software } })
+				.LogToTrace();
 	}
 }

@@ -1,38 +1,38 @@
-<Application
+﻿<Application
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	xmlns:dbg="using:Mesen.Debugger"
-	xmlns:l="using:Mesen.Localization"
-	xmlns:u="using:Mesen.Utilities"
-	x:Class="Mesen.App"
-	Name="Mesen"
+	xmlns:dbg="using:Nexen.Debugger"
+	xmlns:l="using:Nexen.Localization"
+	xmlns:u="using:Nexen.Utilities"
+	x:Class="Nexen.App"
+	Name="Nexen"
 >
 	<Application.Resources>
-		<FontFamily x:Key="MesenFont">Microsoft Sans Serif</FontFamily>
-		<x:Double x:Key="MesenFontSize">11</x:Double>
-		
-		<FontFamily x:Key="MesenMenuFont">Segoe UI</FontFamily>
-		<x:Double x:Key="MesenMenuFontSize">12</x:Double>
+		<FontFamily x:Key="NexenFont">Microsoft Sans Serif</FontFamily>
+		<x:Double x:Key="NexenFontSize">15</x:Double>
 
-		<FontFamily x:Key="MesenDisassemblyFont">Consolas</FontFamily>
-		<x:Double x:Key="MesenDisassemblyFontSize">12</x:Double>
+		<FontFamily x:Key="NexenMenuFont">Segoe UI</FontFamily>
+		<x:Double x:Key="NexenMenuFontSize">17</x:Double>
 
-		<FontFamily x:Key="MesenMemoryViewerFont">Consolas</FontFamily>
-		<x:Double x:Key="MesenMemoryViewerFontSize">12</x:Double>
+		<FontFamily x:Key="NexenDisassemblyFont">Consolas</FontFamily>
+		<x:Double x:Key="NexenDisassemblyFontSize">12</x:Double>
 
-		<FontFamily x:Key="MesenAssemblerFont">Consolas</FontFamily>
-		<x:Double x:Key="MesenAssemblerFontSize">12</x:Double>
+		<FontFamily x:Key="NexenMemoryViewerFont">Consolas</FontFamily>
+		<x:Double x:Key="NexenMemoryViewerFontSize">12</x:Double>
 
-		<FontFamily x:Key="MesenScriptWindowFont">Consolas</FontFamily>
-		<x:Double x:Key="MesenScriptWindowFontSize">12</x:Double>
+		<FontFamily x:Key="NexenAssemblerFont">Consolas</FontFamily>
+		<x:Double x:Key="NexenAssemblerFontSize">12</x:Double>
 
-		<FontFamily x:Key="MesenMonospaceFont">Consolas</FontFamily>
-		<x:Double x:Key="MesenMonospaceFontSize">12</x:Double>
+		<FontFamily x:Key="NexenScriptWindowFont">Consolas</FontFamily>
+		<x:Double x:Key="NexenScriptWindowFontSize">12</x:Double>
+
+		<FontFamily x:Key="NexenMonospaceFont">Consolas</FontFamily>
+		<x:Double x:Key="NexenMonospaceFontSize">12</x:Double>
 
 		<l:EnumConverter x:Key="Enum" />
 		<u:FontNameConverter x:Key="FontNameConverter" />
 		<u:NullTextConverter x:Key="NullTextConverter" />
-		
+
 		<VisualBrush x:Key="ViewerBgBrush" TileMode="Tile" Stretch="None" AlignmentX="Left" AlignmentY="Top" SourceRect="0,0,5,5" DestinationRect="0,0,5,5">
 			<VisualBrush.Visual>
 				<Panel Background="#202020">
@@ -42,7 +42,7 @@
 			</VisualBrush.Visual>
 		</VisualBrush>
 	</Application.Resources>
-	
+
 	<Application.DataTemplates>
 		<DataTemplate DataType="x:Enum">
 			<TextBlock Text="{Binding, Converter={StaticResource Enum}}" />
@@ -51,7 +51,9 @@
 
 	<Application.Styles>
 		<FluentTheme />
-		<StyleInclude Source="/Styles/MesenStyles.xaml" />
+		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+		<StyleInclude Source="/Styles/NexenBrandTheme.xaml" />
+		<StyleInclude Source="/Styles/NexenStyles.xaml" />
 	</Application.Styles>
 
 	<NativeMenu.Menu>

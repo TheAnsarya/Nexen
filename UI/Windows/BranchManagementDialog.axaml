@@ -1,0 +1,48 @@
+<Window
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:tas="using:Nexen.TAS"
+	mc:Ignorable="d"
+	d:DesignWidth="500"
+	d:DesignHeight="400"
+	x:Class="Nexen.Windows.BranchManagementDialog"
+	Width="500"
+	Height="420"
+	CanResize="False"
+	Focusable="True"
+	WindowStartupLocation="CenterOwner"
+	Title="Manage Branches"
+	Background="{StaticResource NexenDarkBackgroundColor}"
+>
+	<DockPanel Margin="20">
+		<TextBlock DockPanel.Dock="Top" Text="Manage Branches" FontSize="18" FontWeight="Bold"
+			Foreground="{StaticResource NexenAccentHighlightColor}" Margin="0,0,0,10" />
+
+		<!-- Bottom buttons -->
+		<StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
+			<Button Content="Close" Width="80" Click="OnCloseClick" IsDefault="True" />
+		</StackPanel>
+
+		<!-- Action buttons -->
+		<StackPanel DockPanel.Dock="Right" Spacing="5" Margin="10,0,0,0" Width="100">
+			<Button Content="Load" Click="OnLoadClick" HorizontalAlignment="Stretch" />
+			<Button Content="Rename" Click="OnRenameClick" HorizontalAlignment="Stretch" />
+			<Button Content="Delete" Click="OnDeleteClick" HorizontalAlignment="Stretch" Foreground="Red" />
+		</StackPanel>
+
+		<!-- Branch List -->
+		<ListBox Name="lstBranches" SelectionMode="Single" FontFamily="Consolas" FontSize="12">
+			<ListBox.ItemTemplate>
+				<DataTemplate x:DataType="tas:BranchData">
+					<StackPanel Orientation="Horizontal" Spacing="10">
+						<TextBlock Text="{Binding Name}" MinWidth="100" />
+						<TextBlock Text="{Binding FrameCount, StringFormat='{}{0:N0} frames'}" Foreground="Gray" />
+						<TextBlock Text="{Binding CreatedAt, StringFormat='({0:MMM dd HH:mm})'}" Foreground="DarkGray" />
+					</StackPanel>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+	</DockPanel>
+</Window>

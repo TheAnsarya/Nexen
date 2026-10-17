@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <deque>
 #include "Utilities/HexUtilities.h"
 #include "Utilities/FolderUtilities.h"
@@ -18,29 +18,26 @@
 #include "Shared/BatteryManager.h"
 #include "Shared/CheatManager.h"
 #include "Utilities/Serializer.h"
-#include "Utilities/magic_enum.hpp"
+#include <magic_enum/magic_enum.hpp>
 
-MovieRecorder::MovieRecorder(Emulator* emu)
-{
+MovieRecorder::MovieRecorder(Emulator* emu) {
 	_emu = emu;
 }
 
-MovieRecorder::~MovieRecorder()
-{
-	Stop();
+MovieRecorder::~MovieRecorder() {
+	(void)Stop();
 }
 
-bool MovieRecorder::Record(RecordMovieOptions options)
-{
+bool MovieRecorder::Record(const RecordMovieOptions& options) {
 	_filename = options.Filename;
 	_author = options.Author;
 	_description = options.Description;
-	_writer.reset(new ZipWriter());
+	_writer = std::make_unique<ZipWriter>();
 	_inputData = stringstream();
 	_saveStateData = stringstream();
 	_hasSaveState = false;
 
-	if(!_writer->Initialize(_filename)) {
+	if (!_writer->Initialize(_filename)) {
 		MessageManager::DisplayMessage("Movies", "CouldNotWriteToFile", FolderUtilities::GetFilename(_filename, true));
 		_writer.reset();
 		return false;
@@ -49,25 +46,25 @@ bool MovieRecorder::Record(RecordMovieOptions options)
 		_emu->GetNotificationManager()->RegisterNotificationListener(shared_from_this());
 
 		bool needSaveState = _emu->GetSettings()->HasRandomPowerOnState(_emu->GetConsoleType());
-		if(options.RecordFrom == RecordMovieFrom::StartWithoutSaveData) {
-			//Power cycle and ignore save data that exists on the disk
+		if (options.RecordFrom == RecordMovieFrom::StartWithoutSaveData) {
+			// Power cycle and ignore save data that exists on the disk
 			_emu->GetBatteryManager()->SetBatteryProvider(shared_from_this());
 			_emu->PowerCycle();
-		} else if(options.RecordFrom == RecordMovieFrom::StartWithSaveData) {
-			//Power cycle and save existing battery files into the movie file
+		} else if (options.RecordFrom == RecordMovieFrom::StartWithSaveData) {
+			// Power cycle and save existing battery files into the movie file
 			_emu->GetBatteryManager()->SetBatteryRecorder(shared_from_this());
 			_emu->PowerCycle();
-		} else if(options.RecordFrom == RecordMovieFrom::CurrentState) {
-			//Record from current state, store a save state in the movie file
+		} else if (options.RecordFrom == RecordMovieFrom::CurrentState) {
+			// Record from current state, store a save state in the movie file
 			_emu->RegisterInputRecorder(this);
 			needSaveState = true;
 		}
 
-		if(needSaveState) {
+		if (needSaveState) {
 			_emu->GetSaveStateManager()->SaveState(_saveStateData);
 			_hasSaveState = true;
 		}
-		
+
 		_emu->GetBatteryManager()->SetBatteryRecorder(nullptr);
 		_emu->Unlock();
 
@@ -77,10 +74,9 @@ bool MovieRecorder::Record(RecordMovieOptions options)
 	}
 }
 
-void MovieRecorder::GetGameSettings(stringstream &out)
-{
+void MovieRecorder::GetGameSettings(stringstream& out) {
 	EmuSettings* settings = _emu->GetSettings();
-	WriteString(out, MovieKeys::MesenVersion, settings->GetVersionString());
+	WriteString(out, MovieKeys::NexenVersion, settings->GetVersionString());
 	WriteInt(out, MovieKeys::MovieFormatVersion, MovieRecorder::MovieFormatVersion);
 
 	VirtualFile romFile = _emu->GetRomInfo().RomFile;
@@ -88,11 +84,11 @@ void MovieRecorder::GetGameSettings(stringstream &out)
 	WriteString(out, MovieKeys::Sha1, _emu->GetHash(HashType::Sha1));
 
 	VirtualFile patchFile = _emu->GetRomInfo().PatchFile;
-	if(patchFile.IsValid()) {
+	if (patchFile.IsValid()) {
 		WriteString(out, MovieKeys::PatchFile, patchFile.GetFileName());
 		WriteString(out, MovieKeys::PatchFileSha1, patchFile.GetSha1Hash());
-	
-		romFile.ApplyPatch(patchFile);
+
+		(void)romFile.ApplyPatch(patchFile);
 		WriteString(out, MovieKeys::PatchedRomSha1, romFile.GetSha1Hash());
 	}
 
@@ -101,34 +97,27 @@ void MovieRecorder::GetGameSettings(stringstream &out)
 	s.Stream(consoleType, "emu.consoleType", -1);
 	s.Stream(*settings, "", -1);
 
-	std::stringstream settingsOut;
-	s.SaveTo(settingsOut, 0);
+	s.SaveTo(out, 0);
 
-	out << settingsOut.str();
-
-	for(CheatCode &code : _emu->GetCheatManager()->GetCheats()) {
-		out << "Cheat " << magic_enum::enum_name(code.Type) << " "  << string(code.Code) << "\n";
+	for (CheatCode& code : _emu->GetCheatManager()->GetCheats()) {
+		out << "Cheat " << magic_enum::enum_name(code.Type) << " " << code.Code << "\n";
 	}
 }
 
-void MovieRecorder::WriteString(stringstream &out, string name, string value)
-{
+void MovieRecorder::WriteString(stringstream& out, string_view name, string_view value) {
 	out << name << " " << value << "\n";
 }
 
-void MovieRecorder::WriteInt(stringstream &out, string name, uint32_t value)
-{
-	out << name << " " << std::to_string(value) << "\n";
+void MovieRecorder::WriteInt(stringstream& out, string_view name, uint32_t value) {
+	out << name << " " << value << "\n";
 }
 
-void MovieRecorder::WriteBool(stringstream &out, string name, bool enabled)
-{
+void MovieRecorder::WriteBool(stringstream& out, string_view name, bool enabled) {
 	out << name << " " << (enabled ? "true" : "false") << "\n";
 }
 
-bool MovieRecorder::Stop()
-{
-	if(_writer) {
+bool MovieRecorder::Stop() {
+	if (_writer) {
 		_emu->UnregisterInputRecorder(this);
 
 		_writer->AddFile(_inputData, "Input.txt");
@@ -137,29 +126,30 @@ bool MovieRecorder::Stop()
 		GetGameSettings(out);
 		_writer->AddFile(out, "GameSettings.txt");
 
-		if(!_author.empty() || !_description.empty()) {
+		if (!_author.empty() || !_description.empty()) {
 			stringstream movieInfo;
 			WriteString(movieInfo, "Author", _author);
-			movieInfo << "Description\n" << _description;
+			movieInfo << "Description\n"
+			          << _description;
 			_writer->AddFile(movieInfo, "MovieInfo.txt");
 		}
 
 		VirtualFile patchFile = _emu->GetRomInfo().PatchFile;
 		vector<uint8_t> patchData;
-		if(patchFile.IsValid() && patchFile.ReadFile(patchData)) {
+		if (patchFile.IsValid() && patchFile.ReadFile(patchData)) {
 			_writer->AddFile(patchData, "PatchData.dat");
 		}
 
-		if(_hasSaveState) {
-			_writer->AddFile(_saveStateData, "SaveState.mss");
+		if (_hasSaveState) {
+			_writer->AddFile(_saveStateData, "SaveState.nexen-save");
 		}
 
-		for(auto kvp : _batteryData) {
+		for (auto& kvp : _batteryData) {
 			_writer->AddFile(kvp.second, "Battery" + kvp.first);
 		}
 
 		bool result = _writer->Save();
-		if(result) {
+		if (result) {
 			MessageManager::DisplayMessage("Movies", "MovieSaved", FolderUtilities::GetFilename(_filename, true));
 		}
 		return result;
@@ -168,45 +158,41 @@ bool MovieRecorder::Stop()
 	return false;
 }
 
-void MovieRecorder::RecordInput(vector<shared_ptr<BaseControlDevice>> devices)
-{
-	for(shared_ptr<BaseControlDevice> &device : devices) {
-		_inputData << ("|" + device->GetTextState());
+void MovieRecorder::RecordInput(const vector<shared_ptr<BaseControlDevice>>& devices) {
+	for (const shared_ptr<BaseControlDevice>& device : devices) {
+		device->GetTextState(_textStateBuf);
+		_inputData << '|' << _textStateBuf;
 	}
-	_inputData << "\n";
+	_inputData << '\n';
 }
 
-void MovieRecorder::OnLoadBattery(string extension, vector<uint8_t> batteryData)
-{
-	_batteryData[extension] = batteryData;
+void MovieRecorder::OnLoadBattery(const string& extension, vector<uint8_t> batteryData) {
+	_batteryData[extension] = std::move(batteryData);
 }
 
-vector<uint8_t> MovieRecorder::LoadBattery(string extension)
-{
+vector<uint8_t> MovieRecorder::LoadBattery(const string& extension) {
 	return vector<uint8_t>();
 }
 
-void MovieRecorder::ProcessNotification(ConsoleNotificationType type, void *parameter)
-{
-	if(type == ConsoleNotificationType::GameLoaded) {
+void MovieRecorder::ProcessNotification(ConsoleNotificationType type, void* parameter) {
+	if (type == ConsoleNotificationType::GameLoaded) {
 		_emu->RegisterInputRecorder(this);
 	}
 }
 
-bool MovieRecorder::CreateMovie(string movieFile, deque<RewindData> &data, uint32_t startPosition, uint32_t endPosition, bool hasBattery)
-{
+bool MovieRecorder::CreateMovie(const string& movieFile, deque<RewindData>& data, uint32_t startPosition, uint32_t endPosition, bool hasBattery) {
 	shared_ptr<IConsole> console = _emu->GetConsole();
-	if(!console) {
+	if (!console) {
 		return false;
 	}
 
 	_filename = movieFile;
-	_writer.reset(new ZipWriter());
-	if(startPosition < data.size() && endPosition <= data.size() && _writer->Initialize(_filename)) {
-		vector<shared_ptr<BaseControlDevice>> devices = console->GetControlManager()->GetControlDevices();
-		
-		if(startPosition > 0 || hasBattery || _emu->GetSettings()->HasRandomPowerOnState(_emu->GetConsoleType())) {
-			//Create a movie from a savestate if we don't start from the beginning (or if the game has save ram, or if the power on state is random)
+	_writer = std::make_unique<ZipWriter>();
+	if (startPosition < data.size() && endPosition <= data.size() && _writer->Initialize(_filename)) {
+		const auto& devices = console->GetControlManager()->GetControlDevices();
+
+		if (startPosition > 0 || hasBattery || _emu->GetSettings()->HasRandomPowerOnState(_emu->GetConsoleType())) {
+			// Create a movie from a savestate if we don't start from the beginning (or if the game has save ram, or if the power on state is random)
 			_hasSaveState = true;
 			_saveStateData = stringstream();
 			_emu->GetSaveStateManager()->GetSaveStateHeader(_saveStateData);
@@ -215,21 +201,22 @@ bool MovieRecorder::CreateMovie(string movieFile, deque<RewindData> &data, uint3
 
 		_inputData = stringstream();
 
-		for(uint32_t i = startPosition; i < endPosition; i++) {
-			RewindData rewindData = data[i];
-			for(uint32_t j = 0; j < RewindManager::BufferSize; j++) {
-				for(shared_ptr<BaseControlDevice> &device : devices) {
+		for (uint32_t i = startPosition; i < endPosition; i++) {
+			const RewindData& rewindData = data[i];
+			for (uint32_t j = 0; j < RewindManager::BufferSize; j++) {
+				for (const auto& device : devices) {
 					uint8_t port = device->GetPort();
-					if(j < rewindData.InputLogs[port].size()) {
+					if (j < rewindData.InputLogs[port].size()) {
 						device->SetRawState(rewindData.InputLogs[port][j]);
-						_inputData << ("|" + device->GetTextState());
+						device->GetTextState(_textStateBuf);
+						_inputData << '|' << _textStateBuf;
 					}
 				}
-				_inputData << "\n";
+				_inputData << '\n';
 			}
 		}
 
-		//Write the movie file
+		// Write the movie file
 		return Stop();
 	}
 	return false;
