@@ -1,0 +1,9 @@
+﻿<Project>
+	<!-- C++20 compatibility: keep u8string()/u8path() on std::string and silence the u8path deprecation -->
+	<ItemDefinitionGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
+		<ClCompile>
+			<AdditionalOptions>/Zc:char8_t- %(AdditionalOptions)</AdditionalOptions>
+			<PreprocessorDefinitions>_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+		</ClCompile>
+	</ItemDefinitionGroup>
+</Project>

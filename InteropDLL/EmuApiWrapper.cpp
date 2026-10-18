@@ -47,7 +47,7 @@ bool _softwareRenderer = false;
 static void* _windowHandle = nullptr;
 static void* _viewerHandle = nullptr;
 
-static constexpr char* _buildDateTime = __DATE__ ", " __TIME__;
+static char _buildDateTime[] = __DATE__ ", " __TIME__;
 
 static InteropNotificationListeners _listeners;
 
