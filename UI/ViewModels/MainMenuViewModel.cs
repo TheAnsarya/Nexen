@@ -8,6 +8,7 @@ using Mesen.Debugger.ViewModels;
 using Mesen.Debugger.Windows;
 using Mesen.Interop;
 using Mesen.Localization;
+using Mesen.Menus;
 using Mesen.Utilities;
 using Mesen.Windows;
 using ReactiveUI;
@@ -93,8 +94,8 @@ namespace Mesen.ViewModels
 		private void InitFileMenu(MainWindow wnd)
 		{
 			FileMenuItems = new List<object>() {
-				new MainMenuAction(EmulatorShortcut.OpenFile) { ActionType = ActionType.Open },
-				new ContextMenuSeparator(),
+				new ShortcutMenuAction(EmulatorShortcut.OpenFile) { ActionType = ActionType.Open },
+				new MenuSeparator(),
 				new MainMenuAction() {
 					ActionType = ActionType.SaveState,
 					SubActions = new List<object> {
@@ -134,24 +135,23 @@ namespace Mesen.ViewModels
 					}
 				},
 
-				new MainMenuAction(EmulatorShortcut.LoadLastSession) {
+				new ShortcutMenuAction(EmulatorShortcut.LoadLastSession) {
 					ActionType = ActionType.LoadLastSession,
 					IsEnabled = () => File.Exists(Path.Combine(ConfigManager.RecentGamesFolder, MainWindow.RomInfo.GetRomName() + ".rgd"))
 				},
 
-				new ContextMenuSeparator(),
+				new MenuSeparator(),
 
-				new MainMenuAction(EmulatorShortcut.QuickSaveTimestamped) {
+				new ShortcutMenuAction(EmulatorShortcut.QuickSaveTimestamped) {
 					ActionType = ActionType.QuickSaveTimestamped
 				},
-				new MainMenuAction(EmulatorShortcut.OpenSaveStatePicker) {
+				new ShortcutMenuAction(EmulatorShortcut.OpenSaveStatePicker) {
 					ActionType = ActionType.OpenSaveStatePicker,
 					IsEnabled = () => EmuApi.GetSaveStateCount() > 0
 				},
 
-				new ContextMenuSeparator(),
-				new MainMenuAction() {
-					ActionType = ActionType.RecentFiles,
+				new MenuSeparator(),
+				new SimpleMenuAction(ActionType.RecentFiles) {
 					IsEnabled = () => ConfigManager.Config.RecentFiles.Items.Count > 0,
 					SubActions = new List<object>() {
 						GetRecentMenuItem(0),
@@ -166,14 +166,14 @@ namespace Mesen.ViewModels
 						GetRecentMenuItem(9)
 					}
 				},
-				new ContextMenuSeparator(),
-				new MainMenuAction(EmulatorShortcut.Exit) { ActionType = ActionType.Exit },
+				new MenuSeparator(),
+				new ShortcutMenuAction(EmulatorShortcut.Exit) { ActionType = ActionType.Exit },
 			};
 		}
 
-		private MainMenuAction GetRecentMenuItem(int index)
+		private SimpleMenuAction GetRecentMenuItem(int index)
 		{
-			return new MainMenuAction() {
+			return new SimpleMenuAction() {
 				ActionType = ActionType.Custom,
 				DynamicText = () => index < RecentItems.Count ? RecentItems[index].DisplayText : "",
 				CustomShortcutText = () => index < RecentItems.Count ? RecentItems[index].ShortenedFolder : "",
