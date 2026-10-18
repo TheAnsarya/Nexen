@@ -51,7 +51,15 @@ namespace Mesen
 				return 0;
 			}
 
+			Log.Initialize();
+			AppDomain.CurrentDomain.UnhandledException += (_, e) => {
+				Log.Fatal(e.ExceptionObject as Exception ?? new Exception($"Non-Exception thrown: {e.ExceptionObject}"), "Unhandled exception in AppDomain");
+				Log.CloseAndFlush();
+			};
+			TaskScheduler.UnobservedTaskException += (_, e) => Log.Error(e.Exception, "Unobserved task exception");
+
 			Environment.CurrentDirectory = ConfigManager.HomeFolder;
+			Log.InitializeFileLogging();
 
 			if(!File.Exists(ConfigManager.GetConfigFile())) {
 				//Could not find configuration file, show wizard
@@ -82,6 +90,7 @@ namespace Mesen
 				BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, ShutdownMode.OnMainWindowClose);
 			}
 
+			Log.CloseAndFlush();
 			return 0;
 		}
 
