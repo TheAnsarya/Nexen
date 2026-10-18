@@ -48,6 +48,7 @@
 			IsEnabled="{Binding Enabled, ElementName=root}"
 		/>
 		<Button
+			x:Name="ImageButton"
 			Classes.activeEntry="{Binding IsActiveEntry, ElementName=root}"
 			BorderThickness="2"
 			Height="NaN"

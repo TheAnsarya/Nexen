@@ -111,7 +111,14 @@ namespace Mesen.Controls
 			Title = game.Name;
 
 			bool fileExists = File.Exists(game.FileName);
-			if(fileExists) {
+			if(game.Timestamp.HasValue) {
+				SubTitle = game.Timestamp.Value.ToString("dddd");
+				if(this.FindControl<Button>("ImageButton") is Button imageButton) {
+					MenuItem deleteItem = new MenuItem() { Header = ResourceHelper.GetMessage("DeleteSaveState") };
+					deleteItem.Click += (s, e) => game.Delete();
+					imageButton.ContextMenu = new ContextMenu() { ItemsSource = new[] { deleteItem } };
+				}
+			} else if(fileExists) {
 				if(Path.GetExtension(game.FileName) == "." + FileDialogHelper.MesenSaveStateExt) {
 					SubTitle = new FileInfo(game.FileName).LastWriteTime.ToString();
 				} else {

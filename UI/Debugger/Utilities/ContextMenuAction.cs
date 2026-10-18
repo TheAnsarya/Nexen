@@ -699,6 +699,10 @@ namespace Mesen.Debugger.Utilities
 		
 		SaveState,
 		LoadState,
+		[IconFile("SaveFloppy")]
+		QuickSaveTimestamped,
+		[IconFile("SplitView")]
+		OpenSaveStatePicker,
 		[IconFile("SplitView")]
 		SaveStateDialog,
 		[IconFile("SaveFloppy")]

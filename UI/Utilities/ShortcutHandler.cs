@@ -120,6 +120,13 @@ namespace Mesen.Utilities
 					}
 					MainWindowModel.RecentGames.Init(GameScreenMode.SaveState);
 					break;
+
+				case EmulatorShortcut.OpenSaveStatePicker:
+					if(isFullscreen) {
+						_mainWindow.ToggleFullscreen();
+					}
+					MainWindowModel.RecentGames.Init(GameScreenMode.SaveStatePicker);
+					break;
 			}
 		}
 

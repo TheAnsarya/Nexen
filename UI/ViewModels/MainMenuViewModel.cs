@@ -96,44 +96,11 @@ namespace Mesen.ViewModels
 			FileMenuItems = new List<object>() {
 				new ShortcutMenuAction(EmulatorShortcut.OpenFile) { ActionType = ActionType.Open },
 				new MenuSeparator(),
-				new MainMenuAction() {
-					ActionType = ActionType.SaveState,
-					SubActions = new List<object> {
-						GetSaveStateMenuItem(1, true),
-						GetSaveStateMenuItem(2, true),
-						GetSaveStateMenuItem(3, true),
-						GetSaveStateMenuItem(4, true),
-						GetSaveStateMenuItem(5, true),
-						GetSaveStateMenuItem(6, true),
-						GetSaveStateMenuItem(7, true),
-						GetSaveStateMenuItem(8, true),
-						GetSaveStateMenuItem(9, true),
-						GetSaveStateMenuItem(10, true),
-						new ContextMenuSeparator(),
-						new MainMenuAction(EmulatorShortcut.SaveStateDialog) { ActionType = ActionType.SaveStateDialog },
-						new MainMenuAction(EmulatorShortcut.SaveStateToFile) { ActionType = ActionType.SaveStateToFile },
-					}
-				},
-				new MainMenuAction() {
-					ActionType = ActionType.LoadState,
-					SubActions = new List<object> {
-						GetSaveStateMenuItem(1, false),
-						GetSaveStateMenuItem(2, false),
-						GetSaveStateMenuItem(3, false),
-						GetSaveStateMenuItem(4, false),
-						GetSaveStateMenuItem(5, false),
-						GetSaveStateMenuItem(6, false),
-						GetSaveStateMenuItem(7, false),
-						GetSaveStateMenuItem(8, false),
-						GetSaveStateMenuItem(9, false),
-						GetSaveStateMenuItem(10, false),
-						new ContextMenuSeparator(),
-						GetSaveStateMenuItem(11, false),
-						new ContextMenuSeparator(),
-						new MainMenuAction(EmulatorShortcut.LoadStateDialog) { ActionType = ActionType.LoadStateDialog },
-						new MainMenuAction(EmulatorShortcut.LoadStateFromFile) { ActionType = ActionType.LoadStateFromFile },
-					}
-				},
+				new ShortcutMenuAction(EmulatorShortcut.QuickSaveTimestamped) { ActionType = ActionType.QuickSaveTimestamped },
+				new ShortcutMenuAction(EmulatorShortcut.OpenSaveStatePicker) { ActionType = ActionType.OpenSaveStatePicker },
+				new MenuSeparator(),
+				new ShortcutMenuAction(EmulatorShortcut.SaveStateToFile) { ActionType = ActionType.SaveStateToFile },
+				new ShortcutMenuAction(EmulatorShortcut.LoadStateFromFile) { ActionType = ActionType.LoadStateFromFile },
 
 				new ShortcutMenuAction(EmulatorShortcut.LoadLastSession) {
 					ActionType = ActionType.LoadLastSession,
@@ -171,42 +138,6 @@ namespace Mesen.ViewModels
 				OnClick = () => {
 					if(index < RecentItems.Count) {
 						LoadRomHelper.LoadRom(RecentItems[index].RomFile, RecentItems[index].PatchFile);
-					}
-				}
-			};
-		}
-
-		private MainMenuAction GetSaveStateMenuItem(int slot, bool forSave)
-		{
-			EmulatorShortcut shortcut;
-			if(forSave) {
-				shortcut = (EmulatorShortcut)((int)EmulatorShortcut.SaveStateSlot1 + slot - 1);
-			} else {
-				shortcut = (EmulatorShortcut)((int)EmulatorShortcut.LoadStateSlot1 + slot - 1);
-			}
-			
-			bool isAutoSaveSlot = slot == 11;
-
-			return new MainMenuAction(shortcut) {
-				ActionType = ActionType.Custom,
-				DynamicText = () => {
-					string statePath = Path.Combine(ConfigManager.SaveStateFolder, EmuApi.GetRomInfo().GetRomName() + "_" + slot + "." + FileDialogHelper.MesenSaveStateExt);
-					string slotName = isAutoSaveSlot ? "Auto" : slot.ToString();
-
-					string header;
-					if(!File.Exists(statePath)) {
-						header = slotName + ". " + ResourceHelper.GetMessage("EmptyState");
-					} else {
-						DateTime dateTime = new FileInfo(statePath).LastWriteTime;
-						header = slotName + ". " + dateTime.ToShortDateString() + " " + dateTime.ToShortTimeString();
-					}
-					return header;
-				},
-				OnClick = () => {
-					if(forSave) {
-						EmuApi.SaveState((uint)slot);
-					} else {
-						EmuApi.LoadState((uint)slot);
 					}
 				}
 			};

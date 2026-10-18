@@ -60,7 +60,14 @@ namespace Mesen.ViewModels
 				for(int i = 0; i < files.Count && entries.Count < 72; i++) {
 					entries.Add(new RecentGameInfo() { FileName = files[i], Name = Path.GetFileNameWithoutExtension(files[i]) });
 				}
-			} else {
+} else if(mode == GameScreenMode.SaveStatePicker) {
+						if(!Visible) {
+							NeedResume = Pause();
+						}
+
+						Title = ResourceHelper.GetMessage("SaveStatePickerTitle");
+						entries = GetTimestampedEntries();
+					} else {
 				if(!Visible) {
 					NeedResume = Pause();
 				}
@@ -88,6 +95,36 @@ namespace Mesen.ViewModels
 			GameEntries = entries;
 		}
 
+		private List<RecentGameInfo> GetTimestampedEntries()
+		{
+			List<RecentGameInfo> entries = new();
+			foreach(SaveStateInfo state in EmuApi.GetSaveStateList()) {
+				entries.Add(new RecentGameInfo() {
+					FileName = state.FilePath,
+					Name = state.Timestamp.ToString("g"),
+					Timestamp = state.Timestamp,
+					OnDeleted = RefreshPicker
+				});
+			}
+			return entries;
+		}
+
+		private void RefreshPicker()
+		{
+			if(Mode != GameScreenMode.SaveStatePicker) {
+				return;
+			}
+
+			List<RecentGameInfo> entries = GetTimestampedEntries();
+			GameEntries = entries;
+			if(entries.Count == 0) {
+				Visible = false;
+				if(NeedResume) {
+					EmuApi.Resume();
+				}
+			}
+		}
+
 		private bool Pause()
 		{
 			if(!EmuApi.IsPaused()) {
@@ -102,7 +139,8 @@ namespace Mesen.ViewModels
 	{
 		RecentGames,
 		LoadState,
-		SaveState
+		SaveState,
+		SaveStatePicker
 	}
 
 	public class RecentGameInfo
@@ -112,14 +150,30 @@ namespace Mesen.ViewModels
 		public string Name { get; set; } = "";
 		public bool SaveMode { get; set; } = false;
 
+		//Set for timestamped saves (picker mode)
+		public DateTime? Timestamp { get; set; }
+		public Action? OnDeleted { get; set; }
+
 		public bool IsEnabled()
 		{
 			return SaveMode || File.Exists(FileName);
 		}
 
+		public void Delete()
+		{
+			if(Timestamp.HasValue && EmuApi.DeleteSaveState(FileName)) {
+				OnDeleted?.Invoke();
+			}
+		}
+
 		public void Load()
 		{
-			if(StateIndex > 0) {
+			if(Timestamp.HasValue) {
+				Task.Run(() => {
+					EmuApi.LoadStateFile(FileName);
+					EmuApi.Resume();
+				});
+			} else if(StateIndex > 0) {
 				Task.Run(() => {
 					//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side
 					if(SaveMode) {

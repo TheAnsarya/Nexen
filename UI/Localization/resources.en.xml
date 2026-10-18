@@ -1735,6 +1735,8 @@
 		<Message ID="SlotNumber">Slot #{0}</Message>
 		<Message ID="LoadStateDialog">Load State Menu</Message>
 		<Message ID="SaveStateDialog">Save State Menu</Message>
+		<Message ID="SaveStatePickerTitle">Save States</Message>
+		<Message ID="DeleteSaveState">Delete</Message>
 
 		<Message ID="LoadFromFile">Load from file...</Message>
 		<Message ID="SaveToFile">Save to file...</Message>
@@ -1954,6 +1956,8 @@ E
 			<Value ID="SaveStateSlot8">Save State - Slot 8</Value>
 			<Value ID="SaveStateSlot9">Save State - Slot 9</Value>
 			<Value ID="SaveStateSlot10">Save State - Slot 10</Value>
+			<Value ID="QuickSaveTimestamped">Quick Save (Timestamped)</Value>
+			<Value ID="OpenSaveStatePicker">Browse Save States</Value>
 			<Value ID="SaveStateToFile">Save State to File</Value>
 			<Value ID="SaveStateDialog">Open Save State Menu</Value>
 			<Value ID="LoadStateSlot1">Load State - Slot 1</Value>
@@ -3589,6 +3593,8 @@ E
 			<Value ID="LoadStateDialog">Load State Menu</Value>
 			<Value ID="LoadStateFromFile">Load from file...</Value>
 
+			<Value ID="QuickSaveTimestamped">Quick Save</Value>
+			<Value ID="OpenSaveStatePicker">Browse Save States...</Value>
 			<Value ID="SaveStateDialog">Save State Menu</Value>
 			<Value ID="SaveStateToFile">Save to file...</Value>
 
