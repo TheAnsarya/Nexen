@@ -173,7 +173,7 @@ void Emulator::ProcessAutoSaveState()
 	if(_autoSaveStateFrameCounter > 0) {
 		_autoSaveStateFrameCounter--;
 		if(_autoSaveStateFrameCounter == 0) {
-			_saveStateManager->SaveState(SaveStateManager::AutoSaveStateIndex, false);
+			_saveStateManager->SaveAutoState();
 		}
 	} else {
 		uint32_t saveStateDelay = _settings->GetPreferences().AutoSaveStateDelay;

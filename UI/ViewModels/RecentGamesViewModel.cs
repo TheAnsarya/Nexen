@@ -101,7 +101,7 @@ namespace Mesen.ViewModels
 			foreach(SaveStateInfo state in EmuApi.GetSaveStateList()) {
 				entries.Add(new RecentGameInfo() {
 					FileName = state.FilePath,
-					Name = state.Timestamp.ToString("g"),
+					Name = (state.IsAutoSave ? ResourceHelper.GetMessage("AutoSave") + ": " : "") + state.Timestamp.ToString("g"),
 					Timestamp = state.Timestamp,
 					OnDeleted = RefreshPicker
 				});

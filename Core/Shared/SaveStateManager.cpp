@@ -383,7 +383,7 @@ string SaveStateManager::GetRomSaveStateDirectory()
 	return folder;
 }
 
-string SaveStateManager::GetTimestampedFilepath()
+string SaveStateManager::GetTimestampedFilepath(const char* prefix)
 {
 	time_t now = std::time(nullptr);
 	tm localTime = {};
@@ -397,11 +397,11 @@ string SaveStateManager::GetTimestampedFilepath()
 	std::strftime(buffer, sizeof(buffer), "%Y-%m-%d_%H-%M-%S", &localTime);
 
 	string folder = GetRomSaveStateDirectory();
-	string filepath = FolderUtilities::CombinePath(folder, string(buffer) + ".mss");
+	string filepath = FolderUtilities::CombinePath(folder, string(prefix) + buffer + ".mss");
 
 	//Multiple saves within the same second get a numeric suffix
 	for(int i = 2; std::filesystem::exists(std::filesystem::u8path(filepath)); i++) {
-		filepath = FolderUtilities::CombinePath(folder, string(buffer) + "_" + std::to_string(i) + ".mss");
+		filepath = FolderUtilities::CombinePath(folder, string(prefix) + buffer + "_" + std::to_string(i) + ".mss");
 	}
 	return filepath;
 }
@@ -409,6 +409,9 @@ string SaveStateManager::GetTimestampedFilepath()
 time_t SaveStateManager::ParseTimestampFromFilename(const string& filename)
 {
 	string name = FolderUtilities::GetFilename(filename, false);
+	if(name.rfind(AutoSavePrefix, 0) == 0) {
+		name = name.substr(strlen(AutoSavePrefix));
+	}
 
 	tm t = {};
 	if(sscanf(name.c_str(), "%4d-%2d-%2d_%2d-%2d-%2d", &t.tm_year, &t.tm_mon, &t.tm_mday, &t.tm_hour, &t.tm_min, &t.tm_sec) != 6) {
@@ -429,6 +432,31 @@ string SaveStateManager::SaveTimestampedState()
 		return filepath;
 	}
 	return "";
+}
+
+string SaveStateManager::SaveAutoState()
+{
+	string filepath = GetTimestampedFilepath(AutoSavePrefix);
+	if(SaveState(filepath, false)) {
+		PruneAutoSaves();
+		return filepath;
+	}
+	return "";
+}
+
+void SaveStateManager::PruneAutoSaves()
+{
+	vector<SaveStateInfo> autoSaves;
+	for(SaveStateInfo& info : GetSaveStateList()) {
+		if(FolderUtilities::GetFilename(info.filepath, true).rfind(AutoSavePrefix, 0) == 0) {
+			autoSaves.push_back(info);
+		}
+	}
+
+	//List is sorted newest first
+	for(size_t i = MaxAutoSaves; i < autoSaves.size(); i++) {
+		DeleteSaveState(autoSaves[i].filepath);
+	}
 }
 
 vector<SaveStateInfo> SaveStateManager::GetSaveStateList()

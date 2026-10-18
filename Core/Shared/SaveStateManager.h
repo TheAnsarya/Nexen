@@ -17,13 +17,16 @@ class SaveStateManager
 {
 private:
 	static constexpr uint32_t MaxIndex = 10;
+	static constexpr uint32_t MaxAutoSaves = 20; //Oldest auto-saves are deleted beyond this count
+	static constexpr const char* AutoSavePrefix = "auto_";
 
 	atomic<uint32_t> _lastIndex;
 	Emulator* _emu;
 
 	string GetStateFilepath(int stateIndex);
 	string GetRomSaveStateDirectory();
-	string GetTimestampedFilepath();
+	string GetTimestampedFilepath(const char* prefix = "");
+	void PruneAutoSaves();
 	static time_t ParseTimestampFromFilename(const string& filename);
 	void SaveVideoData(ostream& stream);
 	bool GetVideoData(vector<uint8_t>& out, RenderedFrame& frame, istream& stream);
@@ -61,6 +64,7 @@ public:
 
 	//Timestamped (unlimited) saves, stored as {SaveStates}/{RomName}/yyyy-MM-dd_HH-mm-ss.mss
 	string SaveTimestampedState();
+	string SaveAutoState();
 	vector<SaveStateInfo> GetSaveStateList();
 	bool DeleteSaveState(const string& filepath);
 	uint32_t GetSaveStateCount();

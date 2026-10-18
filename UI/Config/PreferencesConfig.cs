@@ -50,7 +50,7 @@ namespace Mesen.Config
 		[Reactive] public bool AssociateWsRomFiles { get; set; } = false;
 
 		[Reactive] public bool EnableAutoSaveState { get; set; } = true;
-		[Reactive] public UInt32 AutoSaveStateDelay { get; set; } = 5;
+		[Reactive] public UInt32 AutoSaveStateDelay { get; set; } = 20;
 
 		[Reactive] public bool EnableRewind { get; set; } = true;
 		[Reactive] public UInt32 RewindBufferSize { get; set; } = 300;
