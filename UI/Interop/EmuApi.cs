@@ -120,6 +120,25 @@ namespace Mesen.Interop
 			return null;
 		}
 
+		[DllImport(DllPath, EntryPoint = "SaveTimestampedState")] private static extern void SaveTimestampedStateWrapper(IntPtr outFilepath, Int32 maxLength);
+		public static string SaveTimestampedState() { return Utf8Utilities.CallStringApi(SaveTimestampedStateWrapper, 2048); }
+
+		[DllImport(DllPath, EntryPoint = "GetSaveStateList")] private static extern UInt32 GetSaveStateListWrapper([Out] InteropSaveStateInfo[] outInfoArray, UInt32 maxCount);
+		public static SaveStateInfo[] GetSaveStateList(int maxCount = 1000)
+		{
+			InteropSaveStateInfo[] interopArray = new InteropSaveStateInfo[maxCount];
+			UInt32 count = GetSaveStateListWrapper(interopArray, (UInt32)maxCount);
+
+			SaveStateInfo[] result = new SaveStateInfo[count];
+			for(int i = 0; i < count; i++) {
+				result[i] = new SaveStateInfo(interopArray[i]);
+			}
+			return result;
+		}
+
+		[DllImport(DllPath)] public static extern UInt32 GetSaveStateCount();
+		[DllImport(DllPath)] [return: MarshalAs(UnmanagedType.I1)] public static extern bool DeleteSaveState([MarshalAs(UnmanagedType.LPUTF8Str)]string filepath);
+
 		[DllImport(DllPath)] [return: MarshalAs(UnmanagedType.I1)] public static extern bool GetConvertedCheat([In]InteropCheatCode input, ref InteropInternalCheatCode output);
 		[DllImport(DllPath)] public static extern void SetCheats([In]InteropCheatCode[] cheats, UInt32 cheatCount);
 		[DllImport(DllPath)] public static extern void ClearCheats();
