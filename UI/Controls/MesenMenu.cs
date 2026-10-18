@@ -5,6 +5,7 @@ using System.Linq;
 using Avalonia.Styling;
 using Avalonia.Interactivity;
 using Mesen.Debugger.Utilities;
+using Mesen.Menus;
 using System.Collections;
 
 namespace Mesen.Controls
@@ -25,6 +26,8 @@ namespace Mesen.Controls
 
 					if(subItemAction is BaseMenuAction action) {
 						action.Update();
+					} else if(subItemAction is IMenuAction menuAction) {
+						menuAction.Update();
 					}
 				}
 			}

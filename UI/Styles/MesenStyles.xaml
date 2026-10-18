@@ -1,4 +1,4 @@
-<Styles
+﻿<Styles
 	xmlns="https://github.com/avaloniaui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:sys="clr-namespace:System;assembly=netstandard"	
@@ -161,13 +161,13 @@
 	</Style>
 
 	<Style Selector="Menu#ActionMenu MenuItem MenuItem, ContextMenu#ActionMenu MenuItem">
-		<Setter Property="Header" Value="{Binding ActionName, DataType={x:Type du:BaseMenuAction}}" />
-		<Setter Property="Icon" Value="{Binding ActionIcon, DataType={x:Type du:BaseMenuAction}}" />
-		<Setter Property="IsVisible" Value="{Binding Visible, DataType={x:Type du:BaseMenuAction}}" />
-		<Setter Property="IsEnabled" Value="{Binding Enabled, DataType={x:Type du:BaseMenuAction}}" />
-		<Setter Property="Tag" Value="{Binding ShortcutText, DataType={x:Type du:BaseMenuAction}}" />
-		<Setter Property="ItemsSource" Value="{Binding SubActions, DataType={x:Type du:BaseMenuAction}}" />
-		<Setter Property="Command" Value="{Binding ClickCommand, DataType={x:Type du:BaseMenuAction}}" />
+		<Setter Property="Header" Value="{ReflectionBinding ActionName}" />
+		<Setter Property="Icon" Value="{ReflectionBinding ActionIcon}" />
+		<Setter Property="IsVisible" Value="{ReflectionBinding Visible}" />
+		<Setter Property="IsEnabled" Value="{ReflectionBinding Enabled}" />
+		<Setter Property="Tag" Value="{ReflectionBinding ShortcutText}" />
+		<Setter Property="ItemsSource" Value="{ReflectionBinding SubActions}" />
+		<Setter Property="Command" Value="{ReflectionBinding ClickCommand}" />
 	</Style>
 	
 	<Style Selector="Button:pressed, RepeatButton:pressed, ToggleButton:pressed">
