@@ -120,6 +120,9 @@ namespace Mesen.Config.Shortcuts
 		LoadStateDialog,
 		LoadLastSession,
 
+		QuickSaveTimestamped,
+		OpenSaveStatePicker,
+
 		OpenFile,
 
 		InputBarcode,

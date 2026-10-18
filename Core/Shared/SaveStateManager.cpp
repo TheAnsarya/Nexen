@@ -1,4 +1,6 @@
 #include "pch.h"
+#include <ctime>
+#include <filesystem>
 #include "Utilities/FolderUtilities.h"
 #include "Utilities/ZipWriter.h"
 #include "Utilities/ZipReader.h"
@@ -371,6 +373,98 @@ int32_t SaveStateManager::GetSaveStatePreview(string saveStatePath, uint8_t* png
 		}
 	}
 	return -1;
+}
+
+string SaveStateManager::GetRomSaveStateDirectory()
+{
+	string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
+	string folder = FolderUtilities::CombinePath(FolderUtilities::GetSaveStateFolder(), romName);
+	FolderUtilities::CreateFolder(folder);
+	return folder;
+}
+
+string SaveStateManager::GetTimestampedFilepath()
+{
+	time_t now = std::time(nullptr);
+	tm localTime = {};
+#ifdef _WIN32
+	localtime_s(&localTime, &now);
+#else
+	localtime_r(&now, &localTime);
+#endif
+
+	char buffer[32];
+	std::strftime(buffer, sizeof(buffer), "%Y-%m-%d_%H-%M-%S", &localTime);
+
+	string folder = GetRomSaveStateDirectory();
+	string filepath = FolderUtilities::CombinePath(folder, string(buffer) + ".mss");
+
+	//Multiple saves within the same second get a numeric suffix
+	for(int i = 2; std::filesystem::exists(std::filesystem::u8path(filepath)); i++) {
+		filepath = FolderUtilities::CombinePath(folder, string(buffer) + "_" + std::to_string(i) + ".mss");
+	}
+	return filepath;
+}
+
+time_t SaveStateManager::ParseTimestampFromFilename(const string& filename)
+{
+	string name = FolderUtilities::GetFilename(filename, false);
+
+	tm t = {};
+	if(sscanf(name.c_str(), "%4d-%2d-%2d_%2d-%2d-%2d", &t.tm_year, &t.tm_mon, &t.tm_mday, &t.tm_hour, &t.tm_min, &t.tm_sec) != 6) {
+		return 0;
+	}
+
+	t.tm_year -= 1900;
+	t.tm_mon -= 1;
+	t.tm_isdst = -1;
+	return std::mktime(&t);
+}
+
+string SaveStateManager::SaveTimestampedState()
+{
+	string filepath = GetTimestampedFilepath();
+	if(SaveState(filepath, false)) {
+		MessageManager::DisplayMessage("SaveStates", "SaveStateSavedFile", FolderUtilities::GetFilename(filepath, true));
+		return filepath;
+	}
+	return "";
+}
+
+vector<SaveStateInfo> SaveStateManager::GetSaveStateList()
+{
+	vector<SaveStateInfo> result;
+	string romName = FolderUtilities::GetFilename(_emu->GetRomInfo().RomFile.GetFileName(), false);
+	string folder = GetRomSaveStateDirectory();
+
+	for(string& file : FolderUtilities::GetFilesInFolder(folder, { ".mss" }, false)) {
+		SaveStateInfo info;
+		info.filepath = file;
+		info.romName = romName;
+		info.timestamp = ParseTimestampFromFilename(file);
+
+		ifstream stream(file, ios::binary | ios::ate);
+		info.fileSize = stream ? (uint32_t)stream.tellg() : 0;
+
+		result.push_back(info);
+	}
+
+	//Newest first
+	std::sort(result.begin(), result.end(), [](const SaveStateInfo& a, const SaveStateInfo& b) {
+		return a.timestamp > b.timestamp;
+	});
+	return result;
+}
+
+bool SaveStateManager::DeleteSaveState(const string& filepath)
+{
+	std::error_code ec;
+	return std::filesystem::remove(std::filesystem::u8path(filepath), ec) && !ec;
+}
+
+uint32_t SaveStateManager::GetSaveStateCount()
+{
+	return (uint32_t)GetSaveStateList().size();
 }
 
 void SaveStateManager::WriteValue(ostream& stream, uint32_t value)

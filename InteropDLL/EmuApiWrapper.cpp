@@ -292,6 +292,31 @@ extern "C" {
 	DllExport void __stdcall LoadState(uint32_t stateIndex) { _emu->GetSaveStateManager()->LoadState(stateIndex); }
 	DllExport void __stdcall SaveStateFile(char* filepath) { _emu->GetSaveStateManager()->SaveState(filepath); }
 	DllExport void __stdcall LoadStateFile(char* filepath) { _emu->GetSaveStateManager()->LoadState(filepath); }
+
+	struct InteropSaveStateInfo
+	{
+		char filepath[2000];
+		char romName[256];
+		int64_t timestamp;
+		uint32_t fileSize;
+	};
+
+	DllExport void __stdcall SaveTimestampedState(char* outFilepath, int32_t maxLength) { StringUtilities::CopyToBuffer(_emu->GetSaveStateManager()->SaveTimestampedState(), outFilepath, maxLength); }
+	DllExport uint32_t __stdcall GetSaveStateCount() { return _emu->GetSaveStateManager()->GetSaveStateCount(); }
+	DllExport bool __stdcall DeleteSaveState(char* filepath) { return _emu->GetSaveStateManager()->DeleteSaveState(filepath); }
+	DllExport uint32_t __stdcall GetSaveStateList(InteropSaveStateInfo* outInfoArray, uint32_t maxCount)
+	{
+		vector<SaveStateInfo> states = _emu->GetSaveStateManager()->GetSaveStateList();
+		uint32_t count = std::min<uint32_t>((uint32_t)states.size(), maxCount);
+		for(uint32_t i = 0; i < count; i++) {
+			memset(&outInfoArray[i], 0, sizeof(InteropSaveStateInfo));
+			StringUtilities::CopyToBuffer(states[i].filepath, outInfoArray[i].filepath, sizeof(outInfoArray[i].filepath));
+			StringUtilities::CopyToBuffer(states[i].romName, outInfoArray[i].romName, sizeof(outInfoArray[i].romName));
+			outInfoArray[i].timestamp = (int64_t)states[i].timestamp;
+			outInfoArray[i].fileSize = states[i].fileSize;
+		}
+		return count;
+	}
 	DllExport void __stdcall LoadRecentGame(char* filepath, bool resetGame) { _emu->GetSaveStateManager()->LoadRecentGame(filepath, resetGame); }
 	DllExport int32_t __stdcall GetSaveStatePreview(char* saveStatePath, uint8_t* pngData) { return _emu->GetSaveStateManager()->GetSaveStatePreview(saveStatePath, pngData); }
 

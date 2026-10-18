@@ -1,8 +1,17 @@
 #pragma once
 #include "pch.h"
+#include <ctime>
 
 class Emulator;
 struct RenderedFrame;
+
+struct SaveStateInfo
+{
+	string filepath;
+	string romName;
+	time_t timestamp; //Local time of the save, parsed from the filename
+	uint32_t fileSize;
+};
 
 class SaveStateManager
 {
@@ -13,6 +22,9 @@ private:
 	Emulator* _emu;
 
 	string GetStateFilepath(int stateIndex);
+	string GetRomSaveStateDirectory();
+	string GetTimestampedFilepath();
+	static time_t ParseTimestampFromFilename(const string& filename);
 	void SaveVideoData(ostream& stream);
 	bool GetVideoData(vector<uint8_t>& out, RenderedFrame& frame, istream& stream);
 
@@ -46,4 +58,10 @@ public:
 	void SelectSaveSlot(int slotIndex);
 	void MoveToNextSlot();
 	void MoveToPreviousSlot();
+
+	//Timestamped (unlimited) saves, stored as {SaveStates}/{RomName}/yyyy-MM-dd_HH-mm-ss.mss
+	string SaveTimestampedState();
+	vector<SaveStateInfo> GetSaveStateList();
+	bool DeleteSaveState(const string& filepath);
+	uint32_t GetSaveStateCount();
 };
