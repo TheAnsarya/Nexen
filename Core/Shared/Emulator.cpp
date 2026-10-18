@@ -170,19 +170,27 @@ void Emulator::Run()
 
 void Emulator::ProcessAutoSaveState()
 {
-	if(_autoSaveStateFrameCounter > 0) {
-		_autoSaveStateFrameCounter--;
-		if(_autoSaveStateFrameCounter == 0) {
-			_saveStateManager->SaveAutoState();
-		}
-	} else {
-		uint32_t saveStateDelay = _settings->GetPreferences().AutoSaveStateDelay;
-		if(saveStateDelay > 0) {
-			_autoSaveStateFrameCounter = (uint32_t)(GetFps() * saveStateDelay * 60);
-		}
-	}
+uint32_t saveStateDelay = _settings->GetPreferences().AutoSaveStateDelay;
+
+if(_autoSaveStateFrameCounter > 0) {
+_autoSaveStateFrameCounter--;
+if(_autoSaveStateFrameCounter == 0) {
+_saveStateManager->SaveOriginState(SaveStateOrigin::Auto);
+}
+} else if(saveStateDelay > 0) {
+_autoSaveStateFrameCounter = (uint32_t)(GetFps() * saveStateDelay * 60);
 }
 
+//Recent play saves (every 5 minutes) are only active while auto-save is enabled
+if(_recentPlayFrameCounter > 0) {
+_recentPlayFrameCounter--;
+if(_recentPlayFrameCounter == 0) {
+_saveStateManager->SaveOriginState(SaveStateOrigin::RecentPlay);
+}
+} else if(saveStateDelay > 0) {
+_recentPlayFrameCounter = (uint32_t)(GetFps() * RecentPlaySaveIntervalSeconds);
+}
+}
 bool Emulator::ProcessSystemActions()
 {
 	if(_systemActionManager->IsResetPressed()) {
@@ -505,6 +513,7 @@ bool Emulator::InternalLoadRom(VirtualFile romFile, VirtualFile patchFile, bool 
 	_console->GetControlManager()->UpdateInputState();
 
 	_autoSaveStateFrameCounter = 0;
+	_recentPlayFrameCounter = 0;
 
 	//Mark the thread as paused, and release the debugger lock to avoid
 	//deadlocks with DebugBreakHelper if GameLoaded event starts the debugger

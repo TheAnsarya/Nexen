@@ -116,6 +116,8 @@ private:
 	double _frameDelay = 0;
 	
 	uint32_t _autoSaveStateFrameCounter = 0;
+	uint32_t _recentPlayFrameCounter = 0;
+	static constexpr uint32_t RecentPlaySaveIntervalSeconds = 300;
 	int32_t _stopCode = 0;
 	bool _stopRequested = false;
 

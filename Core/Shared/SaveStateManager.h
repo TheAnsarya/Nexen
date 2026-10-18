@@ -5,6 +5,14 @@
 class Emulator;
 struct RenderedFrame;
 
+//Which feature created a save; encoded as a filename prefix
+enum class SaveStateOrigin
+{
+	Manual,
+	Auto,
+	RecentPlay
+};
+
 struct SaveStateInfo
 {
 	string filepath;
@@ -17,8 +25,8 @@ class SaveStateManager
 {
 private:
 	static constexpr uint32_t MaxIndex = 10;
-	static constexpr uint32_t MaxAutoSaves = 20; //Oldest auto-saves are deleted beyond this count
-	static constexpr const char* AutoSavePrefix = "auto_";
+	static constexpr uint32_t MaxAutoSaves = 20; //Oldest saves of each origin are deleted beyond these counts
+	static constexpr uint32_t MaxRecentPlaySaves = 5;
 
 	atomic<uint32_t> _lastIndex;
 	Emulator* _emu;
@@ -26,7 +34,7 @@ private:
 	string GetStateFilepath(int stateIndex);
 	string GetRomSaveStateDirectory();
 	string GetTimestampedFilepath(const char* prefix = "");
-	void PruneAutoSaves();
+	void PruneOrigin(SaveStateOrigin origin);
 	static time_t ParseTimestampFromFilename(const string& filename);
 	void SaveVideoData(ostream& stream);
 	bool GetVideoData(vector<uint8_t>& out, RenderedFrame& frame, istream& stream);
@@ -64,7 +72,9 @@ public:
 
 	//Timestamped (unlimited) saves, stored as {SaveStates}/{RomName}/yyyy-MM-dd_HH-mm-ss.mss
 	string SaveTimestampedState();
-	string SaveAutoState();
+	string SaveOriginState(SaveStateOrigin origin);
+	static const char* GetOriginPrefix(SaveStateOrigin origin);
+	static SaveStateOrigin GetOrigin(const string& filepath);
 	vector<SaveStateInfo> GetSaveStateList();
 	bool DeleteSaveState(const string& filepath);
 	uint32_t GetSaveStateCount();

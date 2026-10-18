@@ -409,8 +409,11 @@ string SaveStateManager::GetTimestampedFilepath(const char* prefix)
 time_t SaveStateManager::ParseTimestampFromFilename(const string& filename)
 {
 	string name = FolderUtilities::GetFilename(filename, false);
-	if(name.rfind(AutoSavePrefix, 0) == 0) {
-		name = name.substr(strlen(AutoSavePrefix));
+	for(SaveStateOrigin origin : { SaveStateOrigin::Auto, SaveStateOrigin::RecentPlay }) {
+		string prefix = GetOriginPrefix(origin);
+		if(name.rfind(prefix, 0) == 0) {
+			name = name.substr(prefix.size());
+		}
 	}
 
 	tm t = {};
@@ -434,31 +437,52 @@ string SaveStateManager::SaveTimestampedState()
 	return "";
 }
 
-string SaveStateManager::SaveAutoState()
+const char* SaveStateManager::GetOriginPrefix(SaveStateOrigin origin)
 {
-	string filepath = GetTimestampedFilepath(AutoSavePrefix);
-	if(SaveState(filepath, false)) {
-		PruneAutoSaves();
-		return filepath;
-	}
-	return "";
+switch(origin) {
+case SaveStateOrigin::Auto: return "auto_";
+case SaveStateOrigin::RecentPlay: return "recent_";
+default: return "";
+}
 }
 
-void SaveStateManager::PruneAutoSaves()
+SaveStateOrigin SaveStateManager::GetOrigin(const string& filepath)
 {
-	vector<SaveStateInfo> autoSaves;
-	for(SaveStateInfo& info : GetSaveStateList()) {
-		if(FolderUtilities::GetFilename(info.filepath, true).rfind(AutoSavePrefix, 0) == 0) {
-			autoSaves.push_back(info);
-		}
-	}
-
-	//List is sorted newest first
-	for(size_t i = MaxAutoSaves; i < autoSaves.size(); i++) {
-		DeleteSaveState(autoSaves[i].filepath);
-	}
+string name = FolderUtilities::GetFilename(filepath, true);
+for(SaveStateOrigin origin : { SaveStateOrigin::Auto, SaveStateOrigin::RecentPlay }) {
+if(name.rfind(GetOriginPrefix(origin), 0) == 0) {
+return origin;
+}
+}
+return SaveStateOrigin::Manual;
 }
 
+string SaveStateManager::SaveOriginState(SaveStateOrigin origin)
+{
+string filepath = GetTimestampedFilepath(GetOriginPrefix(origin));
+if(SaveState(filepath, false)) {
+PruneOrigin(origin);
+return filepath;
+}
+return "";
+}
+
+void SaveStateManager::PruneOrigin(SaveStateOrigin origin)
+{
+if(origin == SaveStateOrigin::Manual) {
+return;
+}
+
+uint32_t maxCount = origin == SaveStateOrigin::Auto ? MaxAutoSaves : MaxRecentPlaySaves;
+uint32_t count = 0;
+
+//List is sorted newest first
+for(SaveStateInfo& info : GetSaveStateList()) {
+if(GetOrigin(info.filepath) == origin && ++count > maxCount) {
+DeleteSaveState(info.filepath);
+}
+}
+}
 vector<SaveStateInfo> SaveStateManager::GetSaveStateList()
 {
 	vector<SaveStateInfo> result;
