@@ -128,6 +128,10 @@ namespace Mesen.Config
 				Ws.InitializeDefaults(DefaultKeyMappings);
 			}
 
+			if(ConfigUpgrade < (int)ConfigUpgradeHint.QuickSaveSlot) {
+				Preferences.InitializeQuickSaveShortcuts();
+			}
+
 			ConfigUpgrade = (int)ConfigUpgradeHint.NextValue - 1;
 			Version = EmuApi.GetMesenVersion().ToString(3);
 		}
@@ -322,6 +326,7 @@ namespace Mesen.Config
 		GbaInput,
 		CvInput,
 		WsInput,
+		QuickSaveSlot,
 		NextValue,
 	}
 }

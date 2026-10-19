@@ -9,6 +9,12 @@
 			<Control ID="mnuDebug">_Debug</Control>
 			<Control ID="mnuHelp">_Help</Control>
 		</Form>
+		<Form ID="StateGrid">
+			<Control ID="SaveStatePaused">Paused</Control>
+			<Control ID="SaveStatePausedTip">Emulation is paused while this screen is open.</Control>
+			<Control ID="btnRestartGame">Restart game</Control>
+			<Control ID="RestartGameTip">When selected, the chosen game starts from the beginning and ignores its saved state.</Control>
+		</Form>
 		<Form ID="AudioConfigView">
 			<Control ID="tpgGeneral">General</Control>
 
@@ -1734,11 +1740,8 @@
 		<Message ID="AutoSave">Auto-save</Message>
 		<Message ID="RecentPlaySave">Recent play</Message>
 		<Message ID="ManualSave">Manual</Message>
-		<Message ID="SlotNumber">Slot #{0}</Message>
-		<Message ID="LoadStateDialog">Load State Menu</Message>
-		<Message ID="SaveStateDialog">Save State Menu</Message>
 		<Message ID="SaveStatePickerTitle">Save States</Message>
-		<Message ID="SaveStatePaused">Paused</Message>
+		<Message ID="GameSelectTitle">Game Select</Message>
 		<Message ID="DeleteSaveState">Delete</Message>
 
 		<Message ID="LoadFromFile">Load from file...</Message>
@@ -1903,8 +1906,8 @@ E
 			<Value ID="TakeScreenshot">Take Screenshot</Value>
 			<Value ID="MoveToNextStateSlot">Select Next Save Slot</Value>
 			<Value ID="MoveToPreviousStateSlot">Select Previous Save Slot</Value>
-			<Value ID="SaveState">Save State</Value>
-			<Value ID="LoadState">Load State</Value>
+			<Value ID="SaveState">Quick Save (Retry Slot)</Value>
+			<Value ID="LoadState">Quick Load (Retry Slot)</Value>
 			<Value ID="ToggleCheats">Enable/Disable Cheat Codes</Value>
 			<Value ID="ToggleAudio">Enable/Disable Audio</Value>
 			<Value ID="IncreaseVolume">Increase Volume</Value>
@@ -1959,10 +1962,9 @@ E
 			<Value ID="SaveStateSlot8">Save State - Slot 8</Value>
 			<Value ID="SaveStateSlot9">Save State - Slot 9</Value>
 			<Value ID="SaveStateSlot10">Save State - Slot 10</Value>
-			<Value ID="QuickSaveTimestamped">Quick Save (Timestamped)</Value>
-			<Value ID="OpenSaveStatePicker">Browse Save States</Value>
+			<Value ID="QuickSaveTimestamped">Save State</Value>
+			<Value ID="OpenSaveStatePicker">Load State</Value>
 			<Value ID="SaveStateToFile">Save State to File</Value>
-			<Value ID="SaveStateDialog">Open Save State Menu</Value>
 			<Value ID="LoadStateSlot1">Load State - Slot 1</Value>
 			<Value ID="LoadStateSlot2">Load State - Slot 2</Value>
 			<Value ID="LoadStateSlot3">Load State - Slot 3</Value>
@@ -1975,7 +1977,6 @@ E
 			<Value ID="LoadStateSlot10">Load State - Slot 10</Value>
 			<Value ID="LoadStateSlotAuto">Load State - Auto Save Slot</Value>
 			<Value ID="LoadStateFromFile">Load State from File</Value>
-			<Value ID="LoadStateDialog">Open Load State Menu</Value>
 			<Value ID="LoadLastSession">Load Last Session</Value>
 
 			<Value ID="SelectSaveSlot1">Select Save Slot 1</Value>
@@ -3469,6 +3470,7 @@ E
 			<Value ID="BuiltInScripts">Built-in Scripts</Value>
 
 			<Value ID="Open">Open</Value>
+			<Value ID="OpenGame">Open Game</Value>
 			<Value ID="Save">Save</Value>
 			<Value ID="SaveAs">Save as...</Value>
 			<Value ID="Exit">Exit</Value>
@@ -3589,17 +3591,16 @@ E
 			<Value ID="InsertCoin3">Insert Coin (3 - DualSystem)</Value>
 			<Value ID="InsertCoin4">Insert Coin (4 - DualSystem)</Value>
 
-			<Value ID="SaveState">Save State</Value>
-			<Value ID="LoadState">Load State</Value>
+			<Value ID="SaveState">Quick Save (Retry Slot)</Value>
+			<Value ID="LoadState">Quick Load (Retry Slot)</Value>
 			<Value ID="LoadLastSession">Load Last Session</Value>
 
-			<Value ID="LoadStateDialog">Load State Menu</Value>
-			<Value ID="LoadStateFromFile">Load from file...</Value>
+			<Value ID="LoadStateFromFile">Load State from File</Value>
 
-			<Value ID="QuickSaveTimestamped">Quick Save</Value>
-			<Value ID="OpenSaveStatePicker">Browse Save States...</Value>
-			<Value ID="SaveStateDialog">Save State Menu</Value>
-			<Value ID="SaveStateToFile">Save to file...</Value>
+			<Value ID="GameSelect">Game Select</Value>
+			<Value ID="QuickSaveTimestamped">Save State</Value>
+			<Value ID="OpenSaveStatePicker">Load State</Value>
+			<Value ID="SaveStateToFile">Save State to File</Value>
 
 			<Value ID="RecentFiles">Recent Files</Value>
 

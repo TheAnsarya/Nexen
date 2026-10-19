@@ -55,6 +55,8 @@ std::unordered_map<string, string> MessageManager::_enResources = {
 	{ "MovieSaved", u8"Movie saved to file: %1" },
 	{ "NetplayVersionMismatch", u8"Netplay client is not running the same version of Mesen and has been disconnected." },
 	{ "NetplayNotAllowed", u8"This action is not allowed while connected to a server." },
+	{ "NoSaveStates", u8"No save states found for this game." },
+	{ "NoRecentGames", u8"No recent games." },
 	{ "OverclockEnabled", u8"Overclocking enabled." },
 	{ "OverclockDisabled", u8"Overclocking disabled." },
 	{ "PrgSizeWarning", u8"PRG size is smaller than 32kb" },

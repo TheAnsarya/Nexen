@@ -146,6 +146,9 @@ namespace Mesen.Config
 
 			AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.LoadStateFromFile, KeyCombination = new KeyCombination() { Key1 = ctrl, Key2 = InputApi.GetKeyCode("L") } });
 
+			AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.SaveState, KeyCombination = new KeyCombination() { Key1 = InputApi.GetKeyCode("F2") } });
+			AddShortcut(new ShortcutKeyInfo { Shortcut = EmulatorShortcut.LoadState, KeyCombination = new KeyCombination() { Key1 = InputApi.GetKeyCode("F3") } });
+
 			foreach(EmulatorShortcut value in Enum.GetValues<EmulatorShortcut>()) {
 				if(value < EmulatorShortcut.LastValidValue) {
 					AddShortcut(new ShortcutKeyInfo { Shortcut = value });
@@ -157,39 +160,42 @@ namespace Mesen.Config
 
 		public void NormalizeSavestateShortcutBindings()
 		{
-			UInt16 f1 = InputApi.GetKeyCode("F1");
-			UInt16 shift = InputApi.GetKeyCode("Left Shift");
-			RemoveConflictingBinding(EmulatorShortcut.LoadStateSlot1, new[] { f1 });
-			RemoveConflictingBinding(EmulatorShortcut.SaveStateSlot1, new[] { shift, f1 });
-		}
+			//Numbered save slots are retired; their bindings would otherwise collide with the new shortcuts
+			foreach(ShortcutKeyInfo info in ShortcutKeys) {
+				if(!IsRetiredSlotShortcut(info.Shortcut)) {
+					continue;
+				}
 
-		private void RemoveConflictingBinding(EmulatorShortcut shortcut, UInt16[] reservedKeys)
-		{
-			ShortcutKeyInfo? info = ShortcutKeys.FirstOrDefault(item => item.Shortcut == shortcut);
-			if(info == null) {
-				return;
-			}
-
-			bool firstConflicts = IsSameKeyCombination(info.KeyCombination, reservedKeys);
-			bool secondConflicts = IsSameKeyCombination(info.KeyCombination2, reservedKeys);
-			if(firstConflicts && !secondConflicts && !info.KeyCombination2.IsEmpty) {
-				info.KeyCombination = info.KeyCombination2;
-				info.KeyCombination2 = new KeyCombination();
-			} else {
-				if(firstConflicts) {
+				if(!info.KeyCombination.IsEmpty) {
 					info.KeyCombination = new KeyCombination();
 				}
-				if(secondConflicts) {
+				if(!info.KeyCombination2.IsEmpty) {
 					info.KeyCombination2 = new KeyCombination();
 				}
 			}
 		}
 
-		private static bool IsSameKeyCombination(KeyCombination combination, UInt16[] keyCodes)
+		public void InitializeQuickSaveShortcuts()
 		{
-			UInt16[] actualKeys = new[] { combination.Key1, combination.Key2, combination.Key3 }.Where(key => key != 0).OrderBy(key => key).ToArray();
-			UInt16[] expectedKeys = keyCodes.OrderBy(key => key).ToArray();
-			return actualKeys.SequenceEqual(expectedKeys);
+			SetShortcutIfUnassigned(EmulatorShortcut.SaveState, "F2");
+			SetShortcutIfUnassigned(EmulatorShortcut.LoadState, "F3");
+		}
+
+		private void SetShortcutIfUnassigned(EmulatorShortcut shortcut, string keyName)
+		{
+			ShortcutKeyInfo? info = ShortcutKeys.FirstOrDefault(item => item.Shortcut == shortcut);
+			if(info != null && info.KeyCombination.IsEmpty && info.KeyCombination2.IsEmpty) {
+				info.KeyCombination = new KeyCombination() { Key1 = InputApi.GetKeyCode(keyName) };
+			}
+		}
+
+		private static bool IsRetiredSlotShortcut(EmulatorShortcut shortcut)
+		{
+			return (shortcut >= EmulatorShortcut.SelectSaveSlot1 && shortcut <= EmulatorShortcut.MoveToPreviousStateSlot)
+				|| (shortcut >= EmulatorShortcut.SaveStateSlot1 && shortcut <= EmulatorShortcut.SaveStateSlot10)
+				|| shortcut == EmulatorShortcut.SaveStateDialog
+				|| (shortcut >= EmulatorShortcut.LoadStateSlot1 && shortcut <= EmulatorShortcut.LoadStateSlotAuto)
+				|| shortcut == EmulatorShortcut.LoadStateDialog;
 		}
 
 		public void UpdateFileAssociations()

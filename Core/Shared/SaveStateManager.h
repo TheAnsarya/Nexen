@@ -26,6 +26,7 @@ class SaveStateManager
 {
 private:
 	static constexpr uint32_t MaxIndex = 10;
+	static constexpr int QuickSaveSlot = 1; //Single slot used by the quick save/load shortcuts
 	static constexpr uint32_t MaxAutoSaves = 20; //Oldest saves of each origin are deleted beyond these counts
 	static constexpr uint32_t MaxRecentPlaySaves = 5;
 

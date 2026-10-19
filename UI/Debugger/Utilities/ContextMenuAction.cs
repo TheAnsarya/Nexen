@@ -470,6 +470,8 @@ namespace Mesen.Debugger.Utilities
 
 		[IconFile("Folder")]
 		Open,
+		[IconFile("Folder")]
+		OpenGame,
 
 		[IconFile("SaveFloppy")]
 		Save,
@@ -704,11 +706,9 @@ namespace Mesen.Debugger.Utilities
 		[IconFile("SplitView")]
 		OpenSaveStatePicker,
 		[IconFile("SplitView")]
-		SaveStateDialog,
+		GameSelect,
 		[IconFile("SaveFloppy")]
 		SaveStateToFile,
-		[IconFile("SplitView")]
-		LoadStateDialog,
 		[IconFile("Folder")]
 		LoadStateFromFile,
 		

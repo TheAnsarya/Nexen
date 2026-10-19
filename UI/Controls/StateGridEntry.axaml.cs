@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Mesen.Interop;
@@ -25,6 +26,7 @@ namespace Mesen.Controls
 		public static readonly StyledProperty<string> TitleProperty = AvaloniaProperty.Register<StateGridEntry, string>(nameof(Title));
 		public static readonly StyledProperty<string> SubTitleProperty = AvaloniaProperty.Register<StateGridEntry, string>(nameof(SubTitle));
 		public static readonly StyledProperty<string> BadgeTextProperty = AvaloniaProperty.Register<StateGridEntry, string>(nameof(BadgeText));
+		public static readonly StyledProperty<IBrush?> BadgeBrushProperty = AvaloniaProperty.Register<StateGridEntry, IBrush?>(nameof(BadgeBrush));
 		public static readonly StyledProperty<bool> EnabledProperty = AvaloniaProperty.Register<StateGridEntry, bool>(nameof(Enabled));
 		public static readonly StyledProperty<bool> IsActiveEntryProperty = AvaloniaProperty.Register<StateGridEntry, bool>(nameof(IsActiveEntry));
 		public static readonly StyledProperty<double> AspectRatioProperty = AvaloniaProperty.Register<StateGridEntry, double>(nameof(AspectRatio));
@@ -77,6 +79,12 @@ namespace Mesen.Controls
 			set { SetValue(BadgeTextProperty, value); }
 		}
 
+		public IBrush? BadgeBrush
+		{
+			get { return GetValue(BadgeBrushProperty); }
+			set { SetValue(BadgeBrushProperty, value); }
+		}
+
 		static StateGridEntry()
 		{
 			//Make empty image black
@@ -117,6 +125,7 @@ namespace Mesen.Controls
 
 			Title = game.Name;
 			BadgeText = game.BadgeText;
+			BadgeBrush = Brush.Parse(game.BadgeColor);
 
 			bool fileExists = File.Exists(game.FileName);
 			if(game.Timestamp.HasValue) {
@@ -136,7 +145,7 @@ namespace Mesen.Controls
 			} else {
 				SubTitle = ResourceHelper.GetMessage("EmptyState");
 			}
-			Enabled = fileExists || game.SaveMode;
+			Enabled = fileExists;
 			Image = StateGridEntry.EmptyImage;
 
 			if(fileExists) {

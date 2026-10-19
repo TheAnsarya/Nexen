@@ -68,7 +68,7 @@
 					VerticalAlignment="Center"
 				/>
 			</Button>
-			<Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" IsVisible="{Binding BadgeText.Length, ElementName=root}" Background="#CC202020" BorderBrush="#CCFFFFFF" BorderThickness="1" CornerRadius="3" Padding="5 2" IsHitTestVisible="False">
+			<Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" IsVisible="{Binding BadgeText.Length, ElementName=root}" Background="{Binding BadgeBrush, ElementName=root}" BorderBrush="#CCFFFFFF" BorderThickness="1" CornerRadius="3" Padding="5 2" IsHitTestVisible="False">
 				<TextBlock Text="{Binding BadgeText, ElementName=root}" Foreground="White" FontSize="11" />
 			</Border>
 		</Grid>

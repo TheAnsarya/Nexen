@@ -105,10 +105,7 @@ namespace Mesen.ViewModels
 				EmulatorShortcut.LoadState,
 
 				EmulatorShortcut.SaveStateToFile,
-				EmulatorShortcut.SaveStateDialog,
-
 				EmulatorShortcut.LoadStateFromFile,
-				EmulatorShortcut.LoadStateDialog,
 				EmulatorShortcut.LoadLastSession,
 			};
 

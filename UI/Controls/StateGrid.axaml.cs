@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Markup.Xaml;
 using Mesen.ViewModels;
 using System;
@@ -22,6 +23,8 @@ namespace Mesen.Controls
 		public static readonly StyledProperty<bool> ShowArrowsProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(ShowArrows));
 		public static readonly StyledProperty<bool> ShowCloseProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(ShowClose));
 		public static readonly StyledProperty<bool> IsPausedProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(IsPaused));
+		public static readonly StyledProperty<bool> ShowRestartProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(ShowRestart));
+		public static readonly StyledProperty<bool> RestartGameProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(RestartGame), defaultBindingMode: BindingMode.TwoWay);
 		public static readonly StyledProperty<GameScreenMode> ModeProperty = AvaloniaProperty.Register<StateGrid, GameScreenMode>(nameof(Mode));
 		public static readonly StyledProperty<int> SelectedIndexProperty = AvaloniaProperty.Register<StateGrid, int>(nameof(SelectedIndex));
 
@@ -59,6 +62,18 @@ namespace Mesen.Controls
 		{
 			get { return GetValue(IsPausedProperty); }
 			set { SetValue(IsPausedProperty, value); }
+		}
+
+		public bool ShowRestart
+		{
+			get { return GetValue(ShowRestartProperty); }
+			set { SetValue(ShowRestartProperty, value); }
+		}
+
+		public bool RestartGame
+		{
+			get { return GetValue(RestartGameProperty); }
+			set { SetValue(RestartGameProperty, value); }
 		}
 
 		public GameScreenMode Mode
@@ -144,10 +159,7 @@ namespace Mesen.Controls
 		private void OnCloseClick(object sender, RoutedEventArgs e)
 		{
 			if(DataContext is RecentGamesViewModel model) {
-				if(model.NeedResume) {
-					EmuApi.Resume();
-				}
-				model.Visible = false;
+				model.Close();
 			}
 		}
 
@@ -225,7 +237,8 @@ namespace Mesen.Controls
 			int startIndex = elementsPerPage * SelectedPage;
 
 			ShowArrows = Entries.Count > elementsPerPage;
-			ShowClose = Mode != GameScreenMode.RecentGames;
+			ShowClose = Mode != GameScreenMode.RecentGames || EmuApi.IsRunning();
+			ShowRestart = Mode == GameScreenMode.RecentGames;
 
 			List<StateGridEntry> entries = new();
 			for(int row = 0; row < rowCount; row++) {

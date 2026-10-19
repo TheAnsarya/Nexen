@@ -94,12 +94,16 @@ namespace Mesen.ViewModels
 		private void InitFileMenu(MainWindow wnd)
 		{
 			FileMenuItems = new List<object>() {
-				new ShortcutMenuAction(EmulatorShortcut.OpenFile) { ActionType = ActionType.Open },
+				new ShortcutMenuAction(EmulatorShortcut.OpenFile) { ActionType = ActionType.OpenGame },
+				new SimpleMenuAction(ActionType.GameSelect) {
+					OnClick = () => Dispatcher.UIThread.Post(() => MainWindow.RecentGames.ShowGameSelect())
+				},
 				new MenuSeparator(),
 				new ShortcutMenuAction(EmulatorShortcut.QuickSaveTimestamped) { ActionType = ActionType.QuickSaveTimestamped },
 				new ShortcutMenuAction(EmulatorShortcut.OpenSaveStatePicker) { ActionType = ActionType.OpenSaveStatePicker },
-				new ShortcutMenuAction(EmulatorShortcut.SaveStateDialog) { ActionType = ActionType.SaveStateDialog },
-				new ShortcutMenuAction(EmulatorShortcut.LoadStateDialog) { ActionType = ActionType.LoadStateDialog },
+				new MenuSeparator(),
+				new ShortcutMenuAction(EmulatorShortcut.SaveState) { ActionType = ActionType.SaveState },
+				new ShortcutMenuAction(EmulatorShortcut.LoadState) { ActionType = ActionType.LoadState },
 				new MenuSeparator(),
 				new ShortcutMenuAction(EmulatorShortcut.SaveStateToFile) { ActionType = ActionType.SaveStateToFile },
 				new ShortcutMenuAction(EmulatorShortcut.LoadStateFromFile) { ActionType = ActionType.LoadStateFromFile },

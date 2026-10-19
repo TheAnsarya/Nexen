@@ -20,6 +20,7 @@ namespace Mesen.ViewModels
 		[Reactive] public bool Visible { get; set; }
 		[Reactive] public bool NeedResume { get; private set; }
 		[Reactive] public bool IsPaused { get; private set; }
+		[Reactive] public bool RestartGame { get; set; }
 		[Reactive] public string Title { get; private set; } = "";
 		[Reactive] public GameScreenMode Mode { get; private set; }
 		[Reactive] public List<RecentGameInfo> GameEntries { get; private set; } = new List<RecentGameInfo>();
@@ -49,48 +50,62 @@ namespace Mesen.ViewModels
 
 			Mode = mode;
 
-			List<RecentGameInfo> entries = new();
-
 			if(mode == GameScreenMode.RecentGames) {
 				NeedResume = false;
 				IsPaused = false;
-				Title = string.Empty;
-
-				List<string> files = Directory.GetFiles(ConfigManager.RecentGamesFolder, "*.rgd").OrderByDescending((file) => new FileInfo(file).LastWriteTime).ToList();
-				for(int i = 0; i < files.Count && entries.Count < 72; i++) {
-					entries.Add(new RecentGameInfo() { FileName = files[i], Name = Path.GetFileNameWithoutExtension(files[i]) });
-				}
-} else if(mode == GameScreenMode.SaveStatePicker) {
-						if(!Visible) {
-							NeedResume = Pause();
-						}
-
-						Title = ResourceHelper.GetMessage("SaveStatePickerTitle");
-						entries = GetTimestampedEntries();
-					} else {
+				RestartGame = false;
+				Title = ResourceHelper.GetMessage("GameSelectTitle");
+				ShowEntries(GetRecentGameEntries());
+			} else {
 				if(!Visible) {
 					NeedResume = Pause();
 				}
 
-				Title = mode == GameScreenMode.LoadState ? ResourceHelper.GetMessage("LoadStateDialog") : ResourceHelper.GetMessage("SaveStateDialog");
-				
-				string romName = EmuApi.GetRomInfo().GetRomName();
-				for(int i = 0; i < (mode == GameScreenMode.LoadState ? 11 : 10); i++) {
-					entries.Add(new RecentGameInfo() {
-						FileName = Path.Combine(ConfigManager.SaveStateFolder, romName + "_" + (i + 1) + "." + FileDialogHelper.MesenSaveStateExt),
-						StateIndex = i + 1,
-						Name = i == 10 ? ResourceHelper.GetMessage("AutoSave") : ResourceHelper.GetMessage("SlotNumber", i + 1),
-						SaveMode = mode == GameScreenMode.SaveState
-					});
-				}
-				if(mode == GameScreenMode.LoadState) {
-					entries.Add(new RecentGameInfo() {
-						FileName = Path.Combine(ConfigManager.RecentGamesFolder, romName + ".rgd"),
-						Name = ResourceHelper.GetMessage("LastSession")
-					});
+				Title = ResourceHelper.GetMessage("SaveStatePickerTitle");
+				List<RecentGameInfo> entries = GetTimestampedEntries();
+				ShowEntries(entries);
+				if(entries.Count == 0) {
+					EmuApi.DisplayMessage("SaveStates", "NoSaveStates");
 				}
 			}
+		}
 
+		public void ShowGameSelect()
+		{
+			if(Visible && Mode == GameScreenMode.RecentGames) {
+				if(EmuApi.IsRunning()) {
+					Close();
+				}
+				return;
+			}
+
+			List<RecentGameInfo> entries = GetRecentGameEntries();
+			if(entries.Count == 0) {
+				EmuApi.DisplayMessage("SaveStates", "NoRecentGames");
+				return;
+			}
+
+			if(!EmuApi.IsRunning()) {
+				NeedResume = false;
+			} else if(!Visible) {
+				NeedResume = Pause();
+			}
+
+			Mode = GameScreenMode.RecentGames;
+			RestartGame = false;
+			Title = ResourceHelper.GetMessage("GameSelectTitle");
+			ShowEntries(entries);
+		}
+
+		public void Close()
+		{
+			Visible = false;
+			RestartGame = false;
+			ResumeIfNeeded();
+		}
+
+		private void ShowEntries(List<RecentGameInfo> entries)
+		{
 			Visible = entries.Count > 0;
 			if(!Visible) {
 				ResumeIfNeeded();
@@ -100,16 +115,31 @@ namespace Mesen.ViewModels
 			GameEntries = entries;
 		}
 
+		private List<RecentGameInfo> GetRecentGameEntries()
+		{
+			List<RecentGameInfo> entries = new();
+			List<string> files = Directory.GetFiles(ConfigManager.RecentGamesFolder, "*.rgd").OrderByDescending((file) => new FileInfo(file).LastWriteTime).ToList();
+			for(int i = 0; i < files.Count && entries.Count < 72; i++) {
+				entries.Add(new RecentGameInfo() { FileName = files[i], Name = Path.GetFileNameWithoutExtension(files[i]), ForceRestart = () => RestartGame });
+			}
+			return entries;
+		}
+
 		private List<RecentGameInfo> GetTimestampedEntries()
 		{
 			List<RecentGameInfo> entries = new();
 			foreach(SaveStateInfo state in EmuApi.GetSaveStateList()) {
-				string originLabel = state.IsAutoSave ? ResourceHelper.GetMessage("AutoSave") :
-					state.IsRecentPlaySave ? ResourceHelper.GetMessage("RecentPlaySave") : ResourceHelper.GetMessage("ManualSave");
+				(string label, string color) = state.Origin switch {
+					SaveStateOrigin.Auto => (ResourceHelper.GetMessage("AutoSave"), "#2E9E5B"),
+					SaveStateOrigin.RecentPlay => (ResourceHelper.GetMessage("RecentPlaySave"), "#D9822B"),
+					_ => (ResourceHelper.GetMessage("ManualSave"), "#1E6FD9")
+				};
+
 				entries.Add(new RecentGameInfo() {
 					FileName = state.FilePath,
 					Name = state.Timestamp.ToString("g"),
-					BadgeText = originLabel,
+					BadgeText = label,
+					BadgeColor = color,
 					Timestamp = state.Timestamp,
 					OnDeleted = RefreshPicker
 				});
@@ -126,8 +156,8 @@ namespace Mesen.ViewModels
 			List<RecentGameInfo> entries = GetTimestampedEntries();
 			GameEntries = entries;
 			if(entries.Count == 0) {
-				Visible = false;
-				ResumeIfNeeded();
+				Close();
+				EmuApi.DisplayMessage("SaveStates", "NoSaveStates");
 			}
 		}
 
@@ -155,26 +185,26 @@ namespace Mesen.ViewModels
 	public enum GameScreenMode
 	{
 		RecentGames,
-		LoadState,
-		SaveState,
 		SaveStatePicker
 	}
 
 	public class RecentGameInfo
 	{
 		public string FileName { get; set; } = "";
-		public int StateIndex { get; set; } = -1;
 		public string Name { get; set; } = "";
-		public bool SaveMode { get; set; } = false;
 		public string BadgeText { get; set; } = "";
+		public string BadgeColor { get; set; } = "#1E6FD9";
 
 		//Set for timestamped saves (picker mode)
 		public DateTime? Timestamp { get; set; }
 		public Action? OnDeleted { get; set; }
 
+		//Set for recent games: when true, the saved state is ignored and the game starts from the beginning
+		public Func<bool>? ForceRestart { get; set; }
+
 		public bool IsEnabled()
 		{
-			return SaveMode || File.Exists(FileName);
+			return File.Exists(FileName);
 		}
 
 		public void Delete()
@@ -188,21 +218,12 @@ namespace Mesen.ViewModels
 		{
 			if(Timestamp.HasValue) {
 				Task.Run(() => {
+					//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side
 					EmuApi.LoadStateFile(FileName);
 					EmuApi.Resume();
 				});
-			} else if(StateIndex > 0) {
-				Task.Run(() => {
-					//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side
-					if(SaveMode) {
-						EmuApi.SaveState((uint)StateIndex);
-					} else {
-						EmuApi.LoadState((uint)StateIndex);
-					}
-					EmuApi.Resume();
-				});
 			} else {
-				LoadRomHelper.LoadRecentGame(FileName, false);
+				LoadRomHelper.LoadRecentGame(FileName, false, ForceRestart?.Invoke() == true);
 				EmuApi.Resume();
 			}
 		}

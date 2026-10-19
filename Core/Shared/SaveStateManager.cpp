@@ -52,12 +52,12 @@ void SaveStateManager::MoveToPreviousSlot()
 
 void SaveStateManager::SaveState()
 {
-	SaveState(_lastIndex);
+	SaveState(QuickSaveSlot);
 }
 
 bool SaveStateManager::LoadState()
 {
-	return LoadState(_lastIndex);
+	return LoadState(QuickSaveSlot);
 }
 
 void SaveStateManager::GetSaveStateHeader(ostream &stream)

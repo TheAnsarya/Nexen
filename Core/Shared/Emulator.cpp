@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include <assert.h>
 #include "Shared/Emulator.h"
 #include "Shared/NotificationManager.h"
@@ -170,33 +170,26 @@ void Emulator::Run()
 
 void Emulator::ProcessAutoSaveState()
 {
-uint32_t saveStateDelay = _settings->GetPreferences().AutoSaveStateDelay;
+	double fps = GetFps();
+	if(fps < 1) {
+		fps = 60;
+	}
 
-if(saveStateDelay == 0) {
-_autoSaveStateFrameCounter = 0;
-_recentPlayFrameCounter = 0;
-return;
+	//Counters hold elapsed frames so interval changes apply immediately
+	uint32_t autoSaveDelay = _settings->GetPreferences().AutoSaveStateDelay;
+	if(autoSaveDelay == 0) {
+		_autoSaveStateFrameCounter = 0;
+	} else if(++_autoSaveStateFrameCounter >= (uint32_t)(fps * autoSaveDelay * 60)) {
+		_autoSaveStateFrameCounter = 0;
+		_saveStateManager->SaveOriginState(SaveStateOrigin::Auto);
+	}
+
+	if(++_recentPlayFrameCounter >= (uint32_t)(fps * RecentPlaySaveIntervalSeconds)) {
+		_recentPlayFrameCounter = 0;
+		_saveStateManager->SaveOriginState(SaveStateOrigin::RecentPlay);
+	}
 }
 
-if(_autoSaveStateFrameCounter > 0) {
-_autoSaveStateFrameCounter--;
-if(_autoSaveStateFrameCounter == 0) {
-_saveStateManager->SaveOriginState(SaveStateOrigin::Auto);
-}
-} else if(saveStateDelay > 0) {
-_autoSaveStateFrameCounter = (uint32_t)(GetFps() * saveStateDelay * 60);
-}
-
-//Recent play saves (every 5 minutes) are only active while auto-save is enabled
-if(_recentPlayFrameCounter > 0) {
-_recentPlayFrameCounter--;
-if(_recentPlayFrameCounter == 0) {
-_saveStateManager->SaveOriginState(SaveStateOrigin::RecentPlay);
-}
-} else if(saveStateDelay > 0) {
-_recentPlayFrameCounter = (uint32_t)(GetFps() * RecentPlaySaveIntervalSeconds);
-}
-}
 bool Emulator::ProcessSystemActions()
 {
 	if(_systemActionManager->IsResetPressed()) {
@@ -517,6 +510,11 @@ bool Emulator::InternalLoadRom(VirtualFile romFile, VirtualFile patchFile, bool 
 
 	_console->GetControlManager()->UpdateControlDevices();
 	_console->GetControlManager()->UpdateInputState();
+
+	if(!forPowerCycle) {
+		//A newly loaded game never starts paused, even if the previous game was paused
+		_paused = false;
+	}
 
 	_autoSaveStateFrameCounter = 0;
 	_recentPlayFrameCounter = 0;

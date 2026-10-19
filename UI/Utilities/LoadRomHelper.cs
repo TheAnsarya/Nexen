@@ -57,7 +57,7 @@ namespace Mesen.Utilities
 			});
 		}
 
-		public static void LoadRecentGame(string filename, bool forceLoadState)
+		public static void LoadRecentGame(string filename, bool forceLoadState, bool forceRestart = false)
 		{
 			//Temporarily hide selection screen to allow displaying error messages
 			MainWindowViewModel.Instance.RecentGames.Visible = false;
@@ -65,7 +65,7 @@ namespace Mesen.Utilities
 			Task.Run(() => {
 				//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side
 				if(File.Exists(filename)) {
-					EmuApi.LoadRecentGame(filename, !forceLoadState && ConfigManager.Config.Preferences.GameSelectionScreenMode == GameSelectionMode.PowerOn);
+					EmuApi.LoadRecentGame(filename, forceRestart || (!forceLoadState && ConfigManager.Config.Preferences.GameSelectionScreenMode == GameSelectionMode.PowerOn));
 				}
 				ShowSelectionOnScreenAfterError();
 			});

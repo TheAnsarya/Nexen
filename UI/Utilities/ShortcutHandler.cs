@@ -107,20 +107,6 @@ namespace Mesen.Utilities
 					LoadRomHelper.LoadRecentGame(filename, true);
 					break;
 
-				case EmulatorShortcut.LoadStateDialog:
-					if(isFullscreen) {
-						_mainWindow.ToggleFullscreen();
-					}
-					MainWindowModel.RecentGames.Init(GameScreenMode.LoadState);
-					break;
-
-				case EmulatorShortcut.SaveStateDialog:
-					if(isFullscreen) {
-						_mainWindow.ToggleFullscreen();
-					}
-					MainWindowModel.RecentGames.Init(GameScreenMode.SaveState);
-					break;
-
 				case EmulatorShortcut.OpenSaveStatePicker:
 					if(isFullscreen) {
 						_mainWindow.ToggleFullscreen();
