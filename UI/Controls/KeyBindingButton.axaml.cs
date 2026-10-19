@@ -25,6 +25,15 @@ namespace Mesen.Controls
 			set { SetValue(KeyBindingProperty, value); }
 		}
 
+		public static readonly StyledProperty<string> EmptyTextProperty = AvaloniaProperty.Register<KeyBindingButton, string>(nameof(EmptyText), "");
+
+		//Text shown while no input is bound
+		public string EmptyText
+		{
+			get { return GetValue(EmptyTextProperty); }
+			set { SetValue(EmptyTextProperty, value); }
+		}
+
 		public KeyBindingButton()
 		{
 			InitializeComponent();
@@ -79,13 +88,15 @@ namespace Mesen.Controls
 			if(change.Property == KeyBindingProperty) {
 				UInt16 value = Convert.ToUInt16(change.NewValue);
 				SetKeyName(value);
+			} else if(change.Property == EmptyTextProperty) {
+				SetKeyName(KeyBinding);
 			}
 		}
 
 		private void SetKeyName(ushort value)
 		{
 			string keyname = InputApi.GetKeyName(value);
-			this.Content = keyname;
+			this.Content = string.IsNullOrEmpty(keyname) ? EmptyText : keyname;
 			KeyBindingButton.SetBindingButtonTooltip(this, keyname);
 		}
 

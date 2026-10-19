@@ -981,6 +981,12 @@
 			<Control ID="btnOK">OK</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
+		<Form ID="ControllerBindingsView">
+			<Control ID="lblBindingsHint">Each button can have up to 4 inputs (keyboard keys or gamepad buttons), so for example both X and L1 can press the emulated X. Turbo inputs press the button repeatedly while held; set the speed below. Right-click an input to clear it. The Key Set pages show the same bindings arranged on the controller.</Control>
+			<Control ID="lblBindingsButton">Button</Control>
+			<Control ID="lblBindingsInputs">Inputs</Control>
+			<Control ID="lblBindingsTurbo">Turbo inputs</Control>
+		</Form>
 		<Form ID="ControllerConfigWindow">
 			<Control ID="Title">Controller Configuration</Control>
 
@@ -988,6 +994,7 @@
 			<Control ID="btnSetDefaultBindings">Set Default Bindings</Control>
 			<Control ID="btnClear">Clear Key Bindings</Control>
 			
+			<Control ID="tpgBindings">Bindings</Control>
 			<Control ID="tpgSet1">Key Set #1</Control>
 			<Control ID="tpgSet2">Key Set #2</Control>
 			<Control ID="tpgSet3">Key Set #3</Control>

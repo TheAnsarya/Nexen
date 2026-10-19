@@ -25,6 +25,10 @@ namespace Mesen.ViewModels
 		[Reactive] public bool IsTwoButtonController { get; set; } = false;
 		[Reactive] public bool ShowTurbo { get; set; } = false;
 
+		public List<ButtonBindingsRowViewModel> ButtonRows { get; } = new();
+		public bool HasBindingsEditor { get; }
+		public int DefaultTabIndex => HasBindingsEditor ? 0 : 1;
+
 		[Obsolete("For designer only")]
 		public ControllerConfigViewModel() : this(ControllerType.SnesController, new ControllerConfig(), new ControllerConfig(), 0) { }
 
@@ -42,6 +46,13 @@ namespace Mesen.ViewModels
 			ShowPresets = type.HasPresets();
 			IsTwoButtonController = type.IsTwoButtonController();
 			ShowTurbo = type.HasTurbo();
+
+			IReadOnlyList<ControllerButtonDef>? layout = ControllerButtonLayouts.Get(type);
+			if(layout != null) {
+				KeyMapping[] keySets = { config.Mapping1, config.Mapping2, config.Mapping3, config.Mapping4 };
+				ButtonRows = layout.Select(button => new ButtonBindingsRowViewModel(button, keySets)).ToList();
+				HasBindingsEditor = true;
+			}
 		}
 	}
 

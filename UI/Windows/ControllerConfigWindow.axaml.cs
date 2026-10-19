@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using System;
 using Avalonia.Markup.Xaml;
 using Mesen.Config;
 using Avalonia.Interactivity;
@@ -75,7 +76,8 @@ namespace Mesen.Windows
 
 		private void SetDefaultMappings(KeyPresetType? preset)
 		{
-			int index = this.GetControl<TabControl>("tabMain").SelectedIndex;
+			//Tab 0 is the combined Bindings page, tabs 1-4 are the individual key sets
+			int index = Math.Max(0, this.GetControl<TabControl>("tabMain").SelectedIndex - 1);
 			ControllerConfig cfg = Model.Config;
 			switch(index) {
 				case 0: cfg.Mapping1.SetDefaultKeys(Model.Type, preset); Model.KeyMapping1.RefreshCustomKeys(); break;
@@ -87,9 +89,22 @@ namespace Mesen.Windows
 
 		private void btnClearBindings_OnClick(object sender, RoutedEventArgs e)
 		{
-			int index = this.GetControl<TabControl>("tabMain").SelectedIndex;
+			int tab = this.GetControl<TabControl>("tabMain").SelectedIndex;
 			ControllerConfig cfg = Model.Config;
-			switch(index) {
+			if(tab == 0 && Model.HasBindingsEditor) {
+				//The Bindings page shows every key set, so clear all of them
+				cfg.Mapping1.ClearKeys(Model.Type);
+				cfg.Mapping2.ClearKeys(Model.Type);
+				cfg.Mapping3.ClearKeys(Model.Type);
+				cfg.Mapping4.ClearKeys(Model.Type);
+				Model.KeyMapping1.RefreshCustomKeys();
+				Model.KeyMapping2.RefreshCustomKeys();
+				Model.KeyMapping3.RefreshCustomKeys();
+				Model.KeyMapping4.RefreshCustomKeys();
+				return;
+			}
+
+			switch(Math.Max(0, tab - 1)) {
 				case 0: cfg.Mapping1.ClearKeys(Model.Type); Model.KeyMapping1.RefreshCustomKeys(); break;
 				case 1: cfg.Mapping2.ClearKeys(Model.Type); Model.KeyMapping2.RefreshCustomKeys(); break;
 				case 2: cfg.Mapping3.ClearKeys(Model.Type); Model.KeyMapping3.RefreshCustomKeys(); break;

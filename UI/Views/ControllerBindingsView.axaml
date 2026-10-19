@@ -1,0 +1,77 @@
+<UserControl
+	xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:vm="using:Mesen.ViewModels"
+	xmlns:l="using:Mesen.Localization"
+	xmlns:c="using:Mesen.Controls"
+	mc:Ignorable="d" d:DesignWidth="610" d:DesignHeight="400"
+	x:DataType="vm:ControllerConfigViewModel"
+	x:Class="Mesen.Views.ControllerBindingsView"
+>
+	<Design.DataContext>
+		<vm:ControllerConfigViewModel />
+	</Design.DataContext>
+
+	<DockPanel Margin="8">
+		<TextBlock DockPanel.Dock="Top" Text="{l:Translate lblBindingsHint}" TextWrapping="Wrap" MaxWidth="600" HorizontalAlignment="Left" Margin="0 0 0 8" />
+
+		<ScrollViewer AllowAutoHide="False" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" MaxHeight="380" MinWidth="610">
+			<StackPanel Grid.IsSharedSizeScope="True">
+				<Grid Margin="0 0 0 4">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" SharedSizeGroup="ButtonName" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="Inputs" />
+						<ColumnDefinition Width="Auto" SharedSizeGroup="Turbo" />
+					</Grid.ColumnDefinitions>
+					<TextBlock Grid.Column="0" Text="{l:Translate lblBindingsButton}" FontWeight="Bold" Margin="0 0 15 0" />
+					<TextBlock Grid.Column="1" Text="{l:Translate lblBindingsInputs}" FontWeight="Bold" Margin="0 0 15 0" />
+					<TextBlock Grid.Column="2" Text="{l:Translate lblBindingsTurbo}" FontWeight="Bold" />
+				</Grid>
+
+				<ItemsControl ItemsSource="{Binding ButtonRows}">
+					<ItemsControl.ItemTemplate>
+						<DataTemplate x:DataType="vm:ButtonBindingsRowViewModel">
+							<Grid Margin="0 2">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto" SharedSizeGroup="ButtonName" />
+									<ColumnDefinition Width="Auto" SharedSizeGroup="Inputs" />
+									<ColumnDefinition Width="Auto" SharedSizeGroup="Turbo" />
+								</Grid.ColumnDefinitions>
+
+								<TextBlock Grid.Column="0" Text="{Binding Label}" VerticalAlignment="Center" MinWidth="100" Margin="0 0 15 0" />
+
+								<ItemsControl Grid.Column="1" ItemsSource="{Binding Inputs.Slots}" Margin="0 0 15 0">
+									<ItemsControl.ItemsPanel>
+										<ItemsPanelTemplate>
+											<StackPanel Orientation="Horizontal" Spacing="4" />
+										</ItemsPanelTemplate>
+									</ItemsControl.ItemsPanel>
+									<ItemsControl.ItemTemplate>
+										<DataTemplate x:DataType="vm:BindingSlotViewModel">
+											<c:KeyBindingButton Width="100" Height="26" IsVisible="{Binding IsVisible}" KeyBinding="{Binding Key, Mode=TwoWay}" EmptyText="+" />
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+
+								<ItemsControl Grid.Column="2" ItemsSource="{Binding TurboInputs.Slots}" IsVisible="{Binding HasTurbo}">
+									<ItemsControl.ItemsPanel>
+										<ItemsPanelTemplate>
+											<StackPanel Orientation="Horizontal" Spacing="4" />
+										</ItemsPanelTemplate>
+									</ItemsControl.ItemsPanel>
+									<ItemsControl.ItemTemplate>
+										<DataTemplate x:DataType="vm:BindingSlotViewModel">
+											<c:KeyBindingButton Width="100" Height="26" IsVisible="{Binding IsVisible}" KeyBinding="{Binding Key, Mode=TwoWay}" EmptyText="+" />
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</Grid>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+			</StackPanel>
+		</ScrollViewer>
+	</DockPanel>
+</UserControl>
