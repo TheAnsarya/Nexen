@@ -98,6 +98,8 @@ namespace Mesen.ViewModels
 				new MenuSeparator(),
 				new ShortcutMenuAction(EmulatorShortcut.QuickSaveTimestamped) { ActionType = ActionType.QuickSaveTimestamped },
 				new ShortcutMenuAction(EmulatorShortcut.OpenSaveStatePicker) { ActionType = ActionType.OpenSaveStatePicker },
+				new ShortcutMenuAction(EmulatorShortcut.SaveStateDialog) { ActionType = ActionType.SaveStateDialog },
+				new ShortcutMenuAction(EmulatorShortcut.LoadStateDialog) { ActionType = ActionType.LoadStateDialog },
 				new MenuSeparator(),
 				new ShortcutMenuAction(EmulatorShortcut.SaveStateToFile) { ActionType = ActionType.SaveStateToFile },
 				new ShortcutMenuAction(EmulatorShortcut.LoadStateFromFile) { ActionType = ActionType.LoadStateFromFile },

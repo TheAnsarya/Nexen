@@ -151,6 +151,45 @@ namespace Mesen.Config
 					AddShortcut(new ShortcutKeyInfo { Shortcut = value });
 				}
 			}
+
+			NormalizeSavestateShortcutBindings();
+		}
+
+		public void NormalizeSavestateShortcutBindings()
+		{
+			UInt16 f1 = InputApi.GetKeyCode("F1");
+			UInt16 shift = InputApi.GetKeyCode("Left Shift");
+			RemoveConflictingBinding(EmulatorShortcut.LoadStateSlot1, new[] { f1 });
+			RemoveConflictingBinding(EmulatorShortcut.SaveStateSlot1, new[] { shift, f1 });
+		}
+
+		private void RemoveConflictingBinding(EmulatorShortcut shortcut, UInt16[] reservedKeys)
+		{
+			ShortcutKeyInfo? info = ShortcutKeys.FirstOrDefault(item => item.Shortcut == shortcut);
+			if(info == null) {
+				return;
+			}
+
+			bool firstConflicts = IsSameKeyCombination(info.KeyCombination, reservedKeys);
+			bool secondConflicts = IsSameKeyCombination(info.KeyCombination2, reservedKeys);
+			if(firstConflicts && !secondConflicts && !info.KeyCombination2.IsEmpty) {
+				info.KeyCombination = info.KeyCombination2;
+				info.KeyCombination2 = new KeyCombination();
+			} else {
+				if(firstConflicts) {
+					info.KeyCombination = new KeyCombination();
+				}
+				if(secondConflicts) {
+					info.KeyCombination2 = new KeyCombination();
+				}
+			}
+		}
+
+		private static bool IsSameKeyCombination(KeyCombination combination, UInt16[] keyCodes)
+		{
+			UInt16[] actualKeys = new[] { combination.Key1, combination.Key2, combination.Key3 }.Where(key => key != 0).OrderBy(key => key).ToArray();
+			UInt16[] expectedKeys = keyCodes.OrderBy(key => key).ToArray();
+			return actualKeys.SequenceEqual(expectedKeys);
 		}
 
 		public void UpdateFileAssociations()
@@ -205,6 +244,7 @@ namespace Mesen.Config
 
 		public void ApplyConfig()
 		{
+			NormalizeSavestateShortcutBindings();
 			UpdateFonts();
 
 			List<InteropShortcutKeyInfo> shortcutKeys = new List<InteropShortcutKeyInfo>();

@@ -26,7 +26,7 @@
 			<v:AudioPlayerView />
 		</DataTemplate>
 		<DataTemplate DataType="{x:Type vm:RecentGamesViewModel}">
-			<c:StateGrid IsVisible="{Binding Visible}" Entries="{Binding GameEntries}" Title="{Binding Title}" Mode="{Binding Mode}" />
+			<c:StateGrid IsVisible="{Binding Visible}" Entries="{Binding GameEntries}" Title="{Binding Title}" Mode="{Binding Mode}" IsPaused="{Binding IsPaused}" />
 		</DataTemplate>
 	</Window.DataTemplates>
 	

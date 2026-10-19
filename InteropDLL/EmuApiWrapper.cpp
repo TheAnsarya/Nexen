@@ -299,6 +299,7 @@ extern "C" {
 		char romName[256];
 		int64_t timestamp;
 		uint32_t fileSize;
+		uint32_t origin;
 	};
 
 	DllExport void __stdcall SaveTimestampedState(char* outFilepath, int32_t maxLength) { StringUtilities::CopyToBuffer(_emu->GetSaveStateManager()->SaveTimestampedState(), outFilepath, maxLength); }
@@ -314,11 +315,12 @@ extern "C" {
 			StringUtilities::CopyToBuffer(states[i].romName, outInfoArray[i].romName, sizeof(outInfoArray[i].romName));
 			outInfoArray[i].timestamp = (int64_t)states[i].timestamp;
 			outInfoArray[i].fileSize = states[i].fileSize;
+			outInfoArray[i].origin = (uint32_t)states[i].origin;
 		}
 		return count;
 	}
 	DllExport void __stdcall LoadRecentGame(char* filepath, bool resetGame) { _emu->GetSaveStateManager()->LoadRecentGame(filepath, resetGame); }
-	DllExport int32_t __stdcall GetSaveStatePreview(char* saveStatePath, uint8_t* pngData) { return _emu->GetSaveStateManager()->GetSaveStatePreview(saveStatePath, pngData); }
+	DllExport int32_t __stdcall GetSaveStatePreview(char* saveStatePath, uint8_t* pngData, uint32_t maxSize) { return _emu->GetSaveStateManager()->GetSaveStatePreview(saveStatePath, pngData, maxSize); }
 
 	class PgoKeyManager : public IKeyManager
 	{

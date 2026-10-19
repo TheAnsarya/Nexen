@@ -24,6 +24,7 @@ namespace Mesen.Controls
 		public static readonly StyledProperty<Bitmap?> ImageProperty = AvaloniaProperty.Register<StateGridEntry, Bitmap?>(nameof(Image));
 		public static readonly StyledProperty<string> TitleProperty = AvaloniaProperty.Register<StateGridEntry, string>(nameof(Title));
 		public static readonly StyledProperty<string> SubTitleProperty = AvaloniaProperty.Register<StateGridEntry, string>(nameof(SubTitle));
+		public static readonly StyledProperty<string> BadgeTextProperty = AvaloniaProperty.Register<StateGridEntry, string>(nameof(BadgeText));
 		public static readonly StyledProperty<bool> EnabledProperty = AvaloniaProperty.Register<StateGridEntry, bool>(nameof(Enabled));
 		public static readonly StyledProperty<bool> IsActiveEntryProperty = AvaloniaProperty.Register<StateGridEntry, bool>(nameof(IsActiveEntry));
 		public static readonly StyledProperty<double> AspectRatioProperty = AvaloniaProperty.Register<StateGridEntry, double>(nameof(AspectRatio));
@@ -70,6 +71,12 @@ namespace Mesen.Controls
 			set { SetValue(SubTitleProperty, value); }
 		}
 
+		public string BadgeText
+		{
+			get { return GetValue(BadgeTextProperty); }
+			set { SetValue(BadgeTextProperty, value); }
+		}
+
 		static StateGridEntry()
 		{
 			//Make empty image black
@@ -109,6 +116,7 @@ namespace Mesen.Controls
 			}
 
 			Title = game.Name;
+			BadgeText = game.BadgeText;
 
 			bool fileExists = File.Exists(game.FileName);
 			if(game.Timestamp.HasValue) {

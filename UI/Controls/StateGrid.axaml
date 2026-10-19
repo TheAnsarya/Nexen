@@ -21,10 +21,18 @@
 	
 	<DockPanel DataContext="{Binding ElementName=root}">
 		<Panel DockPanel.Dock="Top" Margin="5" IsVisible="{Binding Title.Length}">
-			<TextBlock Text="{Binding Title}" FontSize="15" FontWeight="Medium" Foreground="White" TextAlignment="Center" />
-			<Button IsVisible="{Binding ShowClose}" Click="OnCloseClick" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Padding="0" Margin="0 -2 0 -2" MinWidth="0">
+			<Grid ColumnDefinitions="Auto,*,Auto">
+				<Border Grid.Column="0" IsVisible="{Binding IsPaused}" Background="#CC202020" BorderBrush="#CCFFFFFF" BorderThickness="1" CornerRadius="3" Padding="5 2" VerticalAlignment="Center">
+					<StackPanel Orientation="Horizontal" Spacing="4">
+						<Image Source="/Assets/MediaPause.png" Width="12" Height="12" />
+						<TextBlock Text="{l:Translate SaveStatePaused}" Foreground="White" FontSize="11" />
+					</StackPanel>
+				</Border>
+			<TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="15" FontWeight="Medium" Foreground="White" TextAlignment="Center" />
+			<Button Grid.Column="2" IsVisible="{Binding ShowClose}" Click="OnCloseClick" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Padding="0" Margin="0 -2 0 -2" MinWidth="0">
 				<Image Source="/Assets/CloseWhite.png" Width="16" Height="16" />
 			</Button>
+			</Grid>
 		</Panel>
 		<Button DockPanel.Dock="Left" IsVisible="{Binding ShowArrows}" Background="Transparent" BorderThickness="0" Click="OnPrevPageClick" VerticalAlignment="Stretch" Height="NaN" MinWidth="0" Margin="0">
 			<Image Source="/Assets/MediaPlay.png" VerticalAlignment="Center" HorizontalAlignment="Left" Width="16">

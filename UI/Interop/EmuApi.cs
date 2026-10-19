@@ -104,13 +104,17 @@ namespace Mesen.Interop
 		[DllImport(DllPath)] public static extern void SaveStateFile([MarshalAs(UnmanagedType.LPUTF8Str)]string filepath);
 		[DllImport(DllPath)] public static extern void LoadStateFile([MarshalAs(UnmanagedType.LPUTF8Str)]string filepath);
 
-		[DllImport(DllPath, EntryPoint = "GetSaveStatePreview")] private static extern Int32 GetSaveStatePreviewWrapper([MarshalAs(UnmanagedType.LPUTF8Str)]string saveStatePath, [Out]byte[] imgData);
+		[DllImport(DllPath, EntryPoint = "GetSaveStatePreview")] private static extern Int32 GetSaveStatePreviewWrapper([MarshalAs(UnmanagedType.LPUTF8Str)]string saveStatePath, [Out]byte[] imgData, UInt32 maxSize);
 		public static Bitmap? GetSaveStatePreview(string saveStatePath)
 		{
 			if(File.Exists(saveStatePath)) {
 				byte[] buffer = new byte[512*478*4];
-				Int32 size = EmuApi.GetSaveStatePreviewWrapper(saveStatePath, buffer);
-				if(size > 0) {
+				Int32 size = EmuApi.GetSaveStatePreviewWrapper(saveStatePath, buffer, (UInt32)buffer.Length);
+				if(size > buffer.Length) {
+					buffer = new byte[size];
+					size = EmuApi.GetSaveStatePreviewWrapper(saveStatePath, buffer, (UInt32)buffer.Length);
+				}
+				if(size > 0 && size <= buffer.Length) {
 					Array.Resize(ref buffer, size);
 					using(MemoryStream stream = new MemoryStream(buffer)) {
 						return new Bitmap(stream);
@@ -124,8 +128,13 @@ namespace Mesen.Interop
 		public static string SaveTimestampedState() { return Utf8Utilities.CallStringApi(SaveTimestampedStateWrapper, 2048); }
 
 		[DllImport(DllPath, EntryPoint = "GetSaveStateList")] private static extern UInt32 GetSaveStateListWrapper([Out] InteropSaveStateInfo[] outInfoArray, UInt32 maxCount);
-		public static SaveStateInfo[] GetSaveStateList(int maxCount = 1000)
+		public static SaveStateInfo[] GetSaveStateList()
 		{
+			int maxCount = checked((int)GetSaveStateCount());
+			if(maxCount == 0) {
+				return Array.Empty<SaveStateInfo>();
+			}
+
 			InteropSaveStateInfo[] interopArray = new InteropSaveStateInfo[maxCount];
 			UInt32 count = GetSaveStateListWrapper(interopArray, (UInt32)maxCount);
 

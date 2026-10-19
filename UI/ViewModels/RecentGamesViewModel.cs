@@ -19,6 +19,7 @@ namespace Mesen.ViewModels
 	{
 		[Reactive] public bool Visible { get; set; }
 		[Reactive] public bool NeedResume { get; private set; }
+		[Reactive] public bool IsPaused { get; private set; }
 		[Reactive] public string Title { get; private set; } = "";
 		[Reactive] public GameScreenMode Mode { get; private set; }
 		[Reactive] public List<RecentGameInfo> GameEntries { get; private set; } = new List<RecentGameInfo>();
@@ -36,9 +37,7 @@ namespace Mesen.ViewModels
 				return;
 			} else if(mode != GameScreenMode.RecentGames && Mode == mode && Visible) {
 				Visible = false;
-				if(NeedResume) {
-					EmuApi.Resume();
-				}
+				ResumeIfNeeded();
 				return;
 			}
 
@@ -54,6 +53,7 @@ namespace Mesen.ViewModels
 
 			if(mode == GameScreenMode.RecentGames) {
 				NeedResume = false;
+				IsPaused = false;
 				Title = string.Empty;
 
 				List<string> files = Directory.GetFiles(ConfigManager.RecentGamesFolder, "*.rgd").OrderByDescending((file) => new FileInfo(file).LastWriteTime).ToList();
@@ -92,6 +92,11 @@ namespace Mesen.ViewModels
 			}
 
 			Visible = entries.Count > 0;
+			if(!Visible) {
+				ResumeIfNeeded();
+			} else {
+				IsPaused = EmuApi.IsPaused();
+			}
 			GameEntries = entries;
 		}
 
@@ -99,9 +104,12 @@ namespace Mesen.ViewModels
 		{
 			List<RecentGameInfo> entries = new();
 			foreach(SaveStateInfo state in EmuApi.GetSaveStateList()) {
+				string originLabel = state.IsAutoSave ? ResourceHelper.GetMessage("AutoSave") :
+					state.IsRecentPlaySave ? ResourceHelper.GetMessage("RecentPlaySave") : ResourceHelper.GetMessage("ManualSave");
 				entries.Add(new RecentGameInfo() {
 					FileName = state.FilePath,
-					Name = (state.IsAutoSave ? ResourceHelper.GetMessage("AutoSave") + ": " : "") + state.Timestamp.ToString("g"),
+					Name = state.Timestamp.ToString("g"),
+					BadgeText = originLabel,
 					Timestamp = state.Timestamp,
 					OnDeleted = RefreshPicker
 				});
@@ -119,18 +127,27 @@ namespace Mesen.ViewModels
 			GameEntries = entries;
 			if(entries.Count == 0) {
 				Visible = false;
-				if(NeedResume) {
-					EmuApi.Resume();
-				}
+				ResumeIfNeeded();
 			}
+		}
+
+		private void ResumeIfNeeded()
+		{
+			if(NeedResume) {
+				EmuApi.Resume();
+				NeedResume = false;
+			}
+			IsPaused = EmuApi.IsPaused();
 		}
 
 		private bool Pause()
 		{
 			if(!EmuApi.IsPaused()) {
 				EmuApi.Pause();
+				IsPaused = EmuApi.IsPaused();
 				return true;
 			}
+			IsPaused = true;
 			return false;
 		}
 	}
@@ -149,6 +166,7 @@ namespace Mesen.ViewModels
 		public int StateIndex { get; set; } = -1;
 		public string Name { get; set; } = "";
 		public bool SaveMode { get; set; } = false;
+		public string BadgeText { get; set; } = "";
 
 		//Set for timestamped saves (picker mode)
 		public DateTime? Timestamp { get; set; }

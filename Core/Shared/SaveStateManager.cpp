@@ -327,7 +327,7 @@ void SaveStateManager::LoadRecentGame(string filename, bool resetGame)
 	}
 }
 
-int32_t SaveStateManager::GetSaveStatePreview(string saveStatePath, uint8_t* pngData)
+int32_t SaveStateManager::GetSaveStatePreview(string saveStatePath, uint8_t* pngData, uint32_t maxSize)
 {
 	ifstream stream(saveStatePath, ios::binary);
 
@@ -367,9 +367,12 @@ int32_t SaveStateManager::GetSaveStatePreview(string saveStatePath, uint8_t* png
 			PNGHelper::WritePNG(pngStream, filter->GetOutputBuffer(), frameInfo.Width, frameInfo.Height);
 
 			string data = pngStream.str();
+			if(data.size() > maxSize) {
+				return (int32_t)data.size();
+			}
 			memcpy(pngData, data.c_str(), data.size());
 
-			return (int32_t)frameData.size();
+			return (int32_t)data.size();
 		}
 	}
 	return -1;
@@ -494,6 +497,7 @@ vector<SaveStateInfo> SaveStateManager::GetSaveStateList()
 		info.filepath = file;
 		info.romName = romName;
 		info.timestamp = ParseTimestampFromFilename(file);
+		info.origin = GetOrigin(file);
 
 		ifstream stream(file, ios::binary | ios::ate);
 		info.fileSize = stream ? (uint32_t)stream.tellg() : 0;

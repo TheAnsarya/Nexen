@@ -47,25 +47,30 @@
 			TextTrimming="CharacterEllipsis"
 			IsEnabled="{Binding Enabled, ElementName=root}"
 		/>
-		<Button
-			x:Name="ImageButton"
-			Classes.activeEntry="{Binding IsActiveEntry, ElementName=root}"
-			BorderThickness="2"
-			Height="NaN"
-			Click="OnImageClick"
-			IsEnabled="{Binding Enabled, ElementName=root}"
-			HorizontalAlignment="Center"
-			VerticalAlignment="Stretch"
-			Padding="0"
-		>
-			<c:ImageAspectRatio
-				Source="{Binding Image, ElementName=root}"
-				AspectRatio="{Binding AspectRatio, ElementName=root}"
-				RenderOptions.BitmapInterpolationMode="LowQuality"
-				Stretch="Fill"
-				StretchDirection="Both"
-				VerticalAlignment="Center"
-			/>
-		</Button>
+		<Grid>
+			<Button
+				x:Name="ImageButton"
+				Classes.activeEntry="{Binding IsActiveEntry, ElementName=root}"
+				BorderThickness="2"
+				Height="NaN"
+				Click="OnImageClick"
+				IsEnabled="{Binding Enabled, ElementName=root}"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Stretch"
+				Padding="0"
+			>
+				<c:ImageAspectRatio
+					Source="{Binding Image, ElementName=root}"
+					AspectRatio="{Binding AspectRatio, ElementName=root}"
+					RenderOptions.BitmapInterpolationMode="LowQuality"
+					Stretch="Fill"
+					StretchDirection="Both"
+					VerticalAlignment="Center"
+				/>
+			</Button>
+			<Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" IsVisible="{Binding BadgeText.Length, ElementName=root}" Background="#CC202020" BorderBrush="#CCFFFFFF" BorderThickness="1" CornerRadius="3" Padding="5 2" IsHitTestVisible="False">
+				<TextBlock Text="{Binding BadgeText, ElementName=root}" Foreground="White" FontSize="11" />
+			</Border>
+		</Grid>
 	</DockPanel>
 </UserControl>

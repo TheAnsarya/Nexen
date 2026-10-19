@@ -21,6 +21,7 @@ namespace Mesen.Controls
 		public static readonly StyledProperty<int> SelectedPageProperty = AvaloniaProperty.Register<StateGrid, int>(nameof(SelectedPage));
 		public static readonly StyledProperty<bool> ShowArrowsProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(ShowArrows));
 		public static readonly StyledProperty<bool> ShowCloseProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(ShowClose));
+		public static readonly StyledProperty<bool> IsPausedProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(IsPaused));
 		public static readonly StyledProperty<GameScreenMode> ModeProperty = AvaloniaProperty.Register<StateGrid, GameScreenMode>(nameof(Mode));
 		public static readonly StyledProperty<int> SelectedIndexProperty = AvaloniaProperty.Register<StateGrid, int>(nameof(SelectedIndex));
 
@@ -52,6 +53,12 @@ namespace Mesen.Controls
 		{
 			get { return GetValue(ShowCloseProperty); }
 			set { SetValue(ShowCloseProperty, value); }
+		}
+
+		public bool IsPaused
+		{
+			get { return GetValue(IsPausedProperty); }
+			set { SetValue(IsPausedProperty, value); }
 		}
 
 		public GameScreenMode Mode

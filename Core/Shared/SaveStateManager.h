@@ -19,6 +19,7 @@ struct SaveStateInfo
 	string romName;
 	time_t timestamp; //Local time of the save, parsed from the filename
 	uint32_t fileSize;
+	SaveStateOrigin origin = SaveStateOrigin::Manual;
 };
 
 class SaveStateManager
@@ -64,7 +65,7 @@ public:
 	void SaveRecentGame(string romName, string romPath, string patchPath);
 	void LoadRecentGame(string filename, bool resetGame);
 
-	int32_t GetSaveStatePreview(string saveStatePath, uint8_t* pngData);
+	int32_t GetSaveStatePreview(string saveStatePath, uint8_t* pngData, uint32_t maxSize);
 
 	void SelectSaveSlot(int slotIndex);
 	void MoveToNextSlot();

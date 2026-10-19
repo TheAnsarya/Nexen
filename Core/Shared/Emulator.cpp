@@ -172,6 +172,12 @@ void Emulator::ProcessAutoSaveState()
 {
 uint32_t saveStateDelay = _settings->GetPreferences().AutoSaveStateDelay;
 
+if(saveStateDelay == 0) {
+_autoSaveStateFrameCounter = 0;
+_recentPlayFrameCounter = 0;
+return;
+}
+
 if(_autoSaveStateFrameCounter > 0) {
 _autoSaveStateFrameCounter--;
 if(_autoSaveStateFrameCounter == 0) {

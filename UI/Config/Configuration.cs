@@ -267,6 +267,7 @@ namespace Mesen.Config
 				config = Configuration.CreateConfig();
 			}
 
+			config.Preferences.NormalizeSavestateShortcutBindings();
 			return config;
 		}
 

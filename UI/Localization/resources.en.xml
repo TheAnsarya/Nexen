@@ -1732,10 +1732,13 @@
 	<Messages>
 		<Message ID="LastSession">Last Session</Message>
 		<Message ID="AutoSave">Auto-save</Message>
+		<Message ID="RecentPlaySave">Recent play</Message>
+		<Message ID="ManualSave">Manual</Message>
 		<Message ID="SlotNumber">Slot #{0}</Message>
 		<Message ID="LoadStateDialog">Load State Menu</Message>
 		<Message ID="SaveStateDialog">Save State Menu</Message>
 		<Message ID="SaveStatePickerTitle">Save States</Message>
+		<Message ID="SaveStatePaused">Paused</Message>
 		<Message ID="DeleteSaveState">Delete</Message>
 
 		<Message ID="LoadFromFile">Load from file...</Message>

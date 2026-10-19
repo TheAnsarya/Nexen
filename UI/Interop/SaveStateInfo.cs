@@ -12,6 +12,14 @@ public struct InteropSaveStateInfo {
 	public byte[] RomName;
 	public Int64 Timestamp;
 	public UInt32 FileSize;
+	public UInt32 Origin;
+}
+
+public enum SaveStateOrigin
+{
+	Manual,
+	Auto,
+	RecentPlay
 }
 
 /// <summary>A timestamped save state file belonging to the current ROM.</summary>
@@ -20,8 +28,10 @@ public sealed class SaveStateInfo {
 	public string RomName { get; }
 	public DateTime Timestamp { get; }
 	public uint FileSize { get; }
+	public SaveStateOrigin Origin { get; }
 	/// <summary>True for saves created by the periodic auto-save.</summary>
 	public bool IsAutoSave { get; }
+	public bool IsRecentPlaySave { get; }
 
 	internal SaveStateInfo(InteropSaveStateInfo info) {
 		FilePath = Utf8Utilities.GetStringFromArray(info.FilePath);
@@ -29,6 +39,8 @@ public sealed class SaveStateInfo {
 		// time_t is parsed from the local-time filename via mktime, so it is a real epoch value
 		Timestamp = DateTimeOffset.FromUnixTimeSeconds(info.Timestamp).LocalDateTime;
 		FileSize = info.FileSize;
-		IsAutoSave = System.IO.Path.GetFileName(FilePath).StartsWith("auto_", StringComparison.Ordinal);
+		Origin = (SaveStateOrigin)info.Origin;
+		IsAutoSave = Origin == SaveStateOrigin.Auto;
+		IsRecentPlaySave = Origin == SaveStateOrigin.RecentPlay;
 	}
 }
