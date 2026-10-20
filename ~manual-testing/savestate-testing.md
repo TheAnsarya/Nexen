@@ -40,12 +40,12 @@
 ## Game Select
 
 1. In File, confirm `Game Select` is directly below `Open`.
-2. With a game running, click it. Confirm the game/savestate select screen appears, the game pauses, and the `Paused` badge shows.
+2. With a game running, click it. Confirm the game/savestate select screen appears, the game pauses, and the `⏸ Pause Loaded Game` toggle shows.
 3. Close it with the X, and confirm the game resumes. Choose a different game and confirm it starts running, not paused.
 
 ## Picker Details
 
-1. Confirm the `Paused` badge shows a real label (not `[StateGrid:SaveStatePaused]`).
+1. Confirm the `⏸ Pause Loaded Game` toggle has a real label. Turn it on, load a save state from the picker, and confirm the game is paused afterwards. Repeat from Game Select with a game. Turn it off and confirm loads resume normally.
 2. Confirm `Manual` (blue), `Auto-save` (green), and `Recent play` (orange) badges have distinct colors.
 3. With no saves for a game, press `Shift+F1`. Confirm a "No save states found" message shows and the game keeps running.
 4. Open a ROM from File > Open and confirm it is not paused on start.

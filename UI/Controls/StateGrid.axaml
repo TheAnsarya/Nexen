@@ -41,12 +41,7 @@
 			<Grid ColumnDefinitions="Auto,*,Auto">
 				<StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
 					<ToggleButton Classes="restart" IsVisible="{Binding ShowRestart}" IsChecked="{Binding RestartGame, Mode=TwoWay}" ToolTip.Tip="{l:Translate RestartGameTip}" Content="{l:Translate btnRestartGame}" />
-					<Border IsVisible="{Binding IsPaused}" ToolTip.Tip="{l:Translate SaveStatePausedTip}" Background="#CC202020" BorderBrush="#CCFFFFFF" BorderThickness="1" CornerRadius="3" Padding="5 2" VerticalAlignment="Center">
-						<StackPanel Orientation="Horizontal" Spacing="4">
-							<Image Source="/Assets/MediaPause.png" Width="12" Height="12" />
-							<TextBlock Text="{l:Translate SaveStatePaused}" Foreground="White" FontSize="11" />
-						</StackPanel>
-					</Border>
+					<ToggleButton Classes="restart" IsChecked="{Binding PauseLoadedGame, Mode=TwoWay}" ToolTip.Tip="{l:Translate PauseLoadedGameTip}" Content="{l:Translate btnPauseLoadedGame}" />
 				</StackPanel>
 			<TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="15" FontWeight="Medium" Foreground="White" TextAlignment="Center" />
 			<Button Grid.Column="2" IsVisible="{Binding ShowClose}" Click="OnCloseClick" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" Padding="0" Margin="0 -2 0 -2" MinWidth="0">

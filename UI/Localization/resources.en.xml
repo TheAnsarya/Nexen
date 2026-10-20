@@ -10,8 +10,8 @@
 			<Control ID="mnuHelp">_Help</Control>
 		</Form>
 		<Form ID="StateGrid">
-			<Control ID="SaveStatePaused">Paused</Control>
-			<Control ID="SaveStatePausedTip">Emulation is paused while this screen is open.</Control>
+			<Control ID="btnPauseLoadedGame">⏸ Pause Loaded Game</Control>
+			<Control ID="PauseLoadedGameTip">When selected, the game or save state you load starts paused.</Control>
 			<Control ID="btnRestartGame">Restart game</Control>
 			<Control ID="RestartGameTip">When selected, the chosen game starts from the beginning and ignores its saved state.</Control>
 		</Form>

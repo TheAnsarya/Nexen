@@ -1,4 +1,5 @@
-﻿using Mesen.Config;
+﻿using Avalonia.Threading;
+using Mesen.Config;
 using Mesen.Interop;
 using Mesen.Localization;
 using Mesen.Utilities;
@@ -19,7 +20,7 @@ namespace Mesen.ViewModels
 	{
 		[Reactive] public bool Visible { get; set; }
 		[Reactive] public bool NeedResume { get; private set; }
-		[Reactive] public bool IsPaused { get; private set; }
+		[Reactive] public bool PauseLoadedGame { get; set; }
 		[Reactive] public bool RestartGame { get; set; }
 		[Reactive] public string Title { get; private set; } = "";
 		[Reactive] public GameScreenMode Mode { get; private set; }
@@ -52,7 +53,6 @@ namespace Mesen.ViewModels
 
 			if(mode == GameScreenMode.RecentGames) {
 				NeedResume = false;
-				IsPaused = false;
 				RestartGame = false;
 				Title = ResourceHelper.GetMessage("GameSelectTitle");
 				ShowEntries(GetRecentGameEntries());
@@ -104,13 +104,19 @@ namespace Mesen.ViewModels
 			ResumeIfNeeded();
 		}
 
+		//Hides the screen but leaves emulation paused ("Pause Loaded Game")
+		private void CloseKeepPaused()
+		{
+			Visible = false;
+			RestartGame = false;
+			NeedResume = false;
+		}
+
 		private void ShowEntries(List<RecentGameInfo> entries)
 		{
 			Visible = entries.Count > 0;
 			if(!Visible) {
 				ResumeIfNeeded();
-			} else {
-				IsPaused = EmuApi.IsPaused();
 			}
 			GameEntries = entries;
 		}
@@ -120,7 +126,13 @@ namespace Mesen.ViewModels
 			List<RecentGameInfo> entries = new();
 			List<string> files = Directory.GetFiles(ConfigManager.RecentGamesFolder, "*.rgd").OrderByDescending((file) => new FileInfo(file).LastWriteTime).ToList();
 			for(int i = 0; i < files.Count && entries.Count < 72; i++) {
-				entries.Add(new RecentGameInfo() { FileName = files[i], Name = Path.GetFileNameWithoutExtension(files[i]), ForceRestart = () => RestartGame });
+				entries.Add(new RecentGameInfo() {
+					FileName = files[i],
+					Name = Path.GetFileNameWithoutExtension(files[i]),
+					ForceRestart = () => RestartGame,
+					PauseAfterLoad = () => PauseLoadedGame,
+					OnLoadedPaused = CloseKeepPaused
+				});
 			}
 			return entries;
 		}
@@ -141,7 +153,9 @@ namespace Mesen.ViewModels
 					BadgeText = label,
 					BadgeColor = color,
 					Timestamp = state.Timestamp,
-					OnDeleted = RefreshPicker
+					OnDeleted = RefreshPicker,
+					PauseAfterLoad = () => PauseLoadedGame,
+					OnLoadedPaused = CloseKeepPaused
 				});
 			}
 			return entries;
@@ -167,17 +181,14 @@ namespace Mesen.ViewModels
 				EmuApi.Resume();
 				NeedResume = false;
 			}
-			IsPaused = EmuApi.IsPaused();
 		}
 
 		private bool Pause()
 		{
 			if(!EmuApi.IsPaused()) {
 				EmuApi.Pause();
-				IsPaused = EmuApi.IsPaused();
 				return true;
 			}
-			IsPaused = true;
 			return false;
 		}
 	}
@@ -202,6 +213,10 @@ namespace Mesen.ViewModels
 		//Set for recent games: when true, the saved state is ignored and the game starts from the beginning
 		public Func<bool>? ForceRestart { get; set; }
 
+		//When PauseAfterLoad returns true, loading leaves emulation paused and OnLoadedPaused hides the screen
+		public Func<bool>? PauseAfterLoad { get; set; }
+		public Action? OnLoadedPaused { get; set; }
+
 		public bool IsEnabled()
 		{
 			return File.Exists(FileName);
@@ -216,15 +231,24 @@ namespace Mesen.ViewModels
 
 		public void Load()
 		{
+			bool pause = PauseAfterLoad?.Invoke() == true;
+
 			if(Timestamp.HasValue) {
 				Task.Run(() => {
 					//Run in another thread to prevent deadlocks etc. when emulator notifications are processed UI-side
 					EmuApi.LoadStateFile(FileName);
-					EmuApi.Resume();
+					if(pause) {
+						EmuApi.Pause();
+						Dispatcher.UIThread.Post(() => OnLoadedPaused?.Invoke());
+					} else {
+						EmuApi.Resume();
+					}
 				});
 			} else {
-				LoadRomHelper.LoadRecentGame(FileName, false, ForceRestart?.Invoke() == true);
-				EmuApi.Resume();
+				LoadRomHelper.LoadRecentGame(FileName, false, ForceRestart?.Invoke() == true, pause);
+				if(!pause) {
+					EmuApi.Resume();
+				}
 			}
 		}
 	}

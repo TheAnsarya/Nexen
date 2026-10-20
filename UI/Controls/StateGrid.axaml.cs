@@ -22,7 +22,7 @@ namespace Mesen.Controls
 		public static readonly StyledProperty<int> SelectedPageProperty = AvaloniaProperty.Register<StateGrid, int>(nameof(SelectedPage));
 		public static readonly StyledProperty<bool> ShowArrowsProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(ShowArrows));
 		public static readonly StyledProperty<bool> ShowCloseProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(ShowClose));
-		public static readonly StyledProperty<bool> IsPausedProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(IsPaused));
+		public static readonly StyledProperty<bool> PauseLoadedGameProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(PauseLoadedGame), defaultBindingMode: BindingMode.TwoWay);
 		public static readonly StyledProperty<bool> ShowRestartProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(ShowRestart));
 		public static readonly StyledProperty<bool> RestartGameProperty = AvaloniaProperty.Register<StateGrid, bool>(nameof(RestartGame), defaultBindingMode: BindingMode.TwoWay);
 		public static readonly StyledProperty<GameScreenMode> ModeProperty = AvaloniaProperty.Register<StateGrid, GameScreenMode>(nameof(Mode));
@@ -58,10 +58,10 @@ namespace Mesen.Controls
 			set { SetValue(ShowCloseProperty, value); }
 		}
 
-		public bool IsPaused
+		public bool PauseLoadedGame
 		{
-			get { return GetValue(IsPausedProperty); }
-			set { SetValue(IsPausedProperty, value); }
+			get { return GetValue(PauseLoadedGameProperty); }
+			set { SetValue(PauseLoadedGameProperty, value); }
 		}
 
 		public bool ShowRestart
