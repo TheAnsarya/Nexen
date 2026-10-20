@@ -32,14 +32,14 @@
 				<TextBlock Text="{l:Translate lblHint}" TextWrapping="Wrap" Margin="25 0 0 0" VerticalAlignment="Center" />
 			</Panel>
 		</Border>
-		<TabControl Name="tabMain" TabStripPlacement="Top" SelectedIndex="{Binding DefaultTabIndex, Mode=OneTime}">
-			<TabItem Header="{l:Translate tpgBindings}" IsVisible="{Binding HasBindingsEditor}">
-				<v:ControllerBindingsView />
-			</TabItem>
+		<TabControl Name="tabMain" TabStripPlacement="Top" SelectedIndex="0">
 			<TabItem Header="{l:Translate tpgSet1}" Content="{Binding KeyMapping1}" />
 			<TabItem Header="{l:Translate tpgSet2}" Content="{Binding KeyMapping2}" />
 			<TabItem Header="{l:Translate tpgSet3}" Content="{Binding KeyMapping3}" />
 			<TabItem Header="{l:Translate tpgSet4}" Content="{Binding KeyMapping4}" />
+			<TabItem Header="{l:Translate tpgBindings}" IsVisible="{Binding HasBindingsEditor}">
+				<v:ControllerBindingsView />
+			</TabItem>
 		</TabControl>
 
 		<Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">

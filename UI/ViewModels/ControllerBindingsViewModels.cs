@@ -1,10 +1,13 @@
 using Mesen.Config;
+using Mesen.Debugger.Utilities;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Windows.Input;
 
 namespace Mesen.ViewModels
 {
@@ -53,17 +56,26 @@ namespace Mesen.ViewModels
 	}
 
 	/// <summary>One input of a button, backed by a single field in one of the key sets.</summary>
-	public class BindingSlotViewModel : ViewModelBase
+	public class BindingSlotViewModel : ViewModelBase, IDisposable
 	{
+		private readonly KeyMapping _mapping;
+		private readonly PropertyChangedEventHandler _mappingChanged;
+		private readonly IDisposable _keySubscription;
+
 		[Reactive] public UInt16 Key { get; set; }
+		[Reactive] public bool IsBound { get; set; }
 		[Reactive] public bool IsVisible { get; set; }
+
+		public ICommand ClearCommand { get; }
 
 		public BindingSlotViewModel(KeyMapping mapping, string property)
 		{
+			_mapping = mapping;
 			Key = KeyMappingAccess.Get(mapping, property);
+			ClearCommand = new SimpleCommand(() => Key = 0);
 
 			//Keep in sync when presets, clear or the key set pages change the same field
-			mapping.PropertyChanged += (s, e) => {
+			_mappingChanged = (s, e) => {
 				if(e.PropertyName == property) {
 					UInt16 value = KeyMappingAccess.Get(mapping, property);
 					if(Key != value) {
@@ -71,19 +83,29 @@ namespace Mesen.ViewModels
 					}
 				}
 			};
+			mapping.PropertyChanged += _mappingChanged;
 
-			this.WhenAnyValue(x => x.Key).Subscribe(value => {
+			_keySubscription = this.WhenAnyValue(x => x.Key).Subscribe(value => {
+				IsBound = value != 0;
 				if(KeyMappingAccess.Get(mapping, property) != value) {
 					KeyMappingAccess.Set(mapping, property, value);
 				}
 			});
 		}
+
+		public void Dispose()
+		{
+			_mapping.PropertyChanged -= _mappingChanged;
+			_keySubscription.Dispose();
+		}
 	}
 
 	/// <summary>The inputs for one button (or its turbo version), one slot per key set.</summary>
-	public class BindingListViewModel : ViewModelBase
+	public class BindingListViewModel : ViewModelBase, IDisposable
 	{
 		public static BindingListViewModel Empty => new(Array.Empty<KeyMapping>(), "");
+
+		private readonly List<IDisposable> _subscriptions = new();
 
 		public List<BindingSlotViewModel> Slots { get; }
 
@@ -92,7 +114,7 @@ namespace Mesen.ViewModels
 			Slots = keySets.Select(set => new BindingSlotViewModel(set, property)).ToList();
 
 			foreach(BindingSlotViewModel slot in Slots) {
-				slot.WhenAnyValue(x => x.Key).Subscribe(_ => RefreshVisibility());
+				_subscriptions.Add(slot.WhenAnyValue(x => x.Key).Subscribe(_ => RefreshVisibility()));
 			}
 			RefreshVisibility();
 		}
@@ -108,6 +130,16 @@ namespace Mesen.ViewModels
 					slot.IsVisible = !emptyShown;
 					emptyShown = true;
 				}
+			}
+		}
+
+		public void Dispose()
+		{
+			foreach(IDisposable subscription in _subscriptions) {
+				subscription.Dispose();
+			}
+			foreach(BindingSlotViewModel slot in Slots) {
+				slot.Dispose();
 			}
 		}
 	}

@@ -981,6 +981,11 @@
 			<Control ID="btnOK">OK</Control>
 			<Control ID="btnCancel">Cancel</Control>
 		</Form>
+		<Form ID="ButtonBindingsWindow">
+			<Control ID="lblHint">Each button can have up to 4 inputs. Click an input to change it, or use the empty slot to add another. Right-click an input to clear it.</Control>
+			<Control ID="lblAddBinding">Add binding...</Control>
+			<Control ID="btnClose">Close</Control>
+		</Form>
 		<Form ID="ControllerBindingsView">
 			<Control ID="lblBindingsHint">Each button can have up to 4 inputs (keyboard keys or gamepad buttons), so for example both X and L1 can press the emulated X. Turbo inputs press the button repeatedly while held; set the speed below. Right-click an input to clear it. The Key Set pages show the same bindings arranged on the controller.</Control>
 			<Control ID="lblBindingsButton">Button</Control>
@@ -990,7 +995,7 @@
 		<Form ID="ControllerConfigWindow">
 			<Control ID="Title">Controller Configuration</Control>
 
-			<Control ID="lblHint">Each button can be mapped to up to 4 different keyboard keys or gamepad buttons.</Control>
+			<Control ID="lblHint">Each button can be mapped to up to 4 different keyboard keys or gamepad buttons. Shift+click a button to add or edit several bindings; "+N" shows extra bindings from the other key sets.</Control>
 			<Control ID="btnSetDefaultBindings">Set Default Bindings</Control>
 			<Control ID="btnClear">Clear Key Bindings</Control>
 			
@@ -1795,6 +1800,8 @@ E
 		<Message ID="HelpLoadLastSession">/LoadLastSession - Resumes the game in the state it was left in when it was last played.</Message>
 
 		<Message ID="RightClickToClearBinding">Right-click to clear binding</Message>
+		<Message ID="ShiftClickForMultipleBindings">Shift+click to add or edit multiple bindings</Message>
+		<Message ID="ButtonBindingsTitle">Bindings: {0}</Message>
 
 		<Message ID="Resume">Resume</Message>
 		<Message ID="Pause">Pause</Message>

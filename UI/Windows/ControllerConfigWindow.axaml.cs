@@ -74,10 +74,16 @@ namespace Mesen.Windows
 			((Button)sender).ContextMenu?.Open();
 		}
 
+		private const int BindingsTabIndex = 4;
+
 		private void SetDefaultMappings(KeyPresetType? preset)
 		{
-			//Tab 0 is the combined Bindings page, tabs 1-4 are the individual key sets
-			int index = Math.Max(0, this.GetControl<TabControl>("tabMain").SelectedIndex - 1);
+			//Presets always target a single key set; the Bindings tab (last) uses set 1
+			int index = this.GetControl<TabControl>("tabMain").SelectedIndex;
+			if(index >= BindingsTabIndex) {
+				index = 0;
+			}
+
 			ControllerConfig cfg = Model.Config;
 			switch(index) {
 				case 0: cfg.Mapping1.SetDefaultKeys(Model.Type, preset); Model.KeyMapping1.RefreshCustomKeys(); break;
@@ -91,8 +97,8 @@ namespace Mesen.Windows
 		{
 			int tab = this.GetControl<TabControl>("tabMain").SelectedIndex;
 			ControllerConfig cfg = Model.Config;
-			if(tab == 0 && Model.HasBindingsEditor) {
-				//The Bindings page shows every key set, so clear all of them
+			if(tab >= BindingsTabIndex) {
+				//The Bindings tab shows every key set, so clear all of them
 				cfg.Mapping1.ClearKeys(Model.Type);
 				cfg.Mapping2.ClearKeys(Model.Type);
 				cfg.Mapping3.ClearKeys(Model.Type);
@@ -104,7 +110,7 @@ namespace Mesen.Windows
 				return;
 			}
 
-			switch(Math.Max(0, tab - 1)) {
+			switch(tab) {
 				case 0: cfg.Mapping1.ClearKeys(Model.Type); Model.KeyMapping1.RefreshCustomKeys(); break;
 				case 1: cfg.Mapping2.ClearKeys(Model.Type); Model.KeyMapping2.RefreshCustomKeys(); break;
 				case 2: cfg.Mapping3.ClearKeys(Model.Type); Model.KeyMapping3.RefreshCustomKeys(); break;

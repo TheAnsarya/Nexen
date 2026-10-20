@@ -27,7 +27,6 @@ namespace Mesen.ViewModels
 
 		public List<ButtonBindingsRowViewModel> ButtonRows { get; } = new();
 		public bool HasBindingsEditor { get; }
-		public int DefaultTabIndex => HasBindingsEditor ? 0 : 1;
 
 		[Obsolete("For designer only")]
 		public ControllerConfigViewModel() : this(ControllerType.SnesController, new ControllerConfig(), new ControllerConfig(), 0) { }
