@@ -4,11 +4,12 @@
 	xmlns:sys="clr-namespace:System;assembly=netstandard"	
 	xmlns:c="using:Mesen.Controls"
 	xmlns:du="using:Mesen.Debugger.Utilities"
+	xmlns:dock="using:Dock.Avalonia.Themes.Fluent"
 >
 	<StyleInclude Source="/Styles/MesenStyles.Light.xaml" />
 	<StyleInclude Source="/Styles/MesenStyles.Dark.xaml" />
 
-	<StyleInclude Source="avares://Dock.Avalonia/Themes/DockFluentTheme.axaml" />
+	<dock:DockFluentTheme />
 	<StyleInclude Source="/ThirdParty/DataBox/Themes/Fluent.axaml" />
 	<StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
 	<StyleInclude Source="/Styles/DockStyles.xaml" />
